@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="ModernPaySystem.Application/ModernPaySystem.Application.csproj" />
+  <Project Path="ModernPaySystem.Domain/ModernPaySystem.Domain.csproj" />
+  <Project Path="ModernPaySystem/ModernPaySystem.csproj" />
+</Solution>
