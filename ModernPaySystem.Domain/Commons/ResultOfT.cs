@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Net;
 using System.Text.Json.Serialization;
 
@@ -31,7 +32,7 @@ public sealed class Result<TValue> : IResult<TValue>
         {
             if (errors == null || errors.Count == 0)
             {
-                throw new ArgumentNullException("provide at least one error", nameof(errors));
+                throw new ArgumentNullException(nameof(errors), "provide at least one error");
             }
 
             _errors = errors;
@@ -76,4 +77,19 @@ public sealed class Result<TValue> : IResult<TValue>
         => new(error);
     public static implicit operator Result<TValue>(List<Error> errors)
         => new(errors);
+}
+
+public readonly record struct Success(object? Data = null);
+public readonly record struct Created(object? Data = null);
+public readonly record struct Deleted;
+public readonly record struct Updated(object? Data = null);
+public readonly record struct Assigned;
+
+public static class Result
+{
+    public static Success Success => default;
+    public static Created Created => default;
+    public static Deleted Deleted => default;
+    public static Updated Updated => default;
+    public static Assigned Assigned => default;
 }
