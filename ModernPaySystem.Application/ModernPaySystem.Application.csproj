@@ -6,4 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="..\\ModernPaySystem.Domain\\ModernPaySystem.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="UseCases\" />
+  </ItemGroup>
 </Project>

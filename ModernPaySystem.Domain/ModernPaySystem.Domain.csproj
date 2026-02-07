@@ -1,6 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Update="Roslynator.Analyzers" Version="4.15.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Attrs\" />
+    <Folder Include="Commons\Extensions\" />
+    <Folder Include="Commons\Results\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
 </Project>
