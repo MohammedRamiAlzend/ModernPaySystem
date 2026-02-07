@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Net;
 using System.Text.Json.Serialization;
 
 namespace ModernPaySystem.Domain.Commons;
@@ -13,7 +10,8 @@ public sealed class Result<TValue> : IResult<TValue>
     public bool IsSuccess { get; }
     public bool IsError => !IsSuccess;
 
-    public List<Error> Errors => IsError ? _errors! : new List<Error>();
+    public List<Error> Errors => IsError ? _errors! :
+        [];
     public TValue? Value => IsSuccess ? _value! : default;
 
     public Error TopError => (_errors?.Count > 0) ? _errors[0] : default;

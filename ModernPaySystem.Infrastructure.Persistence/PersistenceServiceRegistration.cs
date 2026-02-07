@@ -5,12 +5,12 @@ using Microsoft.Extensions.DependencyInjection;
 namespace ModernPaySystem.Infrastructure.Persistence;
 
 /// <summary>
-/// Extension methods for registering persistence services
+/// Extension methods for registering persistence services.
 /// </summary>
 public static class PersistenceServiceRegistration
 {
     /// <summary>
-    /// Adds persistence services and DbContext to the dependency injection container
+    /// Adds persistence services and DbContext to the dependency injection container.
     /// </summary>
     public static IServiceCollection AddPersistenceServices(
         this IServiceCollection services,

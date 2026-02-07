@@ -1,7 +1,7 @@
 namespace ModernPaySystem.Domain.Commons;
 
 /// <summary>
-/// Contains predefined application errors with unique numeric codes
+/// Contains predefined application errors with unique numeric codes.
 /// </summary>
 public static class ApplicationError
 {

@@ -7,7 +7,7 @@ using ModernPaySystem.Infrastructure.Persistence;
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
-/// Implementation of User service CRUD operations
+/// Implementation of User service CRUD operations.
 /// </summary>
 public class UserService : IUserService
 {
@@ -28,7 +28,8 @@ public class UserService : IUserService
             var users = await _unitOfWork.Users.GetAllAsync();
             if(users.IsError)
                 return users.Errors;
-            return users.Value;
+
+            return users.Value!;
         }
         catch (Exception ex)
         {
@@ -50,7 +51,7 @@ public class UserService : IUserService
             if (user.Value == null)
                 return ApplicationError.UserNotFound;
 
-            return user;
+            return user!;
         }
         catch (Exception ex)
         {
@@ -67,17 +68,16 @@ public class UserService : IUserService
                 return ApplicationError.InvalidInput;
 
             _logger.LogInformation("Fetching user by username: {Username}", username);
+
             var users = await _unitOfWork.Users.GetAllAsync();
             if(users.IsError)
             {
                 return users.Errors;
             }
-            var user = users.Value.FirstOrDefault(u => u.UserName == username);
 
-            if (user == null)
-                return ApplicationError.UserNotFound;
+            var user = users.Value!.Find(u => u.UserName == username);
 
-            return user;
+            return user == null ? (Result<User>)ApplicationError.UserNotFound : (Result<User>)user;
         }
         catch (Exception ex)
         {
@@ -152,7 +152,7 @@ public class UserService : IUserService
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated user: {UserId}", id);
-            return existingUser;
+            return existingUser!;
         }
         catch (Exception ex)
         {
