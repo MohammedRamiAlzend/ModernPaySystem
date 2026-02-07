@@ -1,3 +1,4 @@
+using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Application.Interfaces;
@@ -11,6 +12,11 @@ public interface ITemplateService
     /// Get all templates.
     /// </summary>
     Task<Result<IEnumerable<Template>>> GetAllAsync();
+
+    /// <summary>
+    /// Get paged templates.
+    /// </summary>
+    Task<Result<PagedList<Template>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get template by id.

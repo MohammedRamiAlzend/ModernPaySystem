@@ -38,6 +38,31 @@ public class UserService : IUserService
         }
     }
 
+    public async Task<Result<PagedList<User>>> GetPagedAsync(int page, int pageSize)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching paged users, page: {Page}, size: {PageSize}", page, pageSize);
+
+            // Validate parameters
+            if (page <= 0)
+                return ApplicationError.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+                return ApplicationError.InvalidInput;
+
+            var pagedUsers = await _unitOfWork.Users.GetPagedAsync(page, pageSize);
+            if (pagedUsers.IsError)
+                return pagedUsers.Errors;
+
+            return pagedUsers.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching paged users, page: {Page}, size: {PageSize}", page, pageSize);
+            return ApplicationError.InternalServerError;
+        }
+    }
+
     public async Task<Result<User>> GetByIdAsync(Guid id)
     {
         try

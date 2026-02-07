@@ -14,6 +14,11 @@ public interface IRoleService
     Task<Result<IEnumerable<Role>>> GetAllAsync();
 
     /// <summary>
+    /// Get paged roles.
+    /// </summary>
+    Task<Result<PagedList<Role>>> GetPagedAsync(int page, int pageSize);
+
+    /// <summary>
     /// Get role by id.
     /// </summary>
     Task<Result<Role>> GetByIdAsync(Guid id);

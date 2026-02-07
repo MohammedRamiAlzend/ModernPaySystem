@@ -38,6 +38,31 @@ public class AttachmentService : IAttachmentService
         }
     }
 
+    public async Task<Result<PagedList<Attachment>>> GetPagedAsync(int page, int pageSize)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching paged attachments, page: {Page}, size: {PageSize}", page, pageSize);
+
+            // Validate parameters
+            if (page <= 0)
+                return ApplicationError.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+                return ApplicationError.InvalidInput;
+
+            var pagedAttachments = await _unitOfWork.Attachments.GetPagedAsync(page, pageSize);
+            if (pagedAttachments.IsError)
+                return pagedAttachments.Errors;
+
+            return pagedAttachments.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching paged attachments, page: {Page}, size: {PageSize}", page, pageSize);
+            return ApplicationError.InternalServerError;
+        }
+    }
+
     public async Task<Result<Attachment>> GetByIdAsync(Guid id)
     {
         try

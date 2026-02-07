@@ -1,3 +1,5 @@
+using ModernPaySystem.Domain.Commons;
+
 namespace ModernPaySystem.Application.Interfaces;
 
 /// <summary>
@@ -9,6 +11,11 @@ public interface IUserService
     /// Get all users.
     /// </summary>
     Task<Result<IEnumerable<User>>> GetAllAsync();
+
+    /// <summary>
+    /// Get paged users.
+    /// </summary>
+    Task<Result<PagedList<User>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get user by id.

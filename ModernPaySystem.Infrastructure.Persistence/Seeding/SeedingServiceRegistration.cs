@@ -49,6 +49,7 @@ public static class SeedingServiceRegistration
     /// </summary>
     private static void RegisterSeeders(IServiceCollection services)
     {
+        services.AddScoped<IEntitySeeder, DefaultDataSeeder>();
         services.AddScoped<IEntitySeeder, PermissionSeeder>();
         services.AddScoped<IEntitySeeder, RoleSeeder>();
         services.AddScoped<IEntitySeeder, UserSeeder>();

@@ -36,6 +36,31 @@ public class RequestService : IRequestService
         }
     }
 
+    public async Task<Result<PagedList<Request>>> GetPagedAsync(int page, int pageSize)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching paged requests, page: {Page}, size: {PageSize}", page, pageSize);
+
+            // Validate parameters
+            if (page <= 0)
+                return ApplicationError.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+                return ApplicationError.InvalidInput;
+
+            var pagedRequests = await _unitOfWork.Requests.GetPagedAsync(page, pageSize);
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            return pagedRequests.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching paged requests, page: {Page}, size: {PageSize}", page, pageSize);
+            return ApplicationError.InternalServerError;
+        }
+    }
+
     public async Task<Result<Request>> GetByIdAsync(Guid id)
     {
         try

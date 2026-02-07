@@ -1,3 +1,4 @@
+using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Application.Interfaces;
@@ -11,6 +12,11 @@ public interface IRequestService
     /// Get all requests.
     /// </summary>
     Task<Result<IEnumerable<Request>>> GetAllAsync();
+
+    /// <summary>
+    /// Get paged requests.
+    /// </summary>
+    Task<Result<PagedList<Request>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get request by id.

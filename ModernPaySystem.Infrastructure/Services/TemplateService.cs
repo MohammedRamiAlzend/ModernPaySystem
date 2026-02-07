@@ -39,6 +39,31 @@ public class TemplateService : ITemplateService
         }
     }
 
+    public async Task<Result<PagedList<Template>>> GetPagedAsync(int page, int pageSize)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching paged templates, page: {Page}, size: {PageSize}", page, pageSize);
+
+            // Validate parameters
+            if (page <= 0)
+                return ApplicationError.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+                return ApplicationError.InvalidInput;
+
+            var pagedTemplates = await _unitOfWork.Templates.GetPagedAsync(page, pageSize);
+            if (pagedTemplates.IsError)
+                return pagedTemplates.Errors;
+
+            return pagedTemplates.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching paged templates, page: {Page}, size: {PageSize}", page, pageSize);
+            return ApplicationError.InternalServerError;
+        }
+    }
+
     public async Task<Result<Template>> GetByIdAsync(Guid id)
     {
         try

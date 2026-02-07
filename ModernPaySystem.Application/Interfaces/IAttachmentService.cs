@@ -14,6 +14,11 @@ public interface IAttachmentService
     Task<Result<IEnumerable<Attachment>>> GetAllAsync();
 
     /// <summary>
+    /// Get paged attachments.
+    /// </summary>
+    Task<Result<PagedList<Attachment>>> GetPagedAsync(int page, int pageSize);
+
+    /// <summary>
     /// Get attachment by id.
     /// </summary>
     Task<Result<Attachment>> GetByIdAsync(Guid id);
