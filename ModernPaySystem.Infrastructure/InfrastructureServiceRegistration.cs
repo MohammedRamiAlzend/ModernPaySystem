@@ -1,12 +1,10 @@
-using Microsoft.Extensions.DependencyInjection;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Infrastructure.Auth.Services;
-using ModernPaySystem.Infrastructure.Auth.Policies;
-using ModernPaySystem.Infrastructure.Extensions;
-using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
-using ModernPaySystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
+using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Commons.Auth;
+using ModernPaySystem.Infrastructure.Auth.Policies;
+using ModernPaySystem.Infrastructure.Auth.Services;
+using ModernPaySystem.Infrastructure.Extensions;
+using ModernPaySystem.Infrastructure.Services;
 
 namespace ModernPaySystem.Infrastructure;
 
@@ -16,7 +14,7 @@ namespace ModernPaySystem.Infrastructure;
 public static class InfrastructureServiceRegistration
 {
     /// <summary>
-    /// Adds infrastructure services to the dependency injection container
+    /// Adds infrastructure services to the dependency injection container.
     /// </summary>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
@@ -42,7 +40,7 @@ public static class InfrastructureServiceRegistration
     }
 
     /// <summary>
-    /// Adds authorization policies for the application
+    /// Adds authorization policies for the application.
     /// </summary>
     public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
     {
