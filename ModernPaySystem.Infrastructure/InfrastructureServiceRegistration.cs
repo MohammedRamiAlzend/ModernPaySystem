@@ -1,9 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
-using ModernPaySystem.Application.Services;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Auth.Policies;
 using ModernPaySystem.Infrastructure.Extensions;
 using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
+using ModernPaySystem.Infrastructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using ModernPaySystem.Domain.Commons.Auth;
 
@@ -25,6 +26,14 @@ public static class InfrastructureServiceRegistration
         // Register Authentication Services
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+        // Register CRUD Services
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ITemplateService, TemplateService>();
+        services.AddScoped<IRequestService, RequestService>();
+        services.AddScoped<IResponseService, ResponseService>();
+        services.AddScoped<IAttachmentService, AttachmentService>();
 
         // Register Authorization Handlers
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();

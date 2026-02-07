@@ -19,7 +19,7 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 // Add Authorization Policies
 builder.Services.AddAuthorizationPolicies();
 
-// Add Infrastructure Services (Unit of Work, Services, etc.)
+// Add Infrastructure Services (Unit of Work, CRUD Services, etc.)
 builder.Services.AddInfrastructureServices();
 
 // Add API Services
