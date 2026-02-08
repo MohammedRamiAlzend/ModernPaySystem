@@ -1,10 +1,12 @@
-using System.Security.Cryptography;
-using System.Text;
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
-using ModernPaySystem.Application.Services;
+global using System.Security.Cryptography;
+global using System.Text;
+global using ModernPaySystem.Domain.Commons;
+global using ModernPaySystem.Domain.Entities.SharedEntities;
+global using ModernPaySystem.Infrastructure.Persistence;
+global using Microsoft.EntityFrameworkCore;
+global using ModernPaySystem.Application.Services;
+global using System.Linq;
+global using System.Collections.Generic;
 
 namespace ModernPaySystem.Infrastructure.Auth.Services;
 

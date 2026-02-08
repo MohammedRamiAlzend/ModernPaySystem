@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿global using System.Threading;
+global using System.Threading.Tasks;
 
 namespace ModernPaySystem.Application.Interfaces;
 

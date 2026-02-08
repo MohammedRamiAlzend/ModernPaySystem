@@ -2,8 +2,8 @@
 global using System.Reflection;
 global using Microsoft.AspNetCore.Mvc;
 global using ModernPaySystem.Domain.Attrs;
-using ModernPaySystem.Domain.DTOs.AuthDtos;
-using Microsoft.EntityFrameworkCore;
+global using ModernPaySystem.Domain.DTOs.AuthDtos;
+global using System.Threading;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
