@@ -20,7 +20,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         try
         {
             await dbcontext.AddAsync(entity);
-            var saveResult = await dbcontext.SaveChangesAsync();
+            int saveResult = await dbcontext.SaveChangesAsync();
 
             return saveResult > 0
                 ? Result.Success
@@ -28,7 +28,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         }
         catch (DbUpdateException dbEx)
         {
-            var fkName = ExtractForeignKeyName(dbEx);
+            string? fkName = ExtractForeignKeyName(dbEx);
 
             if (fkName != null)
             {
@@ -45,7 +45,6 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
             return new Error("UNEXPECTED", e.Message, ErrorKind.Failure);
         }
     }
-
 
     public async Task<Result<List<TEntity>>> GetAllAsync(
         Expression<Func<TEntity, bool>>? filter = null,
@@ -74,8 +73,10 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         catch (Exception e)
         {
             logger.LogError(e, "Error retrieving entities of type {EntityType}.", typeof(TEntity).Name);
-            return new Error("00",
-                $"Something went wrong while retrieving entities of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
+            return new Error(
+                "00",
+                $"Something went wrong while retrieving entities of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                type: ErrorKind.Failure);
         }
     }
 
@@ -96,7 +97,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
             if (filter != null) query = query.Where(filter);
             if (transform != null) query = transform(query);
 
-            var totalItems = await query.CountAsync();
+            int totalItems = await query.CountAsync();
 
             if (orderBy == null)
             {
@@ -114,8 +115,10 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         catch (Exception e)
         {
             logger.LogError(e, "Error retrieving paged entities of type {EntityType}.", typeof(TEntity).Name);
-            return new Error("00",
-                $"Something went wrong while retrieving paged entities of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
+            return new Error(
+                "00",
+                $"Something went wrong while retrieving paged entities of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                ErrorKind.Failure);
         }
     }
 
@@ -141,7 +144,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         catch (Exception e)
         {
             logger.LogError(e, "Error retrieving entity of type {EntityType}.", typeof(TEntity).Name);
-            return new Error("00",
+            return new Error(
+                "00",
                 $"Something went wrong while retrieving an entity of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
         }
     }

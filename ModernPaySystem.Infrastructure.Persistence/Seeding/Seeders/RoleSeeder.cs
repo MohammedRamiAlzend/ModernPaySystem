@@ -1,7 +1,7 @@
 using Bogus;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 
-namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
+namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 
 /// <summary>
 /// Seeder for Role entities

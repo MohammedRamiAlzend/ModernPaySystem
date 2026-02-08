@@ -1,13 +1,12 @@
 using Bogus;
 using Microsoft.EntityFrameworkCore;
 using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
-namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
+namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 
 /// <summary>
 /// Seeder for User entities
-/// Order: 3 (depends on roles being created for relationships)
+/// Order: 3 (depends on roles being created for relationships).
 /// </summary>
 public class UserSeeder : EntitySeederBase<User>
 {
@@ -28,20 +27,20 @@ public class UserSeeder : EntitySeederBase<User>
     }
 
     /// <summary>
-    /// Generate random user data using Bogus
+    /// Generate random user data using Bogus.
     /// </summary>
     private List<User> GenerateUsers(int count, List<Role> roles)
     {
         var faker = new Faker<User>()
             .RuleFor(u => u.Id, f => Guid.NewGuid())
             .RuleFor(u => u.UserName, f => f.Internet.UserName())
-            .RuleFor(u => u.HashedPassword, f => HashPassword(f.Internet.Password()));
+            .RuleFor(u => u.HashedPassword, f => HashPassword("123456"));
 
         return faker.Generate(count);
     }
 
     /// <summary>
-    /// Assign roles to users
+    /// Assign roles to users.
     /// </summary>
     private async Task AssignRolesToUsers(AppDbContext context, List<User> users, List<Role> roles)
     {
@@ -71,12 +70,12 @@ public class UserSeeder : EntitySeederBase<User>
     }
 
     /// <summary>
-    /// Simple password hashing (use same as in AuthenticationService)
+    /// Simple password hashing (use same as in AuthenticationService).
     /// </summary>
     private string HashPassword(string password)
     {
         using var sha256 = System.Security.Cryptography.SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        byte[] hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
 }

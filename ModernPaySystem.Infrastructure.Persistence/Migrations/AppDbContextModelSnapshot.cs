@@ -58,7 +58,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Attachments");
+                    b.ToTable("Attachments", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.PermissionEntity", b =>
@@ -76,7 +76,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Permissions");
+                    b.ToTable("Permissions", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.Role", b =>
@@ -94,7 +94,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.RolePermission", b =>
@@ -109,7 +109,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("RolePermissions");
+                    b.ToTable("RolePermissions", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.SubSystemUser", b =>
@@ -129,7 +129,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("SubSystemUsers");
+                    b.ToTable("SubSystemUsers", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.User", b =>
@@ -163,7 +163,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.UserRole", b =>
@@ -178,7 +178,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("UserRoles");
+                    b.ToTable("UserRoles", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", b =>
@@ -216,7 +216,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TemplateId");
 
-                    b.ToTable("Requests");
+                    b.ToTable("Requests", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestAttachment", b =>
@@ -231,7 +231,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("AttachmentId");
 
-                    b.ToTable("RequestAttachments");
+                    b.ToTable("RequestAttachments", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", b =>
@@ -265,7 +265,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RequestId");
 
-                    b.ToTable("Responses");
+                    b.ToTable("Responses", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseAttachment", b =>
@@ -298,7 +298,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ResponseId");
 
-                    b.ToTable("ResponseAttachments");
+                    b.ToTable("ResponseAttachments", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Template", b =>
@@ -332,7 +332,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Templates");
+                    b.ToTable("Templates", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.TemplateOwnership", b =>
@@ -353,7 +353,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("TemplateOwnerships");
+                    b.ToTable("TemplateOwnerships", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.RolePermission", b =>

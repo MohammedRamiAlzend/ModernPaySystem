@@ -6,7 +6,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
 
 /// <summary>
 /// Seeder for Permission entities
-/// Order: 1 (must be seeded first as it has no dependencies)
+/// Order: 1 (must be seeded first as it has no dependencies).
 /// </summary>
 public class PermissionSeeder : EntitySeederBase<PermissionEntity>
 {
@@ -19,25 +19,18 @@ public class PermissionSeeder : EntitySeederBase<PermissionEntity>
     }
 
     /// <summary>
-    /// Generate random permission data using Bogus
+    /// Generate random permission data using Bogus.
     /// </summary>
     private List<PermissionEntity> GeneratePermissions(int count)
     {
-        var permissionNames = new[]
+        string[] permissionNames = new[]
         {
-            // Transaction System Permissions
             "ViewTransactions", "CreateTransaction", "UpdateTransaction", "DeleteTransaction",
-            // User Management
             "ViewUsers", "CreateUser", "UpdateUser", "DeleteUser",
-            // Role Management
             "ViewRoles", "CreateRole", "UpdateRole", "DeleteRole",
-            // Permission Management
             "ViewPermissions", "AssignPermissions", "RevokePermissions",
-            // Template Management
             "ViewTemplates", "CreateTemplate", "UpdateTemplate", "DeleteTemplate",
-            // Approval
             "ApproveRequest", "RejectRequest",
-            // System
             "ViewAuditLogs", "ManageSystem"
         };
 

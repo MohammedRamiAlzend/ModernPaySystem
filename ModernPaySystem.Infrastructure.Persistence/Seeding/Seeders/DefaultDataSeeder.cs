@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 
-namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
+namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 
 /// <summary>
 /// Seeder for default roles and super admin user
-/// Order: 1 (runs early to establish foundational data)
+/// Order: 1 (runs early to establish foundational data).
 /// </summary>
 public class DefaultDataSeeder : IEntitySeeder
 {
@@ -86,45 +86,43 @@ public class DefaultDataSeeder : IEntitySeeder
             if (!hasSuperAdminRole)
             {
                 // Add SuperAdmin role to existing user
-                var superAdminRole = await context.Roles
+                var superAdminRole2 = await context.Roles
                     .FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
 
-                if (superAdminRole != null)
+                if (superAdminRole2 != null)
                 {
-                    var userRole = new UserRole
+                    var userRole2 = new UserRole
                     {
                         UserId = existingSuperAdmin.Id,
-                        RoleId = superAdminRole.Id
+                        RoleId = superAdminRole2.Id
                     };
 
-                    await context.UserRoles.AddAsync(userRole);
+                    await context.UserRoles.AddAsync(userRole2);
                     await context.SaveChangesAsync();
                 }
             }
+
             return;
         }
 
-        // Create super admin role if it doesn't exist
         var superAdminRole = await context.Roles
             .FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
 
         if (superAdminRole == null)
         {
-            return; // Cannot create user without role
+            return;
         }
 
-        // Create super admin user
         var superAdminUser = new User
         {
             Id = Guid.NewGuid(),
             UserName = "superadmin",
-            HashedPassword = HashPassword("SuperAdmin123!") // Default strong password
+            HashedPassword = HashPassword("SuperAdmin123!") 
         };
 
         await context.Users.AddAsync(superAdminUser);
         await context.SaveChangesAsync();
 
-        // Assign SuperAdmin role to the user
         var userRole = new UserRole
         {
             UserId = superAdminUser.Id,
@@ -136,7 +134,7 @@ public class DefaultDataSeeder : IEntitySeeder
     }
 
     /// <summary>
-    /// Simple password hashing (use same as in AuthenticationService)
+    /// Simple password hashing (use same as in AuthenticationService).
     /// </summary>
     private string HashPassword(string password)
     {

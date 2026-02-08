@@ -24,11 +24,9 @@ var app = builder.Build();
 
 if (builder.Configuration.GetValue<bool>("Seeding:Enabled"))
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var orchestrator = scope.ServiceProvider.GetRequiredService<ISeederOrchestrator>();
-        await orchestrator.SeedDatabaseAsync();
-    }
+    using var scope = app.Services.CreateScope();
+    var orchestrator = scope.ServiceProvider.GetRequiredService<ISeederOrchestrator>();
+    await orchestrator.SeedDatabaseAsync();
 }
 
 if (app.Environment.IsDevelopment())

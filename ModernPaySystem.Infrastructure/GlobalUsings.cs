@@ -9,3 +9,4 @@ global using ModernPaySystem.Domain.Entities.SharedEntities;
 global using ModernPaySystem.Application.Interfaces;
 global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
+global using ModernPaySystem.Domain.Commons;

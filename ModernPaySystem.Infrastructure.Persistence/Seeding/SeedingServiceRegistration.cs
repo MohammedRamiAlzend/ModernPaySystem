@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
 

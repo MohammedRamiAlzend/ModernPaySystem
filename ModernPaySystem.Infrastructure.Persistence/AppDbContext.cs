@@ -4,12 +4,8 @@ using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     // Shared Entities
     public DbSet<User> Users { get; set; }
     public DbSet<SubSystemUser> SubSystemUsers { get; set; }
