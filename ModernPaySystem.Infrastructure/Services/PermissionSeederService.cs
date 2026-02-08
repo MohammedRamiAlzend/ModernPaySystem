@@ -211,7 +211,7 @@ public class PermissionSeederService(
             User user1 = new User
             {
                 Id = Constants.DefaultUserId,
-                UserName = "SuperAdmin",
+                UserName = "1",
                 HashedPassword = defaultHashedPassword,
                 Roles = new List<Role> { role }
             };
