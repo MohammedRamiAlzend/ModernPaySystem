@@ -1,0 +1,1 @@
+export { ContractsListWidget } from "./ui/contracts-list-widget";

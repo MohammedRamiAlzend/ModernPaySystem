@@ -1,0 +1,72 @@
+// Define contract types
+export interface Contract {
+  id: number;
+  contractNo: string;
+  contractDate: string;
+  contractType: string;
+  contractPeriod: string;
+  rentAmount: number;
+  rentStart: string;
+  rentEnd: string;
+  paymentMethod: string;
+  contractOrganizer: string;
+  ownershipProof: string;
+  specialConditions: string;
+  propertyNo: string;
+  city: string;
+  district: string;
+  street: string;
+  floor: string;
+  apartment: string;
+  occupancyType: string;
+  phone: string;
+  area: string;
+  realEstateRegion: string;
+  taxReceiptNo: string;
+  taxReceiptAmount: string;
+  taxReceiptDate: string;
+  assets: string;
+  tenantDescription: string;
+  previousResidence: string;
+  lessorId: number;
+  lessorLegality: string;
+  tenantId: number;
+  tenantLegality: string;
+  escorts: string;
+  status: 'active' | 'inactive';
+}
+
+export interface ContractFormData {
+  contractNo: string;
+  contractDate: string;
+  contractType: string;
+  contractPeriod: string;
+  rentAmount: string;
+  rentStart: string;
+  rentEnd: string;
+  paymentMethod: string;
+  contractOrganizer: string;
+  ownershipProof: string;
+  specialConditions: string;
+  propertyNo: string;
+  city: string;
+  district: string;
+  street: string;
+  floor: string;
+  apartment: string;
+  occupancyType: string;
+  phone: string;
+  area: string;
+  realEstateRegion: string;
+  taxReceiptNo: string;
+  taxReceiptAmount: string;
+  taxReceiptDate: string;
+  assets: string;
+  tenantDescription: string;
+  previousResidence: string;
+  lessorId: string;
+  lessorLegality: string;
+  tenantId: string;
+  tenantLegality: string;
+  escorts: string;
+}
