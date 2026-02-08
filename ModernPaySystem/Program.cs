@@ -1,8 +1,8 @@
-using Scalar.AspNetCore;
-using ModernPaySystem.Infrastructure.Persistence;
-using ModernPaySystem.Infrastructure.Persistence.Seeding;
-using ModernPaySystem.Infrastructure;
-using ModernPaySystem.Infrastructure.Auth;
+global using Scalar.AspNetCore;
+global using ModernPaySystem.Infrastructure.Persistence;
+global using ModernPaySystem.Infrastructure.Persistence.Seeding;
+global using ModernPaySystem.Infrastructure;
+global using ModernPaySystem.Infrastructure.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +17,7 @@ builder.Services.AddAuthorizationPolicies();
 builder.Services.AddInfrastructureServices();
 
 builder.Services.AddControllers();
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();

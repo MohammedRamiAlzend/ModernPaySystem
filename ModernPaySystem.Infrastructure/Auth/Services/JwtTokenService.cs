@@ -32,7 +32,7 @@ public class JwtTokenService : ITokenService
         };
 
         // Add permissions as claims
-        foreach (var permission in permissions)
+        foreach (var permission in permissions.Where(x => x != null))
         {
             claims.Add(new Claim("permission", permission));
         }

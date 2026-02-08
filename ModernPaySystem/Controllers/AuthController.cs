@@ -2,20 +2,13 @@ namespace ModernPaySystem.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController(IAuthenticationService authService) : ControllerBase
 {
-    private readonly IAuthenticationService _authService;
-
-    public AuthController(IAuthenticationService authService)
-    {
-        _authService = authService;
-    }
-
     [HttpPost("login")]
     [EndpointPermission("auth.login", SubSystem.None, PermissionType.Read)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var result = await _authService.AuthenticateAsync(request.Username, request.Password);
+        var result = await authService.AuthenticateAsync(request.Username, request.Password);
 
         if (result.IsError)
             return result.ToActionResult();

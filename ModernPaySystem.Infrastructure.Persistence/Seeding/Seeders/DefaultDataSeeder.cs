@@ -70,7 +70,7 @@ public class DefaultDataSeeder : IEntitySeeder
     private async Task SeedSuperAdminUser(AppDbContext context)
     {
         var existingSuperAdmin = await context.Users
-            .Where(u => u.UserName == "superadmin")
+            .Where(u => u.UserName == "1")
             .Include(u => u.Roles)
             .FirstOrDefaultAsync();
 
@@ -105,8 +105,8 @@ public class DefaultDataSeeder : IEntitySeeder
         var superAdminUser = new User
         {
             Id = Guid.NewGuid(),
-            UserName = "superadmin",
-            HashedPassword = HashPassword("SuperAdmin123!")
+            UserName = "1",
+            HashedPassword = HashPassword("1")
         };
 
         await context.Users.AddAsync(superAdminUser);
