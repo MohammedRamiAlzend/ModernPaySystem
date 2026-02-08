@@ -2,5 +2,6 @@
 
 public enum SubSystem
 {
+    None,
     TransactionSystem = 1,
 }

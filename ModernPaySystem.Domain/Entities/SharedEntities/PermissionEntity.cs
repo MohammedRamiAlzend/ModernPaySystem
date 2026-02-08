@@ -1,12 +1,14 @@
-using ModernPaySystem.Domain.Entities.Abstraction;
+using ModernPaySystem.Domain.Attrs;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public class PermissionEntity : Entity<Guid>
 {
-    public required string Name { get; set; }
+    public required string Key { get; set; }
+    public string? Name { get; set; }
     public string? Description { get; set; }
 
-    // Navigation properties
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public PermissionType Type { get; set; }
+    public SubSystem SubSystem { get; set; }
+    public ICollection<RolePermission> RolePermissions { get; set; } = [];
 }

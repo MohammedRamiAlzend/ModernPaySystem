@@ -24,6 +24,9 @@ public class UserSeeder : EntitySeederBase<User>
 
         // Assign roles to users
         await AssignRolesToUsers(context, users, roles);
+
+        // Enroll users in subsystems
+        await EnrollUsersInSubsystems(context, users);
     }
 
     /// <summary>
@@ -77,5 +80,40 @@ public class UserSeeder : EntitySeederBase<User>
         using var sha256 = System.Security.Cryptography.SHA256.Create();
         byte[] hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
+    }
+
+    /// <summary>
+    /// Enroll users in subsystems
+    /// Since there's a one-to-one relationship between User and SubSystemUser,
+    /// each user can only be enrolled in one subsystem.
+    /// </summary>
+    private async Task EnrollUsersInSubsystems(AppDbContext context, List<User> users)
+    {
+        var random = new Random();
+        var subsystemUsers = new List<SubSystemUser>();
+
+        foreach (var user in users)
+        {
+            // For each user, assign them to one subsystem
+            // In this example, we'll randomly assign each user to one of the available subsystems
+            // You could modify this logic to assign users to specific subsystems based on your business rules
+
+            var availableSubsystems = Enum.GetValues(typeof(SubSystem)).Cast<SubSystem>().ToList();
+
+            // Randomly pick one subsystem for this user (since it's a one-to-one relationship)
+            var selectedSubsystem = availableSubsystems[random.Next(availableSubsystems.Count)];
+
+            var subsystemUser = new SubSystemUser
+            {
+                Id = Guid.NewGuid(),
+                SubSystem = selectedSubsystem,
+                UserId = user.Id
+            };
+
+            subsystemUsers.Add(subsystemUser);
+        }
+
+        await context.SubSystemUsers.AddRangeAsync(subsystemUsers);
+        await context.SaveChangesAsync();
     }
 }
