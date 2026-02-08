@@ -42,12 +42,12 @@ export const generateFormPDF = async (
             ">
                 <span style="
                     font-weight: 700;
-                    color: #374151;
+                    color: #000000;
                     font-size: 13px;
                     margin-left: 8px;
                 ">${field.label}:</span>
                 <span style="
-                    color: #1f2937;
+                    color: #000000;
                     font-size: 13px;
                 ">${field.value}</span>
             </div>
@@ -82,15 +82,7 @@ export const generateFormPDF = async (
                 ${fieldsHtml}
             </div>
             
-            <div style="
-                margin-top: 40px;
-                padding-top: 15px;
-                border-top: 1px solid #cbd5e1;
-                text-align: center;
-                font-size: 11px;
-            ">
-                تم توليد هذا التقرير تلقائياً من نظام إدارة النماذج
-            </div>
+            
         </div>
     `;
 
@@ -292,14 +284,14 @@ export const printFormResponse = (
             ${fieldsHtml}
         </div>
         
-        <div class="footer">
-            تم توليد هذا التقرير تلقائياً من نظام إدارة النماذج
         </div>
-    </div>
-</body>
-</html>
-    `;
+        </body>
+        </html>
+        `;
 
+    // <div class="footer">
+    //     تم توليد هذا التقرير تلقائياً من نظام إدارة النماذج
+    // </div>
     doc.open();
     doc.write(htmlContent);
     doc.close();

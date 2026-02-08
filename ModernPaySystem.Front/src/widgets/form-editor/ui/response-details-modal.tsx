@@ -109,9 +109,9 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
             <div className="space-y-8 text-right" dir="rtl">
                 {/* Header */}
                 <div className="text-center border-b-2 border-gray-100 pb-6 mb-8">
-                    <h1 className="text-2xl font-bold mb-2 text-gray-900">{schema.title}</h1>
+                    <h1 className="text-2xl font-bold mb-2 ">{schema.title}</h1>
                     <p className="text-gray-500 font-medium">تاريخ التقديم: {new Date(response.submittedAt).toLocaleString('ar-EG')}</p>
-                    <p className="text-xs text-gray-400 mt-2">
+                    <p className="text-xs  mt-2">
                         يتم عرض {visibleFields.length} حقل من أصل {schema.fields.length} (بناءً على الشروط المنطقية)
                     </p>
                 </div>
@@ -133,10 +133,10 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                         return (
                             <div key={field.id} className={`${spanClass} border-b border-gray-100 pb-2`}>
                                 <div className="flex flex-row items-baseline gap-3">
-                                    <span className="text-base font-bold text-gray-700 whitespace-nowrap min-w-fit">
+                                    <span className="text-base font-bold  whitespace-nowrap min-w-fit">
                                         {field.label}:
                                     </span>
-                                    <span className="text-base font-normal text-gray-900 break-words">
+                                    <span className="text-base font-normal  break-words">
                                         {displayValue}
                                     </span>
                                 </div>
