@@ -1,0 +1,103 @@
+import { Outlet } from "react-router-dom"
+import { ModeToggle } from "@/shared/ui/common/mode-toggle"
+import { Settings, Bell, Search, Menu } from "lucide-react"
+import { Button } from "@/shared/ui/button"
+import { Sidebar } from "@/widgets/sidebar/ui/sidebar"
+import { NAVIGATION_ITEMS } from "@/shared/config/navigation"
+import { Input } from "@/shared/ui/input"
+import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet"
+import { useState } from "react"
+import { PrefetchNavLink } from "@/shared/navigation/prefetch-nav-link"
+
+interface MainLayoutProps {
+    children?: React.ReactNode
+}
+
+export function MainLayout({ children }: MainLayoutProps) {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    return (
+        <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
+            {/* Desktop Sidebar - Hidden on mobile */}
+            <Sidebar className="hidden md:flex sticky top-0" />
+
+            <div className="flex-1 flex flex-col min-w-0">
+                {/* Navbar / Topbar */}
+                <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <div className="flex h-16 items-center justify-between px-4 sm:px-8">
+                        {/* Left Side (Desktop: Search, Mobile: Burger Menu + Logo) */}
+                        <div className="flex items-center gap-4 flex-1">
+                            {/* Burger Menu for Mobile */}
+                            <div className="md:hidden">
+                                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                                    <SheetTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-accent/50">
+                                            <Menu className="h-6 w-6" />
+                                        </Button>
+                                    </SheetTrigger>
+                                    <SheetContent side="right" className="p-0 w-72 border-none">
+                                        <Sidebar
+                                            className="w-full border-none"
+                                            onItemClick={() => setIsMobileMenuOpen(false)}
+                                        />
+                                    </SheetContent>
+                                </Sheet>
+                            </div>
+
+                            <div className="hidden md:flex relative max-w-md w-full">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="بحث سريع..."
+                                    className="pr-10 bg-background border-none border-primary rounded-xl h-10 w-full ring-1 ring-primary"
+                                />
+                            </div>
+
+                            {/* Logo for Mobile (centered or next to burger) */}
+                            <div className="md:hidden flex items-center gap-2 mr-2">
+                                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                                    <span className="text-primary-foreground font-bold">P</span>
+                                </div>
+                                <span className="font-bold text-primary tracking-tight">PaySystem</span>
+                            </div>
+                        </div>
+
+                        {/* Right Side Actions */}
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            <Button variant="ghost" size="icon" className="relative hidden sm:flex">
+                                <Bell className="h-5 w-5" />
+                                <span className="absolute top-2 left-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background"></span>
+                            </Button>
+                            <Button variant="ghost" size="icon" className="hidden sm:flex">
+                                <Settings className="h-5 w-5" />
+                            </Button>
+                            <ModeToggle />
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content Area */}
+                <main className="flex-1 overflow-x-hidden p-4 sm:p-8 pb-32 md:pb-8">
+                    <div className="mx-auto h-full">
+                        {children || <Outlet />}
+                    </div>
+                </main>
+
+                {/* Mobile Tab Bar Nav (Kept for quick access as requested) */}
+                <nav className="md:hidden fixed bottom-6 left-6 right-6 h-16 border bg-background/80 backdrop-blur-xl rounded-2xl flex justify-around items-center z-40 shadow-2xl border-white/10">
+                    {NAVIGATION_ITEMS.map((item) => (
+                        <PrefetchNavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                `flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive ? 'text-primary scale-110' : 'text-muted-foreground hover:text-foreground'}`
+                            }
+                        >
+                            {item.icon}
+                            <span className="text-[9px] font-bold">{item.title}</span>
+                        </PrefetchNavLink>
+                    ))}
+                </nav>
+            </div>
+        </div>
+    )
+}

@@ -1,0 +1,1 @@
+export { useContractManager } from './model/contract-manager';
