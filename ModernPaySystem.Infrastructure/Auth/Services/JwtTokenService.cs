@@ -1,10 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Configuration;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Application.Services;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Security.Claims;
+global using System.Text;
+global using Microsoft.IdentityModel.Tokens;
+global using Microsoft.Extensions.Configuration;
+global using ModernPaySystem.Domain.Entities.SharedEntities;
+global using ModernPaySystem.Application.Services;
 
 namespace ModernPaySystem.Infrastructure.Auth.Services;
 

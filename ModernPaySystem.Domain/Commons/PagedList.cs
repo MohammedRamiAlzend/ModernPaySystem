@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace ModernPaySystem.Domain.Commons;
 
 public class PagedList<TData>

@@ -1,5 +1,7 @@
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+global using ModernPaySystem.Domain.Commons;
+global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+global using System.Collections.Generic;
+global using System;
 
 namespace ModernPaySystem.Application.Interfaces;
 

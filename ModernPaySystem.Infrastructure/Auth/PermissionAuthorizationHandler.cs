@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
+﻿global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.EntityFrameworkCore;
+global using System.Threading.Tasks;
+global using System;
+using System.Linq;
 
 namespace ModernPaySystem.Infrastructure.Auth;
 

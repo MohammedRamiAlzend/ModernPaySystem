@@ -1,5 +1,8 @@
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.SharedEntities;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ModernPaySystem.Application.Interfaces;
 
