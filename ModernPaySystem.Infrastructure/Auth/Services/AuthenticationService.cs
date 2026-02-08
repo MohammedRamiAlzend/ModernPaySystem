@@ -8,56 +8,48 @@ using ModernPaySystem.Application.Services;
 
 namespace ModernPaySystem.Infrastructure.Auth.Services;
 
-public class AuthenticationService : IAuthenticationService
+public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) : IAuthenticationService
 {
-    private readonly AppDbContext _dbContext;
-    private readonly ITokenService _tokenService;
-
-    public AuthenticationService(AppDbContext dbContext, ITokenService tokenService)
-    {
-        _dbContext = dbContext;
-        _tokenService = tokenService;
-    }
-
     public async Task<Result<string>> AuthenticateAsync(string username, string password)
     {
-        var user = await _dbContext.Users
-            .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
-            .FirstOrDefaultAsync(u => u.UserName == username);
+        var userResult = await uow.Users.GetAsync(x => x.UserName == username,
+            i => i.Include(u => u.Roles)
+                  .ThenInclude(rp => rp.Permissions));
 
-        if (user == null)
+        if (userResult.IsError)
             return ApplicationError.InvalidCredentials;
+
+        var user = userResult.Value;
 
         if (!VerifyPassword(password, user.HashedPassword))
             return ApplicationError.InvalidCredentials;
 
-        var permissions = user.UserRoles
-            .SelectMany(ur => ur.Role!.RolePermissions)
-            .Select(rp => rp.Permission!.Name)
+        var permissions = user.Roles
+            .SelectMany(ur => ur.Permissions)
+            .Select(rp => rp.Name)
             .Distinct()
             .ToList();
 
-        var accessToken = _tokenService.GenerateAccessToken(user, permissions);
-
-        return accessToken;
+        return tokenService.GenerateAccessToken(user, permissions);
     }
 
     public async Task<Result<List<string>>> GetUserPermissionsAsync(Guid userId)
     {
-        var permissions = await _dbContext.Users
-            .Where(u => u.Id == userId)
-            .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .ThenInclude(r => r.RolePermissions)
-            .ThenInclude(rp => rp.Permission)
-            .SelectMany(u => u.UserRoles
-                .SelectMany(ur => ur.Role!.RolePermissions
-                    .Select(rp => rp.Permission!.Name)))
-            .Distinct()
-            .ToListAsync();
+        var userResult = await uow.Users.GetAsync(
+            x => x.Id == userId,
+            i => i.Include(u => u.Roles)
+                  .ThenInclude(rp => rp.Permissions));
+
+        if (userResult.IsError)
+            return ApplicationError.UserNotFound;
+
+        var user = userResult.Value;
+
+        var permissions = user.Roles
+          .SelectMany(ur => ur.Permissions)
+          .Select(rp => rp.Name)
+          .Distinct()
+          .ToList();
 
         if (permissions.Count == 0)
             return ApplicationError.UserNotFound;

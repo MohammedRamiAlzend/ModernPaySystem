@@ -28,6 +28,7 @@ public class RequestsController : ControllerBase
     /// Get all requests
     /// </summary>
     [HttpGet]
+    [EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
     {
         _logger.LogInformation("Getting all requests");
@@ -39,6 +40,7 @@ public class RequestsController : ControllerBase
     /// Get request by id
     /// </summary>
     [HttpGet("{id}")]
+    [EndpointPermission("requests.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
     {
         _logger.LogInformation("Getting request by id: {RequestId}", id);
@@ -50,6 +52,7 @@ public class RequestsController : ControllerBase
     /// Get requests by requester id
     /// </summary>
     [HttpGet("by-requester/{requesterId}")]
+    [EndpointPermission("requests.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByRequesterId(Guid requesterId)
     {
         _logger.LogInformation("Getting requests for requester: {RequesterId}", requesterId);
@@ -61,6 +64,7 @@ public class RequestsController : ControllerBase
     /// Get requests by approver id
     /// </summary>
     [HttpGet("by-approver/{approverId}")]
+    [EndpointPermission("requests.get-by-approver-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByApproverId(Guid approverId)
     {
         _logger.LogInformation("Getting requests for approver: {ApproverId}", approverId);
@@ -72,6 +76,7 @@ public class RequestsController : ControllerBase
     /// Get requests by template id
     /// </summary>
     [HttpGet("by-template/{templateId}")]
+    [EndpointPermission("requests.get-by-template-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByTemplateId(Guid templateId)
     {
         _logger.LogInformation("Getting requests for template: {TemplateId}", templateId);
@@ -83,6 +88,7 @@ public class RequestsController : ControllerBase
     /// Create new request
     /// </summary>
     [HttpPost]
+    [EndpointPermission("requests.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] Request request)
     {
         _logger.LogInformation("Creating new request for requester: {RequesterId}", request?.RequesterId);
@@ -94,6 +100,7 @@ public class RequestsController : ControllerBase
     /// Update request
     /// </summary>
     [HttpPut("{id}")]
+    [EndpointPermission("requests.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] Request request)
     {
         _logger.LogInformation("Updating request: {RequestId}", id);
@@ -105,6 +112,7 @@ public class RequestsController : ControllerBase
     /// Delete request
     /// </summary>
     [HttpDelete("{id}")]
+    [EndpointPermission("requests.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         _logger.LogInformation("Deleting request: {RequestId}", id);

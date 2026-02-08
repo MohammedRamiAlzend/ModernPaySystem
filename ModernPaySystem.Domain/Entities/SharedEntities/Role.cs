@@ -1,5 +1,4 @@
 using ModernPaySystem.Domain.DTOs.AuthDtos;
-using ModernPaySystem.Domain.Entities.Abstraction;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
@@ -9,8 +8,8 @@ public class Role : Entity<Guid>
     public string? Description { get; set; }
 
     // Navigation properties
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
-    public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public ICollection<User> Users { get; set; } = [];
+    public ICollection<PermissionEntity> Permissions { get; set; } = [];
 
     public RoleDto DTO => new()
     {

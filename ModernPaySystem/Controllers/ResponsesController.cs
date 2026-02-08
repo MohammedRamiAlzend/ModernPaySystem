@@ -28,6 +28,7 @@ public class ResponsesController : ControllerBase
     /// Get all responses
     /// </summary>
     [HttpGet]
+    [EndpointPermission("responses.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
     {
         _logger.LogInformation("Getting all responses");
@@ -39,6 +40,7 @@ public class ResponsesController : ControllerBase
     /// Get response by id
     /// </summary>
     [HttpGet("{id}")]
+    [EndpointPermission("responses.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
     {
         _logger.LogInformation("Getting response by id: {ResponseId}", id);
@@ -50,6 +52,7 @@ public class ResponsesController : ControllerBase
     /// Get responses by request id
     /// </summary>
     [HttpGet("by-request/{requestId}")]
+    [EndpointPermission("responses.get-by-request-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByRequestId(Guid requestId)
     {
         _logger.LogInformation("Getting responses for request: {RequestId}", requestId);
@@ -61,6 +64,7 @@ public class ResponsesController : ControllerBase
     /// Get responses by responder id
     /// </summary>
     [HttpGet("by-responder/{responderId}")]
+    [EndpointPermission("responses.get-by-responder-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByResponderId(Guid responderId)
     {
         _logger.LogInformation("Getting responses for responder: {ResponderId}", responderId);
@@ -72,6 +76,7 @@ public class ResponsesController : ControllerBase
     /// Create new response
     /// </summary>
     [HttpPost]
+    [EndpointPermission("responses.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] Response response)
     {
         _logger.LogInformation("Creating new response for request: {RequestId}", response?.RequestId);
@@ -83,6 +88,7 @@ public class ResponsesController : ControllerBase
     /// Update response
     /// </summary>
     [HttpPut("{id}")]
+    [EndpointPermission("responses.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] Response response)
     {
         _logger.LogInformation("Updating response: {ResponseId}", id);
@@ -94,6 +100,7 @@ public class ResponsesController : ControllerBase
     /// Delete response
     /// </summary>
     [HttpDelete("{id}")]
+    [EndpointPermission("responses.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         _logger.LogInformation("Deleting response: {ResponseId}", id);

@@ -35,7 +35,6 @@ public class DefaultDataSeeder : IEntitySeeder
     private async Task SeedDefaultRoles(AppDbContext context)
     {
         var existingRoles = await context.Roles.Select(r => r.Name).ToListAsync();
-        
         var defaultRoles = new[]
         {
             new { Name = "SuperAdmin", Description = "Super administrator with all permissions" },
@@ -70,34 +69,24 @@ public class DefaultDataSeeder : IEntitySeeder
     /// </summary>
     private async Task SeedSuperAdminUser(AppDbContext context)
     {
-        // Check if super admin user already exists
         var existingSuperAdmin = await context.Users
             .Where(u => u.UserName == "superadmin")
-            .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
+            .Include(u => u.Roles)
             .FirstOrDefaultAsync();
 
         if (existingSuperAdmin != null)
         {
-            // Check if the user already has SuperAdmin role
-            var hasSuperAdminRole = existingSuperAdmin.UserRoles
-                .Any(ur => ur.Role.Name == "SuperAdmin");
+            var hasSuperAdminRole = existingSuperAdmin.Roles
+                .Any(ur => ur.Name == "SuperAdmin");
 
             if (!hasSuperAdminRole)
             {
-                // Add SuperAdmin role to existing user
                 var superAdminRole2 = await context.Roles
                     .FirstOrDefaultAsync(r => r.Name == "SuperAdmin");
 
                 if (superAdminRole2 != null)
                 {
-                    var userRole2 = new UserRole
-                    {
-                        UserId = existingSuperAdmin.Id,
-                        RoleId = superAdminRole2.Id
-                    };
-
-                    await context.UserRoles.AddAsync(userRole2);
+                    existingSuperAdmin.Roles.Add(superAdminRole2);
                     await context.SaveChangesAsync();
                 }
             }
@@ -117,19 +106,13 @@ public class DefaultDataSeeder : IEntitySeeder
         {
             Id = Guid.NewGuid(),
             UserName = "superadmin",
-            HashedPassword = HashPassword("SuperAdmin123!") 
+            HashedPassword = HashPassword("SuperAdmin123!")
         };
 
         await context.Users.AddAsync(superAdminUser);
         await context.SaveChangesAsync();
 
-        var userRole = new UserRole
-        {
-            UserId = superAdminUser.Id,
-            RoleId = superAdminRole.Id
-        };
-
-        await context.UserRoles.AddAsync(userRole);
+        superAdminUser.Roles.Add(superAdminRole);
         await context.SaveChangesAsync();
     }
 

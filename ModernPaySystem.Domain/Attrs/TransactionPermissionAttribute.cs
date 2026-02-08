@@ -9,7 +9,7 @@ public class TransactionPermissionAttribute(
     string displayNameArabic,
     string displayNameEnglish,
     PermissionType type) : EndpointPermissionAttribute(
-        key, displayNameArabic, displayNameEnglish, type)
+        key, SubSystem.TransactionSystem, type, displayNameArabic, displayNameEnglish)
 {
     public SubSystem Subsystem { get; } = SubSystem.TransactionSystem;
 }

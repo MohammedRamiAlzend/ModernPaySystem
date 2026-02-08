@@ -48,7 +48,6 @@ public class UserSeeder : EntitySeederBase<User>
     private async Task AssignRolesToUsers(AppDbContext context, List<User> users, List<Role> roles)
     {
         var random = new Random();
-        var userRoles = new List<UserRole>();
 
         foreach (var user in users)
         {
@@ -60,15 +59,10 @@ public class UserSeeder : EntitySeederBase<User>
 
             foreach (var role in assignedRoles)
             {
-                userRoles.Add(new UserRole
-                {
-                    UserId = user.Id,
-                    RoleId = role.Id
-                });
+                user.Roles.Add(role);
             }
         }
 
-        await context.UserRoles.AddRangeAsync(userRoles);
         await context.SaveChangesAsync();
     }
 

@@ -7,7 +7,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 /// <summary>
 /// Unit of Work interface for coordinating multiple repositories.
 /// </summary>
-public interface IUnitOfWork : IAsyncDisposable
+public interface IUnitOfWork
 {
     /// <summary>
     /// Repository for User entities.

@@ -18,6 +18,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [EndpointPermission("auth.login", SubSystem.None, PermissionType.Read)]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var result = await _authService.AuthenticateAsync(request.Username, request.Password);

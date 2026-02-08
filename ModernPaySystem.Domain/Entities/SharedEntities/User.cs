@@ -19,7 +19,7 @@ public class User : Entity<Guid>, IAuditableEntity
     public ICollection<TemplateOwnership> TemplateOwnerships { get; set; } = new List<TemplateOwnership>();
 
     // Navigation properties for roles
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public ICollection<Role> Roles { get; set; } = new List<Role>();
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

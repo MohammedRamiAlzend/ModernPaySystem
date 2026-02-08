@@ -1,7 +1,6 @@
 ﻿global using Microsoft.AspNetCore.Mvc.ApplicationParts;
 global using System.Reflection;
 global using Microsoft.AspNetCore.Mvc;
-global using ModernPaySystem.Application.Repos;
 global using ModernPaySystem.Domain.Attrs;
 using ModernPaySystem.Domain.DTOs.AuthDtos;
 using Microsoft.EntityFrameworkCore;
@@ -11,13 +10,10 @@ namespace ModernPaySystem.Infrastructure.Services;
 public class PermissionSeederService(
     IServiceProvider serviceProvider,
     ApplicationPartManager applicationPartManager,
-    IRoleService roleService,
     IUnitOfWork unitOfWork) : IPermissionSeederService
 {
     private readonly AppDbContext dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
     private readonly ApplicationPartManager applicationPartManager = applicationPartManager;
-    private readonly IRoleService roleService = roleService;
-    private readonly IRepositoryBase<User, Guid> userRepo = unitOfWork.Users;
 
     public async Task SeedPermissionsAsync(CancellationToken cancellationToken = default)
     {
@@ -71,20 +67,28 @@ public class PermissionSeederService(
             dbContext.Permissions.AddRange(newPermissions);
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            await AssignPermissionsToSuperAdminRoleAsync(superAdminRole.Id, newPermissions, cancellationToken);
+            await AssignPermissionsToSuperAdminRoleAsync(newPermissions, cancellationToken);
         }
 
-        await EnsureAllPermissionsAssignedToSuperAdminAsync(superAdminRole.Id, cancellationToken);
+        var ensureAllPermissionsResult = await EnsureAllPermissionsAssignedToSuperAdminAsync(cancellationToken);
+        if (ensureAllPermissionsResult.IsError)
+        {
+            throw new Exception($"Failed to ensure all permissions assigned to SuperAdmin: {string.Join(", ", ensureAllPermissionsResult.Errors.Select(e => e.Description))}");
+        }
 
-        await EnsureDefaultSuperAdminUserExistsAsync(superAdminRole.Id, cancellationToken);
+        var ensureDefaultUserResult = await EnsureDefaultSuperAdminUserExistsAsync(cancellationToken);
+        if (ensureDefaultUserResult.IsError)
+        {
+            throw new Exception($"Failed to ensure default SuperAdmin user exists: {string.Join(", ", ensureDefaultUserResult.Errors.Select(e => e.Description))}");
+        }
     }
 
     private async Task<Result<RoleDto>> EnsureSuperAdminRoleExistsAsync(CancellationToken cancellationToken)
     {
         var existingSuperAdminResult = await unitOfWork.Roles.GetAsync(
             x => x.Name == "SuperAdmin",
-            x => x.Include(x => x.RolePermissions)
-            .Include(x => x.UserRoles));
+            x => x.Include(x => x.Permissions)
+            .Include(x => x.Users));
 
         if (existingSuperAdminResult.IsError)
         {
@@ -125,11 +129,7 @@ public class PermissionSeederService(
                 return dbPermissionResult.Errors;
 
             var dbPermission = dbPermissionResult.Value;
-            dbPermission.RolePermissions.Add(new RolePermission
-            {
-                RoleId = getSuperAdminRoleResult.Value.Id,
-                PermissionId = dbPermission.Id
-            });
+            dbPermission.Roles.Add(getSuperAdminRoleResult.Value!);
             var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission);
             if (updateResult.IsError)
                 return updateResult.Errors;
@@ -141,22 +141,31 @@ public class PermissionSeederService(
             : new Error();
     }
 
-    private async Task EnsureAllPermissionsAssignedToSuperAdminAsync(int superAdminRoleId, CancellationToken cancellationToken)
+    private async Task<Result<Success>> EnsureAllPermissionsAssignedToSuperAdminAsync(CancellationToken cancellationToken)
     {
-        var role = await dbContext.Roles
-            .Include(r => r.Permissions)
-            .FirstOrDefaultAsync(r => r.Id == superAdminRoleId, cancellationToken);
+        var superAdminRoleResult = await unitOfWork.Roles.GetAsync(
+            r => r.Name == "SuperAdmin",
+            query => query.Include(r => r.Permissions));
 
-        if (role == null)
+        if (superAdminRoleResult.IsError)
         {
-            throw new Exception($"SuperAdmin role with ID {superAdminRoleId} not found.");
+            return superAdminRoleResult.Errors;
         }
 
-        var allPermissions = await dbContext.Permissions
-            .Select(p => new { p.Id, p.Key })
-            .ToListAsync(cancellationToken);
+        var superAdminRole = superAdminRoleResult.Value;
+        if (superAdminRole == null)
+        {
+            return new Error();
+        }
 
-        var assignedPermissionIds = role.Permissions.Select(p => p.Id).ToHashSet();
+        var allPermissionsResult = await unitOfWork.Permissions.GetAllAsync();
+        if (allPermissionsResult.IsError)
+        {
+            return allPermissionsResult.Errors;
+        }
+
+        var allPermissions = allPermissionsResult.Value!;
+        var assignedPermissionIds = superAdminRole.Permissions.Select(p => p.Id).ToHashSet();
 
         var unassignedPermissions = allPermissions
             .Where(p => !assignedPermissionIds.Contains(p.Id))
@@ -164,72 +173,99 @@ public class PermissionSeederService(
 
         foreach (var permission in unassignedPermissions)
         {
-            var assignRequest = new AssignPermissionToRoleRequest(permission.Id, superAdminRoleId);
+            var dbPermissionResult = await unitOfWork.Permissions.GetAsync(p => p.Key == permission.Key);
+            if (dbPermissionResult.IsError)
+                return dbPermissionResult.Errors;
 
-            await roleService.AssignPermissionToRoleAsync(assignRequest, cancellationToken);
+            var dbPermission = dbPermissionResult.Value;
+            dbPermission.Roles.Add(superAdminRole);
+            var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission);
+            if (updateResult.IsError)
+                return updateResult.Errors;
         }
+
+        return Result.Success;
     }
 
-    private async Task EnsureDefaultSuperAdminUserExistsAsync(
-      int superAdminRoleId,
+    private async Task<Result<Success>> EnsureDefaultSuperAdminUserExistsAsync(
       CancellationToken cancellationToken)
     {
-        try
+        const string defaultHashedPassword =
+            "URiiKlWs+xjqpKmMjtQC8SMG0Oc6nIA/XDbct9TB3/k=";
+
+        var getSuperAdminRoleResult = await unitOfWork.Roles.GetAsync(r => r.Name == "SuperAdmin");
+        if (getSuperAdminRoleResult.IsError)
         {
-            const string defaultHashedPassword =
-                "URiiKlWs+xjqpKmMjtQC8SMG0Oc6nIA/XDbct9TB3/k=";
+            return getSuperAdminRoleResult.Errors;
+        }
 
-            var user = await dbContext.Users
-                .Include(u => u.Roles)
-                .FirstOrDefaultAsync(
-                    u => u.Id == Constants.DefaultUserId,
-                    cancellationToken);
+        var role = getSuperAdminRoleResult.Value;
+        Guid superAdminRoleId = role.Id;
 
-            if (user == null)
+        var userResult = await unitOfWork.Users.GetAsync(
+          u => u.Id == Constants.DefaultUserId,
+          query => query.Include(u => u.Roles));
+
+        if (userResult.IsError && userResult.Errors.Select(x => x.Code).Any(x => x == "404"))
+        {
+            User user1 = new User
             {
-                return;
+                Id = Constants.DefaultUserId,
+                UserName = "SuperAdmin",
+                HashedPassword = defaultHashedPassword,
+                Roles = new List<Role> { role }
+            };
+        }
+
+        var user = userResult.Value;
+        if (user == null)
+        {
+            return Result.Success; // User doesn't exist, nothing to do
+        }
+
+        // Ensure password consistency
+        bool passwordUpdated = false;
+        if (user.HashedPassword != defaultHashedPassword)
+        {
+            user.HashedPassword = defaultHashedPassword;
+            var updateResult = await unitOfWork.Users.UpdateAsync(user);
+            if (updateResult.IsError)
+            {
+                return updateResult.Errors;
+            }
+            passwordUpdated = true;
+        }
+
+        // Ensure SuperAdmin role
+        var hasSuperAdminRole = user.Roles
+            .Any(r => r.Id == superAdminRoleId);
+
+        if (hasSuperAdminRole)
+        {
+            if (passwordUpdated)
+            {
+                var saveResult = await unitOfWork.SaveChangesAsync();
+                if (saveResult <= 0)
+                {
+                    return new Error();
+                }
             }
 
-            // Ensure password consistency
-            if (user.HashedPassword != defaultHashedPassword)
+            return Result.Success;
+        }
+
+        user.Roles.Add(role);
+        var updateUserResult = await unitOfWork.Users.UpdateAsync(user);
+        if (passwordUpdated)
+        {
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
             {
-                user.HashedPassword = defaultHashedPassword;
-                dbContext.Users.Update(user);
-                await dbContext.SaveChangesAsync(cancellationToken);
-            }
-
-            // Ensure SuperAdmin role
-            var hasSuperAdminRole = user.Roles
-                .Any(r => r.Id == superAdminRoleId);
-
-            if (hasSuperAdminRole)
-            {
-                return;
-            }
-
-            var assignRoleRequest =
-                new AssignRoleToUserRequest(superAdminRoleId, user.Id);
-
-            var roleAssignmentResult =
-                await roleService.AssignRoleToUserAsync(
-                    assignRoleRequest,
-                    cancellationToken);
-
-            if (roleAssignmentResult.IsError)
-            {
-                throw new Exception(
-                    $"Failed to assign SuperAdmin role to user {user.Id}: " +
-                    string.Join(
-                        ", ",
-                        roleAssignmentResult.Errors.Select(e => e.Description)));
+                return new Error();
             }
         }
-        catch (Exception ex)
-        {
-            throw new Exception(
-                $"Error in EnsureDefaultSuperAdminUserExistsAsync: {ex.Message}",
-                ex);
-        }
+
+        return Result.Success;
     }
 
 }

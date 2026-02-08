@@ -1,4 +1,3 @@
-global using static ModernPaySystem.Domain.Commons.Auth.Permission;
 using Scalar.AspNetCore;
 using ModernPaySystem.Infrastructure.Persistence;
 using ModernPaySystem.Infrastructure.Persistence.Seeding;
@@ -27,6 +26,12 @@ if (builder.Configuration.GetValue<bool>("Seeding:Enabled"))
     using var scope = app.Services.CreateScope();
     var orchestrator = scope.ServiceProvider.GetRequiredService<ISeederOrchestrator>();
     await orchestrator.SeedDatabaseAsync();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var permissionSeederService = scope.ServiceProvider.GetRequiredService<IPermissionSeederService>();
+    await permissionSeederService.SeedPermissionsAsync();
 }
 
 if (app.Environment.IsDevelopment())

@@ -10,5 +10,5 @@ public class PermissionEntity : Entity<Guid>
 
     public PermissionType Type { get; set; }
     public SubSystem SubSystem { get; set; }
-    public ICollection<RolePermission> RolePermissions { get; set; } = [];
+    public ICollection<Role> Roles { get; set; } = [];
 }

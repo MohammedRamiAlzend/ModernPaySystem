@@ -28,6 +28,7 @@ public class TemplatesController : ControllerBase
     /// Get all templates
     /// </summary>
     [HttpGet]
+    [EndpointPermission("templates.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
     {
         _logger.LogInformation("Getting all templates");
@@ -39,6 +40,7 @@ public class TemplatesController : ControllerBase
     /// Get template by id
     /// </summary>
     [HttpGet("{id}")]
+    [EndpointPermission("templates.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
     {
         _logger.LogInformation("Getting template by id: {TemplateId}", id);
@@ -50,6 +52,7 @@ public class TemplatesController : ControllerBase
     /// Get template by name
     /// </summary>
     [HttpGet("by-name/{name}")]
+    [EndpointPermission("templates.get-by-name", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByName(string name)
     {
         _logger.LogInformation("Getting template by name: {Name}", name);
@@ -61,6 +64,7 @@ public class TemplatesController : ControllerBase
     /// Create new template
     /// </summary>
     [HttpPost]
+    [EndpointPermission("templates.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] Template template)
     {
         _logger.LogInformation("Creating new template: {TemplateName}", template?.TemplateName);
@@ -72,6 +76,7 @@ public class TemplatesController : ControllerBase
     /// Update template
     /// </summary>
     [HttpPut("{id}")]
+    [EndpointPermission("templates.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] Template template)
     {
         _logger.LogInformation("Updating template: {TemplateId}", id);
@@ -83,6 +88,7 @@ public class TemplatesController : ControllerBase
     /// Delete template
     /// </summary>
     [HttpDelete("{id}")]
+    [EndpointPermission("templates.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         _logger.LogInformation("Deleting template: {TemplateId}", id);

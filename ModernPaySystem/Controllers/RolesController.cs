@@ -28,6 +28,7 @@ public class RolesController : ControllerBase
     /// Get all roles
     /// </summary>
     [HttpGet]
+    [EndpointPermission("roles.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
     {
         _logger.LogInformation("Getting all roles");
@@ -39,6 +40,7 @@ public class RolesController : ControllerBase
     /// Get role by id
     /// </summary>
     [HttpGet("{id}")]
+    [EndpointPermission("roles.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
     {
         _logger.LogInformation("Getting role by id: {RoleId}", id);
@@ -50,6 +52,7 @@ public class RolesController : ControllerBase
     /// Get role by name
     /// </summary>
     [HttpGet("by-name/{name}")]
+    [EndpointPermission("roles.get-by-name", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByName(string name)
     {
         _logger.LogInformation("Getting role by name: {Name}", name);
@@ -61,6 +64,7 @@ public class RolesController : ControllerBase
     /// Create new role
     /// </summary>
     [HttpPost]
+    [EndpointPermission("roles.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] Role role)
     {
         _logger.LogInformation("Creating new role: {RoleName}", role?.Name);
@@ -72,6 +76,7 @@ public class RolesController : ControllerBase
     /// Update role
     /// </summary>
     [HttpPut("{id}")]
+    [EndpointPermission("roles.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] Role role)
     {
         _logger.LogInformation("Updating role: {RoleId}", id);
@@ -83,6 +88,7 @@ public class RolesController : ControllerBase
     /// Delete role
     /// </summary>
     [HttpDelete("{id}")]
+    [EndpointPermission("roles.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         _logger.LogInformation("Deleting role: {RoleId}", id);

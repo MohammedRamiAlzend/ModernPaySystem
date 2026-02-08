@@ -1,6 +1,7 @@
 using Bogus;
 using Microsoft.EntityFrameworkCore;
 using ModernPaySystem.Domain.Entities.SharedEntities;
+using ModernPaySystem.Domain.Attrs;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
 
@@ -42,8 +43,11 @@ public class PermissionSeeder : EntitySeederBase<PermissionEntity>
             permissions.Add(new PermissionEntity
             {
                 Id = Guid.NewGuid(),
+                Key = permissionNames[i], // Set the required Key property
                 Name = permissionNames[i],
-                Description = $"Permission to {permissionNames[i].ToLower()}"
+                Description = $"Permission to {permissionNames[i].ToLower()}",
+                Type = PermissionType.Read, // Set a default value
+                SubSystem = SubSystem.None // Set a default value - using available enum value
             });
         }
 

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using ModernPaySystem.Domain.Attrs;
-using ModernPaySystem.Infrastructure.Auth.Policies;
+using ModernPaySystem.Infrastructure.Auth;
 
 namespace ModernPaySystem;
 

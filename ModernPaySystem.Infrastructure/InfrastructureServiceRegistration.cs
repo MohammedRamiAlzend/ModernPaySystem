@@ -1,15 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
 using ModernPaySystem.Application.Services;
-using ModernPaySystem.Domain.Commons.Auth;
-using ModernPaySystem.Infrastructure.Auth.Policies;
 using ModernPaySystem.Infrastructure.Auth.Services;
-using ModernPaySystem.Infrastructure.Extensions;
 using ModernPaySystem.Infrastructure.Services;
 
 namespace ModernPaySystem.Infrastructure;
 
 /// <summary>
-/// Extension methods for registering infrastructure services
+/// Extension methods for registering infrastructure services.
 /// </summary>
 public static class InfrastructureServiceRegistration
 {
@@ -33,8 +29,12 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IResponseService, ResponseService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
 
-        // Register Authorization Handlers
-        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IPermissionSeederService>(provider =>
+        {
+            var applicationPartManager = provider.GetRequiredService<ApplicationPartManager>();
+            var uow = provider.GetRequiredService<IUnitOfWork>();
+            return new PermissionSeederService(provider, applicationPartManager, uow);
+        });
 
         return services;
     }
@@ -44,30 +44,6 @@ public static class InfrastructureServiceRegistration
     /// </summary>
     public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
     {
-        services.AddAuthorization(options =>
-        {
-            // Transaction System Permissions
-            options.AddPolicy(
-                Permission.TransactionSystem.ViewTransactions,
-                policy => policy.Requirements.Add(
-                    new PermissionRequirement(Permission.TransactionSystem.ViewTransactions)));
-
-            options.AddPolicy(
-                Permission.TransactionSystem.CreateTransaction,
-                policy => policy.Requirements.Add(
-                    new PermissionRequirement(Permission.TransactionSystem.CreateTransaction)));
-
-            options.AddPolicy(
-                Permission.TransactionSystem.UpdateTransaction,
-                policy => policy.Requirements.Add(
-                    new PermissionRequirement(Permission.TransactionSystem.UpdateTransaction)));
-
-            options.AddPolicy(
-                Permission.TransactionSystem.DeleteTransaction,
-                policy => policy.Requirements.Add(
-                    new PermissionRequirement(Permission.TransactionSystem.DeleteTransaction)));
-        });
-
         return services;
     }
 }
