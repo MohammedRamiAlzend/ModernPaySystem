@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.DTOs.Auth;
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Infrastructure.Extensions;
-using ModernPaySystem.Application.Services;
-
 namespace ModernPaySystem.Controllers;
 
 [ApiController]
