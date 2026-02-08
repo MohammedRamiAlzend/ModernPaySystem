@@ -97,7 +97,7 @@ export const ResponsesList: FC<ResponsesListProps> = ({ schema }) => {
                         </TableHeader>
                         <TableBody>
                             {filteredResponses.length > 0 ? filteredResponses.map((response) => (
-                                <TableRow key={response.id} className="transition-colors hover:bg-primary/5 group">
+                                <TableRow key={response.id} className="transition-colors  group">
                                     <TableCell className="whitespace-nowrap">
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-2 font-medium">
