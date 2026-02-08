@@ -191,7 +191,7 @@ public class PermissionSeederService(
       CancellationToken cancellationToken)
     {
         const string defaultHashedPassword =
-            "URiiKlWs+xjqpKmMjtQC8SMG0Oc6nIA/XDbct9TB3/k=";
+            "a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s=";
 
         var getSuperAdminRoleResult = await unitOfWork.Roles.GetAsync(r => r.Name == "SuperAdmin");
         if (getSuperAdminRoleResult.IsError)
