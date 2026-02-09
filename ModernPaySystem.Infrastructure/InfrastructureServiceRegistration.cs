@@ -1,3 +1,4 @@
+using FileManager.Extensions;
 using ModernPaySystem.Application.Services;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Services;
@@ -14,6 +15,9 @@ public static class InfrastructureServiceRegistration
     /// </summary>
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
+        // Register File Manager Services
+        services.AddFileManager();
+
         // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -28,6 +32,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IResponseService, ResponseService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
+        services.AddScoped<IWebAttachmentService, WebAttachmentService>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {
