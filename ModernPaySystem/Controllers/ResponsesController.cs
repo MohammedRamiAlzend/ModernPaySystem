@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Services;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Extensions;
+using Microsoft.AspNetCore.Http;
 
 namespace ModernPaySystem.Controllers;
 
@@ -77,7 +78,7 @@ public class ResponsesController : ControllerBase
     /// </summary>
     [HttpPost]
     [EndpointPermission("responses.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] Response response)
+    public async Task<IActionResult> Create([FromBody] CreateResponseDto response)
     {
         _logger.LogInformation("Creating new response for request: {RequestId}", response?.RequestId);
         var result = await _responseService.CreateAsync(response);
@@ -89,7 +90,7 @@ public class ResponsesController : ControllerBase
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("responses.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Response response)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateResponseDto response)
     {
         _logger.LogInformation("Updating response: {ResponseId}", id);
         var result = await _responseService.UpdateAsync(id, response);
@@ -105,6 +106,18 @@ public class ResponsesController : ControllerBase
     {
         _logger.LogInformation("Deleting response: {ResponseId}", id);
         var result = await _responseService.DeleteAsync(id);
+        return result.ToActionResult();
+    }
+
+    /// <summary>
+    /// Add files to a response
+    /// </summary>
+    [HttpPost("{responseId}/files")]
+    [EndpointPermission("responses.add-files", SubSystem.TransactionSystem, PermissionType.Insert)]
+    public async Task<IActionResult> AddFilesToResponse(Guid responseId, List<IFormFile> files)
+    {
+        _logger.LogInformation("Adding {FileCount} files to response: {ResponseId}", files?.Count, responseId);
+        var result = await _responseService.AddFilesToResponseAsync(responseId, files);
         return result.ToActionResult();
     }
 }

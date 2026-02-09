@@ -88,7 +88,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("requests.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Request request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRequestDto request)
     {
         logger.LogInformation("Updating request: {RequestId}", id);
         var result = await requestService.UpdateAsync(id, request);

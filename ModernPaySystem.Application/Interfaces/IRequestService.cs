@@ -55,4 +55,9 @@ public interface IRequestService
     /// Delete request.
     /// </summary>
     Task<Result<bool>> DeleteAsync(Guid id);
+
+    /// <summary>
+    /// Add files to a request.
+    /// </summary>
+    Task<Result<RequestDto>> AddFilesToRequestAsync(Guid requestId, List<IFormFile> files);
 }

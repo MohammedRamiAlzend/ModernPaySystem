@@ -1,5 +1,9 @@
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using Microsoft.AspNetCore.Http;
+using System.Linq;
+using System.IO;
+using FileManager.Abstractions;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -9,15 +13,19 @@ namespace ModernPaySystem.Infrastructure.Services;
 public class ResponseService : IResponseService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IFileManager _fileManager;
+    private readonly IWebAttachmentService _webAttachmentService;
     private readonly ILogger<ResponseService> _logger;
 
-    public ResponseService(IUnitOfWork unitOfWork, ILogger<ResponseService> logger)
+    public ResponseService(IUnitOfWork unitOfWork, IFileManager fileManager, IWebAttachmentService webAttachmentService, ILogger<ResponseService> logger)
     {
         _unitOfWork = unitOfWork;
+        _fileManager = fileManager;
+        _webAttachmentService = webAttachmentService;
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<Response>>> GetAllAsync()
+    public async Task<Result<IEnumerable<ResponseDto>>> GetAllAsync()
     {
         try
         {
@@ -28,7 +36,8 @@ public class ResponseService : IResponseService
                 return responses.Errors;
             }
 
-            return responses.Value;
+            var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
+            return responseDtos;
         }
         catch (Exception ex)
         {
@@ -37,7 +46,7 @@ public class ResponseService : IResponseService
         }
     }
 
-    public async Task<Result<PagedList<Response>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<ResponseDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
         {
@@ -53,7 +62,10 @@ public class ResponseService : IResponseService
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
 
-            return pagedResponses.Value;
+            var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
+            var pagedResponseDtos = new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
+            
+            return pagedResponseDtos;
         }
         catch (Exception ex)
         {
@@ -62,7 +74,7 @@ public class ResponseService : IResponseService
         }
     }
 
-    public async Task<Result<Response>> GetByIdAsync(Guid id)
+    public async Task<Result<ResponseDto>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -75,7 +87,7 @@ public class ResponseService : IResponseService
             if (response.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
-            return response;
+            return response.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -84,7 +96,7 @@ public class ResponseService : IResponseService
         }
     }
 
-    public async Task<Result<IEnumerable<Response>>> GetByRequestIdAsync(Guid requestId)
+    public async Task<Result<IEnumerable<ResponseDto>>> GetByRequestIdAsync(Guid requestId)
     {
         try
         {
@@ -93,7 +105,7 @@ public class ResponseService : IResponseService
             if (responses.IsError)
                 return responses.Errors;
 
-            var requestResponses = responses.Value.Where(r => r.RequestId == requestId).ToList();
+            var requestResponses = responses.Value!.Where(r => r.RequestId == requestId).Select(r => r.ToDto()).ToList();
             return requestResponses;
         }
         catch (Exception ex)
@@ -103,7 +115,7 @@ public class ResponseService : IResponseService
         }
     }
 
-    public async Task<Result<IEnumerable<Response>>> GetByResponderIdAsync(Guid responderId)
+    public async Task<Result<IEnumerable<ResponseDto>>> GetByResponderIdAsync(Guid responderId)
     {
         try
         {
@@ -112,7 +124,7 @@ public class ResponseService : IResponseService
             if (responses.IsError)
                 return responses.Errors;
 
-            var responderResponses = responses.Value.Where(r => r.RespondedByUserId == responderId).ToList();
+            var responderResponses = responses.Value!.Where(r => r.RespondedByUserId == responderId).Select(r => r.ToDto()).ToList();
             return responderResponses;
         }
         catch (Exception ex)
@@ -122,7 +134,7 @@ public class ResponseService : IResponseService
         }
     }
 
-    public async Task<Result<Response>> CreateAsync(Response response)
+    public async Task<Result<ResponseDto>> CreateAsync(CreateResponseDto response)
     {
         try
         {
@@ -134,11 +146,18 @@ public class ResponseService : IResponseService
 
             _logger.LogInformation("Creating new response for request: {RequestId}", response.RequestId);
 
-            await _unitOfWork.Responses.AddAsync(response);
+            var responseEntity = new Response
+            {
+                RequestId = response.RequestId,
+                RespondedByUserId = response.RespondedByUserId,
+                Comment = response.Comment
+            };
+
+            await _unitOfWork.Responses.AddAsync(responseEntity);
             await _unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Successfully created response: {ResponseId}", response.Id);
-            return response;
+            _logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
+            return responseEntity.ToDto();
         }
         catch (Exception ex)
         {
@@ -147,7 +166,7 @@ public class ResponseService : IResponseService
         }
     }
 
-    public async Task<Result<Response>> UpdateAsync(Guid id, Response response)
+    public async Task<Result<ResponseDto>> UpdateAsync(Guid id, UpdateResponseDto response)
     {
         try
         {
@@ -171,7 +190,7 @@ public class ResponseService : IResponseService
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated response: {ResponseId}", id);
-            return existingResponse;
+            return existingResponse.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -205,6 +224,50 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting response: {ResponseId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<ResponseDto>> AddFilesToResponseAsync(Guid responseId, List<IFormFile> files)
+    {
+        try
+        {
+            if (responseId == Guid.Empty || files == null || !files.Any())
+                return ApplicationErrors.InvalidInput;
+
+            // Verify the response exists
+            var response = await _unitOfWork.Responses.GetByIdAsync(responseId);
+            if (response.IsError)
+                return response.Errors;
+
+            if (response.Value == null)
+                return ApplicationErrors.ResponseNotFound;
+
+            _logger.LogInformation("Adding {FileCount} files to response: {ResponseId}", files.Count, responseId);
+
+            // Process each file and associate it with the response using WebAttachmentService
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    var uploadResult = await _webAttachmentService.UploadFileToResponseAsync(file, response.Value.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
+            }
+
+            _logger.LogInformation("Successfully added {FileCount} files to response: {ResponseId}", files.Count, responseId);
+
+            // Return the updated response with its attachments
+            var updatedResponse = await _unitOfWork.Responses.GetByIdAsync(responseId);
+            if (updatedResponse.IsError)
+                return updatedResponse.Errors;
+
+            return updatedResponse.Value!.ToDto();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding files to response: {ResponseId}", responseId);
             return ApplicationErrors.InternalServerError;
         }
     }

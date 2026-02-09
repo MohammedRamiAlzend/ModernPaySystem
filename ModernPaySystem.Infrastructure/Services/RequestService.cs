@@ -1,18 +1,13 @@
-using FileManager.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
-using ModernPaySystem.Infrastructure.Persistence;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of Request service CRUD operations.
 /// </summary>
-public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService WebAttchmentService) : IRequestService
+public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService webAttachmentService) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
@@ -50,7 +45,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
                 return pagedRequests.Errors;
 
             var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
-            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalCount, page, pageSize);
+            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
 
             return pagedRequestDtos;
         }
@@ -167,7 +162,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
                 return ApplicationErrors.DatabaseError;
             foreach (var file in files)
             {
-                var uploadResult = await WebAttchmentService.UploadFileToRequestAsync(file, requestEntity.Id);
+                var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, requestEntity.Id);
                 if(uploadResult.IsError)
                     return uploadResult.Errors;
             }
@@ -241,6 +236,50 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting request: {RequestId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<RequestDto>> AddFilesToRequestAsync(Guid requestId, List<IFormFile> files)
+    {
+        try
+        {
+            if (requestId == Guid.Empty || files == null || !files.Any())
+                return ApplicationErrors.InvalidInput;
+
+            // Verify the request exists
+            var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+            if (request.IsError)
+                return request.Errors;
+
+            if (request.Value == null)
+                return ApplicationErrors.RequestNotFound;
+
+            logger.LogInformation("Adding {FileCount} files to request: {RequestId}", files.Count, requestId);
+
+            // Process each file and associate it with the request using WebAttachmentService
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, request.Value.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
+            }
+
+            logger.LogInformation("Successfully added {FileCount} files to request: {RequestId}", files.Count, requestId);
+
+            // Return the updated request with its attachments
+            var updatedRequest = await unitOfWork.Requests.GetByIdAsync(requestId);
+            if (updatedRequest.IsError)
+                return updatedRequest.Errors;
+
+            return updatedRequest.Value!.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error adding files to request: {RequestId}", requestId);
             return ApplicationErrors.InternalServerError;
         }
     }
