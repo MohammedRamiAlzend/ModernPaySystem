@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle, forwardRef } from 'react';
+import { useRef, useImperativeHandle, forwardRef } from 'react';
 
 interface OcrTextAreaRef {
     getSelection: () => { start: number; end: number };

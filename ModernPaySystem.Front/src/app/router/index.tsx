@@ -14,8 +14,7 @@ const ContractsPage = lazyWithPreload(() => import('@/pages/contracts-page'));
 const ContractFormPage = lazyWithPreload(() => import('@/pages/contract-form-page'));
 const ProcessFormPage = lazyWithPreload(() => import('@/pages/process-form-page'));
 const LoginPage = lazyWithPreload(() => import('@/pages/auth/login-page'));
-const RegisterPage = lazyWithPreload(() => import('@/pages/auth/register-page'));
-const ProfilePage = lazyWithPreload(() => import('@/pages/profile/profile-page'));
+// const ProfilePage = lazyWithPreload(() => import('@/pages/profile/profile-page'));
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/settings-page'));
 const FormBuilderPage = lazyWithPreload(() => import('@/pages/form-builder/FormBuilderPage'));
 
@@ -112,19 +111,19 @@ const routesConfig: RouteObject[] = [
           preload: () => ProcessFormPage.preload(),
         },
       },
-      {
-        path: 'profile',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ProfilePage />
-          </Suspense>
-        ),
-        handle: {
-          crumb: () => 'الملف الشخصي',
-          permission: RoutePermissions.AUTHENTICATED,
-          preload: () => ProfilePage.preload(),
-        },
-      },
+      // {
+      //   path: 'profile',
+      //   element: (
+      //     <Suspense fallback={<LoadingSpinner />}>
+      //       <ProfilePage />
+      //     </Suspense>
+      //   ),
+      //   handle: {
+      //     crumb: () => 'الملف الشخصي',
+      //     permission: RoutePermissions.AUTHENTICATED,
+      //     preload: () => ProfilePage.preload(),
+      //   },
+      // },
       {
         path: 'settings',
         element: (

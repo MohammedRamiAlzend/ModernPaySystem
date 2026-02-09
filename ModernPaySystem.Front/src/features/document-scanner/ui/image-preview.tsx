@@ -4,8 +4,6 @@ import { ImageMeta } from '../model/types';
 import Cropper, { ReactCropperElement } from 'react-cropper';
 import 'cropperjs/dist/cropper.css';
 import {
-    RotateCcw,
-    RotateCw,
     ZoomIn,
     ZoomOut,
     Check,
