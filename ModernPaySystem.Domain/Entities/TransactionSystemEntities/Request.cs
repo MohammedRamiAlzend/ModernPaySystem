@@ -24,12 +24,19 @@ public class Request : Entity<Guid>, IAuditableEntity
     {
         return new RequestDto
         {
-            Content = this.ContentAsJson,
             Id = this.Id,
             TemplateId = this.TemplateId,
             RequesterId = this.RequesterId,
             ApproverId = this.ApproverId,
-            RequestAttachmentDtos = [.. this.RequestAttachments.Select(ra => ra.ToDto())]
+            Content = this.ContentAsJson,
+            RequestAttachmentDtos = [.. this.RequestAttachments.Select(ra => ra.ToDto())],
+            Template = this.Template?.ToDto(),
+            Requester = this.Requester?.ToDto(),
+            Approver = this.Approver?.ToDto(),
+            CreatedByUserId = this.CreatedByUserId,
+            CreatedAt = this.CreatedAt,
+            UpdatedByUserId = this.UpdatedByUserId,
+            UpdatedAt = this.UpdatedAt
         };
     }
 }
@@ -42,9 +49,24 @@ public class RequestDto
     public Guid ApproverId { get; set; }
     public required string Content { get; set; }
     public List<RequestAttachmentDto> RequestAttachmentDtos { get; set; } = [];
+    public TemplateDto? Template { get; set; }
+    public UserDto? Requester { get; set; }
+    public UserDto? Approver { get; set; }
+    public string? CreatedByUserId { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public string? UpdatedByUserId { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
 
 public class CreateRequestDto
+{
+    public Guid TemplateId { get; set; }
+    public Guid RequesterId { get; set; }
+    public Guid ApproverId { get; set; }
+    public required string Content { get; set; }
+}
+
+public class UpdateRequestDto
 {
     public Guid TemplateId { get; set; }
     public Guid RequesterId { get; set; }

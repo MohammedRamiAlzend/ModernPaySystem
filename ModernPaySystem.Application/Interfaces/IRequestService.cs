@@ -14,32 +14,32 @@ public interface IRequestService
     /// <summary>
     /// Get all requests.
     /// </summary>
-    Task<Result<IEnumerable<Request>>> GetAllAsync();
+    Task<Result<IEnumerable<RequestDto>>> GetAllAsync();
 
     /// <summary>
     /// Get paged requests.
     /// </summary>
-    Task<Result<PagedList<Request>>> GetPagedAsync(int page, int pageSize);
+    Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get request by id.
     /// </summary>
-    Task<Result<Request>> GetByIdAsync(Guid id);
+    Task<Result<RequestDto>> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Get requests by requester id.
     /// </summary>
-    Task<Result<IEnumerable<Request>>> GetByRequesterIdAsync(Guid requesterId);
+    Task<Result<IEnumerable<RequestDto>>> GetByRequesterIdAsync(Guid requesterId);
 
     /// <summary>
     /// Get requests by approver id.
     /// </summary>
-    Task<Result<IEnumerable<Request>>> GetByApproverIdAsync(Guid approverId);
+    Task<Result<IEnumerable<RequestDto>>> GetByApproverIdAsync(Guid approverId);
 
     /// <summary>
     /// Get requests by template id.
     /// </summary>
-    Task<Result<IEnumerable<Request>>> GetByTemplateIdAsync(Guid templateId);
+    Task<Result<IEnumerable<RequestDto>>> GetByTemplateIdAsync(Guid templateId);
 
     /// <summary>
     /// Create new request.
@@ -49,7 +49,7 @@ public interface IRequestService
     /// <summary>
     /// Update request.
     /// </summary>
-    Task<Result<Request>> UpdateAsync(Guid id, Request request);
+    Task<Result<RequestDto>> UpdateAsync(Guid id, UpdateRequestDto request);
 
     /// <summary>
     /// Delete request.

@@ -25,4 +25,29 @@ public class User : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    
+    public UserDto ToDto()
+    {
+        return new UserDto
+        {
+            Id = this.Id,
+            UserName = this.UserName,
+            SubSystemUserId = this.SubSystemUserId,
+            CreatedByUserId = this.CreatedByUserId,
+            CreatedAt = this.CreatedAt,
+            UpdatedByUserId = this.UpdatedByUserId,
+            UpdatedAt = this.UpdatedAt
+        };
+    }
+}
+
+public class UserDto
+{
+    public Guid Id { get; set; }
+    public required string UserName { get; set; }
+    public Guid? SubSystemUserId { get; set; }
+    public string? CreatedByUserId { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public string? UpdatedByUserId { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

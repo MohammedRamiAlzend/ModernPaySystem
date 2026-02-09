@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Persistence;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -12,7 +14,7 @@ namespace ModernPaySystem.Infrastructure.Services;
 /// </summary>
 public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IFileManager fileManager) : IRequestService
 {
-    public async Task<Result<IEnumerable<Request>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
         try
         {
@@ -21,7 +23,8 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (requests.IsError)
                 return requests.Errors;
 
-            return requests.Value!;
+            var requestDtos = requests.Value!.Select(r => r.ToDto()).ToList();
+            return requestDtos;
         }
         catch (Exception ex)
         {
@@ -30,7 +33,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<PagedList<Request>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
         {
@@ -46,7 +49,10 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
 
-            return pagedRequests.Value!;
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalCount, page, pageSize);
+            
+            return pagedRequestDtos;
         }
         catch (Exception ex)
         {
@@ -55,7 +61,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<Request>> GetByIdAsync(Guid id)
+    public async Task<Result<RequestDto>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -68,7 +74,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (request.Value == null)
                 return ApplicationErrors.RequestNotFound;
 
-            return request!;
+            return request.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -77,7 +83,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<IEnumerable<Request>>> GetByRequesterIdAsync(Guid requesterId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetByRequesterIdAsync(Guid requesterId)
     {
         try
         {
@@ -86,7 +92,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (requests.IsError)
                 return requests.Errors;
 
-            var requesterRequests = requests.Value!.Where(r => r.RequesterId == requesterId).ToList();
+            var requesterRequests = requests.Value!.Where(r => r.RequesterId == requesterId).Select(r => r.ToDto()).ToList();
             return requesterRequests;
         }
         catch (Exception ex)
@@ -96,7 +102,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<IEnumerable<Request>>> GetByApproverIdAsync(Guid approverId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetByApproverIdAsync(Guid approverId)
     {
         try
         {
@@ -105,7 +111,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (requests.IsError)
                 return requests.Errors;
 
-            var approverRequests = requests.Value!.Where(r => r.ApproverId == approverId).ToList();
+            var approverRequests = requests.Value!.Where(r => r.ApproverId == approverId).Select(r => r.ToDto()).ToList();
             return approverRequests;
         }
         catch (Exception ex)
@@ -115,7 +121,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<IEnumerable<Request>>> GetByTemplateIdAsync(Guid templateId)
+    public async Task<Result<IEnumerable<RequestDto>>> GetByTemplateIdAsync(Guid templateId)
     {
         try
         {
@@ -123,7 +129,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             var requests = await unitOfWork.Requests.GetAllAsync();
             if (requests.IsError)
                 return requests.Errors;
-            var templateRequests = requests.Value!.Where(r => r.TemplateId == templateId).ToList();
+            var templateRequests = requests.Value!.Where(r => r.TemplateId == templateId).Select(r => r.ToDto()).ToList();
             return templateRequests;
         }
         catch (Exception ex)
@@ -170,7 +176,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<Request>> UpdateAsync(Guid id, Request request)
+    public async Task<Result<RequestDto>> UpdateAsync(Guid id, UpdateRequestDto request)
     {
         try
         {
@@ -189,13 +195,13 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             existingRequest.Value.TemplateId = request.TemplateId;
             existingRequest.Value.RequesterId = request.RequesterId;
             existingRequest.Value.ApproverId = request.ApproverId;
-            existingRequest.Value.ContentAsJson = request.ContentAsJson;
+            existingRequest.Value.ContentAsJson = request.Content;
 
             await unitOfWork.Requests.UpdateAsync(existingRequest.Value);
             await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Successfully updated request: {RequestId}", id);
-            return existingRequest!;
+            return existingRequest.Value.ToDto();
         }
         catch (Exception ex)
         {

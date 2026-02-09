@@ -17,14 +17,18 @@ public class RequestAttachment : Entity<Guid>, IAuditableEntity
     {
         return new RequestAttachmentDto
         {
+            Id = this.Id,
             RequestId = this.RequestId,
-            AttachmentId = this.AttachmentId
+            AttachmentId = this.AttachmentId,
+            AttachmentDto = this.Attachment?.ToDto()
         };
     }
 }
 
 public class RequestAttachmentDto
 {
+    public Guid Id { get; set; }
     public required Guid RequestId { get; set; }
     public required Guid AttachmentId { get; set; }
+    public AttachmentDto? AttachmentDto { get; set; }
 }
