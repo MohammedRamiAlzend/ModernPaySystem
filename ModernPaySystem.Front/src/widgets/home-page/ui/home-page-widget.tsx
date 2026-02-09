@@ -14,9 +14,14 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
+import { ImageMeta, OcrScannerContent } from "@/features/document-scanner";
+import { OcrModal } from "@/shared/ui/modals/ocr-modal";
+import { Scan } from "lucide-react";
 
 export function HomePageWidget() {
     const [showAlert, setShowAlert] = useState(false);
+    const [isOcrOpen, setIsOcrOpen] = useState(false);
+    const [imageFiles, setImageFiles] = useState<ImageMeta[]>([]);
 
     const handleConfirm = () => {
         console.log("النتيجة: تم التأكيد (Confirmed)");
@@ -25,6 +30,13 @@ export function HomePageWidget() {
 
     const handleCancel = () => {
         console.log("النتيجة: تم الإلغاء (Cancelled)");
+    };
+
+    const handleApplyOcr = (text: string, files: ImageMeta[]) => {
+        console.log("OCR Result:", text);
+        console.log("Files:", files);
+        alert(`تم استخراج النص بنجاح وطرد ${files.length} ملفات.\nالنص: ${text.substring(0, 50)}...`);
+        setIsOcrOpen(false);
     };
 
     return (
@@ -48,6 +60,15 @@ export function HomePageWidget() {
                     <PrefetchLink to="/processes">
                         معاملات سريعة
                     </PrefetchLink>
+                </Button>
+                <Button
+                    variant="outline"
+                    size="lg"
+                    className="rounded-xl px-8 h-12 border-2 gap-2"
+                    onClick={() => setIsOcrOpen(true)}
+                >
+                    <Scan className="h-5 w-5" />
+                    اختبار الماسح الضوئي (OCR)
                 </Button>
             </div>
 
@@ -86,6 +107,18 @@ export function HomePageWidget() {
                     </Alert>
                 </AnimatedContainer>
             )}
+
+            <OcrModal
+                isOpen={isOcrOpen}
+                onClose={() => setIsOcrOpen(false)}
+            >
+                <OcrScannerContent
+                    imageFiles={imageFiles}
+                    setImageFiles={setImageFiles}
+                    onApply={handleApplyOcr}
+                    onClose={() => setIsOcrOpen(false)}
+                />
+            </OcrModal>
         </AnimatedContainer>
     );
 }

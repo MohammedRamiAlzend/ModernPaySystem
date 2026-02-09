@@ -62,6 +62,8 @@ export const {
   updateUserProfile,
 } = authSlice.actions;
 
+// export const registerSuccess = loginSuccess;
+
 type RootState = {
   auth: AuthState;
 };

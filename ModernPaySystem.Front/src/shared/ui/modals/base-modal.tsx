@@ -19,7 +19,7 @@ export interface BaseModalProps {
     description?: React.ReactNode;
     children?: React.ReactNode;
     footer?: React.ReactNode;
-    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+    maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
     showCloseButton?: boolean;
 }
 
@@ -42,6 +42,8 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         'lg': 'max-w-[600px]',
         'xl': 'max-w-[800px]',
         '2xl': 'max-w-[1000px]',
+        '3xl': 'max-w-[1200px]',
+        '4xl': 'max-w-[1400px]',
     };
 
     return (

@@ -177,19 +177,19 @@ const routesConfig: RouteObject[] = [
           preload: () => LoginPage.preload(),
         },
       },
-      {
-        path: 'register',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <RegisterPage />
-          </Suspense>
-        ),
-        handle: {
-          crumb: () => 'إنشاء حساب',
-          permission: RoutePermissions.PUBLIC,
-          preload: () => RegisterPage.preload(),
-        },
-      },
+      // {
+      //   path: 'register',
+      //   element: (
+      //     <Suspense fallback={<LoadingSpinner />}>
+      //       <RegisterPage />
+      //     </Suspense>
+      //   ),
+      //   handle: {
+      //     crumb: () => 'إنشاء حساب',
+      //     permission: RoutePermissions.PUBLIC,
+      //     preload: () => RegisterPage.preload(),
+      //   },
+      // },
     ],
   },
   // 3. Fallback Routes
