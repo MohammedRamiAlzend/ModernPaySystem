@@ -13,4 +13,8 @@ export default defineConfig({
   optimizeDeps: {
     include: ['jspdf', 'html2canvas'],
   },
+  build: {
+    outDir: '../ModernPaySystem/wwwroot',
+    emptyOutDir: true,
+  }
 })
