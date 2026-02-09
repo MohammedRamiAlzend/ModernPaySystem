@@ -12,7 +12,7 @@ namespace ModernPaySystem.Infrastructure.Services;
 /// <summary>
 /// Implementation of Request service CRUD operations.
 /// </summary>
-public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IFileManager fileManager) : IRequestService
+public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService WebAttchmentService) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
@@ -51,7 +51,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
 
             var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
             var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalCount, page, pageSize);
-            
+
             return pagedRequestDtos;
         }
         catch (Exception ex)
@@ -165,6 +165,12 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             int result = await unitOfWork.SaveChangesAsync();
             if (result < 0)
                 return ApplicationErrors.DatabaseError;
+            foreach (var file in files)
+            {
+                var uploadResult = await WebAttchmentService.UploadFileToRequestAsync(file, requestEntity.Id);
+                if(uploadResult.IsError)
+                    return uploadResult.Errors;
+            }
 
             logger.LogInformation("Successfully created request: {RequestId}", requestEntity.Id);
             return requestEntity.ToDto();
