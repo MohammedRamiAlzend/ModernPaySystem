@@ -15,7 +15,18 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorizationPolicies();
 
 builder.Services.AddInfrastructureServices();
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+        });
+});
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApi("v1", options =>
@@ -48,7 +59,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseCors("AllowAll");
 app.MapControllers();
 
 app.Run();
