@@ -194,8 +194,8 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
     return (
         <div className='flex flex-col h-full bg-card rounded-3xl overflow-hidden' dir="rtl">
             {/* Content Body */}
-            <div className='flex-1 overflow-y-auto p-2 sm:p-4'>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+            <div className='flex-1 overflow-y-auto p-1 sm:p-2'>
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
 
                     {/* Column 1: ImageGallery */}
                     <ImageGallery

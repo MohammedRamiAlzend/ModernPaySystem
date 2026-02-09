@@ -54,7 +54,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                     maxWidthClasses[maxWidth]
                 )}
             >
-                <div className="p-6 md:p-8">
+                <div className="p-4 md:p-6">
                     <AlertDialogHeader className="text-right space-y-2">
                         <AlertDialogTitle className="text-2xl font-black  leading-tight">
                             {title}
@@ -66,12 +66,12 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                         )}
                     </AlertDialogHeader>
 
-                    <div className="my-6">
+                    <div className="my-4">
                         {children}
                     </div>
 
                     {footer && (
-                        <AlertDialogFooter className="mt-8 gap-3 flex-col-reverse sm:flex-row">
+                        <AlertDialogFooter className="mt-4 gap-3 flex-col-reverse sm:flex-row">
                             {footer}
                         </AlertDialogFooter>
                     )}

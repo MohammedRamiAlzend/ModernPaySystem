@@ -42,7 +42,7 @@ export const OcrTextArea = forwardRef<OcrTextAreaRef, OcrTextAreaProps>(({
             </span>
             <div className="flex-1 relative flex flex-col">
                 <textarea
-                    className="flex-1 w-full bg-accent/10 rounded-3xl p-5 text-sm font-medium focus:ring-2 ring-primary/20 transition-all outline-none border-2 border-transparent focus:border-primary/20 resize-none leading-relaxed min-h-[300px]"
+                    className="flex-1 w-full bg-accent/10 rounded-3xl p-5 text-sm font-medium focus:ring-2 ring-primary/20 transition-all outline-none border-2 border-transparent focus:border-primary/20 resize-none leading-relaxed min-h-[200px]"
                     placeholder={placeholder}
                     value={value}
                     ref={textAreaRef}
