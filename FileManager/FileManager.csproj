@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyTitle>FileManager Library</AssemblyTitle>
+    <Description>A comprehensive file management library with Windows Explorer-like functionality</Description>
+    <PackageId>FileManager</PackageId>
+    <Authors>ModernPaySystem Team</Authors>
+    <Product>FileManager</Product>
+    <Copyright>Copyright © ModernPaySystem Team</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ModernPaySystem.Domain\ModernPaySystem.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

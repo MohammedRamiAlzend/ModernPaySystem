@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="FileManager/FileManager.csproj" Id="b1199e26-db54-4e6d-9e6d-2cee32731fba" />
   <Project Path="ModernPaySystem.Application/ModernPaySystem.Application.csproj" />
   <Project Path="ModernPaySystem.Domain/ModernPaySystem.Domain.csproj" />
   <Project Path="ModernPaySystem.Infrastructure.Persistence/ModernPaySystem.Infrastructure.Persistence.csproj" Id="0608e947-4cb0-4ea8-90ad-f8ee6b2bfc46" />
