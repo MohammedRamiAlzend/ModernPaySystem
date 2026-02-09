@@ -35,7 +35,7 @@ public class TemplateService : ITemplateService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching all templates");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -47,9 +47,9 @@ public class TemplateService : ITemplateService
 
             // Validate parameters
             if (page <= 0)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
             if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var pagedTemplates = await _unitOfWork.Templates.GetPagedAsync(page, pageSize);
             if (pagedTemplates.IsError)
@@ -60,7 +60,7 @@ public class TemplateService : ITemplateService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching paged templates, page: {Page}, size: {PageSize}", page, pageSize);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -75,14 +75,14 @@ public class TemplateService : ITemplateService
                 return template.Errors;
 
             if (template.Value == null)
-                return ApplicationError.TemplateNotFound;
+                return ApplicationErrors.TemplateNotFound;
 
             return template;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching template by id: {TemplateId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -91,7 +91,7 @@ public class TemplateService : ITemplateService
         try
         {
             if (string.IsNullOrWhiteSpace(name))
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Fetching template by name: {TemplateName}", name);
             var templates = await _unitOfWork.Templates.GetAllAsync();
@@ -102,14 +102,14 @@ public class TemplateService : ITemplateService
             var template = templates.Value.FirstOrDefault(t => t.TemplateName == name);
 
             if (template == null)
-                return ApplicationError.TemplateNotFound;
+                return ApplicationErrors.TemplateNotFound;
 
             return template;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching template by name: {TemplateName}", name);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -118,10 +118,10 @@ public class TemplateService : ITemplateService
         try
         {
             if (template == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             if (string.IsNullOrWhiteSpace(template.TemplateName))
-                return ApplicationError.MissingRequiredField;
+                return ApplicationErrors.MissingRequiredField;
 
             _logger.LogInformation("Creating new template: {TemplateName}", template.TemplateName);
 
@@ -134,7 +134,7 @@ public class TemplateService : ITemplateService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating template");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -143,14 +143,14 @@ public class TemplateService : ITemplateService
         try
         {
             if (id == Guid.Empty || template == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var existingTemplate = await _unitOfWork.Templates.GetByIdAsync(id);
             if (existingTemplate.IsError)
                 return existingTemplate.Errors;
 
             if (existingTemplate.Value == null)
-                return ApplicationError.TemplateNotFound;
+                return ApplicationErrors.TemplateNotFound;
 
             _logger.LogInformation("Updating template: {TemplateId}", id);
 
@@ -167,7 +167,7 @@ public class TemplateService : ITemplateService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating template: {TemplateId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -176,14 +176,14 @@ public class TemplateService : ITemplateService
         try
         {
             if (id == Guid.Empty)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var template = await _unitOfWork.Templates.GetByIdAsync(id);
             if (template.IsError)
                 return template.Errors;
 
             if (template.Value == null)
-                return ApplicationError.TemplateNotFound;
+                return ApplicationErrors.TemplateNotFound;
 
             _logger.LogInformation("Deleting template: {TemplateId}", id);
 
@@ -196,7 +196,7 @@ public class TemplateService : ITemplateService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting template: {TemplateId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 }

@@ -23,4 +23,8 @@
     <ProjectReference Include="..\ModernPaySystem.Infrastructure\ModernPaySystem.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Uploads\" />
+  </ItemGroup>
+
 </Project>

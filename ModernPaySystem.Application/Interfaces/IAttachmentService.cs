@@ -1,9 +1,3 @@
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace ModernPaySystem.Application.Interfaces;
 
 /// <summary>
@@ -50,4 +44,34 @@ public interface IAttachmentService
     /// Delete attachment.
     /// </summary>
     Task<Result<bool>> DeleteAsync(Guid id);
+
+    /// <summary>
+    /// Downloads a file associated with a request.
+    /// </summary>
+    Task<Result<byte[]>> DownloadFileFromRequestAsync(Guid requestId, Guid attachmentId);
+
+    /// <summary>
+    /// Downloads a file associated with a response.
+    /// </summary>
+    Task<Result<byte[]>> DownloadFileFromResponseAsync(Guid responseId, Guid attachmentId);
+
+    /// <summary>
+    /// Removes a file attachment from a request.
+    /// </summary>
+    Task<Result<Success>> RemoveFileFromRequestAsync(Guid requestId, Guid attachmentId);
+
+    /// <summary>
+    /// Removes a file attachment from a response.
+    /// </summary>
+    Task<Result<Success>> RemoveFileFromResponseAsync(Guid responseId, Guid attachmentId);
+
+    /// <summary>
+    /// Gets all attachments for a request.
+    /// </summary>
+    Task<Result<IEnumerable<Attachment>>> GetAttachmentsForRequestAsync(Guid requestId);
+
+    /// <summary>
+    /// Gets all attachments for a response.
+    /// </summary>
+    Task<Result<IEnumerable<Attachment>>> GetAttachmentsForResponseAsync(Guid responseId);
 }

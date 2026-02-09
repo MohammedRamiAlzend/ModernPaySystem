@@ -3,12 +3,12 @@ using FileManager.Models;
 namespace FileManager.Abstractions;
 
 /// <summary>
-/// Interface for comprehensive file management operations similar to Windows Explorer
+/// Interface for comprehensive file management operations similar to Windows Explorer.
 /// </summary>
 public interface IFileManager
 {
     /// <summary>
-    /// Gets the root directory for file operations
+    /// Gets the root directory for file operations.
     /// </summary>
     string RootDirectory { get; }
 

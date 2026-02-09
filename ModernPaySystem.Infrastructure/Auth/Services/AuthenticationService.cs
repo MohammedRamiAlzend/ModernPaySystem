@@ -19,12 +19,12 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
                   .ThenInclude(rp => rp.Permissions));
 
         if (userResult.IsError)
-            return ApplicationError.InvalidCredentials;
+            return ApplicationErrors.InvalidCredentials;
 
         var user = userResult.Value;
 
         if (!VerifyPassword(password, user.HashedPassword))
-            return ApplicationError.InvalidCredentials;
+            return ApplicationErrors.InvalidCredentials;
 
         var permissions = user.Roles
             .SelectMany(ur => ur.Permissions)
@@ -43,7 +43,7 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
                   .ThenInclude(rp => rp.Permissions));
 
         if (userResult.IsError)
-            return ApplicationError.UserNotFound;
+            return ApplicationErrors.UserNotFound;
 
         var user = userResult.Value;
 
@@ -54,7 +54,7 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
           .ToList();
 
         if (permissions.Count == 0)
-            return ApplicationError.UserNotFound;
+            return ApplicationErrors.UserNotFound;
 
         return permissions;
     }

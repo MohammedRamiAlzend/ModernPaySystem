@@ -8,7 +8,7 @@ using ModernPaySystem.Infrastructure.Persistence.Repos;
 namespace ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 
 /// <summary>
-/// Unit of Work implementation for managing multiple repositories and transactions
+/// Unit of Work implementation for managing multiple repositories and transactions.
 /// </summary>
 public class UnitOfWork : IUnitOfWork
 {
@@ -26,6 +26,8 @@ public class UnitOfWork : IUnitOfWork
     private IRepositoryBase<Request, Guid>? _requests;
     private IRepositoryBase<Response, Guid>? _responses;
     private IRepositoryBase<TemplateOwnership, Guid>? _templateOwnerships;
+    private IRepositoryBase<ResponseAttachment, Guid>? _responseAttachments;
+    private IRepositoryBase<RequestAttachment, Guid>? _requestAttachments;
 
     public UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger)
     {
@@ -59,6 +61,11 @@ public class UnitOfWork : IUnitOfWork
 
     public IRepositoryBase<TemplateOwnership, Guid> TemplateOwnerships =>
         _templateOwnerships ??= new RepositoryBase<TemplateOwnership, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<TemplateOwnership, Guid>>());
+
+    public IRepositoryBase<ResponseAttachment, Guid> ResponseAttachments =>
+        _responseAttachments ??= new RepositoryBase<ResponseAttachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<ResponseAttachment, Guid>>());
+    public IRepositoryBase<RequestAttachment, Guid> RequestAttachments =>
+        _requestAttachments ??= new RepositoryBase<RequestAttachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<RequestAttachment, Guid>>());
 
     public async Task<int> SaveChangesAsync()
     {

@@ -33,7 +33,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching all responses");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -45,9 +45,9 @@ public class ResponseService : IResponseService
 
             // Validate parameters
             if (page <= 0)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
             if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var pagedResponses = await _unitOfWork.Responses.GetPagedAsync(page, pageSize);
             if (pagedResponses.IsError)
@@ -58,7 +58,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching paged responses, page: {Page}, size: {PageSize}", page, pageSize);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -73,14 +73,14 @@ public class ResponseService : IResponseService
                 return response.Errors;
 
             if (response.Value == null)
-                return ApplicationError.ResponseNotFound;
+                return ApplicationErrors.ResponseNotFound;
 
             return response;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching response by id: {ResponseId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -99,7 +99,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching responses for request: {RequestId}", requestId);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -118,7 +118,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching responses for responder: {ResponderId}", responderId);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -127,10 +127,10 @@ public class ResponseService : IResponseService
         try
         {
             if (response == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             if (response.RequestId == Guid.Empty || response.RespondedByUserId == Guid.Empty)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Creating new response for request: {RequestId}", response.RequestId);
 
@@ -143,7 +143,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating response");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -152,14 +152,14 @@ public class ResponseService : IResponseService
         try
         {
             if (id == Guid.Empty || response == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var existingResponse = await _unitOfWork.Responses.GetByIdAsync(id);
             if (existingResponse.IsError)
                 return existingResponse.Errors;
 
             if (existingResponse.Value == null)
-                return ApplicationError.ResponseNotFound;
+                return ApplicationErrors.ResponseNotFound;
 
             _logger.LogInformation("Updating response: {ResponseId}", id);
 
@@ -176,7 +176,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating response: {ResponseId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -185,14 +185,14 @@ public class ResponseService : IResponseService
         try
         {
             if (id == Guid.Empty)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var response = await _unitOfWork.Responses.GetByIdAsync(id);
             if (response.IsError)
                 return response.Errors;
 
             if (response.Value == null)
-                return ApplicationError.ResponseNotFound;
+                return ApplicationErrors.ResponseNotFound;
 
             _logger.LogInformation("Deleting response: {ResponseId}", id);
 
@@ -205,7 +205,7 @@ public class ResponseService : IResponseService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting response: {ResponseId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 }

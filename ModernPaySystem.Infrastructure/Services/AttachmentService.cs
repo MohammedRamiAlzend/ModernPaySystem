@@ -1,222 +1,520 @@
-using Microsoft.Extensions.Logging;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Infrastructure.Persistence;
+using FileManager.Services.Abstraction;
+using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
-/// Implementation of Attachment service CRUD operations
+/// Service for handling file attachments for requests and responses.
 /// </summary>
-public class AttachmentService : IAttachmentService
+public class AttachmentService(
+    IFilesManagerService fileManager,
+    IUnitOfWork unitOfWork) : IAttachmentService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<AttachmentService> _logger;
-
-    public AttachmentService(IUnitOfWork unitOfWork, ILogger<AttachmentService> logger)
+    /// <summary>
+    /// Uploads a file and associates it with a request.
+    /// </summary>
+    public async Task<Result<Attachment>> UploadFileToRequestAsync(IFormFile file, Guid requestId, string? subDirectory = null)
     {
-        _unitOfWork = unitOfWork;
-        _logger = logger;
+        // Verify the request exists
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request == null)
+        {
+            return ApplicationErrors.RequestNotFound;
+        }
+
+        // Save the file using the file manager
+        var fileResult = await fileManager.SaveFileAsync(file, subDirectory);
+        if (fileResult.IsError)
+        {
+            return fileResult.Errors;
+        }
+
+        var fileMetadata = fileResult.Value;
+
+        // Create an attachment entity
+        var attachment = new Attachment
+        {
+            FileName = fileMetadata.OriginalFileName,
+            SafeName = fileMetadata.StoredFileName,
+            Extension = fileMetadata.FileExtension,
+            Path = fileMetadata.FilePath
+        };
+
+        // Save the attachment to the database
+        var attachmentResult = await unitOfWork.Attachments.AddAsync(attachment);
+        if (attachmentResult.IsError)
+        {
+            // Clean up the uploaded file if DB operation fails
+            await fileManager.DeleteFileAsync(fileMetadata.FilePath);
+            return attachmentResult.Errors;
+        }
+
+        // Associate the attachment with the request
+        var requestAttachment = new RequestAttachment
+        {
+            RequestId = requestId,
+            AttachmentId = attachment.Id
+        };
+
+        var associationResult = await unitOfWork.RequestAttachments.AddAsync(
+            new RequestAttachment
+            {
+                AttachmentId = attachment.Id,
+                RequestId = requestId
+            });
+        if (associationResult.IsError)
+        {
+            // Clean up: remove the attachment from DB and file system if association fails
+            await unitOfWork.Attachments.RemoveAsync(x => x.Id == attachment.Id);
+            await fileManager.DeleteFileAsync(fileMetadata.FilePath);
+            return associationResult.Errors;
+        }
+
+        return attachment;
+    }
+
+    /// <summary>
+    /// Uploads a file and associates it with a response.
+    /// </summary>
+    public async Task<Result<Attachment>> UploadFileToResponseAsync(IFormFile file, Guid responseId, string? subDirectory = null)
+    {
+        // Verify the response exists
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+        {
+            return ApplicationErrors.ResponseNotFound;
+        }
+
+        // Save the file using the file manager
+        var fileResult = await fileManager.SaveFileAsync(file, subDirectory);
+        if (fileResult.IsError)
+        {
+            return fileResult.Errors;
+        }
+
+        var fileMetadata = fileResult.Value;
+
+        // Create an attachment entity
+        var attachment = new Attachment
+        {
+            FileName = fileMetadata.OriginalFileName,
+            SafeName = fileMetadata.StoredFileName,
+            Extension = fileMetadata.FileExtension,
+            Path = fileMetadata.FilePath
+        };
+
+        // Save the attachment to the database
+        var attachmentResult = await unitOfWork.Attachments.AddAsync(attachment);
+        if (attachmentResult.IsError)
+        {
+            // Clean up the uploaded file if DB operation fails
+            await fileManager.DeleteFileAsync(fileMetadata.FilePath);
+            return attachmentResult.Errors;
+        }
+
+        // Associate the attachment with the response
+        var responseAttachment = new ResponseAttachment
+        {
+            ResponseId = responseId,
+            AttachmentId = attachment.Id
+        };
+
+        var associationResult = await unitOfWork.ResponseAttachments.AddAsync(responseAttachment);
+        if (associationResult.IsError)
+        {
+            // Clean up: remove the attachment from DB and file system if association fails
+            await unitOfWork.Attachments.RemoveAsync(x => x.Id == attachment.Id);
+            await fileManager.DeleteFileAsync(fileMetadata.FilePath);
+            return associationResult.Errors;
+        }
+
+        return attachment;
+    }
+
+    /// <summary>
+    /// Downloads a file associated with a request.
+    /// </summary>
+    public async Task<Result<byte[]>> DownloadFileFromRequestAsync(Guid requestId, Guid attachmentId)
+    {
+        // Verify the request exists
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request.IsError)
+        {
+            return ApplicationErrors.RequestNotFound;
+        }
+
+        // Check if the attachment is associated with this request
+        var requestAttachment = await unitOfWork.RequestAttachments.GetAsync(
+            x => x.RequestId == requestId &&
+                 x.AttachmentId == attachmentId,
+            i => i.Include(x => x.Attachment).Include(x => x.Request));
+        if (requestAttachment == null)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Get the attachment details
+        var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+        if (attachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Return the file content
+        return await fileManager.GetFileBytesAsync(attachment.Value.Path);
+    }
+
+    /// <summary>
+    /// Downloads a file associated with a response.
+    /// </summary>
+    public async Task<Result<byte[]>> DownloadFileFromResponseAsync(Guid responseId, Guid attachmentId)
+    {
+        // Verify the response exists
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+        {
+            return ApplicationErrors.ResponseNotFound;
+        }
+
+        // Check if the attachment is associated with this response
+        var responseAttachment = await unitOfWork.ResponseAttachments.GetAsync(
+            x => x.ResponseId == responseId && x.AttachmentId == attachmentId,
+            x => x.Include(x => x.Attachment).Include(x => x.Response));
+
+        if (responseAttachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Get the attachment details
+        var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+        if (attachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Return the file content
+        return await fileManager.GetFileBytesAsync(attachment.Value.Path);
+    }
+
+    /// <summary>
+    /// Removes a file attachment from a request.
+    /// </summary>
+    public async Task<Result<Success>> RemoveFileFromRequestAsync(Guid requestId, Guid attachmentId)
+    {
+        // Verify the request exists
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request.IsError)
+        {
+            return ApplicationErrors.RequestNotFound;
+        }
+
+        // Check if the attachment is associated with this request
+        var requestAttachment = await unitOfWork.RequestAttachments.GetAsync(
+            x => x.RequestId == requestId && x.AttachmentId == attachmentId,
+            x => x.Include(x => x.Attachment).Include(x => x.Request));
+        if (requestAttachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Get the attachment details
+        var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+        if (attachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Remove the association
+        var removeAssociationResult = await unitOfWork.RequestAttachments.RemoveAsync(x => x.Id == requestAttachment.Value.Id);
+        if (removeAssociationResult.IsError)
+        {
+            return removeAssociationResult.Errors;
+        }
+
+        // If this attachment is not associated with any other requests/responses, delete it
+        var isUsedElsewhere = await IsAttachmentUsedElsewhere(attachmentId);
+        if (!isUsedElsewhere)
+        {
+            // Delete the file from the file system
+            var fileDeleteResult = await fileManager.DeleteFileAsync(attachment.Value.Path);
+            if (fileDeleteResult.IsError)
+            {
+                // Log the error but don't fail the operation as the DB records are cleaned up
+                // In a real application, you might want to implement a cleanup job for orphaned files
+            }
+
+            // Delete the attachment from the database
+            var attachmentDeleteResult = await unitOfWork.Attachments.RemoveAsync(x => x.Id == attachmentId);
+            if (attachmentDeleteResult.IsError)
+            {
+                return attachmentDeleteResult.Errors;
+            }
+        }
+
+        return Result.Success;
+    }
+
+    /// <summary>
+    /// Removes a file attachment from a response.
+    /// </summary>
+    public async Task<Result<Success>> RemoveFileFromResponseAsync(Guid responseId, Guid attachmentId)
+    {
+        // Verify the response exists
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+        {
+            return ApplicationErrors.ResponseNotFound;
+        }
+
+        // Check if the attachment is associated with this response
+        var responseAttachment = await unitOfWork.ResponseAttachments.GetAsync(
+            x => x.ResponseId == responseId && x.AttachmentId == attachmentId,
+            x => x.Include(x => x.Attachment).Include(x => x.Response));
+        if (responseAttachment == null)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Get the attachment details
+        var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+        if (attachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        // Remove the association
+        var removeAssociationResult = await unitOfWork.ResponseAttachments.RemoveAsync(x => x.Id == responseAttachment.Value.Id);
+        if (removeAssociationResult.IsError)
+        {
+            return removeAssociationResult.Errors;
+        }
+
+        // If this attachment is not associated with any other requests/responses, delete it
+        var isUsedElsewhere = await IsAttachmentUsedElsewhere(attachmentId);
+        if (!isUsedElsewhere)
+        {
+            // Delete the file from the file system
+            var fileDeleteResult = await fileManager.DeleteFileAsync(attachment.Value.Path);
+            if (fileDeleteResult.IsError)
+            {
+                // Log the error but don't fail the operation as DB records are cleaned up
+                // In a real application, you might want to implement a cleanup job for orphaned files
+            }
+
+            // Delete the attachment from the database
+            var attachmentDeleteResult = await unitOfWork.Attachments.RemoveAsync(x => x.Id == attachmentId);
+            if (attachmentDeleteResult.IsError)
+            {
+                return attachmentDeleteResult.Errors;
+            }
+        }
+
+        return Result.Success;
+    }
+
+    /// <summary>
+    /// Gets all attachments for a request.
+    /// </summary>
+    public async Task<Result<IEnumerable<Attachment>>> GetAttachmentsForRequestAsync(Guid requestId)
+    {
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request.IsError)
+        {
+            return ApplicationErrors.RequestNotFound;
+        }
+
+        // Get all RequestAttachment associations for this request
+        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.RequestId == requestId);
+        if (requestAttachments.IsError)
+            return requestAttachments.Errors;
+
+        var attachmentIds = requestAttachments.Value.ConvertAll(ra => ra.AttachmentId);
+
+        // Get the actual attachment entities
+        var attachments = new List<Attachment>();
+        foreach (var attachmentId in attachmentIds)
+        {
+            var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+            if (!attachment.IsError)
+            {
+                attachments.Add(attachment.Value);
+            }
+        }
+
+        return attachments;
+    }
+
+    /// <summary>
+    /// Gets all attachments for a response.
+    /// </summary>
+    public async Task<Result<IEnumerable<Attachment>>> GetAttachmentsForResponseAsync(Guid responseId)
+    {
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+        {
+            return ApplicationErrors.ResponseNotFound;
+        }
+
+        // Get all ResponseAttachment associations for this response
+        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.ResponseId == responseId);
+        if (responseAttachments.IsError)
+        {
+            return responseAttachments.Errors;
+        }
+
+        var attachmentIds = responseAttachments.Value!.ConvertAll(ra => ra.AttachmentId);
+
+        // Get the actual attachment entities
+        var attachments = new List<Attachment>();
+        foreach (var attachmentId in attachmentIds)
+        {
+            var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+            if (!attachment.IsError)
+            {
+                attachments.Add(attachment.Value);
+            }
+        }
+
+        return attachments;
+    }
+
+    /// <summary>
+    /// Checks if an attachment is used by any other requests or responses.
+    /// </summary>
+    private async Task<bool> IsAttachmentUsedElsewhere(Guid attachmentId)
+    {
+        // Check if the attachment is associated with any other requests
+        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.AttachmentId == attachmentId);
+        if (requestAttachments.IsError)
+        {
+            throw new Exception("Error checking attachment associations: " + string.Join(", ", requestAttachments.Errors.Select(e => e.Description)));
+        }
+
+        if (requestAttachments.Value!.Any())
+        {
+            return true;
+        }
+
+        // Check if the attachment is associated with any other responses
+        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.AttachmentId == attachmentId);
+        if (responseAttachments.IsError)
+        {
+            throw new Exception("Error checking attachment associations: " + string.Join(", ", responseAttachments.Errors.Select(e => e.Description)));
+        }
+
+        return responseAttachments.Value!.Any();
     }
 
     public async Task<Result<IEnumerable<Attachment>>> GetAllAsync()
     {
-        try
+        var attachments = await unitOfWork.Attachments.GetAllAsync();
+        if (attachments.IsError)
         {
-            _logger.LogInformation("Fetching all attachments");
-            var attachments = await _unitOfWork.Attachments.GetAllAsync();
-            if (attachments.IsError)
-                return attachments.Errors;
+            return attachments.Errors;
+        }
 
-            return attachments.Value;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching all attachments");
-            return ApplicationError.InternalServerError;
-        }
+        return attachments.Value;
     }
 
     public async Task<Result<PagedList<Attachment>>> GetPagedAsync(int page, int pageSize)
     {
-        try
+        // For simplicity, we'll get all attachments and then page them
+        // In a real implementation, you'd want to implement proper pagination at the DB level
+        var allAttachments = await GetAllAsync();
+        if (allAttachments.IsError)
         {
-            _logger.LogInformation("Fetching paged attachments, page: {Page}, size: {PageSize}", page, pageSize);
-
-            // Validate parameters
-            if (page <= 0)
-                return ApplicationError.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationError.InvalidInput;
-
-            var pagedAttachments = await _unitOfWork.Attachments.GetPagedAsync(page, pageSize);
-            if (pagedAttachments.IsError)
-                return pagedAttachments.Errors;
-
-            return pagedAttachments.Value;
+            return allAttachments.Errors;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching paged attachments, page: {Page}, size: {PageSize}", page, pageSize);
-            return ApplicationError.InternalServerError;
-        }
+
+        var attachmentsList = allAttachments.Value.ToList();
+        var pagedAttachments = attachmentsList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+        return new PagedList<Attachment>(
+            pagedAttachments,
+            attachmentsList.Count,
+            page,
+            pageSize
+        );
     }
 
     public async Task<Result<Attachment>> GetByIdAsync(Guid id)
     {
-        try
+        var attachment = await unitOfWork.Attachments.GetByIdAsync(id);
+        if (attachment == null)
         {
-            _logger.LogInformation("Fetching attachment by id: {AttachmentId}", id);
-            var attachment = await _unitOfWork.Attachments.GetByIdAsync(id);
-
-            if (attachment.IsError)
-                return attachment.Errors;
-
-            if (attachment.Value == null)
-                return ApplicationError.AttachmentNotFound;
-
-            return attachment;
+            return ApplicationErrors.AttachmentNotFound;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching attachment by id: {AttachmentId}", id);
-            return ApplicationError.InternalServerError;
-        }
+
+        return attachment;
     }
 
     public async Task<Result<IEnumerable<Attachment>>> GetByFileTypeAsync(string fileType)
     {
-        try
+        // Filter attachments by file type in memory
+        // In a real implementation, you'd want to implement this at the DB level
+        var allAttachments = await GetAllAsync();
+        if (allAttachments.IsError)
         {
-            if (string.IsNullOrWhiteSpace(fileType))
-                return ApplicationError.InvalidInput;
-
-            _logger.LogInformation("Fetching attachments by file type: {FileType}", fileType);
-            var attachments = await _unitOfWork.Attachments.GetAllAsync();
-            if (attachments.IsError)
-                return attachments.Errors;
-
-            return attachments.Value.Where(a => a.Extension == fileType).ToList();
+            return allAttachments.Errors;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching attachments by file type: {FileType}", fileType);
-            return ApplicationError.InternalServerError;
-        }
+
+        var filteredAttachments = allAttachments.Value.Where(a => a.Extension?.Equals(fileType, StringComparison.OrdinalIgnoreCase) == true);
+        return filteredAttachments.ToList();
     }
 
     public async Task<Result<Attachment>> GetByFileNameAsync(string fileName)
     {
-        try
+        // Find attachment by file name in memory
+        // In a real implementation, you'd want to implement this at the DB level
+        var allAttachments = await GetAllAsync();
+        if (allAttachments.IsError)
         {
-            if (string.IsNullOrWhiteSpace(fileName))
-                return ApplicationError.InvalidInput;
-
-            _logger.LogInformation("Fetching attachment by file name: {FileName}", fileName);
-            var attachments = await _unitOfWork.Attachments.GetAllAsync();
-            if (attachments.IsError)
-                return attachments.Errors;
-
-            var attachment = attachments.Value.FirstOrDefault(a => a.FileName == fileName);
-
-            if (attachment == null)
-                return ApplicationError.AttachmentNotFound;
-
-            return attachment;
+            return allAttachments.Errors;
         }
-        catch (Exception ex)
+
+        var attachment = allAttachments.Value.FirstOrDefault(a => a.FileName?.Equals(fileName, StringComparison.OrdinalIgnoreCase) == true);
+        if (attachment == null)
         {
-            _logger.LogError(ex, "Error fetching attachment by file name: {FileName}", fileName);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.AttachmentNotFound;
         }
+
+        return attachment;
     }
 
     public async Task<Result<Attachment>> CreateAsync(Attachment attachment)
     {
-        try
+        var result = await unitOfWork.Attachments.AddAsync(attachment);
+        if (result.IsError)
         {
-            if (attachment == null)
-                return ApplicationError.InvalidInput;
-
-            if (string.IsNullOrWhiteSpace(attachment.FileName))
-                return ApplicationError.MissingRequiredField;
-
-            _logger.LogInformation("Creating new attachment: {FileName}", attachment.FileName);
-
-            await _unitOfWork.Attachments.AddAsync(attachment);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("Successfully created attachment: {FileName}", attachment.FileName);
-            return attachment;
+            return result.Errors;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error creating attachment");
-            return ApplicationError.InternalServerError;
-        }
+
+        return attachment;
     }
 
     public async Task<Result<Attachment>> UpdateAsync(Guid id, Attachment attachment)
     {
-        try
+        // Ensure the ID matches
+        attachment.Id = id;
+        var result = await unitOfWork.Attachments.UpdateAsync(attachment);
+        if (result.IsError)
         {
-            if (id == Guid.Empty || attachment == null)
-                return ApplicationError.InvalidInput;
-
-            var existingAttachment = await _unitOfWork.Attachments.GetByIdAsync(id);
-            if (existingAttachment.IsError)
-                return existingAttachment.Errors;
-
-            if (existingAttachment.Value == null)
-                return ApplicationError.AttachmentNotFound;
-
-            _logger.LogInformation("Updating attachment: {AttachmentId}", id);
-
-            existingAttachment.Value.FileName = attachment.FileName;
-            existingAttachment.Value.SafeName = attachment.SafeName;
-            existingAttachment.Value.Extension = attachment.Extension;
-            existingAttachment.Value.Path = attachment.Path;
-
-            await _unitOfWork.Attachments.UpdateAsync(existingAttachment.Value);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("Successfully updated attachment: {AttachmentId}", id);
-            return existingAttachment;
+            return result.Errors;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error updating attachment: {AttachmentId}", id);
-            return ApplicationError.InternalServerError;
-        }
+
+        return attachment;
     }
 
     public async Task<Result<bool>> DeleteAsync(Guid id)
     {
-        try
+        var result = await unitOfWork.Attachments.RemoveAsync(x => x.Id == id);
+        if (result.IsError)
         {
-            if (id == Guid.Empty)
-                return ApplicationError.InvalidInput;
-
-            var attachment = await _unitOfWork.Attachments.GetByIdAsync(id);
-            if (attachment.IsError)
-                return attachment.Errors;
-
-            if (attachment.Value == null)
-                return ApplicationError.AttachmentNotFound;
-
-            _logger.LogInformation("Deleting attachment: {AttachmentId}", id);
-
-            await _unitOfWork.Attachments.RemoveAsync(x => x.Id == attachment.Value.Id);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("Successfully deleted attachment: {AttachmentId}", id);
-            return true;
+            return result.Errors;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting attachment: {AttachmentId}", id);
-            return ApplicationError.InternalServerError;
-        }
+
+        return true;
     }
 }

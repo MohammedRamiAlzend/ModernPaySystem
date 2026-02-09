@@ -34,7 +34,7 @@ public class RoleService : IRoleService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching all roles");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -46,9 +46,9 @@ public class RoleService : IRoleService
 
             // Validate parameters
             if (page <= 0)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
             if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var pagedRoles = await _unitOfWork.Roles.GetPagedAsync(page, pageSize);
             if (pagedRoles.IsError)
@@ -59,7 +59,7 @@ public class RoleService : IRoleService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching paged roles, page: {Page}, size: {PageSize}", page, pageSize);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -74,14 +74,14 @@ public class RoleService : IRoleService
                 return role.Errors;
 
             if (role.Value == null)
-                return ApplicationError.RoleNotFound;
+                return ApplicationErrors.RoleNotFound;
 
             return role;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching role by id: {RoleId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -90,7 +90,7 @@ public class RoleService : IRoleService
         try
         {
             if (string.IsNullOrWhiteSpace(name))
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Fetching role by name: {RoleName}", name);
             var roles = await _unitOfWork.Roles.GetAllAsync();
@@ -101,14 +101,14 @@ public class RoleService : IRoleService
             var role = roles.Value.FirstOrDefault(r => r.Name == name);
 
             if (role == null)
-                return ApplicationError.RoleNotFound;
+                return ApplicationErrors.RoleNotFound;
 
             return role;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching role by name: {RoleName}", name);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -117,10 +117,10 @@ public class RoleService : IRoleService
         try
         {
             if (role == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             if (string.IsNullOrWhiteSpace(role.Name))
-                return ApplicationError.MissingRequiredField;
+                return ApplicationErrors.MissingRequiredField;
 
             _logger.LogInformation("Creating new role: {RoleName}", role.Name);
 
@@ -133,7 +133,7 @@ public class RoleService : IRoleService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating role");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -142,14 +142,14 @@ public class RoleService : IRoleService
         try
         {
             if (id == Guid.Empty || role == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var existingRole = await _unitOfWork.Roles.GetByIdAsync(id);
             if (existingRole.IsError)
                 return existingRole.Errors;
 
             if (existingRole.Value == null)
-                return ApplicationError.RoleNotFound;
+                return ApplicationErrors.RoleNotFound;
 
             _logger.LogInformation("Updating role: {RoleId}", id);
 
@@ -165,7 +165,7 @@ public class RoleService : IRoleService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating role: {RoleId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -174,14 +174,14 @@ public class RoleService : IRoleService
         try
         {
             if (id == Guid.Empty)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var role = await _unitOfWork.Roles.GetByIdAsync(id);
             if (role.IsError)
                 return role.Errors;
 
             if (role.Value == null)
-                return ApplicationError.RoleNotFound;
+                return ApplicationErrors.RoleNotFound;
 
             _logger.LogInformation("Deleting role: {RoleId}", id);
 
@@ -194,7 +194,7 @@ public class RoleService : IRoleService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting role: {RoleId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 }

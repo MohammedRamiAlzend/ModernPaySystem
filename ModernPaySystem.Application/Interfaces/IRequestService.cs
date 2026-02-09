@@ -2,6 +2,7 @@ global using ModernPaySystem.Domain.Commons;
 global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 global using System.Collections.Generic;
 global using System;
+using Microsoft.AspNetCore.Http;
 
 namespace ModernPaySystem.Application.Interfaces;
 
@@ -43,7 +44,7 @@ public interface IRequestService
     /// <summary>
     /// Create new request.
     /// </summary>
-    Task<Result<Request>> CreateAsync(Request request);
+    Task<Result<RequestDto>> CreateAsync(CreateRequestDto request, List<IFormFile> files);
 
     /// <summary>
     /// Update request.

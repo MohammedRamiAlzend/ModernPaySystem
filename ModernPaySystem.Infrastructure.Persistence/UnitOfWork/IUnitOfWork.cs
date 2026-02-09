@@ -1,4 +1,5 @@
 using ModernPaySystem.Application.Repos;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -53,6 +54,16 @@ public interface IUnitOfWork
     /// Repository for TemplateOwnership entities.
     /// </summary>
     IRepositoryBase<TemplateOwnership, Guid> TemplateOwnerships { get; }
+
+    /// <summary>
+    /// Repository for ResponseAttachment entities.
+    /// </summary>
+    IRepositoryBase<ResponseAttachment, Guid> ResponseAttachments { get; }
+
+    /// <summary>
+    /// Repository for RequestAttachment entities.
+    /// </summary>
+    IRepositoryBase<RequestAttachment, Guid> RequestAttachments { get; }
 
     /// <summary>
     /// Saves all changes made to the database.

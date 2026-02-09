@@ -28,7 +28,7 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching all users");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -40,9 +40,9 @@ public class UserService : IUserService
 
             // Validate parameters
             if (page <= 0)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
             if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var pagedUsers = await _unitOfWork.Users.GetPagedAsync(page, pageSize);
             if (pagedUsers.IsError)
@@ -53,7 +53,7 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching paged users, page: {Page}, size: {PageSize}", page, pageSize);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -68,14 +68,14 @@ public class UserService : IUserService
                 return user.Errors;
 
             if (user.Value == null)
-                return ApplicationError.UserNotFound;
+                return ApplicationErrors.UserNotFound;
 
             return user!;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching user by id: {UserId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -84,7 +84,7 @@ public class UserService : IUserService
         try
         {
             if (string.IsNullOrWhiteSpace(username))
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Fetching user by username: {Username}", username);
 
@@ -96,12 +96,12 @@ public class UserService : IUserService
 
             var user = users.Value!.Find(u => u.UserName == username);
 
-            return user == null ? (Result<User>)ApplicationError.UserNotFound : (Result<User>)user;
+            return user == null ? (Result<User>)ApplicationErrors.UserNotFound : (Result<User>)user;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching user by username: {Username}", username);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -125,13 +125,13 @@ public class UserService : IUserService
         try
         {
             if (user == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             if (string.IsNullOrWhiteSpace(user.UserName))
-                return ApplicationError.MissingRequiredField;
+                return ApplicationErrors.MissingRequiredField;
 
             if (await UsernameExistsAsync(user.UserName))
-                return ApplicationError.UserAlreadyExists;
+                return ApplicationErrors.UserAlreadyExists;
 
             _logger.LogInformation("Creating new user: {Username}", user.UserName);
 
@@ -144,7 +144,7 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating user");
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -153,14 +153,14 @@ public class UserService : IUserService
         try
         {
             if (id == Guid.Empty || user == null)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var existingUser = await _unitOfWork.Users.GetByIdAsync(id);
             if (existingUser.IsError)
                 return existingUser.Errors;
 
             if (existingUser.Value == null)
-                return ApplicationError.UserNotFound;
+                return ApplicationErrors.UserNotFound;
 
             _logger.LogInformation("Updating user: {UserId}", id);
 
@@ -176,7 +176,7 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating user: {UserId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 
@@ -185,14 +185,14 @@ public class UserService : IUserService
         try
         {
             if (id == Guid.Empty)
-                return ApplicationError.InvalidInput;
+                return ApplicationErrors.InvalidInput;
 
             var user = await _unitOfWork.Users.GetByIdAsync(id);
             if (user.IsError)
                 return user.Errors;
 
             if (user.Value == null)
-                return ApplicationError.UserNotFound;
+                return ApplicationErrors.UserNotFound;
 
             _logger.LogInformation("Deleting user: {UserId}", id);
 
@@ -205,7 +205,7 @@ public class UserService : IUserService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting user: {UserId}", id);
-            return ApplicationError.InternalServerError;
+            return ApplicationErrors.InternalServerError;
         }
     }
 }

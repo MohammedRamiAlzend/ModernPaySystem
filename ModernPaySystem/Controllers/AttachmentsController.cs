@@ -1,15 +1,8 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Services;
-using ModernPaySystem.Domain.Attrs;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Infrastructure.Extensions;
-
 namespace ModernPaySystem.Controllers;
 
 /// <summary>
 /// API controller for Attachment management
-/// Provides CRUD operations and attachment-specific queries
+/// Provides CRUD operations and attachment-specific queries.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]

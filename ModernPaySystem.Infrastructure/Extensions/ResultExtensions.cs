@@ -4,12 +4,12 @@ using ModernPaySystem.Domain.Commons;
 namespace ModernPaySystem.Infrastructure.Extensions;
 
 /// <summary>
-/// Extension methods for converting Result<T> to IActionResult
+/// Extension methods for converting Result<T> to IActionResult.
 /// </summary>
 public static class ResultExtensions
 {
     /// <summary>
-    /// Converts a Result to an IActionResult with appropriate HTTP status codes
+    /// Converts a Result to an IActionResult with appropriate HTTP status codes.
     /// </summary>
     public static IActionResult ToActionResult<T>(this Result<T> result) where T : notnull
     {

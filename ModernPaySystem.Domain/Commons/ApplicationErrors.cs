@@ -3,7 +3,7 @@ namespace ModernPaySystem.Domain.Commons;
 /// <summary>
 /// Contains predefined application errors with unique numeric codes.
 /// </summary>
-public static class ApplicationError
+public static class ApplicationErrors
 {
     // Authentication Errors (1-99)
     public static readonly Error InvalidCredentials = new("1", "Username or password is incorrect.", ErrorKind.Unauthorized, "اسم المستخدم أو كلمة المرور غير صحيحة.");
@@ -75,4 +75,10 @@ public static class ApplicationError
     public static readonly Error InsufficientFunds = new("902", "Insufficient funds for this transaction.", ErrorKind.Validation, "رصيد غير كافي لهذه المعاملة.");
     public static readonly Error TransactionAlreadyProcessed = new("903", "The transaction has already been processed.", ErrorKind.Conflict, "تم معالجة المعاملة بالفعل.");
     public static readonly Error DuplicateTransaction = new("904", "A duplicate transaction was detected.", ErrorKind.Conflict, "تم كشف معاملة مكررة.");
+
+    // File Operation Errors (1000-1099)
+    public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");
+
+    public static Error FileOperationFailed(string message)
+        => Error.Failure("1001", $"File operation failed: {message}", "فشلت عملية الملف:");
 }
