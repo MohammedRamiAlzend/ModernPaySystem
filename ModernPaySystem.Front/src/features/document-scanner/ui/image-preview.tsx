@@ -53,13 +53,13 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
                 )}
             </div>
 
-            <div className="flex-1 min-h-[300px] md:min-h-[400px] bg-accent/20 rounded-3xl overflow-hidden relative flex items-center justify-center border-2 border-dashed border-primary/10">
+            <div className="flex-1 min-h-[200px] md:min-h-[300px] bg-accent/20 rounded-3xl overflow-hidden relative flex items-center justify-center border-2 border-dashed border-primary/10">
                 {activeImage ? (
                     isEditing ? (
-                        <div className="w-full h-[50vh] min-h-[300px] relative bg-black/80 rounded-xl overflow-hidden shadow-inner text-left" dir="ltr">
+                        <div className="w-full h-[35vh] min-h-[250px] relative bg-black/80 rounded-xl overflow-hidden shadow-inner text-left" dir="ltr">
                             <Cropper
                                 src={activeImage.url}
-                                style={{ height: '100%', maxHeight: '50vh', width: '100%' }}
+                                style={{ height: '100%', maxHeight: '35vh', width: '100%' }}
                                 initialAspectRatio={NaN}
                                 guides={true}
                                 ref={cropperRef}
@@ -88,7 +88,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
 
 
                     ) : (
-                        <div className="w-full h-[50vh] min-h-[300px] p-4 flex flex-col items-center justify-center">
+                        <div className="w-full h-[35vh] min-h-[250px] p-4 flex flex-col items-center justify-center">
                             {activeImage.type.startsWith('image/') ? (
                                 <img src={activeImage.url} alt="" className="max-w-full max-h-full object-contain rounded-xl shadow-lg" />
                             ) : (

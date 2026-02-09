@@ -65,7 +65,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             </div>
 
             {/* File List */}
-            <div className='flex-1 min-h-[250px] md:min-h-[400px] border-2 border-dashed rounded-2xl p-2 space-y-2 overflow-y-auto bg-muted/5'>
+            <div className='flex-1 min-h-[200px] md:min-h-[300px] border-2 border-dashed rounded-2xl p-2 space-y-2 overflow-y-auto bg-muted/5'>
                 {imageFiles.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-muted-foreground opacity-40 gap-2">
                         <FileText className="h-8 w-8" />
