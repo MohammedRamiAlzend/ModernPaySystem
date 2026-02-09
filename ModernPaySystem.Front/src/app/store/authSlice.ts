@@ -1,14 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
-// Define user types
+// تحسين الـ User ليتناسب مع البيانات القادمة من التوكن
 export interface User {
-  id: number;
-  email: string;
-  name: string;
-  role: 'admin' | 'user';
-  avatar?: string;
-  createdAt: string;
+  id: string;
+  username: string;
+  permissions: string[];
+  roles: string[];
 }
 
 interface AuthState {
@@ -17,74 +15,61 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
+// محاولة استعادة البيانات من localStorage عند التشغيل
+const savedToken = localStorage.getItem('token');
+const savedUser = localStorage.getItem('user');
+
 const initialState: AuthState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: savedUser ? JSON.parse(savedUser) : null,
+  token: savedToken,
+  isAuthenticated: !!savedToken,
 };
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Login actions
     loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      // Store token in localStorage
       localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
 
-    // Logout action
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
 
-      // Remove token from localStorage
       localStorage.removeItem('token');
+      localStorage.removeItem('user');
     },
 
-    // Registration actions
-    registerSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
-      state.isAuthenticated = true;
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-
-      // Store token in localStorage
-      localStorage.setItem('token', action.payload.token);
-    },
-
-    // Update user profile
     updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
+        localStorage.setItem('user', JSON.stringify(state.user));
       }
     },
   },
 });
 
-// Export actions
 export const {
   loginSuccess,
   logout,
-  registerSuccess,
   updateUserProfile,
 } = authSlice.actions;
 
-// Define RootState type for selectors
 type RootState = {
   auth: AuthState;
 };
 
-// Selectors
 export const selectCurrentUser = (state: RootState): User | null => state.auth.user;
 export const selectIsAuthenticated = (state: RootState): boolean => state.auth.isAuthenticated;
 export const selectAuthToken = (state: RootState): string | null => state.auth.token;
-export const selectUserRole = (state: RootState): string | null =>
-  state.auth.user?.role || null;
+export const selectUserPermissions = (state: RootState): string[] => state.auth.user?.permissions || [];
+export const selectUserRoles = (state: RootState): string[] => state.auth.user?.roles || [];
 
-// Reducer
 export default authSlice.reducer;

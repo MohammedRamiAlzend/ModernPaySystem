@@ -24,9 +24,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        // يمكنك التعامل مع أخطاء 401 (غير مصرح به) هنا
+        // التعامل مع أخطاء 401 (غير مصرح به)
         if (error.response?.status === 401) {
-            // مثلاً: إعادة توجيه المستخدم لصفحة تسجيل الدخول
+            localStorage.removeItem('token');
+            window.location.href = '/auth/login';
         }
         return Promise.reject(error);
     }

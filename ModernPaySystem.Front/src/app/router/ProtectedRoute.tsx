@@ -26,9 +26,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     switch (permission) {
       case 'ADMIN':
-        return currentUser?.role === 'admin';
+        return currentUser?.roles.includes('admin') || false;
       case 'USER':
-        return currentUser?.role === 'user';
+        return currentUser?.roles.includes('user') || false;
       case 'AUTHENTICATED':
       default:
         return isAuthenticated;

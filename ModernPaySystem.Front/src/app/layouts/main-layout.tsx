@@ -8,6 +8,8 @@ import { Input } from "@/shared/ui/input"
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet"
 import { useState } from "react"
 import { PrefetchNavLink } from "@/shared/navigation/prefetch-nav-link"
+import { useAppSelector } from "@/app/store"
+import { selectCurrentUser } from "@/app/store/authSlice"
 
 interface MainLayoutProps {
     children?: React.ReactNode
@@ -15,6 +17,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const currentUser = useAppSelector(selectCurrentUser);
 
     return (
         <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -43,14 +46,15 @@ export function MainLayout({ children }: MainLayoutProps) {
                                     </SheetContent>
                                 </Sheet>
                             </div>
-
-                            <div className="hidden md:flex relative max-w-md w-full">
-                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="بحث سريع..."
-                                    className="pr-10 bg-background border-none border-primary rounded-xl h-10 w-full ring-1 ring-primary"
-                                />
+                            <div className="hidden lg:flex flex-col items-end ml-2">
+                                <span className="text-sm font-bold text-foreground leading-none">
+                                    {currentUser?.username || 'مستخدم'}
+                                </span>
+                                {/* <span className="text-[10px] text-muted-foreground mt-1">
+                                    {currentUser?.roles?.[0] || 'عضو'}
+                                </span> */}
                             </div>
+
 
                             {/* Logo for Mobile (centered or next to burger) */}
                             <div className="md:hidden flex items-center gap-2 mr-2">
@@ -63,6 +67,7 @@ export function MainLayout({ children }: MainLayoutProps) {
 
                         {/* Right Side Actions */}
                         <div className="flex items-center gap-2 sm:gap-4">
+
                             <Button variant="ghost" size="icon" className="relative hidden sm:flex">
                                 <Bell className="h-5 w-5" />
                                 <span className="absolute top-2 left-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background"></span>

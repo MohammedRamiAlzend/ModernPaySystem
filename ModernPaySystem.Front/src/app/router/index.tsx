@@ -8,7 +8,7 @@ import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { MainLayout } from '../layouts/main-layout';
 import { AuthLayout } from '../layouts/auth-layout';
 
-// Lazy load pages for better performance
+// Lazy load pages
 const HomePage = lazyWithPreload(() => import('@/pages/home-page'));
 const ContractsPage = lazyWithPreload(() => import('@/pages/contracts-page'));
 const ContractFormPage = lazyWithPreload(() => import('@/pages/contract-form-page'));
@@ -19,24 +19,25 @@ const ProfilePage = lazyWithPreload(() => import('@/pages/profile/profile-page')
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/settings-page'));
 const FormBuilderPage = lazyWithPreload(() => import('@/pages/form-builder/FormBuilderPage'));
 
-// Define route permissions
- const RoutePermissions = {
+const RoutePermissions = {
   PUBLIC: 'PUBLIC',
   AUTHENTICATED: 'AUTHENTICATED',
   ADMIN: 'ADMIN',
   USER: 'USER',
 } as const;
 
- type RoutePermissions = (typeof RoutePermissions)[keyof typeof RoutePermissions];
+type RoutePermissions = (typeof RoutePermissions)[keyof typeof RoutePermissions];
 
-// Enhanced route configuration
 const routesConfig: RouteObject[] = [
+  // 1. Authenticated Routes (With Sidebar/MainLayout)
   {
     path: '/',
     element: (
-      <Suspense fallback={<LoadingSpinner />}>
-        <MainLayout />
-      </Suspense>
+      <ProtectedRoute permission={RoutePermissions.AUTHENTICATED}>
+        <Suspense fallback={<LoadingSpinner />}>
+          <MainLayout />
+        </Suspense>
+      </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
     children: [
@@ -48,48 +49,10 @@ const routesConfig: RouteObject[] = [
           </Suspense>
         ),
         handle: {
-          crumb: () => 'Home',
-          permission: RoutePermissions.PUBLIC,
+          crumb: () => 'الرئيسية',
+          permission: RoutePermissions.AUTHENTICATED,
           preload: () => HomePage.preload(),
         },
-      },
-      {
-        path: 'auth',
-        element: (
-          <AuthLayout>
-            <Suspense fallback={<LoadingSpinner />}>
-              <Outlet />
-            </Suspense>
-          </AuthLayout>
-        ),
-        children: [
-          {
-            path: 'login',
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <LoginPage />
-              </Suspense>
-            ),
-            handle: {
-              crumb: () => 'Login',
-              permission: RoutePermissions.PUBLIC,
-              preload: () => LoginPage.preload(),
-            },
-          },
-          {
-            path: 'register',
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <RegisterPage />
-              </Suspense>
-            ),
-            handle: {
-              crumb: () => 'Register',
-              permission: RoutePermissions.PUBLIC,
-              preload: () => RegisterPage.preload(),
-            },
-          },
-        ],
       },
       {
         path: 'contracts',
@@ -98,45 +61,39 @@ const routesConfig: RouteObject[] = [
           {
             index: true,
             element: (
-              <ProtectedRoute permission={RoutePermissions.PUBLIC}>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ContractsPage />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ContractsPage />
+              </Suspense>
             ),
             handle: {
-              crumb: () => 'Contracts',
-              permission: RoutePermissions.PUBLIC,
+              crumb: () => 'العقود',
+              permission: RoutePermissions.AUTHENTICATED,
               preload: () => ContractsPage.preload(),
             },
           },
           {
             path: 'new',
             element: (
-              <ProtectedRoute permission={RoutePermissions.PUBLIC}>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ContractFormPage />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ContractFormPage />
+              </Suspense>
             ),
             handle: {
-              crumb: () => 'New Contract',
-              permission: RoutePermissions.PUBLIC,
+              crumb: () => 'عقد جديد',
+              permission: RoutePermissions.AUTHENTICATED,
               preload: () => ContractFormPage.preload(),
             },
           },
           {
             path: 'edit/:id',
             element: (
-              <ProtectedRoute permission={RoutePermissions.PUBLIC}>
-                <Suspense fallback={<LoadingSpinner />}>
-                  <ContractFormPage />
-                </Suspense>
-              </ProtectedRoute>
+              <Suspense fallback={<LoadingSpinner />}>
+                <ContractFormPage />
+              </Suspense>
             ),
             handle: {
-              crumb: () => 'Edit Contract',
-              permission: RoutePermissions.PUBLIC,
+              crumb: () => 'تعديل عقد',
+              permission: RoutePermissions.AUTHENTICATED,
               preload: () => ContractFormPage.preload(),
             },
           },
@@ -145,29 +102,25 @@ const routesConfig: RouteObject[] = [
       {
         path: 'processes',
         element: (
-          <ProtectedRoute permission={RoutePermissions.PUBLIC}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <ProcessFormPage />
-            </Suspense>
-          </ProtectedRoute>
+          <Suspense fallback={<LoadingSpinner />}>
+            <ProcessFormPage />
+          </Suspense>
         ),
         handle: {
-          crumb: () => 'Processes',
-          permission: RoutePermissions.PUBLIC,
+          crumb: () => 'العمليات',
+          permission: RoutePermissions.AUTHENTICATED,
           preload: () => ProcessFormPage.preload(),
         },
       },
       {
         path: 'profile',
         element: (
-          <ProtectedRoute permission={RoutePermissions.PUBLIC}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <ProfilePage />
-            </Suspense>
-          </ProtectedRoute>
+          <Suspense fallback={<LoadingSpinner />}>
+            <ProfilePage />
+          </Suspense>
         ),
         handle: {
-          crumb: () => 'Profile',
+          crumb: () => 'الملف الشخصي',
           permission: RoutePermissions.AUTHENTICATED,
           preload: () => ProfilePage.preload(),
         },
@@ -175,14 +128,12 @@ const routesConfig: RouteObject[] = [
       {
         path: 'settings',
         element: (
-          <ProtectedRoute permission={RoutePermissions.AUTHENTICATED}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <SettingsPage />
-            </Suspense>
-          </ProtectedRoute>
+          <Suspense fallback={<LoadingSpinner />}>
+            <SettingsPage />
+          </Suspense>
         ),
         handle: {
-          crumb: () => 'Settings',
+          crumb: () => 'الإعدادات',
           permission: RoutePermissions.AUTHENTICATED,
           preload: () => SettingsPage.preload(),
         },
@@ -190,20 +141,58 @@ const routesConfig: RouteObject[] = [
       {
         path: 'form-builder',
         element: (
-          <ProtectedRoute permission={RoutePermissions.PUBLIC}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <FormBuilderPage />
-            </Suspense>
-          </ProtectedRoute>
+          <Suspense fallback={<LoadingSpinner />}>
+            <FormBuilderPage />
+          </Suspense>
         ),
         handle: {
-          crumb: () => 'Form Builder',
-          permission: RoutePermissions.PUBLIC,
+          crumb: () => 'منشئ النماذج',
+          permission: RoutePermissions.AUTHENTICATED,
           preload: () => FormBuilderPage.preload(),
         },
       },
     ],
   },
+  // 2. Auth Routes (Without Sidebar/MainLayout)
+  {
+    path: '/auth',
+    element: (
+      <AuthLayout>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Outlet />
+        </Suspense>
+      </AuthLayout>
+    ),
+    children: [
+      {
+        path: 'login',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <LoginPage />
+          </Suspense>
+        ),
+        handle: {
+          crumb: () => 'تسجيل الدخول',
+          permission: RoutePermissions.PUBLIC,
+          preload: () => LoginPage.preload(),
+        },
+      },
+      {
+        path: 'register',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <RegisterPage />
+          </Suspense>
+        ),
+        handle: {
+          crumb: () => 'إنشاء حساب',
+          permission: RoutePermissions.PUBLIC,
+          preload: () => RegisterPage.preload(),
+        },
+      },
+    ],
+  },
+  // 3. Fallback Routes
   {
     path: '*',
     element: (
@@ -215,9 +204,6 @@ const routesConfig: RouteObject[] = [
   },
 ];
 
-/**
- * Prefetches the code for a given route path
- */
 export const prefetchRoute = (path: string) => {
   const matches = matchRoutes(routesConfig, path);
   if (matches) {
@@ -230,7 +216,6 @@ export const prefetchRoute = (path: string) => {
   }
 };
 
-// Create the router
- const router = createBrowserRouter(routesConfig);
+const router = createBrowserRouter(routesConfig);
 
 export default router;

@@ -9,6 +9,9 @@ import {
     LayoutDashboard,
     LogOut
 } from 'lucide-react';
+import { useAppDispatch } from '@/app/store';
+import { logout } from '@/app/store/authSlice';
+import { useNavigate } from 'react-router-dom';
 
 interface SidebarProps {
     className?: string;
@@ -17,6 +20,14 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        dispatch(logout());
+        navigate('/auth/login');
+        if (onItemClick) onItemClick();
+    };
 
     return (
         <aside
@@ -106,6 +117,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
 
                 <Button
                     variant="ghost"
+                    onClick={handleLogout}
                     className={cn(
                         "w-full rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30",
                         isCollapsed ? "px-0 justify-center" : "justify-start px-3 gap-4"
