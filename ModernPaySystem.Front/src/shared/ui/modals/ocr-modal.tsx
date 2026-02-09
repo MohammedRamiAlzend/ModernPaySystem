@@ -1,10 +1,9 @@
 import React from 'react';
 import { BaseModal } from './base-modal';
-import { Scan } from 'lucide-react';
+import { Scan, X } from 'lucide-react';
 import { Button } from '../button';
-import { X } from 'lucide-react';
 
-interface OcrModalWrapperProps {
+interface OcrModalProps {
     isOpen: boolean;
     onClose: () => void;
     title?: string;
@@ -14,9 +13,19 @@ interface OcrModalWrapperProps {
 
 /**
  * OcrModal: A specialized modal wrapper for OCR and Document Scanning.
- * Located in shared/ui/modals as requested, to be used by various features.
+ * Located in shared/ui/modals - acts as a pure shell/container.
+ * 
+ * This modal does NOT import any features. The feature content
+ * should be passed as children from the Widget/Page layer.
+ * 
+ * Usage:
+ * ```tsx
+ * <OcrModal isOpen={isOpen} onClose={handleClose}>
+ *   <OcrScannerContent {...props} />
+ * </OcrModal>
+ * ```
  */
-export const OcrModal: React.FC<OcrModalWrapperProps> = ({
+export const OcrModal: React.FC<OcrModalProps> = ({
     isOpen,
     onClose,
     title = 'استخراج النص وتحرير الصور',
@@ -39,7 +48,6 @@ export const OcrModal: React.FC<OcrModalWrapperProps> = ({
                     </div>
                 </div>
             }
-        // Custom Close button in header since BaseModal uses AlertDialog logic
         >
             <div className="relative">
                 <Button
