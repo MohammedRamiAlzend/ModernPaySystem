@@ -1,6 +1,6 @@
-import { Outlet } from "react-router-dom"
+import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { ModeToggle } from "@/shared/ui/common/mode-toggle"
-import { Settings, Bell, Menu } from "lucide-react"
+import { Settings, Bell, Menu, Home } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Sidebar } from "@/widgets/sidebar/ui/sidebar"
 import { NAVIGATION_ITEMS } from "@/shared/config/navigation"
@@ -17,6 +17,8 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const currentUser = useAppSelector(selectCurrentUser);
+    const navigate = useNavigate();
+    const location = useLocation();
 
     return (
         <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -86,20 +88,58 @@ export function MainLayout({ children }: MainLayoutProps) {
                     </div>
                 </main>
 
-                {/* Mobile Tab Bar Nav (Kept for quick access as requested) */}
-                <nav className="md:hidden fixed bottom-6 left-6 right-6 h-16 border bg-background/80 backdrop-blur-xl rounded-2xl flex justify-around items-center z-40 shadow-2xl border-white/10">
-                    {NAVIGATION_ITEMS.map((item) => (
-                        <PrefetchNavLink
-                            key={item.path}
-                            to={item.path}
-                            className={({ isActive }) =>
-                                `flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive ? 'text-primary scale-110' : 'text-muted-foreground hover:text-foreground'}`
-                            }
-                        >
-                            {item.icon}
-                            <span className="text-[9px] font-bold">{item.title}</span>
-                        </PrefetchNavLink>
-                    ))}
+                {/* Mobile Tab Bar Nav */}
+                <nav className="md:hidden fixed bottom-6 left-6 right-6 h-16 border bg-background/80 backdrop-blur-xl rounded-2xl flex justify-around items-center z-40 shadow-2xl border-white/10 px-2">
+                    {(() => {
+                        const activeParent = NAVIGATION_ITEMS.find(item =>
+                            item.children?.some(child => location.pathname.startsWith(child.path)) ||
+                            location.pathname === item.path
+                        );
+
+                        if (activeParent && activeParent.children) {
+                            return (
+                                <>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="text-muted-foreground h-10 w-10"
+                                        onClick={() => navigate('/')}
+                                    >
+                                        <div className="flex flex-col items-center gap-1">
+                                            <Home className="h-4 w-4" />
+                                            <span className="text-[8px]">الرئيسية</span>
+                                        </div>
+                                    </Button>
+                                    <div className="w-[1px] h-8 bg-border mx-1" />
+                                    {activeParent.children.map((child) => (
+                                        <PrefetchNavLink
+                                            key={child.path}
+                                            to={child.path}
+                                            className={({ isActive }) =>
+                                                `flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive ? 'text-primary scale-110' : 'text-muted-foreground'}`
+                                            }
+                                        >
+                                            {child.icon}
+                                            <span className="text-[9px] font-bold text-center leading-none">{child.title}</span>
+                                        </PrefetchNavLink>
+                                    ))}
+                                </>
+                            );
+                        }
+
+                        return NAVIGATION_ITEMS.map((item) => (
+                            <PrefetchNavLink
+                                key={item.path}
+                                to={item.path}
+                                className={({ isActive }) =>
+                                    `flex-1 flex flex-col items-center gap-1 p-2 rounded-xl transition-all ${isActive ? 'text-primary scale-110' : 'text-muted-foreground hover:text-foreground'}`
+                                }
+                            >
+                                {item.icon}
+                                <span className="text-[9px] font-bold text-center leading-none">{item.title}</span>
+                            </PrefetchNavLink>
+                        ));
+                    })()}
                 </nav>
             </div>
         </div>
