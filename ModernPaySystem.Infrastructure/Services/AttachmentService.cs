@@ -482,12 +482,7 @@ public class AttachmentService(
         }
 
         var attachmentDto = allAttachments.Value!.FirstOrDefault(a => a.FileName?.Equals(fileName, StringComparison.OrdinalIgnoreCase) == true);
-        if (attachmentDto == null)
-        {
-            return ApplicationErrors.AttachmentNotFound;
-        }
-
-        return attachmentDto;
+        return attachmentDto == null ? ApplicationErrors.AttachmentNotFound : attachmentDto;
     }
 
     public async Task<Result<AttachmentDto>> CreateAsync(CreateAttachmentDto attachment)
@@ -539,6 +534,7 @@ public class AttachmentService(
     public async Task<Result<bool>> DeleteAsync(Guid id)
     {
         var result = await unitOfWork.Attachments.RemoveAsync(x => x.Id == id);
+
         if (result.IsError)
         {
             return result.Errors;

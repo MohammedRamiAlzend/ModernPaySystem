@@ -8,7 +8,7 @@ namespace ModernPaySystem.Controllers;
 
 /// <summary>
 /// API controller for Template management
-/// Provides CRUD operations for templates
+/// Provides CRUD operations for templates.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -25,7 +25,7 @@ public class TemplatesController : ControllerBase
     }
 
     /// <summary>
-    /// Get all templates
+    /// Get all templates.
     /// </summary>
     [HttpGet]
     [EndpointPermission("templates.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
@@ -37,7 +37,7 @@ public class TemplatesController : ControllerBase
     }
 
     /// <summary>
-    /// Get template by id
+    /// Get template by id.
     /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("templates.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
@@ -49,7 +49,7 @@ public class TemplatesController : ControllerBase
     }
 
     /// <summary>
-    /// Get template by name
+    /// Get template by name.
     /// </summary>
     [HttpGet("by-name/{name}")]
     [EndpointPermission("templates.get-by-name", SubSystem.TransactionSystem, PermissionType.Read)]
@@ -61,7 +61,7 @@ public class TemplatesController : ControllerBase
     }
 
     /// <summary>
-    /// Create new template
+    /// Create new template.
     /// </summary>
     [HttpPost]
     [EndpointPermission("templates.create", SubSystem.TransactionSystem, PermissionType.Insert)]
@@ -73,7 +73,7 @@ public class TemplatesController : ControllerBase
     }
 
     /// <summary>
-    /// Update template
+    /// Update template.
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("templates.update", SubSystem.TransactionSystem, PermissionType.Update)]
@@ -85,7 +85,7 @@ public class TemplatesController : ControllerBase
     }
 
     /// <summary>
-    /// Delete template
+    /// Delete template.
     /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("templates.delete", SubSystem.TransactionSystem, PermissionType.Delete)]

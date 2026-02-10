@@ -33,6 +33,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IResponseService, ResponseService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
+        services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {
