@@ -67,34 +67,57 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
             {/* Navigation Items */}
             <div className="flex-1 overflow-y-auto py-6 px-3 space-y-2">
                 {NAVIGATION_ITEMS.map((item) => (
-                    <PrefetchNavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={onItemClick}
-                        className={({ isActive }) => cn(
-                            "flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-200 group/item relative",
-                            isActive
-                                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                        )}
-                    >
-                        <div className={cn(
-                            "transition-transform duration-200",
-                            "group-hover/item:scale-110"
-                        )}>
-                            {item.icon}
-                        </div>
-                        {!isCollapsed && (
-                            <span className="font-bold whitespace-nowrap animate-in fade-in slide-in-from-right-2">
-                                {item.title}
-                            </span>
-                        )}
-                        {isCollapsed && (
-                            <div className="absolute left-full ml-4 px-2 py-1 bg-popover text-popover-foreground text-xs rounded border opacity-0 pointer-events-none group-hover/item:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-md">
-                                {item.title}
+                    <div key={item.path}>
+                        <PrefetchNavLink
+                            to={item.path}
+                            onClick={item.children ? undefined : onItemClick}
+                            className={({ isActive }) => cn(
+                                "flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-200 group/item relative",
+                                isActive && !item.children
+                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                                    : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            )}
+                        >
+                            <div className={cn(
+                                "transition-transform duration-200",
+                                "group-hover/item:scale-110"
+                            )}>
+                                {item.icon}
+                            </div>
+                            {!isCollapsed && (
+                                <span className="font-bold whitespace-nowrap animate-in fade-in slide-in-from-right-2">
+                                    {item.title}
+                                </span>
+                            )}
+                            {isCollapsed && (
+                                <div className="absolute left-full ml-4 px-2 py-1 bg-popover text-popover-foreground text-xs rounded border opacity-0 pointer-events-none group-hover/item:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-md">
+                                    {item.title}
+                                </div>
+                            )}
+                        </PrefetchNavLink>
+
+                        {/* Render Children */}
+                        {!isCollapsed && item.children && (
+                            <div className="mr-8 mt-1 space-y-1 border-r pr-2 border-border/50">
+                                {item.children.map((child) => (
+                                    <PrefetchNavLink
+                                        key={child.path}
+                                        to={child.path}
+                                        onClick={onItemClick}
+                                        className={({ isActive }) => cn(
+                                            "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-sm",
+                                            isActive
+                                                ? "bg-accent text-accent-foreground font-medium"
+                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                        )}
+                                    >
+                                        <div className="opacity-70">{child.icon}</div>
+                                        <span>{child.title}</span>
+                                    </PrefetchNavLink>
+                                ))}
                             </div>
                         )}
-                    </PrefetchNavLink>
+                    </div>
                 ))}
             </div>
 

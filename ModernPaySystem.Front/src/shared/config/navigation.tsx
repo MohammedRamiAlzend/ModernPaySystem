@@ -1,6 +1,14 @@
-import { Home, FileText, ClipboardList, LayoutDashboard, Settings } from "lucide-react";
 
-export const NAVIGATION_ITEMS = [
+import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Send, PlusCircle } from "lucide-react";
+
+export interface NavigationItem {
+    title: string;
+    path: string;
+    icon: React.ReactNode;
+    children?: NavigationItem[];
+}
+
+export const NAVIGATION_ITEMS: NavigationItem[] = [
     {
         title: "الرئيسية",
         path: "/",
@@ -20,6 +28,23 @@ export const NAVIGATION_ITEMS = [
         title: "بناء النماذج",
         path: "/form-builder",
         icon: <LayoutDashboard className="h-5 w-5" />,
+        children: [
+            {
+                title: "النماذج",
+                path: "/form-builder/templates",
+                icon: <PlusCircle className="h-4 w-4" />,
+            },
+            {
+                title: "تقديم طلب",
+                path: "/form-builder/requests/new",
+                icon: <Send className="h-4 w-4" />,
+            },
+            {
+                title: "الردود",
+                path: "/form-builder/responses",
+                icon: <Reply className="h-4 w-4" />,
+            }
+        ]
     },
 ];
 
