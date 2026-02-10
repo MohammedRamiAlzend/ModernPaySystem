@@ -1,4 +1,6 @@
-﻿namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+﻿using System.Linq;
+
+namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public class Request : Entity<Guid>, IAuditableEntity
 {
