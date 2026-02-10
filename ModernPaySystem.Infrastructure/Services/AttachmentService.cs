@@ -2,6 +2,7 @@ using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Domain.Commons;
+using System.IO.Compression;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -380,6 +381,116 @@ public class AttachmentService(
         }
 
         return attachmentDtos;
+    }
+
+    /// <summary>
+    /// Downloads all files associated with a request as a ZIP archive.
+    /// </summary>
+    public async Task<Result<byte[]>> DownloadFilesFromRequestAsync(Guid requestId)
+    {
+        // Verify the request exists
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request.IsError)
+        {
+            return ApplicationErrors.RequestNotFound;
+        }
+
+        // Get all attachments associated with this request
+        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.RequestId == requestId);
+        if (requestAttachments.IsError)
+        {
+            return requestAttachments.Errors;
+        }
+
+        if (requestAttachments.Value == null || !requestAttachments.Value.Any())
+        {
+            return ApplicationErrors.OperationFailed; // Using a general error since NoAttachmentsFound doesn't exist
+        }
+
+        // Create a memory stream to hold the ZIP archive
+        using var zipMemoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(zipMemoryStream, ZipArchiveMode.Create, true))
+        {
+            foreach (var requestAttachment in requestAttachments.Value)
+            {
+                // Get the attachment details
+                var attachment = await unitOfWork.Attachments.GetByIdAsync(requestAttachment.AttachmentId);
+                if (attachment.IsError)
+                {
+                    continue; // Skip this attachment if it doesn't exist
+                }
+
+                // Get the file content
+                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value.Path);
+                if (fileBytes.IsError)
+                {
+                    continue; // Skip this attachment if the file doesn't exist
+                }
+
+                // Create an entry in the ZIP archive
+                var entry = archive.CreateEntry(attachment.Value.FileName, CompressionLevel.Optimal);
+                using var entryStream = entry.Open();
+                await entryStream.WriteAsync(fileBytes.Value);
+            }
+        }
+
+        // Return the ZIP archive as a byte array
+        return zipMemoryStream.ToArray();
+    }
+
+    /// <summary>
+    /// Downloads all files associated with a response as a ZIP archive.
+    /// </summary>
+    public async Task<Result<byte[]>> DownloadFilesFromResponseAsync(Guid responseId)
+    {
+        // Verify the response exists
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+        {
+            return ApplicationErrors.ResponseNotFound;
+        }
+
+        // Get all attachments associated with this response
+        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.ResponseId == responseId);
+        if (responseAttachments.IsError)
+        {
+            return responseAttachments.Errors;
+        }
+
+        if (responseAttachments.Value == null || !responseAttachments.Value.Any())
+        {
+            return ApplicationErrors.OperationFailed; // Using a general error since NoAttachmentsFound doesn't exist
+        }
+
+        // Create a memory stream to hold the ZIP archive
+        using var zipMemoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(zipMemoryStream, ZipArchiveMode.Create, true))
+        {
+            foreach (var responseAttachment in responseAttachments.Value)
+            {
+                // Get the attachment details
+                var attachment = await unitOfWork.Attachments.GetByIdAsync(responseAttachment.AttachmentId);
+                if (attachment.IsError)
+                {
+                    continue; // Skip this attachment if it doesn't exist
+                }
+
+                // Get the file content
+                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value.Path);
+                if (fileBytes.IsError)
+                {
+                    continue; // Skip this attachment if the file doesn't exist
+                }
+
+                // Create an entry in the ZIP archive
+                var entry = archive.CreateEntry(attachment.Value.FileName, CompressionLevel.Optimal);
+                using var entryStream = entry.Open();
+                await entryStream.WriteAsync(fileBytes.Value);
+            }
+        }
+
+        // Return the ZIP archive as a byte array
+        return zipMemoryStream.ToArray();
     }
 
     /// <summary>

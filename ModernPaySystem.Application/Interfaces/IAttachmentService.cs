@@ -8,15 +8,6 @@ namespace ModernPaySystem.Application.Interfaces;
 /// </summary>
 public interface IAttachmentService
 {
-    /// <summary>
-    /// Get all attachments.
-    /// </summary>
-    Task<Result<IEnumerable<AttachmentDto>>> GetAllAsync();
-
-    /// <summary>
-    /// Get paged attachments.
-    /// </summary>
-    Task<Result<PagedList<AttachmentDto>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get attachment by id.
@@ -57,6 +48,16 @@ public interface IAttachmentService
     /// Downloads a file associated with a response.
     /// </summary>
     Task<Result<byte[]>> DownloadFileFromResponseAsync(Guid responseId, Guid attachmentId);
+
+    /// <summary>
+    /// Downloads a files associated with a request.
+    /// </summary>
+    Task<Result<byte[]>> DownloadFilesFromRequestAsync(Guid requestId);
+
+    /// <summary>
+    /// Downloads files associated with a response.
+    /// </summary>
+    Task<Result<byte[]>> DownloadFilesFromResponseAsync(Guid responseId);
 
     /// <summary>
     /// Removes a file attachment from a request.
