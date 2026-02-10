@@ -15,6 +15,11 @@ public interface IRepositoryBase<TEntity, TKey>
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
 
+    Task<Result<List<TEntity>>> FindAsync(
+        Expression<Func<TEntity, bool>> filter,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null);
+
     Task<Result<PagedList<TEntity>>> GetPagedAsync(
         int page,
         int pageSize,

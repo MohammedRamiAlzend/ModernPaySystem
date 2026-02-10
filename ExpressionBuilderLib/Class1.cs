@@ -148,6 +148,125 @@ public class Class1
             Console.WriteLine($"Name: {person.Name}, Age: {person.Age}");
         }
     }
+    
+    /// <summary>
+    /// Demonstrates how to use ExpressionBuilderLib to filter requests for a specific user
+    /// This example shows how to implement a method similar to what would be used in RequestService
+    /// </summary>
+    public static void RequestFilteringExample()
+    {
+        // Simulate getting the current user ID (would come from IHttpContextServiceManager in real implementation)
+        Guid currentUserId = Guid.NewGuid(); // In real implementation: httpContextServiceManager.GetCurrentUserId()
+
+        // Create an expression builder for Request entities
+        var requestBuilder = new ExpressionBuilder<Request>();
+
+        // Add a condition to filter requests where the ApproverId matches the current user ID
+        // This represents requests that were sent TO the current user (they are the approver)
+        requestBuilder.And(r => r.ApproverId == currentUserId);
+
+        // Build the expression
+        var expression = requestBuilder.Build();
+
+        // Compile the expression to a function
+        var compiledFunction = expression.Compile();
+
+        // Example usage with sample data (in real implementation, this would come from the repository)
+        var allRequests = new List<Request>
+        {
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() },
+            new Request { Id = Guid.NewGuid(), ApproverId = Guid.NewGuid(), RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() }, // Different approver
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() }
+        };
+
+        // Filter the requests using the expression
+        var receivedRequests = allRequests.Where(compiledFunction).ToList();
+
+        Console.WriteLine($"\nReceived requests for user {currentUserId}:");
+        foreach (var request in receivedRequests)
+        {
+            Console.WriteLine($"Request ID: {request.Id}, Approver ID: {request.ApproverId}");
+        }
+    }
+    
+    /// <summary>
+    /// Demonstrates how to use ExpressionBuilderLib with pagination for requests
+    /// This example shows how to implement a method similar to what would be used in RequestService
+    /// </summary>
+    public static void RequestPaginationExample()
+    {
+        // Simulate getting the current user ID (would come from IHttpContextServiceManager in real implementation)
+        Guid currentUserId = Guid.NewGuid(); // In real implementation: httpContextServiceManager.GetCurrentUserId()
+
+        // Create an expression builder for Request entities
+        var requestBuilder = new ExpressionBuilder<Request>();
+
+        // Add a condition to filter requests where the ApproverId matches the current user ID
+        // This represents requests that were sent TO the current user (they are the approver)
+        requestBuilder.And(r => r.ApproverId == currentUserId);
+
+        // Build the expression
+        var expression = requestBuilder.Build();
+
+        // Example usage with sample data (in real implementation, this would come from the repository)
+        var allRequests = new List<Request>
+        {
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid(), CreatedAt = DateTime.Now.AddDays(-1) },
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid(), CreatedAt = DateTime.Now.AddDays(-2) },
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid(), CreatedAt = DateTime.Now.AddDays(-3) },
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid(), CreatedAt = DateTime.Now.AddDays(-4) },
+            new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid(), CreatedAt = DateTime.Now.AddDays(-5) }
+        };
+
+        // Sort the requests by creation date (newest first)
+        var sortedRequests = allRequests.OrderByDescending(r => r.CreatedAt).ToList();
+
+        // Apply pagination
+        int pageNumber = 1;
+        int pageSize = 2;
+        var pagedRequests = sortedRequests
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+        Console.WriteLine($"\nPaginated requests for user {currentUserId} (Page {pageNumber}, Size {pageSize}):");
+        foreach (var request in pagedRequests)
+        {
+            Console.WriteLine($"Request ID: {request.Id}, Approver ID: {request.ApproverId}, Created At: {request.CreatedAt}");
+        }
+        
+        // Show total count
+        var totalCount = sortedRequests.Count;
+        Console.WriteLine($"Total requests: {totalCount}");
+        Console.WriteLine($"Total pages: {(int)Math.Ceiling((double)totalCount / pageSize)}");
+    }
+}
+
+/// <summary>
+/// Sample Request class to demonstrate the expression builder functionality
+/// In the actual implementation, this would be from ModernPaySystem.Domain.Entities.TransactionSystemEntities
+/// </summary>
+public class Request
+{
+    public Guid Id { get; set; }
+    public Guid TemplateId { get; set; }
+    public Guid RequesterId { get; set; }
+    public Guid ApproverId { get; set; }
+    public string ContentAsJson { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public RequestStatus Status { get; set; } = RequestStatus.Pending;
+}
+
+/// <summary>
+/// Sample RequestStatus enum to demonstrate the expression builder functionality
+/// </summary>
+public enum RequestStatus
+{
+    Pending,
+    Approved,
+    Rejected,
+    Cancelled
 }
 
 /// <summary>

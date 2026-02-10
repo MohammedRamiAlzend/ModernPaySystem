@@ -208,6 +208,94 @@ public IQueryable<T> ApplyFilters<T>(IQueryable<T> query, Dictionary<string, obj
 }
 ```
 
+### Example 3: Real-world Usage in RequestService
+
+Here's a practical example of how to use ExpressionBuilderLib in a real application to filter requests for the current user:
+
+```csharp
+public async Task<Result<IEnumerable<RequestDto>>> GetReceivedRequestsAsync()
+{
+    try
+    {
+        logger.LogInformation("Fetching requests received by current user");
+        
+        // Get the current user ID from the HTTP context
+        var currentUserId = httpContextServiceManager.GetCurrentUserId();
+        
+        // Create an expression builder for Request entities
+        var requestBuilder = new ExpressionBuilder<Request>();
+        
+        // Add a condition to filter requests where the ApproverId matches the current user ID
+        // This represents requests that were sent TO the current user (they are the approver)
+        requestBuilder.And(r => r.ApproverId == currentUserId);
+
+        // Build the expression
+        var expression = requestBuilder.Build();
+
+        // Get requests that match the expression
+        var requests = await unitOfWork.Requests.FindAsync(expression);
+        if (requests.IsError)
+            return requests.Errors;
+
+        var requestDtos = requests.Value!.Select(r => r.ToDto()).ToList();
+        return requestDtos;
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error fetching requests received by current user");
+        return ApplicationErrors.InternalServerError;
+    }
+}
+```
+
+### Example 4: Real-world Usage with Pagination in RequestService
+
+Here's an example of how to combine ExpressionBuilderLib with pagination for requests:
+
+```csharp
+public async Task<Result<PagedList<RequestDto>>> GetReceivedRequestsPagedAsync(int page, int pageSize)
+{
+    try
+    {
+        logger.LogInformation("Fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
+
+        // Validate parameters
+        if (page <= 0)
+            return ApplicationErrors.InvalidInput;
+        if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+            return ApplicationErrors.InvalidInput;
+
+        // Get the current user ID from the HTTP context
+        var currentUserId = httpContextServiceManager.GetCurrentUserId();
+        
+        // Create an expression builder for Request entities
+        var requestBuilder = new ExpressionBuilder<Request>();
+        
+        // Add a condition to filter requests where the ApproverId matches the current user ID
+        // This represents requests that were sent TO the current user (they are the approver)
+        requestBuilder.And(r => r.ApproverId == currentUserId);
+
+        // Build the expression
+        var expression = requestBuilder.Build();
+
+        // Get requests that match the expression with pagination
+        var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression);
+        if (pagedRequests.IsError)
+            return pagedRequests.Errors;
+
+        var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+        var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
+
+        return pagedRequestDtos;
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
+        return ApplicationErrors.InternalServerError;
+    }
+}
+```
+
 ## Best Practices
 
 1. **Cache Compiled Expressions**: If you're using the same expression multiple times, cache the compiled function to improve performance.
@@ -232,6 +320,88 @@ public IQueryable<T> ApplyFilters<T>(IQueryable<T> query, Dictionary<string, obj
 1. **Invalid Property Names**: Ensure property names match exactly (case-sensitive) with the target type.
 2. **Type Mismatches**: Make sure the value types match the property types, or they can be converted.
 3. **Complex Nested Properties**: The library supports "Parent.Child.Property" notation for navigating object hierarchies.
+
+## Real-World Usage Example: Filtering Requests and Responses by User
+
+Here's an example of how ExpressionBuilderLib is used in a real application to filter data by the current user:
+
+```csharp
+public async Task<Result<IEnumerable<ResponseDto>>> GetAllAsync()
+{
+    try
+    {
+        _logger.LogInformation("Fetching responses for current user");
+        
+        // Get the current user ID from the HTTP context
+        var currentUserId = _httpContextServiceManager.GetCurrentUserId();
+        
+        // Create an expression builder for Response entities
+        var responseBuilder = new ExpressionBuilder<Response>();
+        
+        // Add a condition to filter responses where the RespondedByUserId matches the current user ID
+        // This represents responses that were created BY the current user
+        responseBuilder.And(r => r.RespondedByUserId == currentUserId);
+
+        // Build the expression
+        var expression = responseBuilder.Build();
+
+        // Get responses that match the expression
+        var responses = await _unitOfWork.Responses.FindAsync(expression);
+        if (responses.IsError)
+            return responses.Errors;
+
+        var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
+        return responseDtos;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error fetching responses for current user");
+        return ApplicationErrors.InternalServerError;
+    }
+}
+
+public async Task<Result<PagedList<ResponseDto>>> GetPagedAsync(int page, int pageSize)
+{
+    try
+    {
+        _logger.LogInformation("Fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
+
+        // Validate parameters
+        if (page <= 0)
+            return ApplicationErrors.InvalidInput;
+        if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+            return ApplicationErrors.InvalidInput;
+
+        // Get the current user ID from the HTTP context
+        var currentUserId = _httpContextServiceManager.GetCurrentUserId();
+        
+        // Create an expression builder for Response entities
+        var responseBuilder = new ExpressionBuilder<Response>();
+        
+        // Add a condition to filter responses where the RespondedByUserId matches the current user ID
+        // This represents responses that were created BY the current user
+        responseBuilder.And(r => r.RespondedByUserId == currentUserId);
+
+        // Build the expression
+        var expression = responseBuilder.Build();
+
+        // Get responses that match the expression with pagination
+        var pagedResponses = await _unitOfWork.Responses.GetPagedAsync(page, pageSize, expression);
+        if (pagedResponses.IsError)
+            return pagedResponses.Errors;
+
+        var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
+        var pagedResponseDtos = new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
+
+        return pagedResponseDtos;
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Error fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
+        return ApplicationErrors.InternalServerError;
+    }
+}
+```
 
 ## Extending the Library
 

@@ -1,9 +1,11 @@
+using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.IO;
 using FileManager.Abstractions;
+using ExpressionBuilderLib.src.Core;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -15,13 +17,15 @@ public class ResponseService : IResponseService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IFileManager _fileManager;
     private readonly IWebAttachmentService _webAttachmentService;
+    private readonly IHttpContextServiceManager _httpContextServiceManager;
     private readonly ILogger<ResponseService> _logger;
 
-    public ResponseService(IUnitOfWork unitOfWork, IFileManager fileManager, IWebAttachmentService webAttachmentService, ILogger<ResponseService> logger)
+    public ResponseService(IUnitOfWork unitOfWork, IFileManager fileManager, IWebAttachmentService webAttachmentService, IHttpContextServiceManager httpContextServiceManager, ILogger<ResponseService> logger)
     {
         _unitOfWork = unitOfWork;
         _fileManager = fileManager;
         _webAttachmentService = webAttachmentService;
+        _httpContextServiceManager = httpContextServiceManager;
         _logger = logger;
     }
 
@@ -29,19 +33,32 @@ public class ResponseService : IResponseService
     {
         try
         {
-            _logger.LogInformation("Fetching all responses");
-            var responses = await _unitOfWork.Responses.GetAllAsync();
+            _logger.LogInformation("Fetching responses for current user");
+            
+            // Get the current user ID from the HTTP context
+            var currentUserId = _httpContextServiceManager.GetCurrentUserId();
+            
+            // Create an expression builder for Response entities
+            var responseBuilder = new ExpressionBuilder<Response>();
+            
+            // Add a condition to filter responses where the RespondedByUserId matches the current user ID
+            // This represents responses that were created BY the current user
+            responseBuilder.And(r => r.RespondedByUserId == currentUserId);
+
+            // Build the expression
+            var expression = responseBuilder.Build();
+
+            // Get responses that match the expression
+            var responses = await _unitOfWork.Responses.FindAsync(expression);
             if (responses.IsError)
-            {
                 return responses.Errors;
-            }
 
             var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
             return responseDtos;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching all responses");
+            _logger.LogError(ex, "Error fetching responses for current user");
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -50,7 +67,7 @@ public class ResponseService : IResponseService
     {
         try
         {
-            _logger.LogInformation("Fetching paged responses, page: {Page}, size: {PageSize}", page, pageSize);
+            _logger.LogInformation("Fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
 
             // Validate parameters
             if (page <= 0)
@@ -58,18 +75,32 @@ public class ResponseService : IResponseService
             if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
                 return ApplicationErrors.InvalidInput;
 
-            var pagedResponses = await _unitOfWork.Responses.GetPagedAsync(page, pageSize);
+            // Get the current user ID from the HTTP context
+            var currentUserId = _httpContextServiceManager.GetCurrentUserId();
+            
+            // Create an expression builder for Response entities
+            var responseBuilder = new ExpressionBuilder<Response>();
+            
+            // Add a condition to filter responses where the RespondedByUserId matches the current user ID
+            // This represents responses that were created BY the current user
+            responseBuilder.And(r => r.RespondedByUserId == currentUserId);
+
+            // Build the expression
+            var expression = responseBuilder.Build();
+
+            // Get responses that match the expression with pagination
+            var pagedResponses = await _unitOfWork.Responses.GetPagedAsync(page, pageSize, expression);
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
 
             var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
             var pagedResponseDtos = new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
-            
+
             return pagedResponseDtos;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching paged responses, page: {Page}, size: {PageSize}", page, pageSize);
+            _logger.LogError(ex, "Error fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -243,7 +274,7 @@ public class ResponseService : IResponseService
             if (response.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
-            _logger.LogInformation("Adding {FileCount} files to response: {ResponseId}", files.Count, responseId);
+            _logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
             // Process each file and associate it with the response using WebAttachmentService
             foreach (var file in files)
@@ -256,7 +287,7 @@ public class ResponseService : IResponseService
                 }
             }
 
-            _logger.LogInformation("Successfully added {FileCount} files to response: {ResponseId}", files.Count, responseId);
+            _logger.LogInformation("Successfully added {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
             // Return the updated response with its attachments
             var updatedResponse = await _unitOfWork.Responses.GetByIdAsync(responseId);
@@ -267,7 +298,7 @@ public class ResponseService : IResponseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding files to response: {ResponseId}", responseId);
+            _logger.LogError(ex, "Error adding Files to response: {ResponseId}", responseId);
             return ApplicationErrors.InternalServerError;
         }
     }

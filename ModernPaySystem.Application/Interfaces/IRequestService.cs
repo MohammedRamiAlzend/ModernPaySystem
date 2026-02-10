@@ -60,4 +60,14 @@ public interface IRequestService
     /// Add files to a request.
     /// </summary>
     Task<Result<RequestDto>> AddFilesToRequestAsync(Guid requestId, List<IFormFile> files);
+
+    /// <summary>
+    /// Get requests received by the current user (where the current user is the approver).
+    /// </summary>
+    Task<Result<IEnumerable<RequestDto>>> GetReceivedRequestsAsync();
+
+    /// <summary>
+    /// Get paged requests received by the current user (where the current user is the approver).
+    /// </summary>
+    Task<Result<PagedList<RequestDto>>> GetReceivedRequestsPagedAsync(int page, int pageSize);
 }

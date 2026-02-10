@@ -1,13 +1,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using ExpressionBuilderLib.src.Core;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
 /// Implementation of Request service CRUD operations.
 /// </summary>
-public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService webAttachmentService) : IRequestService
+public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService webAttachmentService, IHttpContextServiceManager httpContextServiceManager) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
@@ -255,7 +257,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (request.Value == null)
                 return ApplicationErrors.RequestNotFound;
 
-            logger.LogInformation("Adding {FileCount} files to request: {RequestId}", files.Count, requestId);
+            logger.LogInformation("Adding {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
             // Process each file and associate it with the request using WebAttachmentService
             foreach (var file in files)
@@ -268,7 +270,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
                 }
             }
 
-            logger.LogInformation("Successfully added {FileCount} files to request: {RequestId}", files.Count, requestId);
+            logger.LogInformation("Successfully added {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
             // Return the updated request with its attachments
             var updatedRequest = await unitOfWork.Requests.GetByIdAsync(requestId);
@@ -279,7 +281,83 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error adding files to request: {RequestId}", requestId);
+            logger.LogError(ex, "Error adding Files to request: {RequestId}", requestId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<IEnumerable<RequestDto>>> GetReceivedRequestsAsync()
+    {
+        try
+        {
+            logger.LogInformation("Fetching requests received by current user");
+            
+            // Get the current user ID from the HTTP context
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            
+            // Create an expression builder for Request entities
+            var requestBuilder = new ExpressionBuilder<Request>();
+            
+            // Add a condition to filter requests where the ApproverId matches the current user ID
+            // This represents requests that were sent TO the current user (they are the approver)
+            requestBuilder.And(r => r.ApproverId == currentUserId);
+
+            // Build the expression
+            var expression = requestBuilder.Build();
+
+            // Get requests that match the expression
+            var requests = await unitOfWork.Requests.FindAsync(expression);
+            if (requests.IsError)
+                return requests.Errors;
+
+            var requestDtos = requests.Value!.Select(r => r.ToDto()).ToList();
+            return requestDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching requests received by current user");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<PagedList<RequestDto>>> GetReceivedRequestsPagedAsync(int page, int pageSize)
+    {
+        try
+        {
+            logger.LogInformation("Fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
+
+            // Validate parameters
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+                return ApplicationErrors.InvalidInput;
+
+            // Get the current user ID from the HTTP context
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            
+            // Create an expression builder for Request entities
+            var requestBuilder = new ExpressionBuilder<Request>();
+            
+            // Add a condition to filter requests where the ApproverId matches the current user ID
+            // This represents requests that were sent TO the current user (they are the approver)
+            requestBuilder.And(r => r.ApproverId == currentUserId);
+
+            // Build the expression
+            var expression = requestBuilder.Build();
+
+            // Get requests that match the expression with pagination
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression);
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
+
+            return pagedRequestDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }

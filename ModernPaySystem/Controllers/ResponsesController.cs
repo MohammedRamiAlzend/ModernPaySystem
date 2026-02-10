@@ -112,11 +112,11 @@ public class ResponsesController : ControllerBase
     /// <summary>
     /// Add files to a response
     /// </summary>
-    [HttpPost("{responseId}/files")]
-    [EndpointPermission("responses.add-files", SubSystem.TransactionSystem, PermissionType.Insert)]
+    [HttpPost("{responseId}/Files")]
+    [EndpointPermission("responses.add-Files", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> AddFilesToResponse(Guid responseId, List<IFormFile> files)
     {
-        _logger.LogInformation("Adding {FileCount} files to response: {ResponseId}", files?.Count, responseId);
+        _logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files?.Count, responseId);
         var result = await _responseService.AddFilesToResponseAsync(responseId, files);
         return result.ToActionResult();
     }

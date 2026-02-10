@@ -18,6 +18,9 @@ public static class InfrastructureServiceRegistration
         // Register File Manager Services
         services.AddFileManager();
 
+        // Register HTTP Context Accessor
+        services.AddHttpContextAccessor();
+
         // Register Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

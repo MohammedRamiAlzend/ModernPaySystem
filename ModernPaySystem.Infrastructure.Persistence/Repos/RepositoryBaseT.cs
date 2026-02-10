@@ -221,6 +221,40 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
                 $"Something went wrong while retrieving entity of type {typeof(TEntity).Name} with id {id}. Exception: {e.Message}", ErrorKind.Failure);
         }
     }
+
+    public async Task<Result<List<TEntity>>> FindAsync(
+        Expression<Func<TEntity, bool>> filter,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
+    {
+        IQueryable<TEntity> query = dbcontext.Set<TEntity>();
+
+        try
+        {
+            query = query.Where(filter);
+            if (transform != null) query = transform(query);
+
+            // If no specific ordering is provided, order by Id descending (newest first, assuming auto-incrementing IDs)
+            if (orderBy == null)
+            {
+                query = query.OrderByDescending(e => e.Id);
+            }
+            else
+            {
+                query = orderBy(query);
+            }
+
+            return await query.ToListAsync();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error finding entities of type {EntityType}.", typeof(TEntity).Name);
+            return new Error(
+                "00",
+                $"Something went wrong while finding entities of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                type: ErrorKind.Failure);
+        }
+    }
     private static string? ExtractForeignKeyName(DbUpdateException ex)
     {
         var message = ex.InnerException?.Message ?? ex.Message;

@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Controllers;
@@ -75,11 +76,12 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     /// Create new request.
     /// </summary>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [EndpointPermission("requests.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromQuery] CreateRequestDto request, [FromBody] List<IFormFile> files)
+    public async Task<IActionResult> Create([FromForm] CreateRequestDto request)
     {
         logger.LogInformation("Creating new request for requester: {RequesterId}", request?.RequesterId);
-        var result = await requestService.CreateAsync(request, files);
+        var result = await requestService.CreateAsync(request, request.Files);
         return result.ToActionResult();
     }
 
