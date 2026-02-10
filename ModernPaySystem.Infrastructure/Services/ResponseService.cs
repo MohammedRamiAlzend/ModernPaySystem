@@ -54,6 +54,11 @@ public class ResponseService : IResponseService
                 return responses.Errors;
 
             var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
+            
+            // Return an empty list if no responses are found for the current user
+            if (!responseDtos.Any())
+                return new List<ResponseDto>();
+                
             return responseDtos;
         }
         catch (Exception ex)

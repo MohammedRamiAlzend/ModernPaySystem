@@ -15,17 +15,6 @@ namespace ModernPaySystem.Controllers;
 [Authorize]
 public class AttachmentsController(IAttachmentService attachmentService, ILogger<AttachmentsController> logger) : ControllerBase
 {
-    /// <summary>
-    /// Get all attachments.
-    /// </summary>
-    [HttpGet]
-    [EndpointPermission("attachments.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetAll()
-    {
-        logger.LogInformation("Getting all attachments");
-        var result = await attachmentService.GetAllAsync();
-        return result.ToActionResult();
-    }
 
     /// <summary>
     /// Get attachment by id.
@@ -40,62 +29,36 @@ public class AttachmentsController(IAttachmentService attachmentService, ILogger
     }
 
     /// <summary>
-    /// Get attachments by file type.
+    /// Downloads all files associated with a request as a ZIP archive.
     /// </summary>
-    [HttpGet("by-type/{fileType}")]
-    [EndpointPermission("attachments.get-by-file-type", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByFileType(string fileType)
+    [HttpGet("request/{requestId}/download-all")]
+    [EndpointPermission("attachments.download-all-from-request", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> DownloadAllFilesFromRequest(Guid requestId)
     {
-        logger.LogInformation("Getting attachments by file type: {FileType}", fileType);
-        var result = await attachmentService.GetByFileTypeAsync(fileType);
-        return result.ToActionResult();
+        logger.LogInformation("Downloading all files from request: {RequestId}", requestId);
+        var result = await attachmentService.DownloadFilesFromRequestAsync(requestId);
+        if (result.IsError)
+        {
+            return result.ToActionResult();
+        }
+
+        return File(result.Value!, "application/zip", $"Request_{requestId}_Attachments.zip");
     }
 
     /// <summary>
-    /// Get attachment by file name.
+    /// Downloads all files associated with a response as a ZIP archive.
     /// </summary>
-    [HttpGet("by-name/{fileName}")]
-    [EndpointPermission("attachments.get-by-file-name", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByFileName(string fileName)
+    [HttpGet("response/{responseId}/download-all")]
+    [EndpointPermission("attachments.download-all-from-response", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> DownloadAllFilesFromResponse(Guid responseId)
     {
-        logger.LogInformation("Getting attachment by file name: {FileName}", fileName);
-        var result = await attachmentService.GetByFileNameAsync(fileName);
-        return result.ToActionResult();
-    }
+        logger.LogInformation("Downloading all files from response: {ResponseId}", responseId);
+        var result = await attachmentService.DownloadFilesFromResponseAsync(responseId);
+        if (result.IsError)
+        {
+            return result.ToActionResult();
+        }
 
-    /// <summary>
-    /// Create new attachment.
-    /// </summary>
-    [HttpPost]
-    [EndpointPermission("attachments.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] CreateAttachmentDto attachment)
-    {
-        logger.LogInformation("Creating new attachment: {FileName}", attachment?.FileName);
-        var result = await attachmentService.CreateAsync(attachment);
-        return result.ToActionResult();
-    }
-
-    /// <summary>
-    /// Update attachment.
-    /// </summary>
-    [HttpPut("{id}")]
-    [EndpointPermission("attachments.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAttachmentDto attachment)
-    {
-        logger.LogInformation("Updating attachment: {AttachmentId}", id);
-        var result = await attachmentService.UpdateAsync(id, attachment);
-        return result.ToActionResult();
-    }
-
-    /// <summary>
-    /// Delete attachment.
-    /// </summary>
-    [HttpDelete("{id}")]
-    [EndpointPermission("attachments.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        logger.LogInformation("Deleting attachment: {AttachmentId}", id);
-        var result = await attachmentService.DeleteAsync(id);
-        return result.ToActionResult();
+        return File(result.Value!, "application/zip", $"Response_{responseId}_Attachments.zip");
     }
 }

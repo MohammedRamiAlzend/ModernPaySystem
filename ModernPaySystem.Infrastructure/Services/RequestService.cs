@@ -16,7 +16,12 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         try
         {
             logger.LogInformation("Fetching all requests");
-            var requests = await unitOfWork.Requests.GetAllAsync();
+            var requests = await unitOfWork.Requests.GetAllAsync(null,
+                x => x.Include(x => x.Template)
+                     .Include(x => x.Approver)
+                     .Include(x => x.Requester)
+                     .Include(x => x.RequestAttachments)
+                );
             if (requests.IsError)
                 return requests.Errors;
 
@@ -165,7 +170,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             foreach (var file in files)
             {
                 var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, requestEntity.Id);
-                if(uploadResult.IsError)
+                if (uploadResult.IsError)
                     return uploadResult.Errors;
             }
 
@@ -291,13 +296,13 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         try
         {
             logger.LogInformation("Fetching requests received by current user");
-            
+
             // Get the current user ID from the HTTP context
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-            
+
             // Create an expression builder for Request entities
             var requestBuilder = new ExpressionBuilder<Request>();
-            
+
             // Add a condition to filter requests where the ApproverId matches the current user ID
             // This represents requests that were sent TO the current user (they are the approver)
             requestBuilder.And(r => r.ApproverId == currentUserId);
@@ -334,10 +339,10 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
 
             // Get the current user ID from the HTTP context
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-            
+
             // Create an expression builder for Request entities
             var requestBuilder = new ExpressionBuilder<Request>();
-            
+
             // Add a condition to filter requests where the ApproverId matches the current user ID
             // This represents requests that were sent TO the current user (they are the approver)
             requestBuilder.And(r => r.ApproverId == currentUserId);

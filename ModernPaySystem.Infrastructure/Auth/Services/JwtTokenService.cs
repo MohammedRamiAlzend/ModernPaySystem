@@ -36,7 +36,6 @@ public class JwtTokenService : ITokenService
         {
             claims.Add(new Claim("permission", permission));
         }
-
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
