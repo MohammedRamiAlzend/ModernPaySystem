@@ -1,5 +1,3 @@
-using ModernPaySystem.Domain.DTOs.AuthDtos;
-
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public class Role : Entity<Guid>
@@ -11,11 +9,32 @@ public class Role : Entity<Guid>
     public ICollection<User> Users { get; set; } = [];
     public ICollection<PermissionEntity> Permissions { get; set; } = [];
 
-    public RoleDto DTO => new()
+    public RoleDto ToDto()
     {
-        //Id = Id,
-        Name = Name,
-        Description = Description,
-        //Permissions = RolePermissions.Select(rp => rp.Permission.ToDto).ToList()
-    };
+        return new RoleDto
+        {
+            Id = this.Id,
+            Name = this.Name,
+            Description = this.Description
+        };
+    }
+}
+
+public class RoleDto
+{
+    public Guid Id { get; set; }
+    public required string Name { get; set; }
+    public string? Description { get; set; }
+}
+
+public class CreateRoleDto
+{
+    public required string Name { get; set; }
+    public string? Description { get; set; }
+}
+
+public class UpdateRoleDto
+{
+    public required string Name { get; set; }
+    public string? Description { get; set; }
 }

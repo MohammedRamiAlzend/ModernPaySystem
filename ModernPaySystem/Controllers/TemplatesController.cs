@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Services;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Extensions;
 
@@ -65,7 +65,7 @@ public class TemplatesController : ControllerBase
     /// </summary>
     [HttpPost]
     [EndpointPermission("templates.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] Template template)
+    public async Task<IActionResult> Create([FromBody] CreateTemplateDto template)
     {
         _logger.LogInformation("Creating new template: {TemplateName}", template?.TemplateName);
         var result = await _templateService.CreateAsync(template);
@@ -77,7 +77,7 @@ public class TemplatesController : ControllerBase
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("templates.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Template template)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTemplateDto template)
     {
         _logger.LogInformation("Updating template: {TemplateId}", id);
         var result = await _templateService.UpdateAsync(id, template);

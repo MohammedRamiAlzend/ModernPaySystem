@@ -11,32 +11,32 @@ public interface IRoleService
     /// <summary>
     /// Get all roles.
     /// </summary>
-    Task<Result<IEnumerable<Role>>> GetAllAsync();
+    Task<Result<IEnumerable<RoleDto>>> GetAllAsync();
 
     /// <summary>
     /// Get paged roles.
     /// </summary>
-    Task<Result<PagedList<Role>>> GetPagedAsync(int page, int pageSize);
+    Task<Result<PagedList<RoleDto>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get role by id.
     /// </summary>
-    Task<Result<Role>> GetByIdAsync(Guid id);
+    Task<Result<RoleDto>> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Get role by name.
     /// </summary>
-    Task<Result<Role>> GetByNameAsync(string name);
+    Task<Result<RoleDto>> GetByNameAsync(string name);
 
     /// <summary>
     /// Create new role.
     /// </summary>
-    Task<Result<Role>> CreateAsync(Role role);
+    Task<Result<RoleDto>> CreateAsync(CreateRoleDto role);
 
     /// <summary>
     /// Update role.
     /// </summary>
-    Task<Result<Role>> UpdateAsync(Guid id, Role role);
+    Task<Result<RoleDto>> UpdateAsync(Guid id, UpdateRoleDto role);
 
     /// <summary>
     /// Delete role.

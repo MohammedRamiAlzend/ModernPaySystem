@@ -1,4 +1,5 @@
 using ModernPaySystem.Domain.Commons;
+using ModernPaySystem.Domain.Entities.SharedEntities;
 
 namespace ModernPaySystem.Application.Interfaces;
 
@@ -10,22 +11,22 @@ public interface IUserService
     /// <summary>
     /// Get all users.
     /// </summary>
-    Task<Result<IEnumerable<User>>> GetAllAsync();
+    Task<Result<IEnumerable<UserDto>>> GetAllAsync();
 
     /// <summary>
     /// Get paged users.
     /// </summary>
-    Task<Result<PagedList<User>>> GetPagedAsync(int page, int pageSize);
+    Task<Result<PagedList<UserDto>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get user by id.
     /// </summary>
-    Task<Result<User>> GetByIdAsync(Guid id);
+    Task<Result<UserDto>> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Get user by username.
     /// </summary>
-    Task<Result<User>> GetByUsernameAsync(string username);
+    Task<Result<UserDto>> GetByUsernameAsync(string username);
 
     /// <summary>
     /// Check if username exists.
@@ -35,12 +36,12 @@ public interface IUserService
     /// <summary>
     /// Create new user.
     /// </summary>
-    Task<Result<User>> CreateAsync(User user);
+    Task<Result<UserDto>> CreateAsync(CreateUserDto user);
 
     /// <summary>
     /// Update user.
     /// </summary>
-    Task<Result<User>> UpdateAsync(Guid id, User user);
+    Task<Result<UserDto>> UpdateAsync(Guid id, UpdateUserDto user);
 
     /// <summary>
     /// Delete user.

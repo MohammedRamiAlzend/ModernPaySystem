@@ -7,7 +7,7 @@ using ModernPaySystem.Infrastructure.Persistence;
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
-/// Implementation of Role service CRUD operations
+/// Implementation of Role service CRUD operations.
 /// </summary>
 public class RoleService : IRoleService
 {
@@ -20,7 +20,7 @@ public class RoleService : IRoleService
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<Role>>> GetAllAsync()
+    public async Task<Result<IEnumerable<RoleDto>>> GetAllAsync()
     {
         try
         {
@@ -29,7 +29,8 @@ public class RoleService : IRoleService
             if (roles.IsError)
                 return roles.Errors;
 
-            return roles.Value;
+            var roleDtos = roles.Value!.ConvertAll(r => r.ToDto());
+            return roleDtos;
         }
         catch (Exception ex)
         {
@@ -38,7 +39,7 @@ public class RoleService : IRoleService
         }
     }
 
-    public async Task<Result<PagedList<Role>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<RoleDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
         {
@@ -54,7 +55,10 @@ public class RoleService : IRoleService
             if (pagedRoles.IsError)
                 return pagedRoles.Errors;
 
-            return pagedRoles.Value;
+            var roleDtos = pagedRoles.Value!.Items.Select(r => r.ToDto()).ToList();
+            var pagedRoleDtos = new PagedList<RoleDto>(roleDtos, pagedRoles.Value.TotalItems, page, pageSize);
+
+            return pagedRoleDtos;
         }
         catch (Exception ex)
         {
@@ -63,7 +67,7 @@ public class RoleService : IRoleService
         }
     }
 
-    public async Task<Result<Role>> GetByIdAsync(Guid id)
+    public async Task<Result<RoleDto>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -76,7 +80,7 @@ public class RoleService : IRoleService
             if (role.Value == null)
                 return ApplicationErrors.RoleNotFound;
 
-            return role;
+            return role.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -85,7 +89,7 @@ public class RoleService : IRoleService
         }
     }
 
-    public async Task<Result<Role>> GetByNameAsync(string name)
+    public async Task<Result<RoleDto>> GetByNameAsync(string name)
     {
         try
         {
@@ -98,12 +102,12 @@ public class RoleService : IRoleService
             {
                 return roles.Errors;
             }
-            var role = roles.Value.FirstOrDefault(r => r.Name == name);
+            var role = roles.Value!.FirstOrDefault(r => r.Name == name);
 
             if (role == null)
                 return ApplicationErrors.RoleNotFound;
 
-            return role;
+            return role.ToDto();
         }
         catch (Exception ex)
         {
@@ -112,7 +116,7 @@ public class RoleService : IRoleService
         }
     }
 
-    public async Task<Result<Role>> CreateAsync(Role role)
+    public async Task<Result<RoleDto>> CreateAsync(CreateRoleDto role)
     {
         try
         {
@@ -124,11 +128,22 @@ public class RoleService : IRoleService
 
             _logger.LogInformation("Creating new role: {RoleName}", role.Name);
 
-            await _unitOfWork.Roles.AddAsync(role);
-            await _unitOfWork.SaveChangesAsync();
+            var roleEntity = new Role
+            {
+                Name = role.Name,
+                Description = role.Description
+            };
+
+            var addResult = await _unitOfWork.Roles.AddAsync(roleEntity);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result < 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully created role: {RoleName}", role.Name);
-            return role;
+            return roleEntity.ToDto();
         }
         catch (Exception ex)
         {
@@ -137,7 +152,7 @@ public class RoleService : IRoleService
         }
     }
 
-    public async Task<Result<Role>> UpdateAsync(Guid id, Role role)
+    public async Task<Result<RoleDto>> UpdateAsync(Guid id, UpdateRoleDto role)
     {
         try
         {
@@ -156,11 +171,14 @@ public class RoleService : IRoleService
             existingRole.Value.Name = role.Name;
             existingRole.Value.Description = role.Description;
 
-            await _unitOfWork.Roles.UpdateAsync(existingRole.Value);
+            var updateResult = await _unitOfWork.Roles.UpdateAsync(existingRole.Value);
+            if (updateResult.IsError)
+                return updateResult.Errors;
+
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated role: {RoleId}", id);
-            return existingRole;
+            return existingRole.Value.ToDto();
         }
         catch (Exception ex)
         {

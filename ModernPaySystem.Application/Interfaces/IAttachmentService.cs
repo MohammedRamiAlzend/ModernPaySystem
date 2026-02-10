@@ -1,3 +1,6 @@
+using ModernPaySystem.Domain.Commons;
+using ModernPaySystem.Domain.Entities.SharedEntities;
+
 namespace ModernPaySystem.Application.Interfaces;
 
 /// <summary>
@@ -8,37 +11,37 @@ public interface IAttachmentService
     /// <summary>
     /// Get all attachments.
     /// </summary>
-    Task<Result<IEnumerable<Attachment>>> GetAllAsync();
+    Task<Result<IEnumerable<AttachmentDto>>> GetAllAsync();
 
     /// <summary>
     /// Get paged attachments.
     /// </summary>
-    Task<Result<PagedList<Attachment>>> GetPagedAsync(int page, int pageSize);
+    Task<Result<PagedList<AttachmentDto>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get attachment by id.
     /// </summary>
-    Task<Result<Attachment>> GetByIdAsync(Guid id);
+    Task<Result<AttachmentDto>> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Get attachments by file type.
     /// </summary>
-    Task<Result<IEnumerable<Attachment>>> GetByFileTypeAsync(string fileType);
+    Task<Result<IEnumerable<AttachmentDto>>> GetByFileTypeAsync(string fileType);
 
     /// <summary>
     /// Get attachment by file name.
     /// </summary>
-    Task<Result<Attachment>> GetByFileNameAsync(string fileName);
+    Task<Result<AttachmentDto>> GetByFileNameAsync(string fileName);
 
     /// <summary>
     /// Create new attachment.
     /// </summary>
-    Task<Result<Attachment>> CreateAsync(Attachment attachment);
+    Task<Result<AttachmentDto>> CreateAsync(CreateAttachmentDto attachment);
 
     /// <summary>
     /// Update attachment.
     /// </summary>
-    Task<Result<Attachment>> UpdateAsync(Guid id, Attachment attachment);
+    Task<Result<AttachmentDto>> UpdateAsync(Guid id, UpdateAttachmentDto attachment);
 
     /// <summary>
     /// Delete attachment.
@@ -68,10 +71,10 @@ public interface IAttachmentService
     /// <summary>
     /// Gets all attachments for a request.
     /// </summary>
-    Task<Result<IEnumerable<Attachment>>> GetAttachmentsForRequestAsync(Guid requestId);
+    Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForRequestAsync(Guid requestId);
 
     /// <summary>
     /// Gets all attachments for a response.
     /// </summary>
-    Task<Result<IEnumerable<Attachment>>> GetAttachmentsForResponseAsync(Guid responseId);
+    Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForResponseAsync(Guid responseId);
 }

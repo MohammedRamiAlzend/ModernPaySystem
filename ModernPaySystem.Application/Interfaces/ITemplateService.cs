@@ -11,32 +11,32 @@ public interface ITemplateService
     /// <summary>
     /// Get all templates.
     /// </summary>
-    Task<Result<IEnumerable<Template>>> GetAllAsync();
+    Task<Result<IEnumerable<TemplateDto>>> GetAllAsync();
 
     /// <summary>
     /// Get paged templates.
     /// </summary>
-    Task<Result<PagedList<Template>>> GetPagedAsync(int page, int pageSize);
+    Task<Result<PagedList<TemplateDto>>> GetPagedAsync(int page, int pageSize);
 
     /// <summary>
     /// Get template by id.
     /// </summary>
-    Task<Result<Template>> GetByIdAsync(Guid id);
+    Task<Result<TemplateDto>> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Get template by name.
     /// </summary>
-    Task<Result<Template>> GetByNameAsync(string name);
+    Task<Result<TemplateDto>> GetByNameAsync(string name);
 
     /// <summary>
     /// Create new template.
     /// </summary>
-    Task<Result<Template>> CreateAsync(Template template);
+    Task<Result<TemplateDto>> CreateAsync(CreateTemplateDto template);
 
     /// <summary>
     /// Update template.
     /// </summary>
-    Task<Result<Template>> UpdateAsync(Guid id, Template template);
+    Task<Result<TemplateDto>> UpdateAsync(Guid id, UpdateTemplateDto template);
 
     /// <summary>
     /// Delete template.

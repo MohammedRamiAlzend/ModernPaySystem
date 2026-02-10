@@ -2,7 +2,6 @@
 global using System.Reflection;
 global using Microsoft.AspNetCore.Mvc;
 global using ModernPaySystem.Domain.Attrs;
-global using ModernPaySystem.Domain.DTOs.AuthDtos;
 global using System.Threading;
 
 namespace ModernPaySystem.Infrastructure.Services;
@@ -98,7 +97,7 @@ public class PermissionSeederService(
         var existingSuperAdmin = existingSuperAdminResult.Value;
         if (existingSuperAdmin != null)
         {
-            return existingSuperAdmin.DTO;
+            return existingSuperAdmin.ToDto();
         }
 
         var superAdminRole = new Role
@@ -113,7 +112,7 @@ public class PermissionSeederService(
             return result.Errors;
         }
 
-        return superAdminRole.DTO;
+        return superAdminRole.ToDto();
     }
 
     private async Task<Result<Success>> AssignPermissionsToSuperAdminRoleAsync(List<PermissionEntity> permissions, CancellationToken cancellationToken)

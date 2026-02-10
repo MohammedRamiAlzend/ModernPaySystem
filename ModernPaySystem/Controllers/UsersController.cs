@@ -1,3 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Domain.Entities.SharedEntities;
+using ModernPaySystem.Infrastructure.Extensions;
+
 namespace ModernPaySystem.Controllers;
 
 /// <summary>
@@ -73,7 +79,7 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpPost]
     [EndpointPermission("users.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] User user)
+    public async Task<IActionResult> Create([FromBody] CreateUserDto user)
     {
         _logger.LogInformation("Creating new user: {Username}", user?.UserName);
         var result = await _userService.CreateAsync(user);
@@ -85,7 +91,7 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("users.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] User user)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto user)
     {
         _logger.LogInformation("Updating user: {UserId}", id);
         var result = await _userService.UpdateAsync(id, user);

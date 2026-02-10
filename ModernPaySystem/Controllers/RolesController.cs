@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Services;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Infrastructure.Extensions;
 
@@ -65,7 +65,7 @@ public class RolesController : ControllerBase
     /// </summary>
     [HttpPost]
     [EndpointPermission("roles.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] Role role)
+    public async Task<IActionResult> Create([FromBody] CreateRoleDto role)
     {
         _logger.LogInformation("Creating new role: {RoleName}", role?.Name);
         var result = await _roleService.CreateAsync(role);
@@ -77,7 +77,7 @@ public class RolesController : ControllerBase
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("roles.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Role role)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoleDto role)
     {
         _logger.LogInformation("Updating role: {RoleId}", id);
         var result = await _roleService.UpdateAsync(id, role);

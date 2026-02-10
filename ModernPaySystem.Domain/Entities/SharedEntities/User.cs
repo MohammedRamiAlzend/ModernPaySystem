@@ -25,7 +25,7 @@ public class User : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    
+
     public UserDto ToDto()
     {
         return new UserDto
@@ -50,4 +50,18 @@ public class UserDto
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateUserDto
+{
+    public required string UserName { get; set; }
+    public required string HashedPassword { get; set; }
+    public Guid? SubSystemUserId { get; set; }
+}
+
+public class UpdateUserDto
+{
+    public required string UserName { get; set; }
+    public required string HashedPassword { get; set; }
+    public Guid? SubSystemUserId { get; set; }
 }

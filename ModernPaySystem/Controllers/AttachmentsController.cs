@@ -1,3 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Domain.Entities.SharedEntities;
+using ModernPaySystem.Infrastructure.Extensions;
+
 namespace ModernPaySystem.Controllers;
 
 /// <summary>
@@ -62,7 +68,7 @@ public class AttachmentsController(IAttachmentService attachmentService, ILogger
     /// </summary>
     [HttpPost]
     [EndpointPermission("attachments.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] Attachment attachment)
+    public async Task<IActionResult> Create([FromBody] CreateAttachmentDto attachment)
     {
         logger.LogInformation("Creating new attachment: {FileName}", attachment?.FileName);
         var result = await attachmentService.CreateAsync(attachment);
@@ -74,7 +80,7 @@ public class AttachmentsController(IAttachmentService attachmentService, ILogger
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("attachments.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] Attachment attachment)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAttachmentDto attachment)
     {
         logger.LogInformation("Updating attachment: {AttachmentId}", id);
         var result = await attachmentService.UpdateAsync(id, attachment);

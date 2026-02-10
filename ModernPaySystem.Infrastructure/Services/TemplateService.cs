@@ -20,7 +20,7 @@ public class TemplateService : ITemplateService
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<Template>>> GetAllAsync()
+    public async Task<Result<IEnumerable<TemplateDto>>> GetAllAsync()
     {
         try
         {
@@ -30,7 +30,9 @@ public class TemplateService : ITemplateService
             {
                 return templates.Errors;
             }
-            return templates.Value;
+            
+            var templateDtos = templates.Value!.Select(t => t.ToDto()).ToList();
+            return templateDtos;
         }
         catch (Exception ex)
         {
@@ -39,7 +41,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public async Task<Result<PagedList<Template>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<TemplateDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
         {
@@ -55,7 +57,10 @@ public class TemplateService : ITemplateService
             if (pagedTemplates.IsError)
                 return pagedTemplates.Errors;
 
-            return pagedTemplates.Value;
+            var templateDtos = pagedTemplates.Value!.Items.Select(t => t.ToDto()).ToList();
+            var pagedTemplateDtos = new PagedList<TemplateDto>(templateDtos, pagedTemplates.Value.TotalItems, page, pageSize);
+
+            return pagedTemplateDtos;
         }
         catch (Exception ex)
         {
@@ -64,7 +69,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public async Task<Result<Template>> GetByIdAsync(Guid id)
+    public async Task<Result<TemplateDto>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -77,7 +82,7 @@ public class TemplateService : ITemplateService
             if (template.Value == null)
                 return ApplicationErrors.TemplateNotFound;
 
-            return template;
+            return template.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -86,7 +91,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public async Task<Result<Template>> GetByNameAsync(string name)
+    public async Task<Result<TemplateDto>> GetByNameAsync(string name)
     {
         try
         {
@@ -99,12 +104,12 @@ public class TemplateService : ITemplateService
             {
                 return templates.Errors;
             }
-            var template = templates.Value.FirstOrDefault(t => t.TemplateName == name);
+            var template = templates.Value!.FirstOrDefault(t => t.TemplateName == name);
 
             if (template == null)
                 return ApplicationErrors.TemplateNotFound;
 
-            return template;
+            return template.ToDto();
         }
         catch (Exception ex)
         {
@@ -113,7 +118,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public async Task<Result<Template>> CreateAsync(Template template)
+    public async Task<Result<TemplateDto>> CreateAsync(CreateTemplateDto template)
     {
         try
         {
@@ -125,11 +130,23 @@ public class TemplateService : ITemplateService
 
             _logger.LogInformation("Creating new template: {TemplateName}", template.TemplateName);
 
-            await _unitOfWork.Templates.AddAsync(template);
-            await _unitOfWork.SaveChangesAsync();
+            var templateEntity = new Template
+            {
+                ContentAsJson = template.ContentAsJson,
+                TemplateName = template.TemplateName,
+                TemplateDescription = template.TemplateDescription
+            };
+
+            var addResult = await _unitOfWork.Templates.AddAsync(templateEntity);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result < 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully created template: {TemplateName}", template.TemplateName);
-            return template;
+            return templateEntity.ToDto();
         }
         catch (Exception ex)
         {
@@ -138,7 +155,7 @@ public class TemplateService : ITemplateService
         }
     }
 
-    public async Task<Result<Template>> UpdateAsync(Guid id, Template template)
+    public async Task<Result<TemplateDto>> UpdateAsync(Guid id, UpdateTemplateDto template)
     {
         try
         {
@@ -154,15 +171,15 @@ public class TemplateService : ITemplateService
 
             _logger.LogInformation("Updating template: {TemplateId}", id);
 
-            existingTemplate.Value.TemplateName = template.TemplateName;
             existingTemplate.Value.ContentAsJson = template.ContentAsJson;
+            existingTemplate.Value.TemplateName = template.TemplateName;
             existingTemplate.Value.TemplateDescription = template.TemplateDescription;
 
             await _unitOfWork.Templates.UpdateAsync(existingTemplate.Value);
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated template: {TemplateId}", id);
-            return existingTemplate;
+            return existingTemplate.Value.ToDto();
         }
         catch (Exception ex)
         {

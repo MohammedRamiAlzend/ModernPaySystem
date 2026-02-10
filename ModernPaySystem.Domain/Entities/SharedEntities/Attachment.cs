@@ -21,7 +21,7 @@ public class Attachment : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    
+
     public AttachmentDto ToDto()
     {
         return new AttachmentDto
@@ -50,4 +50,20 @@ public class AttachmentDto
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateAttachmentDto
+{
+    public required string FileName { get; set; }
+    public required string SafeName { get; set; }
+    public required string Extension { get; set; }
+    public required string Path { get; set; }
+}
+
+public class UpdateAttachmentDto
+{
+    public required string FileName { get; set; }
+    public required string SafeName { get; set; }
+    public required string Extension { get; set; }
+    public required string Path { get; set; }
 }

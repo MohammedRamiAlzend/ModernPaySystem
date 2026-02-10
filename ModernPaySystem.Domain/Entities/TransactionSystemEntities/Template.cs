@@ -14,7 +14,7 @@ public class Template : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    
+
     public TemplateDto ToDto()
     {
         return new TemplateDto
@@ -41,4 +41,18 @@ public class TemplateDto
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+}
+
+public class CreateTemplateDto
+{
+    public required string ContentAsJson { get; set; }
+    public required string TemplateName { get; set; }
+    public string? TemplateDescription { get; set; }
+}
+
+public class UpdateTemplateDto
+{
+    public required string ContentAsJson { get; set; }
+    public required string TemplateName { get; set; }
+    public string? TemplateDescription { get; set; }
 }

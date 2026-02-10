@@ -1,6 +1,7 @@
 using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using ModernPaySystem.Domain.Commons;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -9,7 +10,8 @@ namespace ModernPaySystem.Infrastructure.Services;
 /// </summary>
 public class AttachmentService(
     IFilesManagerService fileManager,
-    IUnitOfWork unitOfWork) : IAttachmentService
+    IUnitOfWork unitOfWork,
+    ILogger<AttachmentService> logger) : IAttachmentService
 {
     /// <summary>
     /// Uploads a file and associates it with a request.
@@ -317,7 +319,7 @@ public class AttachmentService(
     /// <summary>
     /// Gets all attachments for a request.
     /// </summary>
-    public async Task<Result<IEnumerable<Attachment>>> GetAttachmentsForRequestAsync(Guid requestId)
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForRequestAsync(Guid requestId)
     {
         var request = await unitOfWork.Requests.GetByIdAsync(requestId);
         if (request.IsError)
@@ -333,23 +335,23 @@ public class AttachmentService(
         var attachmentIds = requestAttachments.Value.ConvertAll(ra => ra.AttachmentId);
 
         // Get the actual attachment entities
-        var attachments = new List<Attachment>();
+        var attachmentDtos = new List<AttachmentDto>();
         foreach (var attachmentId in attachmentIds)
         {
             var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
             if (!attachment.IsError)
             {
-                attachments.Add(attachment.Value);
+                attachmentDtos.Add(attachment.Value.ToDto());
             }
         }
 
-        return attachments;
+        return attachmentDtos;
     }
 
     /// <summary>
     /// Gets all attachments for a response.
     /// </summary>
-    public async Task<Result<IEnumerable<Attachment>>> GetAttachmentsForResponseAsync(Guid responseId)
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForResponseAsync(Guid responseId)
     {
         var response = await unitOfWork.Responses.GetByIdAsync(responseId);
         if (response.IsError)
@@ -367,17 +369,17 @@ public class AttachmentService(
         var attachmentIds = responseAttachments.Value!.ConvertAll(ra => ra.AttachmentId);
 
         // Get the actual attachment entities
-        var attachments = new List<Attachment>();
+        var attachmentDtos = new List<AttachmentDto>();
         foreach (var attachmentId in attachmentIds)
         {
             var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
             if (!attachment.IsError)
             {
-                attachments.Add(attachment.Value);
+                attachmentDtos.Add(attachment.Value.ToDto());
             }
         }
 
-        return attachments;
+        return attachmentDtos;
     }
 
     /// <summary>
@@ -389,7 +391,7 @@ public class AttachmentService(
         var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.AttachmentId == attachmentId);
         if (requestAttachments.IsError)
         {
-            throw new Exception("Error checking attachment associations: " + string.Join(", ", requestAttachments.Errors.Select(e => e.Description)));
+            throw new Exception("Error checking attachmentDto associations: " + string.Join(", ", requestAttachments.Errors.Select(e => e.Description)));
         }
 
         if (requestAttachments.Value!.Any())
@@ -401,13 +403,13 @@ public class AttachmentService(
         var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.AttachmentId == attachmentId);
         if (responseAttachments.IsError)
         {
-            throw new Exception("Error checking attachment associations: " + string.Join(", ", responseAttachments.Errors.Select(e => e.Description)));
+            throw new Exception("Error checking attachmentDto associations: " + string.Join(", ", responseAttachments.Errors.Select(e => e.Description)));
         }
 
         return responseAttachments.Value!.Any();
     }
 
-    public async Task<Result<IEnumerable<Attachment>>> GetAllAsync()
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAllAsync()
     {
         var attachments = await unitOfWork.Attachments.GetAllAsync();
         if (attachments.IsError)
@@ -415,10 +417,10 @@ public class AttachmentService(
             return attachments.Errors;
         }
 
-        return attachments.Value;
+        return attachments.Value!.ConvertAll(a => a.ToDto());
     }
 
-    public async Task<Result<PagedList<Attachment>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<AttachmentDto>>> GetPagedAsync(int page, int pageSize)
     {
         // For simplicity, we'll get all attachments and then page them
         // In a real implementation, you'd want to implement proper pagination at the DB level
@@ -428,10 +430,10 @@ public class AttachmentService(
             return allAttachments.Errors;
         }
 
-        var attachmentsList = allAttachments.Value.ToList();
+        var attachmentsList = allAttachments.Value!.ToList();
         var pagedAttachments = attachmentsList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-        return new PagedList<Attachment>(
+        return new PagedList<AttachmentDto>(
             pagedAttachments,
             attachmentsList.Count,
             page,
@@ -439,18 +441,23 @@ public class AttachmentService(
         );
     }
 
-    public async Task<Result<Attachment>> GetByIdAsync(Guid id)
+    public async Task<Result<AttachmentDto>> GetByIdAsync(Guid id)
     {
         var attachment = await unitOfWork.Attachments.GetByIdAsync(id);
-        if (attachment == null)
+        if (attachment.IsError)
+        {
+            return attachment.Errors;
+        }
+
+        if (attachment.Value == null)
         {
             return ApplicationErrors.AttachmentNotFound;
         }
 
-        return attachment;
+        return attachment.Value.ToDto();
     }
 
-    public async Task<Result<IEnumerable<Attachment>>> GetByFileTypeAsync(string fileType)
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetByFileTypeAsync(string fileType)
     {
         // Filter attachments by file type in memory
         // In a real implementation, you'd want to implement this at the DB level
@@ -460,11 +467,11 @@ public class AttachmentService(
             return allAttachments.Errors;
         }
 
-        var filteredAttachments = allAttachments.Value.Where(a => a.Extension?.Equals(fileType, StringComparison.OrdinalIgnoreCase) == true);
+        var filteredAttachments = allAttachments.Value!.Where(a => a.Extension?.Equals(fileType, StringComparison.OrdinalIgnoreCase) == true);
         return filteredAttachments.ToList();
     }
 
-    public async Task<Result<Attachment>> GetByFileNameAsync(string fileName)
+    public async Task<Result<AttachmentDto>> GetByFileNameAsync(string fileName)
     {
         // Find attachment by file name in memory
         // In a real implementation, you'd want to implement this at the DB level
@@ -474,37 +481,59 @@ public class AttachmentService(
             return allAttachments.Errors;
         }
 
-        var attachment = allAttachments.Value.FirstOrDefault(a => a.FileName?.Equals(fileName, StringComparison.OrdinalIgnoreCase) == true);
-        if (attachment == null)
+        var attachmentDto = allAttachments.Value!.FirstOrDefault(a => a.FileName?.Equals(fileName, StringComparison.OrdinalIgnoreCase) == true);
+        if (attachmentDto == null)
         {
             return ApplicationErrors.AttachmentNotFound;
         }
 
-        return attachment;
+        return attachmentDto;
     }
 
-    public async Task<Result<Attachment>> CreateAsync(Attachment attachment)
+    public async Task<Result<AttachmentDto>> CreateAsync(CreateAttachmentDto attachment)
     {
-        var result = await unitOfWork.Attachments.AddAsync(attachment);
+        var attachmentEntity = new Attachment
+        {
+            FileName = attachment.FileName,
+            SafeName = attachment.SafeName,
+            Extension = attachment.Extension,
+            Path = attachment.Path
+        };
+
+        var result = await unitOfWork.Attachments.AddAsync(attachmentEntity);
         if (result.IsError)
         {
             return result.Errors;
         }
 
-        return attachment;
+        return attachmentEntity.ToDto();
     }
 
-    public async Task<Result<Attachment>> UpdateAsync(Guid id, Attachment attachment)
+    public async Task<Result<AttachmentDto>> UpdateAsync(Guid id, UpdateAttachmentDto attachment)
     {
-        // Ensure the ID matches
-        attachment.Id = id;
-        var result = await unitOfWork.Attachments.UpdateAsync(attachment);
+        var existingAttachment = await unitOfWork.Attachments.GetByIdAsync(id);
+        if (existingAttachment.IsError)
+        {
+            return existingAttachment.Errors;
+        }
+
+        if (existingAttachment.Value == null)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+        existingAttachment.Value.FileName = attachment.FileName;
+        existingAttachment.Value.SafeName = attachment.SafeName;
+        existingAttachment.Value.Extension = attachment.Extension;
+        existingAttachment.Value.Path = attachment.Path;
+
+        var result = await unitOfWork.Attachments.UpdateAsync(existingAttachment.Value);
         if (result.IsError)
         {
             return result.Errors;
         }
 
-        return attachment;
+        return existingAttachment.Value.ToDto();
     }
 
     public async Task<Result<bool>> DeleteAsync(Guid id)

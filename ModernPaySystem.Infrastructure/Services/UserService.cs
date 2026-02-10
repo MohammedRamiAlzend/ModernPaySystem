@@ -1,3 +1,5 @@
+using ModernPaySystem.Domain.Entities.SharedEntities;
+
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
@@ -14,7 +16,7 @@ public class UserService : IUserService
         _logger = logger;
     }
 
-    public async Task<Result<IEnumerable<User>>> GetAllAsync()
+    public async Task<Result<IEnumerable<UserDto>>> GetAllAsync()
     {
         try
         {
@@ -23,7 +25,8 @@ public class UserService : IUserService
             if(users.IsError)
                 return users.Errors;
 
-            return users.Value!;
+            var userDtos = users.Value!.Select(u => u.ToDto()).ToList();
+            return userDtos;
         }
         catch (Exception ex)
         {
@@ -32,7 +35,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<PagedList<User>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<UserDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
         {
@@ -48,7 +51,10 @@ public class UserService : IUserService
             if (pagedUsers.IsError)
                 return pagedUsers.Errors;
 
-            return pagedUsers.Value;
+            var userDtos = pagedUsers.Value!.Items.Select(u => u.ToDto()).ToList();
+            var pagedUserDtos = new PagedList<UserDto>(userDtos, pagedUsers.Value.TotalItems, page, pageSize);
+
+            return pagedUserDtos;
         }
         catch (Exception ex)
         {
@@ -57,7 +63,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<User>> GetByIdAsync(Guid id)
+    public async Task<Result<UserDto>> GetByIdAsync(Guid id)
     {
         try
         {
@@ -70,7 +76,7 @@ public class UserService : IUserService
             if (user.Value == null)
                 return ApplicationErrors.UserNotFound;
 
-            return user!;
+            return user.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -79,7 +85,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<User>> GetByUsernameAsync(string username)
+    public async Task<Result<UserDto>> GetByUsernameAsync(string username)
     {
         try
         {
@@ -96,7 +102,7 @@ public class UserService : IUserService
 
             var user = users.Value!.Find(u => u.UserName == username);
 
-            return user == null ? (Result<User>)ApplicationErrors.UserNotFound : (Result<User>)user;
+            return user == null ? (Result<UserDto>)ApplicationErrors.UserNotFound : (Result<UserDto>)user.ToDto();
         }
         catch (Exception ex)
         {
@@ -120,7 +126,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<User>> CreateAsync(User user)
+    public async Task<Result<UserDto>> CreateAsync(CreateUserDto user)
     {
         try
         {
@@ -135,11 +141,23 @@ public class UserService : IUserService
 
             _logger.LogInformation("Creating new user: {Username}", user.UserName);
 
-            await _unitOfWork.Users.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
+            var userEntity = new User
+            {
+                UserName = user.UserName,
+                HashedPassword = user.HashedPassword,
+                SubSystemUserId = user.SubSystemUserId
+            };
+
+            var addResult = await _unitOfWork.Users.AddAsync(userEntity);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result < 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully created user: {Username}", user.UserName);
-            return user;
+            return userEntity.ToDto();
         }
         catch (Exception ex)
         {
@@ -148,7 +166,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<Result<User>> UpdateAsync(Guid id, User user)
+    public async Task<Result<UserDto>> UpdateAsync(Guid id, UpdateUserDto user)
     {
         try
         {
@@ -166,12 +184,16 @@ public class UserService : IUserService
 
             existingUser.Value.UserName = user.UserName;
             existingUser.Value.HashedPassword = user.HashedPassword;
+            existingUser.Value.SubSystemUserId = user.SubSystemUserId;
 
-            await _unitOfWork.Users.UpdateAsync(existingUser.Value);
+            var updateResult = await _unitOfWork.Users.UpdateAsync(existingUser.Value);
+            if (updateResult.IsError)
+                return updateResult.Errors;
+
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated user: {UserId}", id);
-            return existingUser!;
+            return existingUser.Value.ToDto();
         }
         catch (Exception ex)
         {

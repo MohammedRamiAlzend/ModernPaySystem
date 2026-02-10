@@ -10,6 +10,7 @@
     <Folder Include="Commons\Auth\" />
     <Folder Include="Commons\Extensions\" />
     <Folder Include="Commons\Results\" />
+    <Folder Include="DTOs\AuthDtos\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>
 </Project>
