@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { createBrowserRouter, type RouteObject, Outlet, matchRoutes } from 'react-router-dom';
+import { createBrowserRouter, type RouteObject, Outlet, matchRoutes, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 import { NotFoundPage } from '@/pages/not-found-page';
@@ -16,7 +16,10 @@ const ProcessFormPage = lazyWithPreload(() => import('@/pages/process-form-page'
 const LoginPage = lazyWithPreload(() => import('@/pages/auth/login-page'));
 // const ProfilePage = lazyWithPreload(() => import('@/pages/profile/profile-page'));
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/settings-page'));
-const FormBuilderPage = lazyWithPreload(() => import('@/pages/form-builder/FormBuilderPage'));
+const TemplatesListPage = lazyWithPreload(() => import('@/pages/form-builder/TemplatesListPage').then(module => ({ default: module.TemplatesListPage })));
+const FormEditorPage = lazyWithPreload(() => import('@/pages/form-builder/FormEditorPage').then(module => ({ default: module.FormEditorPage })));
+const RequestPage = lazyWithPreload(() => import('@/pages/form-builder/RequestPage').then(module => ({ default: module.RequestPage })));
+const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/ResponsesPage').then(module => ({ default: module.ResponsesPage })));
 
 const RoutePermissions = {
   PUBLIC: 'PUBLIC',
@@ -139,16 +142,82 @@ const routesConfig: RouteObject[] = [
       },
       {
         path: 'form-builder',
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <FormBuilderPage />
-          </Suspense>
-        ),
+        element: <Outlet />,
         handle: {
-          crumb: () => 'منشئ النماذج',
+          crumb: () => 'بناء النماذج',
           permission: RoutePermissions.AUTHENTICATED,
-          preload: () => FormBuilderPage.preload(),
         },
+        children: [
+          {
+            index: true,
+            element: <Navigate to="templates" replace />,
+          },
+          {
+            path: 'templates',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <TemplatesListPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'النماذج',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => TemplatesListPage.preload(),
+            },
+          },
+          {
+            path: 'templates/new',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <FormEditorPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'نموذج جديد',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => FormEditorPage.preload(),
+            },
+          },
+          {
+            path: 'templates/:id',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <FormEditorPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'تعديل نموذج',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => FormEditorPage.preload(),
+            },
+          },
+          {
+            path: 'requests/new',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <RequestPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'تقديم طلب',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => RequestPage.preload(),
+            },
+          },
+          {
+            path: 'responses',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ResponsesPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'الردود',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => ResponsesPage.preload(),
+            },
+          },
+        ]
       },
     ],
   },

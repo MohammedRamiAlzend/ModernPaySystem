@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { useAppDispatch } from '@/app/store';
 import { logout } from '@/app/store/authSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 
 interface SidebarProps {
     className?: string;
@@ -22,6 +23,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+    // Auto-expand parent if child is active
+    useEffect(() => {
+        NAVIGATION_ITEMS.forEach(item => {
+            if (item.children?.some(child => location.pathname.startsWith(child.path))) {
+                setExpandedItems(prev => ({ ...prev, [item.path]: true }));
+            }
+        });
+    }, [location.pathname]);
+
+    const toggleExpand = (path: string, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setExpandedItems(prev => ({
+            ...prev,
+            [path]: !prev[path]
+        }));
+    };
 
     const handleLogout = () => {
         dispatch(logout());
@@ -56,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                     size="icon"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                     className={cn(
-                        "absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border bg-background shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-50",
+                        "absolute -left-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border bg-background shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-50",
                         className?.includes("md:hidden") ? "hidden" : "" // Hide if we are forcing mobile view
                     )}
                 >
@@ -66,36 +88,80 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
 
             {/* Navigation Items */}
             <div className="flex-1 overflow-y-auto py-6 px-3 space-y-2">
-                {NAVIGATION_ITEMS.map((item) => (
-                    <PrefetchNavLink
-                        key={item.path}
-                        to={item.path}
-                        onClick={onItemClick}
-                        className={({ isActive }) => cn(
-                            "flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-200 group/item relative",
-                            isActive
-                                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                        )}
-                    >
-                        <div className={cn(
-                            "transition-transform duration-200",
-                            "group-hover/item:scale-110"
-                        )}>
-                            {item.icon}
+                {NAVIGATION_ITEMS.map((item) => {
+                    const isExpanded = expandedItems[item.path];
+                    const hasChildren = item.children && item.children.length > 0;
+
+                    return (
+                        <div key={item.path} className="space-y-1">
+                            <PrefetchNavLink
+                                to={item.path}
+                                onClick={(e) => {
+                                    if (hasChildren && !isCollapsed) {
+                                        toggleExpand(item.path, e);
+                                    } else if (onItemClick) {
+                                        onItemClick();
+                                    }
+                                }}
+                                className={({ isActive }) => cn(
+                                    "flex items-center gap-4 px-3 py-3 rounded-2xl transition-all duration-200 group/item relative",
+                                    isActive && (!hasChildren || isCollapsed)
+                                        ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                                        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                )}
+                            >
+                                <div className={cn(
+                                    "transition-transform duration-200",
+                                    "group-hover/item:scale-110"
+                                )}>
+                                    {item.icon}
+                                </div>
+                                {!isCollapsed && (
+                                    <>
+                                        <span className="font-bold whitespace-nowrap animate-in fade-in slide-in-from-right-2 flex-1">
+                                            {item.title}
+                                        </span>
+                                        {hasChildren && (
+                                            <div className={cn(
+                                                "transition-transform duration-200",
+                                                isExpanded ? "-rotate-90" : "rotate-0"
+                                            )}>
+                                                <ChevronLeft className="h-4 w-4 opacity-50" />
+                                            </div>
+                                        )}
+                                    </>
+                                )}
+                                {isCollapsed && (
+                                    <div className="absolute left-full ml-4 px-2 py-1 bg-popover text-popover-foreground text-xs rounded border opacity-0 pointer-events-none group-hover/item:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-md">
+                                        {item.title}
+                                    </div>
+                                )}
+                            </PrefetchNavLink>
+
+                            {/* Render Children */}
+                            {!isCollapsed && hasChildren && isExpanded && (
+                                <div className="mr-8 space-y-1 border-r pr-2 border-border/50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    {item.children!.map((child) => (
+                                        <PrefetchNavLink
+                                            key={child.path}
+                                            to={child.path}
+                                            onClick={onItemClick}
+                                            className={({ isActive }) => cn(
+                                                "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-sm",
+                                                isActive
+                                                    ? "bg-accent text-accent-foreground font-medium"
+                                                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                            )}
+                                        >
+                                            <div className="opacity-70">{child.icon}</div>
+                                            <span>{child.title}</span>
+                                        </PrefetchNavLink>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                        {!isCollapsed && (
-                            <span className="font-bold whitespace-nowrap animate-in fade-in slide-in-from-right-2">
-                                {item.title}
-                            </span>
-                        )}
-                        {isCollapsed && (
-                            <div className="absolute left-full ml-4 px-2 py-1 bg-popover text-popover-foreground text-xs rounded border opacity-0 pointer-events-none group-hover/item:opacity-100 transition-opacity whitespace-nowrap z-[100] shadow-md">
-                                {item.title}
-                            </div>
-                        )}
-                    </PrefetchNavLink>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Footer Actions */}

@@ -1,3 +1,4 @@
+
 export type FieldType = 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date';
 
 export interface ValidationRule {
@@ -65,4 +66,57 @@ export interface FormSchema {
     description?: string;
     fields: FormField[];
     logic?: LogicRule[];
+}
+
+// --- New Types for Backend ---
+
+export interface CreateTemplateDto {
+    contentAsJson: string; // JSON string of the form schema
+    templateName: string;
+    templateDescription?: string | null;
+}
+
+export interface Template {
+    id: string;
+    contentAsJson: string;
+    templateName: string;
+    templateDescription: string | null;
+    createdByUserId: string | null;
+    createdAt: string | null; // Date string
+    updatedByUserId: string | null;
+    updatedAt: string | null; // Date string
+}
+
+export interface CreateRequestDto {
+    TemplateId: string;
+    RequesterId: string; // UUID
+    ApproverId?: string; // UUID
+    Content: string; // JSON content
+    files?: File[]; // For multi-part file upload
+}
+
+export interface TemplateRequest {
+    id: string;
+    templateId: string;
+    requesterId: string;
+    approverId: string;
+    content: string;
+    requestAttachmentDtos?: any[];
+    template?: Template | null;
+    requester?: any | null;
+    approver?: any | null;
+    createdAt?: string | null;
+}
+
+export interface CreateResponseDto {
+    comment: string | null;
+    requestId: string;
+    respondedByUserId: string;
+}
+
+export interface TemplateResponse {
+    id: string;
+    comment: string | null;
+    requestId: string;
+    respondedByUserId: string;
 }
