@@ -9,14 +9,22 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { Input } from '@/shared/ui/input';
 import { useAppSelector } from '@/app/store';
 import { selectCurrentUser } from '@/app/store/authSlice';
-import { MessageSquare, Clock, FileText, User, ChevronRight } from 'lucide-react';
+import { MessageSquare, Clock, FileText, User, ChevronRight, Eye } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
+import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
+import { useForms } from '@/features/form-builder/model/useForms';
+import type { FormResponse } from '@/shared/lib/form-engine/responses';
+import type { TemplateRequest } from '@/entities/form/model/types';
 
 export const ResponsesPage = () => {
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [viewingResponse, setViewingResponse] = useState<FormResponse | null>(null);
+
     const currentUser = useAppSelector(selectCurrentUser);
     const { data: requests = [], isLoading } = useRequests();
+    const { data: templates = [] } = useForms();
 
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
@@ -41,7 +49,28 @@ export const ResponsesPage = () => {
 
     const handleSelectRequest = (id: string) => {
         setRequestId(id);
-        // Scroll to form or just set focus
+    };
+
+    const handleViewRequest = (request: TemplateRequest) => {
+        const schema = templates.find(t => t.id === request.templateId);
+        if (!schema) {
+            alert('النموذج المرتبط بهذا الطلب غير موجود');
+            return;
+        }
+
+        try {
+            const mappedResponse: FormResponse = {
+                id: request.id,
+                formId: request.templateId,
+                submittedAt: request.createdAt || new Date().toISOString(),
+                data: JSON.parse(request.content),
+                schema: schema
+            };
+            setViewingResponse(mappedResponse);
+            setIsModalOpen(true);
+        } catch (e) {
+            alert('خطأ في تحليل بيانات الطلب');
+        }
     };
 
     return (
@@ -67,8 +96,8 @@ export const ResponsesPage = () => {
                                     key={request.id}
                                     onClick={() => handleSelectRequest(request.id)}
                                     className={`p-4 rounded-xl border-2 transition-all cursor-pointer group ${requestId === request.id
-                                            ? 'border-primary bg-primary/5'
-                                            : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                                        ? 'border-primary bg-primary/5'
+                                        : 'border-border hover:border-primary/50 hover:bg-muted/30'
                                         }`}
                                 >
                                     <div className="flex justify-between items-start mb-3">
@@ -86,7 +115,20 @@ export const ResponsesPage = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <ChevronRight className={`w-4 h-4 transition-transform ${requestId === request.id ? 'translate-x-[-4px] text-primary' : 'text-muted-foreground group-hover:translate-x-[-2px]'}`} />
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-full hover:bg-primary/20 hover:text-primary transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleViewRequest(request);
+                                                }}
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </Button>
+                                            <ChevronRight className={`w-4 h-4 transition-transform ${requestId === request.id ? 'translate-x-[-4px] text-primary' : 'text-muted-foreground group-hover:translate-x-[-2px]'}`} />
+                                        </div>
                                     </div>
 
                                     <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded-md font-mono truncate">
@@ -158,6 +200,15 @@ export const ResponsesPage = () => {
                     </Card>
                 </div>
             </div>
+
+            {viewingResponse && (
+                <ResponseDetailsModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    response={viewingResponse}
+                    schema={viewingResponse.schema}
+                />
+            )}
         </AnimatedContainer>
     );
 };

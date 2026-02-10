@@ -24,11 +24,19 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+        console.log(error);
+        const status = error.response?.status;
         // التعامل مع أخطاء 401 (غير مصرح به)
-        if (error.response?.status === 401) {
+        if (status === 401) {
             localStorage.removeItem('token');
-            window.location.href = '/auth/login';
+            localStorage.removeItem('user');
+
+            // Redirect to login if not already there
+            if (window.location.pathname !== '/auth/login') {
+                window.location.href = '/auth/login';
+            }
         }
+
         return Promise.reject(error);
     }
 );
