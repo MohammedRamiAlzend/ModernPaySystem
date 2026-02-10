@@ -76,7 +76,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     /// </summary>
     [HttpPost]
     [EndpointPermission("requests.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] List<IFormFile> files, [FromBody] CreateRequestDto request)
+    public async Task<IActionResult> Create([FromQuery] CreateRequestDto request, [FromBody] List<IFormFile> files)
     {
         logger.LogInformation("Creating new request for requester: {RequesterId}", request?.RequesterId);
         var result = await requestService.CreateAsync(request, files);
