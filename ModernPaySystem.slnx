@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="ExpressionBuilderLib/ExpressionBuilderLib.csproj" Id="dc27d6a7-b9a4-455b-9782-684d20b70163" />
   <Project Path="FileManager/FileManager.csproj" Id="b1199e26-db54-4e6d-9e6d-2cee32731fba" />
   <Project Path="ModernPaySystem.Application/ModernPaySystem.Application.csproj" />
   <Project Path="ModernPaySystem.Domain/ModernPaySystem.Domain.csproj" />
