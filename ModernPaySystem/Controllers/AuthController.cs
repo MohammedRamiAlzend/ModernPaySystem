@@ -12,7 +12,7 @@ public class AuthController(IAuthenticationService authService) : ControllerBase
         if (result.IsError)
             return result.ToActionResult();
 
-        var accessToken = result.Value;
+        string? accessToken = result.Value;
         return new OkObjectResult(accessToken);
     }
 }
