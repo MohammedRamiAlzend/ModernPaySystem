@@ -121,7 +121,7 @@ public class ResponseService(
         try
         {
             logger.LogInformation("Fetching responses for request: {requestId}", requestId);
-            var responses = await unitOfWork.Responses.GetAllAsync();
+            var responses = await unitOfWork.Responses.GetAllAsync(null, x => x.Include(i => i.ResponseAttachments));
             if (responses.IsError)
                 return responses.Errors;
 
@@ -205,14 +205,14 @@ public class ResponseService(
             }
 
             var getRequest = await unitOfWork.Requests.GetAsync(x => x.Id == response.RequestId);
-            if(getRequest.IsError)
+            if (getRequest.IsError)
             {
                 return getRequest.Errors;
             }
 
             getRequest.Value.ResponseId = responseEntity.Id;
             var updateResult = await unitOfWork.Requests.UpdateAsync(getRequest.Value);
-            if(updateResult.IsError)
+            if (updateResult.IsError)
             {
                 return updateResult.Errors;
             }
