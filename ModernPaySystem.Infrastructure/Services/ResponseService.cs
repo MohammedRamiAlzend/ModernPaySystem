@@ -6,6 +6,7 @@ using System.Linq;
 using System.IO;
 using FileManager.Abstractions;
 using ExpressionBuilderLib.src.Core;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -125,7 +126,7 @@ public class ResponseService(
     {
         try
         {
-            logger.LogInformation("Fetching responses for request: {RequestId}", requestId);
+            logger.LogInformation("Fetching responses for request: {requestId}", requestId);
             var responses = await unitOfWork.Responses.GetAllAsync();
             if (responses.IsError)
                 return responses.Errors;
@@ -135,7 +136,7 @@ public class ResponseService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching responses for request: {RequestId}", requestId);
+            logger.LogError(ex, "Error fetching responses for request: {requestId}", requestId);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -158,18 +159,32 @@ public class ResponseService(
             return ApplicationErrors.InternalServerError;
         }
     }
+    public async Task<Result<bool>> IsRequestHasResponse(Guid requestId)
+    {
+        var checkIfRequestHasResponse = await unitOfWork.Requests.GetAsync(x => x.Id == requestId, i => i.Include(x => x.Response));
+        if (checkIfRequestHasResponse.IsError)
+        {
+            return checkIfRequestHasResponse.Errors;
+        }
+
+        return checkIfRequestHasResponse.Value.Response is not null;
+    }
 
     public async Task<Result<ResponseDto>> CreateAsync(CreateResponseDto response)
     {
         try
         {
+            var isRequestHasResponseResult = await IsRequestHasResponse(response.RequestId);
+            if (isRequestHasResponseResult.IsError)
+                return isRequestHasResponseResult.Errors;
+
             if (response == null)
                 return ApplicationErrors.InvalidInput;
 
             if (response.RequestId == Guid.Empty || response.RespondedByUserId == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            logger.LogInformation("Creating new response for request: {RequestId}", response.RequestId);
+            logger.LogInformation("Creating new response for request: {requestId}", response.RequestId);
 
             var responseEntity = new Response
             {
@@ -185,15 +200,11 @@ public class ResponseService(
             foreach (var file in response.Files)
             {
                 var addFileToResponseResult = await webAttachmentService.UploadFileToResponseAsync(file, responseEntity.Id);
-                if(addFileToResponseResult.IsError)
+                if (addFileToResponseResult.IsError)
                 {
                     return addFileToResponseResult.Errors;
                 }
             }
-
-            int saveResult = await unitOfWork.SaveChangesAsync();
-            if (saveResult <= 0)
-                return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
             return responseEntity.ToDto();

@@ -55,7 +55,7 @@ public class CreateResponseDto
     public Guid RequestId { get; set; }
     public Guid RespondedByUserId { get; set; }
     public string? Comment { get; set; }
-    public List<IFormFile>? Files { get; set; } = [];
+    public IFormFileCollection? Files { get; set; }
 }
 
 public class UpdateResponseDto
