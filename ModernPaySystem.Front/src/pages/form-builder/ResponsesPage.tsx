@@ -64,7 +64,8 @@ export const ResponsesPage = () => {
                 formId: request.templateId,
                 submittedAt: request.createdAt || new Date().toISOString(),
                 data: JSON.parse(request.content),
-                schema: schema
+                schema: schema,
+                attachments: request.requestAttachmentDtos
             };
             setViewingResponse(mappedResponse);
             setIsModalOpen(true);
