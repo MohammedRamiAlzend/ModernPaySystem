@@ -1,12 +1,6 @@
-using ModernPaySystem.Application.Services;
-using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.IO;
-using FileManager.Abstractions;
 using ExpressionBuilderLib.src.Core;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -208,6 +202,19 @@ public class ResponseService(
                         return addFileToResponseResult.Errors;
                     }
                 }
+            }
+
+            var getRequest = await unitOfWork.Requests.GetAsync(x => x.Id == response.RequestId);
+            if(getRequest.IsError)
+            {
+                return getRequest.Errors;
+            }
+
+            getRequest.Value.ResponseId = responseEntity.Id;
+            var updateResult = await unitOfWork.Requests.UpdateAsync(getRequest.Value);
+            if(updateResult.IsError)
+            {
+                return updateResult.Errors;
             }
 
             logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
