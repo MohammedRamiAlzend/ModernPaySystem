@@ -30,7 +30,7 @@ export const TemplatesListPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {forms.length === 0 ? (
-                    <div className="col-span-12 flex flex-col items-center justify-center py-20 text-gray-500 bg-gray-50/50 rounded-xl border border-dashed">
+                    <div className="col-span-12 flex flex-col items-center justify-center py-20 text-gray-500  rounded-xl border border-dashed">
                         <FileText className="h-16 w-16 mb-4 text-gray-300" />
                         <h3 className="text-lg font-medium">لا توجد نماذج حالياً</h3>
                         <p className="text-sm mb-6">ابدأ بإنشاء نموذجك الأول للعمليات</p>

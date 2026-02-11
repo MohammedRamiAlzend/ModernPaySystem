@@ -20,6 +20,7 @@ const TemplatesListPage = lazyWithPreload(() => import('@/pages/form-builder/Tem
 const FormEditorPage = lazyWithPreload(() => import('@/pages/form-builder/FormEditorPage').then(module => ({ default: module.FormEditorPage })));
 const RequestPage = lazyWithPreload(() => import('@/pages/form-builder/RequestPage').then(module => ({ default: module.RequestPage })));
 const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/ResponsesPage').then(module => ({ default: module.ResponsesPage })));
+const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/ActionedRequestsPage'));
 
 const RoutePermissions = {
   PUBLIC: 'PUBLIC',
@@ -215,6 +216,19 @@ const routesConfig: RouteObject[] = [
               crumb: () => 'الردود',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => ResponsesPage.preload(),
+            },
+          },
+          {
+            path: 'actioned',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <ActionedRequestsPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'الأرشيف',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => ActionedRequestsPage.preload(),
             },
           },
         ]

@@ -52,6 +52,11 @@ export const formEndpoints = {
         return response.data;
     },
 
+    getRequestsByActionStatus: async (hasResponse: boolean): Promise<{ data: TemplateRequest[] }> => {
+        const response = await api.get(`/Requests/GetAllRequestsNeedAction/${hasResponse}`);
+        return response.data;
+    },
+
     // Responses
     createResponse: async (data: CreateResponseDto): Promise<any> => {
         const formData = new FormData();
@@ -64,7 +69,7 @@ export const formEndpoints = {
                 formData.append('files', file);
             });
         }
-        console.log(formData);
+
         const response = await api.post('/Responses', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -116,11 +121,11 @@ export const formEndpoints = {
 
 // --- Hooks ---
 
-export const useRequests = () => {
+export const useRequests = (hasResponse: boolean = false) => {
     return useQuery({
-        queryKey: ['requests'],
+        queryKey: ['requests', hasResponse],
         queryFn: async () => {
-            const res = await formEndpoints.getRequests();
+            const res = await formEndpoints.getRequestsByActionStatus(hasResponse);
             return res.data;
         },
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]

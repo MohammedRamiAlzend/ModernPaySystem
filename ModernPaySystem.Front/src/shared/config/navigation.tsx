@@ -1,5 +1,5 @@
 
-import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Send, PlusCircle } from "lucide-react";
+import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Send, PlusCircle, Archive } from "lucide-react";
 
 export interface NavigationItem {
     title: string;
@@ -43,6 +43,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "الرد على الطلبات",
                 path: "/form-builder/responses",
                 icon: <Reply className="h-4 w-4" />,
+            },
+            {
+                title: "الطلبات التي تم الرد عليها",
+                path: "/form-builder/actioned",
+                icon: <Archive className="h-4 w-4" />,
             }
         ]
     },
