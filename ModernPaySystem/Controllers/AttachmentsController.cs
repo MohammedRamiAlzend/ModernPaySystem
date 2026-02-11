@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Infrastructure.Extensions;
-
 namespace ModernPaySystem.Controllers;
 
 /// <summary>

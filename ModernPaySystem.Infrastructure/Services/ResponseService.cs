@@ -12,35 +12,24 @@ namespace ModernPaySystem.Infrastructure.Services;
 /// <summary>
 /// Implementation of Response service CRUD operations.
 /// </summary>
-public class ResponseService : IResponseService
+public class ResponseService(
+    IUnitOfWork unitOfWork,
+    IWebAttachmentService webAttachmentService,
+    IHttpContextServiceManager httpContextServiceManager,
+    ILogger<ResponseService> logger) : IResponseService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IFileManager _fileManager;
-    private readonly IWebAttachmentService _webAttachmentService;
-    private readonly IHttpContextServiceManager _httpContextServiceManager;
-    private readonly ILogger<ResponseService> _logger;
-
-    public ResponseService(IUnitOfWork unitOfWork, IFileManager fileManager, IWebAttachmentService webAttachmentService, IHttpContextServiceManager httpContextServiceManager, ILogger<ResponseService> logger)
-    {
-        _unitOfWork = unitOfWork;
-        _fileManager = fileManager;
-        _webAttachmentService = webAttachmentService;
-        _httpContextServiceManager = httpContextServiceManager;
-        _logger = logger;
-    }
-
     public async Task<Result<IEnumerable<ResponseDto>>> GetAllAsync()
     {
         try
         {
-            _logger.LogInformation("Fetching responses for current user");
-            
+            logger.LogInformation("Fetching responses for current user");
+
             // Get the current user ID from the HTTP context
-            var currentUserId = _httpContextServiceManager.GetCurrentUserId();
-            
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
             // Create an expression builder for Response entities
             var responseBuilder = new ExpressionBuilder<Response>();
-            
+
             // Add a condition to filter responses where the RespondedByUserId matches the current user ID
             // This represents responses that were created BY the current user
             responseBuilder.And(r => r.RespondedByUserId == currentUserId);
@@ -49,21 +38,21 @@ public class ResponseService : IResponseService
             var expression = responseBuilder.Build();
 
             // Get responses that match the expression
-            var responses = await _unitOfWork.Responses.FindAsync(expression);
+            var responses = await unitOfWork.Responses.FindAsync(expression);
             if (responses.IsError)
                 return responses.Errors;
 
             var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
-            
+
             // Return an empty list if no responses are found for the current user
             if (!responseDtos.Any())
                 return new List<ResponseDto>();
-                
+
             return responseDtos;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching responses for current user");
+            logger.LogError(ex, "Error fetching responses for current user");
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -72,7 +61,7 @@ public class ResponseService : IResponseService
     {
         try
         {
-            _logger.LogInformation("Fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogInformation("Fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
 
             // Validate parameters
             if (page <= 0)
@@ -81,11 +70,11 @@ public class ResponseService : IResponseService
                 return ApplicationErrors.InvalidInput;
 
             // Get the current user ID from the HTTP context
-            var currentUserId = _httpContextServiceManager.GetCurrentUserId();
-            
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
             // Create an expression builder for Response entities
             var responseBuilder = new ExpressionBuilder<Response>();
-            
+
             // Add a condition to filter responses where the RespondedByUserId matches the current user ID
             // This represents responses that were created BY the current user
             responseBuilder.And(r => r.RespondedByUserId == currentUserId);
@@ -94,7 +83,7 @@ public class ResponseService : IResponseService
             var expression = responseBuilder.Build();
 
             // Get responses that match the expression with pagination
-            var pagedResponses = await _unitOfWork.Responses.GetPagedAsync(page, pageSize, expression);
+            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(page, pageSize, expression);
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
 
@@ -105,7 +94,7 @@ public class ResponseService : IResponseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogError(ex, "Error fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -114,8 +103,8 @@ public class ResponseService : IResponseService
     {
         try
         {
-            _logger.LogInformation("Fetching response by id: {ResponseId}", id);
-            var response = await _unitOfWork.Responses.GetByIdAsync(id);
+            logger.LogInformation("Fetching response by id: {ResponseId}", id);
+            var response = await unitOfWork.Responses.GetByIdAsync(id);
 
             if (response.IsError)
                 return response.Errors;
@@ -127,7 +116,7 @@ public class ResponseService : IResponseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching response by id: {ResponseId}", id);
+            logger.LogError(ex, "Error fetching response by id: {ResponseId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -136,8 +125,8 @@ public class ResponseService : IResponseService
     {
         try
         {
-            _logger.LogInformation("Fetching responses for request: {RequestId}", requestId);
-            var responses = await _unitOfWork.Responses.GetAllAsync();
+            logger.LogInformation("Fetching responses for request: {RequestId}", requestId);
+            var responses = await unitOfWork.Responses.GetAllAsync();
             if (responses.IsError)
                 return responses.Errors;
 
@@ -146,7 +135,7 @@ public class ResponseService : IResponseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching responses for request: {RequestId}", requestId);
+            logger.LogError(ex, "Error fetching responses for request: {RequestId}", requestId);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -155,8 +144,8 @@ public class ResponseService : IResponseService
     {
         try
         {
-            _logger.LogInformation("Fetching responses for responder: {ResponderId}", responderId);
-            var responses = await _unitOfWork.Responses.GetAllAsync();
+            logger.LogInformation("Fetching responses for responder: {ResponderId}", responderId);
+            var responses = await unitOfWork.Responses.GetAllAsync();
             if (responses.IsError)
                 return responses.Errors;
 
@@ -165,7 +154,7 @@ public class ResponseService : IResponseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching responses for responder: {ResponderId}", responderId);
+            logger.LogError(ex, "Error fetching responses for responder: {ResponderId}", responderId);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -180,7 +169,7 @@ public class ResponseService : IResponseService
             if (response.RequestId == Guid.Empty || response.RespondedByUserId == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            _logger.LogInformation("Creating new response for request: {RequestId}", response.RequestId);
+            logger.LogInformation("Creating new response for request: {RequestId}", response.RequestId);
 
             var responseEntity = new Response
             {
@@ -189,15 +178,29 @@ public class ResponseService : IResponseService
                 Comment = response.Comment
             };
 
-            await _unitOfWork.Responses.AddAsync(responseEntity);
-            await _unitOfWork.SaveChangesAsync();
+            var addResult = await unitOfWork.Responses.AddAsync(responseEntity);
+            if (addResult.IsError)
+                return addResult.Errors;
 
-            _logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
+            foreach (var file in response.Files)
+            {
+                var addFileToResponseResult = await webAttachmentService.UploadFileToResponseAsync(file, responseEntity.Id);
+                if(addFileToResponseResult.IsError)
+                {
+                    return addFileToResponseResult.Errors;
+                }
+            }
+
+            int saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
+                return ApplicationErrors.DatabaseError;
+
+            logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
             return responseEntity.ToDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating response");
+            logger.LogError(ex, "Error creating response");
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -209,28 +212,28 @@ public class ResponseService : IResponseService
             if (id == Guid.Empty || response == null)
                 return ApplicationErrors.InvalidInput;
 
-            var existingResponse = await _unitOfWork.Responses.GetByIdAsync(id);
+            var existingResponse = await unitOfWork.Responses.GetByIdAsync(id);
             if (existingResponse.IsError)
                 return existingResponse.Errors;
 
             if (existingResponse.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
-            _logger.LogInformation("Updating response: {ResponseId}", id);
+            logger.LogInformation("Updating response: {ResponseId}", id);
 
             existingResponse.Value.RequestId = response.RequestId;
             existingResponse.Value.RespondedByUserId = response.RespondedByUserId;
             existingResponse.Value.Comment = response.Comment;
 
-            await _unitOfWork.Responses.UpdateAsync(existingResponse.Value);
-            await _unitOfWork.SaveChangesAsync();
+            await unitOfWork.Responses.UpdateAsync(existingResponse.Value);
+            await unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Successfully updated response: {ResponseId}", id);
+            logger.LogInformation("Successfully updated response: {ResponseId}", id);
             return existingResponse.Value.ToDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating response: {ResponseId}", id);
+            logger.LogError(ex, "Error updating response: {ResponseId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -242,24 +245,24 @@ public class ResponseService : IResponseService
             if (id == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            var response = await _unitOfWork.Responses.GetByIdAsync(id);
+            var response = await unitOfWork.Responses.GetByIdAsync(id);
             if (response.IsError)
                 return response.Errors;
 
             if (response.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
-            _logger.LogInformation("Deleting response: {ResponseId}", id);
+            logger.LogInformation("Deleting response: {ResponseId}", id);
 
-            await _unitOfWork.Responses.RemoveAsync(x => x.Id == response.Value.Id);
-            await _unitOfWork.SaveChangesAsync();
+            await unitOfWork.Responses.RemoveAsync(x => x.Id == response.Value.Id);
+            await unitOfWork.SaveChangesAsync();
 
-            _logger.LogInformation("Successfully deleted response: {ResponseId}", id);
+            logger.LogInformation("Successfully deleted response: {ResponseId}", id);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting response: {ResponseId}", id);
+            logger.LogError(ex, "Error deleting response: {ResponseId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -272,30 +275,30 @@ public class ResponseService : IResponseService
                 return ApplicationErrors.InvalidInput;
 
             // Verify the response exists
-            var response = await _unitOfWork.Responses.GetByIdAsync(responseId);
+            var response = await unitOfWork.Responses.GetByIdAsync(responseId);
             if (response.IsError)
                 return response.Errors;
 
             if (response.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
-            _logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files.Count, responseId);
+            logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
             // Process each file and associate it with the response using WebAttachmentService
             foreach (var file in files)
             {
                 if (file.Length > 0)
                 {
-                    var uploadResult = await _webAttachmentService.UploadFileToResponseAsync(file, response.Value.Id);
+                    var uploadResult = await webAttachmentService.UploadFileToResponseAsync(file, response.Value.Id);
                     if (uploadResult.IsError)
                         return uploadResult.Errors;
                 }
             }
 
-            _logger.LogInformation("Successfully added {FileCount} Files to response: {ResponseId}", files.Count, responseId);
+            logger.LogInformation("Successfully added {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
             // Return the updated response with its attachments
-            var updatedResponse = await _unitOfWork.Responses.GetByIdAsync(responseId);
+            var updatedResponse = await unitOfWork.Responses.GetByIdAsync(responseId);
             if (updatedResponse.IsError)
                 return updatedResponse.Errors;
 
@@ -303,7 +306,7 @@ public class ResponseService : IResponseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding Files to response: {ResponseId}", responseId);
+            logger.LogError(ex, "Error adding Files to response: {ResponseId}", responseId);
             return ApplicationErrors.InternalServerError;
         }
     }

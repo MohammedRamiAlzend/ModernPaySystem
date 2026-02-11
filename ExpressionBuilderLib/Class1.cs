@@ -7,12 +7,12 @@ using ExpressionBuilderLib.src.Core.Enums;
 namespace ExpressionBuilderLib;
 
 /// <summary>
-/// Sample class demonstrating how to use the ExpressionBuilderLib functionality
+/// Sample class demonstrating how to use the ExpressionBuilderLib functionality.
 /// </summary>
 public class Class1
 {
     /// <summary>
-    /// Demonstrates basic usage of the ExpressionBuilder
+    /// Demonstrates basic usage of the ExpressionBuilder.
     /// </summary>
     public static void BasicUsageExample()
     {
@@ -188,10 +188,10 @@ public class Class1
             Console.WriteLine($"Request ID: {request.Id}, Approver ID: {request.ApproverId}");
         }
     }
-    
+
     /// <summary>
     /// Demonstrates how to use ExpressionBuilderLib with pagination for requests
-    /// This example shows how to implement a method similar to what would be used in RequestService
+    /// This example shows how to implement a method similar to what would be used in RequestService.
     /// </summary>
     public static void RequestPaginationExample()
     {
@@ -234,7 +234,7 @@ public class Class1
         {
             Console.WriteLine($"Request ID: {request.Id}, Approver ID: {request.ApproverId}, Created At: {request.CreatedAt}");
         }
-        
+
         // Show total count
         var totalCount = sortedRequests.Count;
         Console.WriteLine($"Total requests: {totalCount}");
