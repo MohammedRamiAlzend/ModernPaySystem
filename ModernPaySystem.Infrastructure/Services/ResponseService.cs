@@ -197,12 +197,16 @@ public class ResponseService(
             if (addResult.IsError)
                 return addResult.Errors;
 
-            foreach (var file in response.Files)
+            if (response.Files?.Any() == true)
             {
-                var addFileToResponseResult = await webAttachmentService.UploadFileToResponseAsync(file, responseEntity.Id);
-                if (addFileToResponseResult.IsError)
+                logger.LogInformation("Uploading {FileCount} Files for new response: {ResponseId}", response.Files.Count, responseEntity.Id);
+                foreach (var file in response.Files)
                 {
-                    return addFileToResponseResult.Errors;
+                    var addFileToResponseResult = await webAttachmentService.UploadFileToResponseAsync(file, responseEntity.Id);
+                    if (addFileToResponseResult.IsError)
+                    {
+                        return addFileToResponseResult.Errors;
+                    }
                 }
             }
 
