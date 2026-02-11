@@ -40,7 +40,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 icon: <Send className="h-4 w-4" />,
             },
             {
-                title: "الردود",
+                title: "الرد على الطلبات",
                 path: "/form-builder/responses",
                 icon: <Reply className="h-4 w-4" />,
             }
