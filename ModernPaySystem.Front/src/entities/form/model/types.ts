@@ -112,6 +112,7 @@ export interface CreateResponseDto {
     comment: string | null;
     requestId: string;
     respondedByUserId: string;
+    files?: File[];
 }
 
 export interface TemplateResponse {
