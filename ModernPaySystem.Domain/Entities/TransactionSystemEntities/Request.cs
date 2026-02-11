@@ -67,7 +67,7 @@ public class CreateRequestDto
     public Guid RequesterId { get; set; }
     public Guid ApproverId { get; set; }
     public required string Content { get; set; }
-    public List<IFormFile> Files { get; set; }
+    public List<IFormFile>? Files { get; set; } = [];
 }
 
 public class UpdateRequestDto
