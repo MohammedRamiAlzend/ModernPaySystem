@@ -30,7 +30,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     /// </summary>
     [HttpGet("GetAllRequestsNeedAction")]
     [EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetAllRequestsNeedAction([FromBody]bool hasResponse)
+    public async Task<IActionResult> GetAllRequestsNeedAction([FromBody] bool hasResponse)
     {
         logger.LogInformation("Getting all request need action requests");
         var result = await requestService.GetAllAsync(hasResponse);

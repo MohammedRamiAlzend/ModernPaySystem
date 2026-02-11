@@ -63,8 +63,9 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
     /// Create new response.
     /// </summary>
     [HttpPost]
+    [Consumes("multipart/form-data")]
     [EndpointPermission("responses.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromBody] CreateResponseDto response)
+    public async Task<IActionResult> Create([FromForm] CreateResponseDto response)
     {
         logger.LogInformation("Creating new response for request: {RequestId}", response?.RequestId);
         var result = await responseService.CreateAsync(response);
