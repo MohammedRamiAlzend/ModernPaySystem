@@ -7,6 +7,7 @@ export interface FormResponse {
     data: Record<string, any>;
     /** The complete form schema at the time of submission */
     schema: FormSchema;
+    attachments?: any[];
 }
 
 const RESPONSES_KEY = 'form_responses';

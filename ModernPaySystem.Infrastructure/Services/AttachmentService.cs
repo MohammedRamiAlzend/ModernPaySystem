@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Domain.Commons;
 using System.IO.Compression;
+using System.IO;
 
 namespace ModernPaySystem.Infrastructure.Services;
 

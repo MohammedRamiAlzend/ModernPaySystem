@@ -56,6 +56,45 @@ export const formEndpoints = {
     createResponse: async (data: CreateResponseDto): Promise<any> => {
         const response = await api.post('/Responses', data);
         return response.data;
+    },
+
+    // Attachments
+    fetchRequestAttachmentsBlob: async (requestId: string): Promise<Blob> => {
+        const response = await api.get(`/Attachments/request/${requestId}/download-all`, {
+            responseType: 'blob',
+        });
+        return new Blob([response.data]);
+    },
+
+    downloadRequestAttachments: async (requestId: string): Promise<void> => {
+        const blob = await formEndpoints.fetchRequestAttachmentsBlob(requestId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `request_${requestId}_attachments.zip`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    },
+
+    fetchResponseAttachmentsBlob: async (responseId: string): Promise<Blob> => {
+        const response = await api.get(`/Attachments/response/${responseId}/download-all`, {
+            responseType: 'blob',
+        });
+        return new Blob([response.data]);
+    },
+
+    downloadResponseAttachments: async (responseId: string): Promise<void> => {
+        const blob = await formEndpoints.fetchResponseAttachmentsBlob(responseId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `response_${responseId}_attachments.zip`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     }
 };
 

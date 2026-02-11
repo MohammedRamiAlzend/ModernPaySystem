@@ -66,7 +66,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                         )}
                     </AlertDialogHeader>
 
-                    <div className="my-4">
+                    <div className="my-4 overflow-y-auto max-h-[calc(85vh-180px)] pr-2 custom-scrollbar">
                         {children}
                     </div>
 
