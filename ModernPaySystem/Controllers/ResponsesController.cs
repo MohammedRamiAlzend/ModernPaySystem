@@ -98,7 +98,7 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
     /// <summary>
     /// Add files to a response.
     /// </summary>
-    [HttpPost("Files")]
+    [HttpPost("AddFilesToResponse")]
     [Consumes("multipart/form-data")]
     [EndpointPermission("responses.add-Files", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> AddFilesToResponse([FromForm]Guid responseId, [FromForm]List<IFormFile> files)
