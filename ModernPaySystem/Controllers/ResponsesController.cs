@@ -101,7 +101,7 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
     [HttpPost("AddFilesToResponse")]
     [Consumes("multipart/form-data")]
     [EndpointPermission("responses.add-Files", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> AddFilesToResponse([FromForm]Guid responseId, [FromForm]List<IFormFile> files)
+    public async Task<IActionResult> AddFilesToResponse([FromForm] Guid responseId, [FromForm] List<IFormFile> files)
     {
         logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files?.Count, responseId);
         var result = await responseService.AddFilesToResponseAsync(responseId, files);

@@ -1,8 +1,6 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
-
 
 public class Response : Entity<Guid>, IAuditableEntity
 {
@@ -16,7 +14,7 @@ public class Response : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    
+
     public ResponseDto ToDto()
     {
         return new ResponseDto

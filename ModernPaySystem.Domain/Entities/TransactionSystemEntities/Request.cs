@@ -14,6 +14,8 @@ public class Request : Entity<Guid>, IAuditableEntity
     public required Guid ApproverId { get; set; }
     public User? Approver { get; set; }
 
+    public Guid? ResponseId { get; set; }
+    public Response? Response { get; set; }
     public required string ContentAsJson { get; set; }
 
     // Navigation property for attachments
@@ -39,7 +41,8 @@ public class Request : Entity<Guid>, IAuditableEntity
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
-            UpdatedAt = this.UpdatedAt
+            UpdatedAt = this.UpdatedAt,
+            ResponseId = this.ResponseId
         };
     }
 }
@@ -50,6 +53,7 @@ public class RequestDto
     public Guid TemplateId { get; set; }
     public Guid RequesterId { get; set; }
     public Guid ApproverId { get; set; }
+    public Guid? ResponseId { get; set; }
     public required string Content { get; set; }
     public List<RequestAttachmentDto> RequestAttachmentDtos { get; set; } = [];
     public TemplateDto? Template { get; set; }

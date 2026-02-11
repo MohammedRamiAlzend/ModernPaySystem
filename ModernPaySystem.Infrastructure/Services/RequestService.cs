@@ -34,6 +34,30 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             return ApplicationErrors.InternalServerError;
         }
     }
+    public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse)
+    {
+        try
+        {
+            logger.LogInformation("Fetching all requests");
+            var requests = await unitOfWork.Requests.GetAllAsync(
+                x => x.ResponseId.HasValue == hasResponse,
+                x => x.Include(x => x.Template)
+                      .Include(x => x.Response)
+                     .Include(x => x.Approver)
+                     .Include(x => x.Requester)
+                     .Include(x => x.RequestAttachments));
+
+            if (requests.IsError)
+                return requests.Errors;
+
+            return requests.Value!.ConvertAll(r => r.ToDto());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching all requests");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
 
     public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize)
     {

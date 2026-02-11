@@ -17,6 +17,11 @@ public interface IRequestService
     Task<Result<IEnumerable<RequestDto>>> GetAllAsync();
 
     /// <summary>
+    /// Get all requests.
+    /// </summary>
+    Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse);
+
+    /// <summary>
     /// Get paged requests.
     /// </summary>
     Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize);
