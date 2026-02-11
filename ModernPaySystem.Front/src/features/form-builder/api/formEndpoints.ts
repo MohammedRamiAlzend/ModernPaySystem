@@ -54,7 +54,22 @@ export const formEndpoints = {
 
     // Responses
     createResponse: async (data: CreateResponseDto): Promise<any> => {
-        const response = await api.post('/Responses', data);
+        const formData = new FormData();
+        if (data.comment) formData.append('comment', data.comment);
+        formData.append('requestId', data.requestId);
+        formData.append('respondedByUserId', data.respondedByUserId);
+
+        if (data.files && data.files.length > 0) {
+            data.files.forEach((file) => {
+                formData.append('files', file);
+            });
+        }
+        console.log(formData);
+        const response = await api.post('/Responses', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
         return response.data;
     },
 

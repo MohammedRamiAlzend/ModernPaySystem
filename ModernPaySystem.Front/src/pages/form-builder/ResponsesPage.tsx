@@ -9,7 +9,7 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { Input } from '@/shared/ui/input';
 import { useAppSelector } from '@/app/store';
 import { selectCurrentUser } from '@/app/store/authSlice';
-import { MessageSquare, Clock, FileText, User, ChevronRight, Eye } from 'lucide-react';
+import { MessageSquare, Clock, FileText, User, ChevronRight, Eye, Reply, Paperclip, X } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
@@ -19,6 +19,7 @@ import type { TemplateRequest } from '@/entities/form/model/types';
 export const ResponsesPage = () => {
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
+    const [files, setFiles] = useState<File[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [viewingResponse, setViewingResponse] = useState<FormResponse | null>(null);
 
@@ -32,6 +33,7 @@ export const ResponsesPage = () => {
             alert('تم إرسال الرد بنجاح');
             setComment('');
             setRequestId('');
+            setFiles([]);
         },
         onError: () => {
             alert('فشل إرسال الرد');
@@ -43,8 +45,19 @@ export const ResponsesPage = () => {
         responseMutation.mutate({
             requestId,
             comment,
-            respondedByUserId: currentUser.id
+            respondedByUserId: currentUser.id,
+            files: files.length > 0 ? files : undefined
         });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            setFiles(prev => [...prev, ...Array.from(e.target.files!)]);
+        }
+    };
+
+    const removeFile = (index: number) => {
+        setFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSelectRequest = (id: string) => {
@@ -76,13 +89,13 @@ export const ResponsesPage = () => {
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold">الردود والموافقات</h1>
+            <h1 className="text-3xl font-bold">الرد على الطلبات</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Requests List */}
                 <Card className="lg:col-span-2 p-6 overflow-hidden flex flex-col h-[700px]">
-                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <Clock className="w-5 h-5 text-primary" />
+                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-primary">
+                        <Clock className="w-5 h-5" />
                         الطلبات الواردة
                     </h2>
 
@@ -139,8 +152,8 @@ export const ResponsesPage = () => {
                                     <div className="mt-3 flex items-center gap-4 text-[10px] text-muted-foreground">
                                         {request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0 && (
                                             <span className="flex items-center gap-1">
-                                                <FileText className="w-3 h-3" />
-                                                {request.requestAttachmentDtos.length} ملفات
+                                                <Paperclip className="w-3 h-3" />
+                                                {request.requestAttachmentDtos.length} ملفات مرفقة مع الطلب
                                             </span>
                                         )}
                                     </div>
@@ -158,43 +171,86 @@ export const ResponsesPage = () => {
                 {/* Response Form */}
                 <div className="space-y-6">
                     <Card className="p-6 space-y-4 shadow-xl border-primary/10">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <MessageSquare className="w-5 h-5 text-primary" />
+                        <h2 className="text-xl font-semibold flex items-center gap-2 text-primary">
+                            <Reply className="w-5 h-5" />
                             إرسال رد
                         </h2>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>معرف الطلب المستهدف</Label>
+                                <Label className="text-sm font-bold">معرف الطلب المستهدف</Label>
                                 <Input
                                     placeholder="اختر طلباً من القائمة أو أدخل المعرف"
                                     value={requestId}
                                     onChange={(e: any) => setRequestId(e.target.value)}
-                                    className="bg-muted/30"
+                                    className="bg-muted/30 rounded-xl h-11"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label>نص الرد / القرار</Label>
+                                <Label className="text-sm font-bold">نص الرد / القرار</Label>
                                 <Textarea
                                     placeholder="اكتب تعليقك هنا..."
                                     value={comment}
                                     onChange={(e: any) => setComment(e.target.value)}
                                     rows={5}
-                                    className="resize-none"
+                                    className="resize-none rounded-xl"
                                 />
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label className="text-sm font-bold">المرفقات (صور، مستندات)</Label>
+                                <div className="flex flex-col gap-3">
+                                    <Label
+                                        htmlFor="file-upload"
+                                        className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-muted-foreground/20 rounded-xl cursor-pointer hover:bg-muted/30 hover:border-primary/50 transition-all group"
+                                    >
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <Paperclip className="w-6 h-6 mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+                                            <p className="text-xs text-muted-foreground">اضغط لرفع ملفات أو صور</p>
+                                        </div>
+                                        <input
+                                            id="file-upload"
+                                            type="file"
+                                            className="hidden"
+                                            multiple
+                                            onChange={handleFileChange}
+                                        />
+                                    </Label>
+
+                                    {files.length > 0 && (
+                                        <div className="space-y-2">
+                                            {files.map((file, index) => (
+                                                <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg text-xs border border-border">
+                                                    <div className="flex items-center gap-2 truncate">
+                                                        <FileText className="w-3 h-3 text-primary" />
+                                                        <span className="truncate max-w-[150px]">{file.name}</span>
+                                                    </div>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 rounded-full hover:bg-destructive/10 hover:text-destructive"
+                                                        onClick={() => removeFile(index)}
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <Button
                                 onClick={handleSubmit}
                                 disabled={!requestId || responseMutation.isPending}
-                                className="w-full h-12 text-md font-bold shadow-lg shadow-primary/20"
+                                className="w-full h-12 text-md font-bold shadow-lg shadow-primary/20 rounded-xl"
                             >
                                 {responseMutation.isPending ? 'جاري الإرسال...' : 'إرسال الرد النهائي'}
                             </Button>
                         </div>
                     </Card>
 
-                    <Card className="p-4 bg-muted/30 border-dashed text-[10px] text-muted-foreground">
+                    <Card className="p-4 bg-muted/30 border-dashed text-[10px] text-muted-foreground rounded-xl">
                         <p>• سيتم ربط هذا الرد بطلبك الملحق أعلاه.</p>
                         <p>• تأكد من صحة البيانات قبل الضغط على إرسال.</p>
                         <p>• المنفذ الحالي: {currentUser?.username}</p>
