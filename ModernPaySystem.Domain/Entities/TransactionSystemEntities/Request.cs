@@ -63,6 +63,8 @@ public class RequestDto
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public int AttachmentCount => RequestAttachmentDtos?.Count ?? 0;
+
 }
 
 public class CreateRequestDto

@@ -29,6 +29,7 @@ public class Response : Entity<Guid>, IAuditableEntity
             UpdatedAt = this.UpdatedAt,
             Request = this.Request?.ToDto(),
             ResponseAttachments = this.ResponseAttachments?.Select(ra => ra.ToDto()).ToList() ?? new List<ResponseAttachmentDto>()
+
         };
     }
     
@@ -48,6 +49,7 @@ public class ResponseDto
     public DateTime? UpdatedAt { get; set; }
     public RequestDto? Request { get; set; }
     public List<ResponseAttachmentDto> ResponseAttachments { get; set; } = [];
+    public int AttachmentCount => ResponseAttachments?.Count ?? 0;
 }
 
 public class CreateResponseDto
