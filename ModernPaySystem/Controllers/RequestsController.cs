@@ -24,13 +24,13 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-
     /// <summary>
     /// Get all Requests need Action.
     /// </summary>
-    [HttpGet("GetAllRequestsNeedAction")]
+    /// <param name="hasResponse"></param>
+    [HttpGet("GetAllRequestsNeedAction/{hasResponse}")]
     [EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetAllRequestsNeedAction([FromBody] bool hasResponse)
+    public async Task<IActionResult> GetAllRequestsNeedAction(bool hasResponse)
     {
         logger.LogInformation("Getting all request need action requests");
         var result = await requestService.GetAllAsync(hasResponse);
