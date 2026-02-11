@@ -14,8 +14,9 @@ public class Attachment : Entity<Guid>, IAuditableEntity
     public required string Extension { get; set; }
     public required string Path { get; set; }
 
-    // Navigation property
+    // Navigation properties
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = new List<RequestAttachment>();
+    public ICollection<ResponseAttachment> ResponseAttachments { get; set; } = new List<ResponseAttachment>();
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

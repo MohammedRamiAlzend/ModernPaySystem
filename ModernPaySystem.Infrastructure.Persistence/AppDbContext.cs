@@ -59,21 +59,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(ra => ra.AttachmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Response>()
-            .HasOne(resp => resp.Request)
-            .WithMany()
-            .HasForeignKey(resp => resp.RequestId)
-            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Request>()
+            .HasOne(r => r.Response)
+            .WithOne(resp => resp.Request)
+            .HasForeignKey<Request>(r => r.ResponseId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<ResponseAttachment>()
             .HasOne(ra => ra.Response)
-            .WithMany()
+            .WithMany(r => r.ResponseAttachments)
             .HasForeignKey(ra => ra.ResponseId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<ResponseAttachment>()
             .HasOne(ra => ra.Attachment)
-            .WithMany()
+            .WithMany(a => a.ResponseAttachments)
             .HasForeignKey(ra => ra.AttachmentId)
             .OnDelete(DeleteBehavior.Cascade);
 

@@ -35,12 +35,33 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    Key = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    SubSystem = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Permissions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Responses",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RespondedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Responses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -93,24 +114,53 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RolePermissions",
+                name: "ResponseAttachments",
                 columns: table => new
                 {
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PermissionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ResponseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    AttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RolePermissions", x => new { x.RoleId, x.PermissionId });
+                    table.PrimaryKey("PK_ResponseAttachments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RolePermissions_Permissions_PermissionId",
-                        column: x => x.PermissionId,
+                        name: "FK_ResponseAttachments_Attachments_AttachmentId",
+                        column: x => x.AttachmentId,
+                        principalTable: "Attachments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ResponseAttachments_Responses_ResponseId",
+                        column: x => x.ResponseId,
+                        principalTable: "Responses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RolePermissions",
+                columns: table => new
+                {
+                    PermissionsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RolesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RolePermissions", x => new { x.PermissionsId, x.RolesId });
+                    table.ForeignKey(
+                        name: "FK_RolePermissions_Permissions_PermissionsId",
+                        column: x => x.PermissionsId,
                         principalTable: "Permissions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_RolePermissions_Roles_RoleId",
-                        column: x => x.RoleId,
+                        name: "FK_RolePermissions_Roles_RolesId",
+                        column: x => x.RolesId,
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -124,6 +174,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     RequesterId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ApproverId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ResponseId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ContentAsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UpdatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -132,6 +184,12 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Requests", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Requests_Responses_ResponseId",
+                        column: x => x.ResponseId,
+                        principalTable: "Responses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Requests_Templates_TemplateId",
                         column: x => x.TemplateId,
@@ -200,21 +258,21 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 name: "UserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    RolesId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UsersId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
+                    table.PrimaryKey("PK_UserRoles", x => new { x.RolesId, x.UsersId });
                     table.ForeignKey(
-                        name: "FK_UserRoles_Roles_RoleId",
-                        column: x => x.RoleId,
+                        name: "FK_UserRoles_Roles_RolesId",
+                        column: x => x.RolesId,
                         principalTable: "Roles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserRoles_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_UserRoles_Users_UsersId",
+                        column: x => x.UsersId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -225,7 +283,12 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    AttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -240,59 +303,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         name: "FK_RequestAttachments_Requests_RequestId",
                         column: x => x.RequestId,
                         principalTable: "Requests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Responses",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RequestId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RespondedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Responses", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Responses_Requests_RequestId",
-                        column: x => x.RequestId,
-                        principalTable: "Requests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ResponseAttachments",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ResponseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AttachmentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ResponseAttachments", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ResponseAttachments_Attachments_AttachmentId",
-                        column: x => x.AttachmentId,
-                        principalTable: "Attachments",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ResponseAttachments_Responses_ResponseId",
-                        column: x => x.ResponseId,
-                        principalTable: "Responses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -313,6 +323,13 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 column: "RequesterId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Requests_ResponseId",
+                table: "Requests",
+                column: "ResponseId",
+                unique: true,
+                filter: "[ResponseId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Requests_TemplateId",
                 table: "Requests",
                 column: "TemplateId");
@@ -328,14 +345,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 column: "ResponseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Responses_RequestId",
-                table: "Responses",
-                column: "RequestId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RolePermissions_PermissionId",
+                name: "IX_RolePermissions_RolesId",
                 table: "RolePermissions",
-                column: "PermissionId");
+                column: "RolesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SubSystemUsers_UserId",
@@ -354,9 +366,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserRoles_RoleId",
+                name: "IX_UserRoles_UsersId",
                 table: "UserRoles",
-                column: "RoleId");
+                column: "UsersId");
         }
 
         /// <inheritdoc />
@@ -381,10 +393,10 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
-                name: "Attachments");
+                name: "Requests");
 
             migrationBuilder.DropTable(
-                name: "Responses");
+                name: "Attachments");
 
             migrationBuilder.DropTable(
                 name: "Permissions");
@@ -393,7 +405,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Requests");
+                name: "Responses");
 
             migrationBuilder.DropTable(
                 name: "Templates");

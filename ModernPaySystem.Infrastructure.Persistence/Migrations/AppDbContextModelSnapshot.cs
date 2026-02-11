@@ -185,9 +185,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("ResponseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ResponseId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("uniqueidentifier");
 
@@ -203,7 +200,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RequesterId");
 
-                    b.HasIndex("ResponseId1");
+                    b.HasIndex("ResponseId")
+                        .IsUnique()
+                        .HasFilter("[ResponseId] IS NOT NULL");
 
                     b.HasIndex("TemplateId");
 
@@ -269,8 +268,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RequestId");
-
                     b.ToTable("Responses");
                 });
 
@@ -292,9 +289,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ResponseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ResponseId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -306,8 +300,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("AttachmentId");
 
                     b.HasIndex("ResponseId");
-
-                    b.HasIndex("ResponseId1");
 
                     b.ToTable("ResponseAttachments");
                 });
@@ -423,8 +415,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", "Response")
-                        .WithMany()
-                        .HasForeignKey("ResponseId1");
+                        .WithOne("Request")
+                        .HasForeignKey("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", "ResponseId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Template", "Template")
                         .WithMany("Requests")
@@ -460,34 +453,19 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", b =>
-                {
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", "Request")
-                        .WithMany()
-                        .HasForeignKey("RequestId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Request");
-                });
-
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseAttachment", b =>
                 {
                     b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Attachment", "Attachment")
-                        .WithMany()
+                        .WithMany("ResponseAttachments")
                         .HasForeignKey("AttachmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", "Response")
-                        .WithMany()
+                        .WithMany("ResponseAttachments")
                         .HasForeignKey("ResponseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", null)
-                        .WithMany("ResponseAttachments")
-                        .HasForeignKey("ResponseId1");
 
                     b.Navigation("Attachment");
 
@@ -546,6 +524,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.Attachment", b =>
                 {
                     b.Navigation("RequestAttachments");
+
+                    b.Navigation("ResponseAttachments");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.User", b =>
@@ -566,6 +546,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", b =>
                 {
+                    b.Navigation("Request");
+
                     b.Navigation("ResponseAttachments");
                 });
 
