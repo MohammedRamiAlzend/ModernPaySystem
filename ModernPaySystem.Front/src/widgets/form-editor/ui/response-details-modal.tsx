@@ -1,15 +1,191 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BaseModal } from '@/shared/ui/modals/base-modal';
-import type { FormSchema } from '@/entities/form/model/types';
+import type { FormSchema, TemplateResponse } from '@/entities/form/model/types';
 import type { FormResponse } from '@/shared/lib/form-engine/responses';
 import { Button } from '@/shared/ui/button';
 import { Printer, Download, Loader2, FileArchive, Image as ImageIcon, Maximize2, XCircle } from 'lucide-react';
 import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { getVisibleFields, prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
-import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
+import { formEndpoints, useRequestResponses } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
-import { useEffect } from 'react';
-import { FileDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { FileDown, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+
+// --- Sub-component for individual response items ---
+const ResponseItem = ({ response, onViewImage }: { response: TemplateResponse, onViewImage: (img: ZipImage) => void }) => {
+    const [showAttachments, setShowAttachments] = useState(false);
+    const [images, setImages] = useState<ZipImage[]>([]);
+    const [isLoadingImages, setIsLoadingImages] = useState(false);
+    const [isAllImages, setIsAllImages] = useState(false);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    // Cleanup images on unmount or when closed
+    useEffect(() => {
+        return () => {
+            if (images.length > 0) {
+                revokeZipImages(images);
+            }
+        };
+    }, []);
+
+    const handleToggleAttachments = async () => {
+        const willShow = !showAttachments;
+        setShowAttachments(willShow);
+
+        if (willShow && images.length === 0) {
+            setIsLoadingImages(true);
+            try {
+                const blob = await formEndpoints.fetchResponseAttachmentsBlob(response.id);
+                const content: ZipContent = await extractImagesFromZip(blob);
+                setImages(content.images);
+                setIsAllImages(content.isAllImages);
+            } catch (error) {
+                console.error('Failed to load response images', error);
+                alert('فشل تحميل محتوى المرفقات');
+            } finally {
+                setIsLoadingImages(false);
+            }
+        }
+    };
+
+    const handleDownloadPdf = async () => {
+        if (images.length === 0) return;
+        setIsGeneratingPdf(true);
+        try {
+            await imagesToPdf(images, `Response_Attachments_${response.id.split('-')[0]}`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('فشل إنشاء ملف PDF');
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    };
+
+    const handleDownloadOriginal = async () => {
+        try {
+            await formEndpoints.downloadResponseAttachments(response.id);
+        } catch (e) {
+            console.error(e);
+            alert('فشل تحميل المرفقات');
+        }
+    };
+
+    return (
+        <div className="border border-emerald-100 rounded-2xl p-5  shadow-sm">
+            <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-2">
+                    <div className="font-bold text-sm text-emerald-800">
+                        تم الرد بواسطة: <span className="font-mono text-emerald-600">{response.respondedByUserId.split('-')[0]}...</span>
+                    </div>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                    {response.createdAt ? new Date(response.createdAt).toLocaleString('ar-EG') : '-'}
+                </div>
+            </div>
+
+            <p className="text-sm leading-relaxed mb-4 font-medium whitespace-pre-wrap text-gray-700">
+                {response.comment}
+            </p>
+
+            {response.responseAttachments && response.responseAttachments.length > 0 && (
+                <div className="pt-3 border-t border-emerald-50">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                            <FileArchive className="w-3 h-3" />
+                            {response.responseAttachments.length} مرفقات
+                        </span>
+
+                        <div className="flex gap-2">
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={handleToggleAttachments}
+                                className="h-7 text-xs gap-1  text-emerald-700"
+                            >
+                                {showAttachments ? (
+                                    <>
+                                        <ChevronUp className="w-3 h-3" /> إخفاء المعاينة
+                                    </>
+                                ) : (
+                                    <>
+                                        <ChevronDown className="w-3 h-3" /> معاينة المرفقات
+                                    </>
+                                )}
+                            </Button>
+
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 gap-2 text-xs border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700"
+                                onClick={handleDownloadOriginal}
+                            >
+                                <Download className="w-3 h-3" />
+                                تحميل zip
+                            </Button>
+                        </div>
+                    </div>
+
+                    {showAttachments && (
+                        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            {isLoadingImages ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {images.length > 0 ? (
+                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                            {images.map((img, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="relative aspect-square rounded-lg overflow-hidden border border-emerald-100 cursor-pointer group"
+                                                    onClick={() => onViewImage(img)}
+                                                >
+                                                    <img
+                                                        src={img.url}
+                                                        alt={img.name}
+                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                    />
+                                                    <div className="absolute inset-0  opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <Maximize2 className=" w-4 h-4" />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4 text-xs  rounded-lg">
+                                            لا يمكن عرض المرفقات (قد تكون ملفات غير مدعومة للمعاينة)
+                                        </div>
+                                    )}
+
+                                    {/* Action Buttons for Expanded View */}
+                                    {isAllImages && images.length > 0 && (
+                                        <Button
+                                            onClick={handleDownloadPdf}
+                                            disabled={isGeneratingPdf}
+                                            variant="secondary"
+                                            className="w-full h-9 text-xs font-bold gap-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                                        >
+                                            {isGeneratingPdf ? (
+                                                <>
+                                                    <Loader2 className="w-3 h-3 animate-spin" /> جاري الدمج...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <FileDown className="w-3 h-3" /> تحميل الصور كملف PDF
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 interface ResponseDetailsModalProps {
     isOpen: boolean;
@@ -31,6 +207,8 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
     const [isLoadingImages, setIsLoadingImages] = useState(false);
     const [isGeneratingImagesPDF, setIsGeneratingImagesPDF] = useState(false);
     const [selectedImage, setSelectedImage] = useState<ZipImage | null>(null);
+
+    const { data: responses = [] } = useRequestResponses(response?.id || null);
 
     // Load images from ZIP when modal opens
     useEffect(() => {
@@ -128,6 +306,16 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
             alert('فشل إنشاء ملف PDF للصور');
         } finally {
             setIsGeneratingImagesPDF(false);
+        }
+    };
+
+    // Keep the old handler for reference in parent (though effectively unused now replaced by child)
+    const handleDownloadResponseAttachments = async (respId: string) => {
+        try {
+            await formEndpoints.downloadResponseAttachments(respId);
+        } catch (e) {
+            console.error(e);
+            alert('فشل تحميل مرفقات الرد');
         }
     };
 
@@ -302,6 +490,31 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                                 <p>يحتوي الملف على مرفقات غير مرئية (مثل الملفات النصية)، يمكنك تحميلها بالكامل باستخدام الزر في الأسفل.</p>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* Responses Section */}
+                {responses && responses.length > 0 && (
+                    <div className="mt-8 pt-8 border-t-2 border-gray-100">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2 text-emerald-600">
+                                <MessageSquare className="w-6 h-6" />
+                                الردود والقرارات
+                            </h3>
+                            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                                {responses.length} رد
+                            </span>
+                        </div>
+
+                        <div className="space-y-4">
+                            {responses.map((resp) => (
+                                <ResponseItem
+                                    key={resp.id}
+                                    response={resp}
+                                    onViewImage={setSelectedImage}
+                                />
+                            ))}
+                        </div>
                     </div>
                 )}
 

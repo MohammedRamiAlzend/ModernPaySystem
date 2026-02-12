@@ -117,7 +117,19 @@ export interface CreateResponseDto {
 
 export interface TemplateResponse {
     id: string;
-    comment: string | null;
     requestId: string;
     respondedByUserId: string;
+    comment: string | null;
+    createdByUserId: string | null;
+    createdAt: string | null;
+    updatedByUserId: string | null;
+    updatedAt: string | null;
+    request: any | null;
+    responseAttachments: {
+        id: string;
+        responseId: string;
+        attachmentId: string;
+        attachmentDto: any | null;
+    }[];
+    attachmentCount: number;
 }

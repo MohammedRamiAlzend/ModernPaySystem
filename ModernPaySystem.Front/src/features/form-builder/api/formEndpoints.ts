@@ -7,13 +7,15 @@ import type {
     CreateTemplateDto,
     CreateRequestDto,
     CreateResponseDto,
-    TemplateRequest
+    TemplateRequest,
+    TemplateResponse
 } from '@/entities/form/model/types';
 
 // --- API Service ---
 
 export const formEndpoints = {
-    // Templates
+    // Templates 
+    // هون استدعيت  متل العادة 
     createTemplate: async (data: CreateTemplateDto): Promise<{ data: Template }> => {
         const response = await api.post('/Templates', data);
         return response.data;
@@ -57,7 +59,13 @@ export const formEndpoints = {
         return response.data;
     },
 
+
     // Responses
+    getResponsesByRequestId: async (requestId: string): Promise<{ data: TemplateResponse[] }> => {
+        const response = await api.get(`/Responses/by-request/${requestId}`);
+        return response.data;
+    },
+
     createResponse: async (data: CreateResponseDto): Promise<any> => {
         const formData = new FormData();
         if (data.comment) formData.append('comment', data.comment);
@@ -166,8 +174,29 @@ export const useCreateRequest = () => {
     });
 };
 
+
 export const useCreateResponse = () => {
     return useMutation({
         mutationFn: formEndpoints.createResponse
+    });
+};
+
+export const useRequestResponses = (requestId: string | null) => {
+    return useQuery({
+        queryKey: ['responses', requestId],
+        queryFn: async () => {
+            if (!requestId) return [];
+            // Handle API wrapping
+            const res = await formEndpoints.getResponsesByRequestId(requestId);
+            // Some API calls return { data: [...] }, some return array directly. 
+            // The type says { data: TemplateResponse[] }, so let's check.
+            if ('data' in res && Array.isArray((res as any).data)) {
+                return (res as any).data as TemplateResponse[];
+            }
+            if (Array.isArray(res)) return res as TemplateResponse[];
+            return [] as TemplateResponse[];
+        },
+        enabled: !!requestId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };

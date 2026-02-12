@@ -73,7 +73,7 @@ export default function ActionedRequestsPage() {
                                         </div>
                                         <div>
                                             <div className="font-bold text-sm truncate max-w-[150px]">
-                                                {request.id.split('-')[0].toUpperCase()}
+                                                {templates.find(t => t.id === request.templateId)?.title || request.id.split('-')[0].toUpperCase()}
                                             </div>
                                             <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
                                                 <User className="w-3 h-3" />

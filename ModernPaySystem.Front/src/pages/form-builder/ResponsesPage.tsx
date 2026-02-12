@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formEndpoints, useRequests } from '@/features/form-builder/api/formEndpoints';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
@@ -27,10 +27,12 @@ export const ResponsesPage = () => {
     const { data: requests = [], isLoading } = useRequests();
     const { data: templates = [] } = useForms();
 
+    const queryClient = useQueryClient();
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
         onSuccess: () => {
             alert('تم إرسال الرد بنجاح');
+            queryClient.invalidateQueries({ queryKey: ['requests'] });
             setComment('');
             setRequestId('');
             setFiles([]);
@@ -121,7 +123,7 @@ export const ResponsesPage = () => {
                                             </div>
                                             <div>
                                                 <div className="font-bold text-sm truncate max-w-[200px]">
-                                                    {request.id.split('-')[0].toUpperCase()} ... ID
+                                                    {templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`}
                                                 </div>
                                                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
                                                     <User className="w-3 h-3" />
