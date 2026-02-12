@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRequests } from '@/features/form-builder/api/formEndpoints';
 import { Card } from '@/shared/ui/card';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
-import { FileText, User, Eye, CheckCircle2, History } from 'lucide-react';
+import { FileText, User, Eye, History } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
