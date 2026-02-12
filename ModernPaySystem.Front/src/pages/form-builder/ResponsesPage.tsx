@@ -13,8 +13,7 @@ import { MessageSquare, Clock, FileText, User, ChevronRight, Eye, Reply, Papercl
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
-import type { FormResponse } from '@/shared/lib/form-engine/responses';
-import type { TemplateRequest } from '@/entities/form/model/types';
+import type { FormResponse, TemplateRequest } from '@/entities/form/model/types';
 
 export const ResponsesPage = () => {
     const [requestId, setRequestId] = useState('');

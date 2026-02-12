@@ -133,3 +133,13 @@ export interface TemplateResponse {
     }[];
     attachmentCount: number;
 }
+
+export interface FormResponse {
+    id: string;
+    formId: string;
+    submittedAt: string;
+    data: Record<string, any>;
+    /** The complete form schema at the time of submission */
+    schema: FormSchema;
+    attachments?: any[];
+}

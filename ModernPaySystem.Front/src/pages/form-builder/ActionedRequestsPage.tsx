@@ -7,8 +7,7 @@ import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { Button } from '@/shared/ui/button';
-import type { FormResponse } from '@/shared/lib/form-engine/responses';
-import type { TemplateRequest } from '@/entities/form/model/types';
+import type { TemplateRequest, FormResponse } from '@/entities/form/model/types';
 
 export default function ActionedRequestsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);

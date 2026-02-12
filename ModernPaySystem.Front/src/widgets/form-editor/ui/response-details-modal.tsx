@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BaseModal } from '@/shared/ui/modals/base-modal';
-import type { FormSchema } from '@/entities/form/model/types';
-import type { FormResponse } from '@/shared/lib/form-engine/responses';
+import type { FormSchema, FormResponse } from '@/entities/form/model/types';
 import { MessageSquare } from 'lucide-react';
 import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { getVisibleFields, prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
@@ -131,15 +130,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
         }
     };
 
-    // Keep the old handler for reference in parent (though effectively unused now replaced by child)
-    // const handleDownloadResponseAttachments = async (respId: string) => {
-    //     try {
-    //         await formEndpoints.downloadResponseAttachments(respId);
-    //     } catch (e) {
-    //         console.error(e);
-    //         alert('فشل تحميل مرفقات الرد');
-    //     }
-    // };
+
 
     return (
         <BaseModal

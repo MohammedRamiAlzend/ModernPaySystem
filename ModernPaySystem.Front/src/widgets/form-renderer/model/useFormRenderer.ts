@@ -3,8 +3,6 @@ import { validateForm } from '@/shared/lib/form-engine/validation';
 import { evaluateLogicRules } from '@/shared/lib/form-engine/logicEngine';
 import type { FieldStates } from '@/shared/lib/form-engine/logicEngine';
 import type { FormSchema } from '@/entities/form/model/types';
-import { saveFormResponse } from '@/shared/lib/form-engine/responses';
-
 export const useFormRenderer = (schema: FormSchema, onSubmit: (data: Record<string, any>) => void, initialData?: Record<string, any>) => {
     const [formData, setFormData] = useState<Record<string, any>>(() => {
         const initial: Record<string, any> = {};
@@ -84,9 +82,6 @@ export const useFormRenderer = (schema: FormSchema, onSubmit: (data: Record<stri
         setErrors(formErrors);
 
         if (Object.keys(formErrors).length === 0) {
-            // Save to local storage
-            saveFormResponse(schema, formData);
-
             setIsSubmitted(true);
             setTimeout(() => setIsSubmitted(false), 3000);
 
