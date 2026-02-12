@@ -25,7 +25,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         icon: <ClipboardList className="h-5 w-5" />,
     },
     {
-        title: "بناء النماذج",
+        title: "نظام المراسلات",
         path: "/form-builder",
         icon: <LayoutDashboard className="h-5 w-5" />,
         children: [

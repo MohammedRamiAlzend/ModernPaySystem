@@ -149,12 +149,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                                             className={({ isActive }) => cn(
                                                 "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-sm",
                                                 isActive
-                                                    ? "bg-accent text-accent-foreground font-medium"
+                                                    ? "bg-primary text-primary-foreground font-medium"
                                                     : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                                             )}
                                         >
                                             <div className="opacity-70">{child.icon}</div>
-                                            <span>{child.title}</span>
+                                            <span className='font-bold'>{child.title} </span>
                                         </PrefetchNavLink>
                                     ))}
                                 </div>
