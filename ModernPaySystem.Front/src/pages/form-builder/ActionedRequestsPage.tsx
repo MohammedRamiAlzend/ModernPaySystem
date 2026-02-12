@@ -60,6 +60,7 @@ export default function ActionedRequestsPage() {
                             <tr>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">رقم الطلب</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم النموذج (Form)</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">البيانات المقدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم (Requester)</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ التقديم</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">الإجراءات</th>
@@ -69,7 +70,7 @@ export default function ActionedRequestsPage() {
                             {isLoading ? (
                                 Array.from({ length: 5 }).map((_, i) => (
                                     <tr key={i} className="animate-pulse">
-                                        <td colSpan={5} className="px-6 py-4">
+                                        <td colSpan={6} className="px-6 py-4">
                                             <Skeleton className="h-10 w-full rounded-lg" />
                                         </td>
                                     </tr>
@@ -88,6 +89,47 @@ export default function ActionedRequestsPage() {
                                                 <span className="font-bold text-sm">
                                                     {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
                                                 </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="space-y-1.5 max-w-xs">
+                                                {(() => {
+                                                    try {
+                                                        const data = JSON.parse(request.content);
+                                                        const schema = templates.find(t => t.id === request.templateId);
+                                                        const fields = schema?.fields || [];
+
+                                                        // Get first 3 fields that have values
+                                                        const displayFields = fields
+                                                            .filter(field => data[field.name] !== undefined && data[field.name] !== null && data[field.name] !== '')
+                                                            .slice(0, 3);
+
+                                                        if (displayFields.length === 0) {
+                                                            return (
+                                                                <div className="text-xs text-muted-foreground italic">
+                                                                    لا توجد بيانات
+                                                                </div>
+                                                            );
+                                                        }
+
+                                                        return displayFields.map((field, idx) => (
+                                                            <div key={idx} className="flex items-start gap-2 text-xs">
+                                                                <span className="font-semibold text-muted-foreground whitespace-nowrap">
+                                                                    {field.label}:
+                                                                </span>
+                                                                <span className="text-foreground font-medium truncate">
+                                                                    {String(data[field.name])}
+                                                                </span>
+                                                            </div>
+                                                        ));
+                                                    } catch (e) {
+                                                        return (
+                                                            <div className="text-xs text-muted-foreground italic">
+                                                                خطأ في البيانات
+                                                            </div>
+                                                        );
+                                                    }
+                                                })()}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
@@ -114,7 +156,7 @@ export default function ActionedRequestsPage() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="py-20 text-center">
+                                    <td colSpan={6} className="py-20 text-center">
                                         <div className="flex flex-col items-center justify-center text-muted-foreground">
                                             <History className="w-12 h-12 mb-3 opacity-20" />
                                             <p className="font-medium">لا توجد طلبات مؤرشفة حالياً</p>
