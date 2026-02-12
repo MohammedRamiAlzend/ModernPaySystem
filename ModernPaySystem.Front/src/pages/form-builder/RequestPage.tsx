@@ -5,7 +5,6 @@ import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { Card } from '@/shared/ui/card';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/ui/select';
 import { Label } from '@/shared/ui/label';
-import { Input } from '@/shared/ui/input';
 import { useMutation } from '@tanstack/react-query';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import type { CreateRequestDto } from '@/entities/form/model/types';

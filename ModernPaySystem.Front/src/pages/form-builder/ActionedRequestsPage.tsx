@@ -81,7 +81,7 @@ export default function ActionedRequestsPage() {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">
+                                    <div className="flex items-center gap-1.5 px-2 py-1  text-emerald-600 rounded-lg border ">
                                         <CheckCircle2 className="w-3 h-3" />
                                         <span className="text-[10px] font-bold">تم الرد</span>
                                     </div>
