@@ -187,7 +187,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                                 <MessageSquare className="w-6 h-6" />
                                 الردود والقرارات
                             </h3>
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                            <span className="px-3 py-1  text-emerald-700 text-xs font-bold rounded-full">
                                 {responses.length} رد
                             </span>
                         </div>

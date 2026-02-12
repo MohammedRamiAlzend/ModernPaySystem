@@ -68,7 +68,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
     };
 
     return (
-        <div className="border border-emerald-100 rounded-2xl p-5 shadow-sm bg-white">
+        <div className="border border-emerald-100 rounded-2xl p-5 shadow-sm ">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
                     <div className="font-bold text-sm text-emerald-800">
@@ -97,7 +97,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                                 size="sm"
                                 variant="ghost"
                                 onClick={handleToggleAttachments}
-                                className="h-7 text-xs gap-1 text-emerald-700 hover:bg-emerald-50"
+                                className="h-7 text-xs gap-1 text-emerald-700 "
                             >
                                 {showAttachments ? (
                                     <>
@@ -160,7 +160,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                                             onClick={handleDownloadPdf}
                                             disabled={isGeneratingPdf}
                                             variant="secondary"
-                                            className="w-full h-9 text-xs font-bold gap-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                                            className="w-full h-9 text-xs font-bold gap-2 "
                                         >
                                             {isGeneratingPdf ? (
                                                 <>
