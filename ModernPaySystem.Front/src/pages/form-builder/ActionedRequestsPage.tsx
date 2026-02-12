@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useRequests } from '@/features/form-builder/api/formEndpoints';
 import { Card } from '@/shared/ui/card';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
-import { FileText, User, Eye, History } from 'lucide-react';
+import { FileText, Eye, History } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { Button } from '@/shared/ui/button';
 import type { TemplateRequest, FormResponse } from '@/entities/form/model/types';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 export default function ActionedRequestsPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -133,13 +134,15 @@ export default function ActionedRequestsPage() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <User className="w-3 h-3 text-muted-foreground" />
-                                                <span className="text-sm font-medium">{request.requesterId}</span>
-                                            </div>
+                                            <UserDisplay
+                                                userId={request.requesterId}
+                                                showIcon={true}
+                                                iconClassName="w-3 h-3"
+                                                className="text-sm"
+                                            />
                                         </td>
                                         <td className="px-6 py-4 text-xs text-muted-foreground">
-                                            {new Date(request.createdAt || '').toLocaleDateString('ar-EG')}
+                                            {new Date(request.createdAt || '').toLocaleDateString('ar-EG') || request.createdAt}
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <Button

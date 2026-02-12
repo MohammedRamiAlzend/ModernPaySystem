@@ -4,6 +4,7 @@ import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, File
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
 import type { TemplateResponse } from '@/entities/form/model/types';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 interface ResponseItemProps {
     response: TemplateResponse;
@@ -71,8 +72,13 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
         <div className="border border-emerald-100 rounded-2xl p-5 shadow-sm ">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
-                    <div className="font-bold text-sm text-emerald-800">
-                        تم الرد بواسطة: <span className="font-mono text-emerald-600">{response.respondedByUserId.split('-')[0]}...</span>
+                    <div className="font-bold text-sm text-emerald-800 flex items-center gap-1">
+                        تم الرد بواسطة:
+                        <UserDisplay
+                            userId={response.respondedByUserId}
+                            showIcon={false}
+                            className="font-mono text-emerald-600"
+                        />
                     </div>
                 </div>
                 <div className="text-xs text-muted-foreground">

@@ -9,11 +9,12 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { Input } from '@/shared/ui/input';
 import { useAppSelector } from '@/app/store';
 import { selectCurrentUser } from '@/app/store/authSlice';
-import { MessageSquare, Clock, FileText, User, ChevronRight, Eye, Reply, Paperclip, X } from 'lucide-react';
+import { MessageSquare, Clock, FileText, ChevronRight, Eye, Reply, Paperclip, X } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
 import type { FormResponse, TemplateRequest } from '@/entities/form/model/types';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 export const ResponsesPage = () => {
     const [requestId, setRequestId] = useState('');
@@ -124,9 +125,13 @@ export const ResponsesPage = () => {
                                                 <div className="font-bold text-sm truncate max-w-[200px]">
                                                     {templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`}
                                                 </div>
-                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                                    <User className="w-3 h-3" />
-                                                    {request.requesterId}
+                                                <div className="text-[10px] mt-0.5">
+                                                    <UserDisplay
+                                                        userId={request.requesterId}
+                                                        showIcon={true}
+                                                        iconClassName="w-3 h-3"
+                                                        className="text-muted-foreground"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -221,6 +226,7 @@ export const ResponsesPage = () => {
                                 <Input
                                     placeholder="اختر طلباً من القائمة أو أدخل المعرف"
                                     value={requestId}
+                                    disabled
                                     onChange={(e: any) => setRequestId(e.target.value)}
                                     className="bg-muted/30 rounded-xl h-11"
                                 />
