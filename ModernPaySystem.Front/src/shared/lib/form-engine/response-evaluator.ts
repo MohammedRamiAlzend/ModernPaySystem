@@ -1,5 +1,5 @@
 import type { FormField } from '@/entities/form/model/types';
-import type { FormResponse } from './responses';
+import type { FormResponse } from '@/entities/form/model/types';
 import { evaluateLogicRules, type FieldStates } from './logicEngine';
 
 export interface EvaluatedField {

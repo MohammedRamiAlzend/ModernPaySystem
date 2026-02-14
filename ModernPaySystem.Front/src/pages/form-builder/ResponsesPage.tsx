@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formEndpoints, useRequests } from '@/features/form-builder/api/formEndpoints';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
@@ -9,12 +9,12 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { Input } from '@/shared/ui/input';
 import { useAppSelector } from '@/app/store';
 import { selectCurrentUser } from '@/app/store/authSlice';
-import { MessageSquare, Clock, FileText, User, ChevronRight, Eye, Reply, Paperclip, X } from 'lucide-react';
+import { MessageSquare, Clock, FileText, ChevronRight, Eye, Reply, Paperclip, X } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { useForms } from '@/features/form-builder/model/useForms';
-import type { FormResponse } from '@/shared/lib/form-engine/responses';
-import type { TemplateRequest } from '@/entities/form/model/types';
+import type { FormResponse, TemplateRequest } from '@/entities/form/model/types';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 export const ResponsesPage = () => {
     const [requestId, setRequestId] = useState('');
@@ -27,10 +27,12 @@ export const ResponsesPage = () => {
     const { data: requests = [], isLoading } = useRequests();
     const { data: templates = [] } = useForms();
 
+    const queryClient = useQueryClient();
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
         onSuccess: () => {
             alert('تم إرسال الرد بنجاح');
+            queryClient.invalidateQueries({ queryKey: ['requests'] });
             setComment('');
             setRequestId('');
             setFiles([]);
@@ -121,11 +123,15 @@ export const ResponsesPage = () => {
                                             </div>
                                             <div>
                                                 <div className="font-bold text-sm truncate max-w-[200px]">
-                                                    {request.id.split('-')[0].toUpperCase()} ... ID
+                                                    {templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`}
                                                 </div>
-                                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                                                    <User className="w-3 h-3" />
-                                                    {request.requesterId}
+                                                <div className="text-[10px] mt-0.5">
+                                                    <UserDisplay
+                                                        userId={request.requesterId}
+                                                        showIcon={true}
+                                                        iconClassName="w-3 h-3"
+                                                        className="text-muted-foreground"
+                                                    />
                                                 </div>
                                             </div>
                                         </div>
@@ -145,9 +151,48 @@ export const ResponsesPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded-md font-mono truncate">
-                                        {request.content}
+
+                                    {/* Display first 3 fields */}
+                                    <div className="space-y-2">
+                                        {(() => {
+                                            try {
+                                                const data = JSON.parse(request.content);
+                                                const schema = templates.find(t => t.id === request.templateId);
+                                                const fields = schema?.fields || [];
+
+                                                // Get first 3 fields that have values
+                                                const displayFields = fields
+                                                    .filter(field => data[field.name] !== undefined && data[field.name] !== null && data[field.name] !== '')
+                                                    .slice(0, 3);
+
+                                                if (displayFields.length === 0) {
+                                                    return (
+                                                        <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded-md">
+                                                            لا توجد بيانات لعرضها
+                                                        </div>
+                                                    );
+                                                }
+
+                                                return displayFields.map((field, idx) => (
+                                                    <div key={idx} className="flex items-start gap-2 text-xs bg-muted/20 p-2 rounded-md">
+                                                        <span className="font-bold text-muted-foreground min-w-[80px]">
+                                                            {field.label}:
+                                                        </span>
+                                                        <span className="text-foreground font-medium truncate">
+                                                            {String(data[field.name])}
+                                                        </span>
+                                                    </div>
+                                                ));
+                                            } catch (e) {
+                                                return (
+                                                    <div className="text-xs text-muted-foreground bg-muted/20 p-2 rounded-md font-mono truncate">
+                                                        {request.content}
+                                                    </div>
+                                                );
+                                            }
+                                        })()}
                                     </div>
+
 
                                     <div className="mt-3 flex items-center gap-4 text-[10px] text-muted-foreground">
                                         {request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0 && (
@@ -181,6 +226,7 @@ export const ResponsesPage = () => {
                                 <Input
                                     placeholder="اختر طلباً من القائمة أو أدخل المعرف"
                                     value={requestId}
+                                    disabled
                                     onChange={(e: any) => setRequestId(e.target.value)}
                                     className="bg-muted/30 rounded-xl h-11"
                                 />

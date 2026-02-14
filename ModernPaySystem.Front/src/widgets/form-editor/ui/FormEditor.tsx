@@ -6,7 +6,6 @@ import { Input } from '@/shared/ui/input';
 import { Card } from '@/shared/ui/card';
 import { PropertiesPanel } from './PropertiesPanel';
 import { LogicEditor } from './LogicEditor';
-import { ResponsesList } from './ResponsesList';
 import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import gsap from 'gsap';
@@ -34,7 +33,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
 
     const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
     const [mode, setMode] = useState<'edit' | 'preview'>('edit');
-    const [activeTab, setActiveTab] = useState<'fields' | 'logic' | 'responses'>('fields');
+    const [activeTab, setActiveTab] = useState<'fields' | 'logic'>('fields');
 
     // Advanced GSAP FLIP Animation
     const listRef = useRef<HTMLDivElement>(null);
@@ -154,12 +153,6 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                 >
                     قواعد المنطق
                 </button>
-                <button
-                    className={`pb-2 px-4 font-medium transition-colors border-b-2 ${activeTab === 'responses' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
-                    onClick={() => setActiveTab('responses')}
-                >
-                    الردود المستلمة
-                </button>
             </div>
 
             {activeTab === 'fields' ? (
@@ -245,15 +238,13 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                         )}
                     </div>
                 </div>
-            ) : activeTab === 'logic' ? (
+            ) : (
                 <LogicEditor
                     form={form}
                     onAddRule={addLogicRule}
                     onUpdateRule={updateLogicRule}
                     onDeleteRule={deleteLogicRule}
                 />
-            ) : (
-                <ResponsesList schema={form} />
             )}
         </div>
     );
