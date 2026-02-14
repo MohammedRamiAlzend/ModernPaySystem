@@ -14,21 +14,26 @@ export const useFormEditor = (initialForm?: FormSchema) => {
         setForm(prev => ({ ...prev, title }));
     };
 
-    const addField = (type: FormField['type']) => {
+    const addField = (type: FormField['type'], lookUpFieldId?: string, customLabel?: string) => {
         const newField: FormField = {
             id: crypto.randomUUID(),
             name: `field_${Date.now()}`,
             type,
-            label: `New ${type} Field`,
+            label: customLabel || (lookUpFieldId ? 'حقل من الإعدادات' : `New ${type} Field`),
             validation: [],
             // Initialize dataSource for types that need options
-            dataSource: (type === 'select' || type === 'radio') ? {
-                type: 'static',
-                options: [
-                    { label: 'Option 1', value: 'opt1' },
-                    { label: 'Option 2', value: 'opt2' }
-                ]
-            } : undefined
+            dataSource: (type === 'select' || type === 'radio') ? (
+                lookUpFieldId ? {
+                    type: 'lookup',
+                    lookUpFieldId
+                } : {
+                    type: 'static',
+                    options: [
+                        { label: 'Option 1', value: 'opt1' },
+                        { label: 'Option 2', value: 'opt2' }
+                    ]
+                }
+            ) : undefined
         };
         setForm(prev => ({
             ...prev,

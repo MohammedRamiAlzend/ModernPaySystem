@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
 import { Switch } from '@/shared/ui/switch';
 import { Label } from '@/shared/ui/label';
 import { useTheme } from '@/app/providers/theme-provider';

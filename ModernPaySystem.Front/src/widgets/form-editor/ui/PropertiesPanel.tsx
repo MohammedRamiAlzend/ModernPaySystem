@@ -80,7 +80,14 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, onChang
 
             {(field.type === 'select' || field.type === 'radio') && (
                 <div className="space-y-2 border-t pt-4">
-                    <Label className="font-semibold">الخيارات (Options)</Label>
+                    <div className="flex flex-col gap-1 mb-2">
+                        <Label className="font-semibold text-primary">الخيارات (Options)</Label>
+                        {field.dataSource?.type === 'lookup' && (
+                            <div className="p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg text-[10px] text-amber-700 dark:text-amber-400 font-medium">
+                                تنبيه: هذا الحقل مرتبط بالإعدادات . إضافة خيارات يدوية سيقوم بإزالة الارتباط التلقائي.
+                            </div>
+                        )}
+                    </div>
                     <div className="space-y-2">
                         {field.dataSource?.options?.map((opt, idx) => (
                             <div key={idx} className="flex gap-2 items-center group">

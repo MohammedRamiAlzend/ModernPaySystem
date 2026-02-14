@@ -1,6 +1,7 @@
 import React from 'react';
 import { Label } from "@/shared/ui/label";
-import type { FormField } from "@/entities/form/model/types";
+import type { FormField, DataSourceOption } from "@/entities/form/model/types";
+import { useLookUpFieldValues } from '@/features/lookup-management/api/lookupApi';
 
 interface selectProps {
     field: FormField;
@@ -12,10 +13,12 @@ interface selectProps {
 }
 
 export const SelectField: React.FC<selectProps> = ({ field, value, onChange, error, disabled, readOnly }) => {
-    // For simplicity, using native select to avoid complex Radix Select state management in this migration
-    // If strict UI consistency is needed, we would implement Radix Select here.
-    // Given "Feature-Based" and "Old Form Builder", native select is safer for dynamic data without refactoring the whole logic.
-    // However, I will style it to look decent.
+    const isLookUp = field.dataSource?.type === 'lookup';
+    const { data: lookUpValues = [], isLoading } = useLookUpFieldValues(isLookUp ? field.dataSource!.lookUpFieldId! : null);
+
+    const options: DataSourceOption[] = isLookUp
+        ? lookUpValues.map(v => ({ label: v.desc, value: v.desc })) // As per user request: result stored is 'desc'
+        : (field.dataSource?.options || []);
 
     return (
         <div className="space-y-2">
@@ -27,11 +30,11 @@ export const SelectField: React.FC<selectProps> = ({ field, value, onChange, err
                 id={field.id}
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
-                disabled={disabled || readOnly}
+                disabled={disabled || readOnly || isLoading}
                 className={`flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${error ? "border-red-500" : ""}`}
             >
-                <option value="" disabled>الخيارات ...</option>
-                {field.dataSource?.options?.map((opt) => (
+                <option value="" disabled>{isLoading ? 'جاري التحميل...' : 'الخيارات ...'}</option>
+                {options.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                         {opt.label}
                     </option>

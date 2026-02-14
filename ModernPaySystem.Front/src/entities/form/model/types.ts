@@ -27,9 +27,10 @@ export interface DataSourceOption {
 }
 
 export interface DataSource {
-    type: 'static' | 'api';
+    type: 'static' | 'api' | 'lookup';
     options?: DataSourceOption[];
     url?: string; // If API
+    lookUpFieldId?: string; // For LookUp fields
 }
 
 export type InitialVisibility = 'visible' | 'hidden';
