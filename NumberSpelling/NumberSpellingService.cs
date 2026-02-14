@@ -1,28 +1,21 @@
+using WordFileTest.NumberToArabicText;
+
 namespace NumberSpelling;
 
 public class NumberSpellingService : INumberSpellingService
 {
-    public async Task<string> ConvertNumberToArabicWordsAsync(decimal number)
+    public string ConvertNumberToArabicWords(decimal number)
     {
-        // Placeholder implementation - in a real scenario, this would call the actual NumberToArabicText library
-        return await Task.Run(() => $"Number {number} in Arabic words");
+        return ArabicWordConverter.ToArabicWord(number).ToString()!;
     }
 
-    public async Task<string> ConvertNumberToArabicWordsAsync(double number)
+    public string ConvertNumberToArabicWords(int number)
     {
-        // Placeholder implementation - in a real scenario, this would call the actual NumberToArabicText library
-        return await Task.Run(() => $"Number {number} in Arabic words");
+        return ArabicWordConverter.ToArabicWord(number).ToString()!;
     }
 
-    public async Task<string> ConvertNumberToArabicWordsAsync(int number)
+    public string ConvertNumberToArabicWords(long number)
     {
-        // Placeholder implementation - in a real scenario, this would call the actual NumberToArabicText library
-        return await Task.Run(() => $"Number {number} in Arabic words");
-    }
-
-    public async Task<string> ConvertNumberToArabicWordsAsync(long number)
-    {
-        // Placeholder implementation - in a real scenario, this would call the actual NumberToArabicText library
-        return await Task.Run(() => $"Number {number} in Arabic words");
+        return ArabicWordConverter.ToArabicWord(number).ToString()!;
     }
 }

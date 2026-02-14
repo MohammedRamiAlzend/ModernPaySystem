@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Infrastructure.Extensions;
-
 namespace ModernPaySystem.Controllers;
 
 /// <summary>
@@ -31,19 +26,7 @@ public class NumberSpellingController : ControllerBase
     public async Task<IActionResult> ConvertDecimalToArabic([FromBody] decimal number)
     {
         _logger.LogInformation("Converting decimal number {Number} to Arabic words", number);
-        var result = await _numberSpellingService.ConvertNumberToArabicWordsAsync(number);
-        return result.ToActionResult();
-    }
-
-    /// <summary>
-    /// Convert a double number to Arabic words
-    /// </summary>
-    [HttpPost("convert-double-to-arabic")]
-    [EndpointPermission("numberspelling.convert-double", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> ConvertDoubleToArabic([FromBody] double number)
-    {
-        _logger.LogInformation("Converting double number {Number} to Arabic words", number);
-        var result = await _numberSpellingService.ConvertNumberToArabicWordsAsync(number);
+        var result = _numberSpellingService.ConvertNumberToArabicWords(number);
         return result.ToActionResult();
     }
 
@@ -55,7 +38,7 @@ public class NumberSpellingController : ControllerBase
     public async Task<IActionResult> ConvertIntToArabic([FromBody] int number)
     {
         _logger.LogInformation("Converting integer number {Number} to Arabic words", number);
-        var result = await _numberSpellingService.ConvertNumberToArabicWordsAsync(number);
+        var result = _numberSpellingService.ConvertNumberToArabicWords(number);
         return result.ToActionResult();
     }
 
@@ -67,7 +50,7 @@ public class NumberSpellingController : ControllerBase
     public async Task<IActionResult> ConvertLongToArabic([FromBody] long number)
     {
         _logger.LogInformation("Converting long number {Number} to Arabic words", number);
-        var result = await _numberSpellingService.ConvertNumberToArabicWordsAsync(number);
+        var result = _numberSpellingService.ConvertNumberToArabicWords(number);
         return result.ToActionResult();
     }
 }

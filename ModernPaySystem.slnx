@@ -6,5 +6,6 @@
   <Project Path="ModernPaySystem.Infrastructure.Persistence/ModernPaySystem.Infrastructure.Persistence.csproj" Id="0608e947-4cb0-4ea8-90ad-f8ee6b2bfc46" />
   <Project Path="ModernPaySystem.Infrastructure/ModernPaySystem.Infrastructure.csproj" />
   <Project Path="ModernPaySystem/ModernPaySystem.csproj" />
+  <Project Path="NumberSpelling/NumberSpelling.csproj" Id="e63127fc-72de-4c50-aecc-6962fac1d0b1" />
   <Project Path="OcrReader/OcrReader.csproj" Id="4b9e67f4-2c12-4ec4-9bd9-86e14daa8a60" />
 </Solution>

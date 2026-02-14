@@ -68,6 +68,7 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
     public async Task<IActionResult> Create([FromForm] CreateResponseDto response)
     {
         logger.LogInformation("Creating new response for request: {RequestId}", response?.RequestId);
+        ArgumentNullException.ThrowIfNull(response);
         var result = await responseService.CreateAsync(response);
         return result.ToActionResult();
     }
@@ -105,6 +106,7 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
     public async Task<IActionResult> AddFilesToResponse([FromForm] Guid responseId, [FromForm] List<IFormFile> files)
     {
         logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files?.Count, responseId);
+        ArgumentNullException.ThrowIfNull(files);
         var result = await responseService.AddFilesToResponseAsync(responseId, files);
         return result.ToActionResult();
     }

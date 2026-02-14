@@ -73,7 +73,7 @@ public interface IFilesManagerService
     /// </summary>
     /// <param name="filePath">The full path to the file.</param>
     /// <returns>True if file exists, false otherwise.</returns>
-    new bool FileExists(string filePath);
+    bool FileExists(string filePath);
 
     /// <summary>
     /// Gets file information.
@@ -87,14 +87,14 @@ public interface IFilesManagerService
     /// </summary>
     /// <param name="fileExtension">File extension (with or without dot).</param>
     /// <returns>Content type string.</returns>
-    new string GetContentType(string fileExtension);
+    string GetContentType(string fileExtension);
 
     /// <summary>
     /// Gets the file type category from extension.
     /// </summary>
     /// <param name="fileExtension">File extension (with or without dot).</param>
     /// <returns>File type category.</returns>
-    new string GetFileTypeFromExtension(string fileExtension);
+    string GetFileTypeFromExtension(string fileExtension);
 
     /// <summary>
     /// Validates if a file extension is allowed.
@@ -109,7 +109,7 @@ public interface IFilesManagerService
     /// </summary>
     /// <param name="originalFileName">Original filename.</param>
     /// <returns>Safe filename.</returns>
-    new string GenerateSafeFileName(string originalFileName);
+    string GenerateSafeFileName(string originalFileName);
 
     /// <summary>
     /// Gets the uploads directory path.

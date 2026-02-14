@@ -10,20 +10,15 @@ public interface INumberSpellingWrapperService
     /// <summary>
     /// Convert a decimal number to Arabic words.
     /// </summary>
-    Task<Result<string>> ConvertNumberToArabicWordsAsync(decimal number);
-
-    /// <summary>
-    /// Convert a double number to Arabic words.
-    /// </summary>
-    Task<Result<string>> ConvertNumberToArabicWordsAsync(double number);
+    Result<string> ConvertNumberToArabicWords(decimal number);
 
     /// <summary>
     /// Convert an integer number to Arabic words.
     /// </summary>
-    Task<Result<string>> ConvertNumberToArabicWordsAsync(int number);
+    Result<string> ConvertNumberToArabicWords(int number);
 
     /// <summary>
     /// Convert a long number to Arabic words.
     /// </summary>
-    Task<Result<string>> ConvertNumberToArabicWordsAsync(long number);
+    Result<string> ConvertNumberToArabicWords(long number);
 }

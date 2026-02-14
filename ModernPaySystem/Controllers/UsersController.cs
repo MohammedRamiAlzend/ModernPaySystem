@@ -67,6 +67,7 @@ public class UsersController : ControllerBase
     [EndpointPermission("users.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] CreateUserDto user)
     {
+        ArgumentNullException.ThrowIfNull(user);
         _logger.LogInformation("Creating new user: {Username}", user?.UserName);
         var result = await _userService.CreateAsync(user);
         return result.ToActionResult();
