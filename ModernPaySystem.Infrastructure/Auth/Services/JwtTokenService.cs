@@ -32,17 +32,17 @@ public class JwtTokenService : ITokenService
         };
 
         // Add permissions as claims
-        foreach (var permission in permissions.Where(x => x != null))
+        foreach (string? permission in permissions.Where(x => x != null))
         {
             claims.Add(new Claim("permission", permission));
         }
+
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddMinutes(int.Parse(jwtSettings["ExpirationMinutes"] ?? "15")),
-            signingCredentials: signingCredentials
-        );
+            signingCredentials: signingCredentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
@@ -66,7 +66,8 @@ public class JwtTokenService : ITokenService
         var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
 
         if (!(securityToken is JwtSecurityToken jwtSecurityToken) ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256,
+            !jwtSecurityToken.Header.Alg.Equals(
+                SecurityAlgorithms.HmacSha256,
                 StringComparison.InvariantCultureIgnoreCase))
             return null;
 

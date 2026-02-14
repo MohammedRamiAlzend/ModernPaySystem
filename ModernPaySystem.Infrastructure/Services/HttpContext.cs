@@ -2,8 +2,7 @@
 
 namespace ModernPaySystem.Infrastructure.Services;
 
-public class HttpContextServiceManager(IHttpContextAccessor httpContextAccessor,
-    IUnitOfWork uow)
+public class HttpContextServiceManager(IHttpContextAccessor httpContextAccessor)
     : IHttpContextServiceManager
 {
     public HttpContext GetContext()

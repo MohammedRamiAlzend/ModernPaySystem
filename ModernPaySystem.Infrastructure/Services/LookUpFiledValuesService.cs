@@ -194,13 +194,11 @@ public class LookUpFiledValuesService : ILookUpFiledValuesService
         try
         {
             _logger.LogInformation("Fetching lookup field values by lookup field ID: {LookUpFieldId}", lookUpFieldId);
-            
             var lookUpFiledValues = await _unitOfWork.LookUpFiledValues.GetAllAsync(x => x.LookUpFiledId == lookUpFieldId);
             if (lookUpFiledValues.IsError)
                 return lookUpFiledValues.Errors;
 
-            var lookUpFiledValuesDtos = lookUpFiledValues.Value!.Select(lfv => lfv.ToDto()).ToList();
-            return lookUpFiledValuesDtos;
+            return lookUpFiledValues.Value!.ConvertAll(lfv => lfv.ToDto());
         }
         catch (Exception ex)
         {

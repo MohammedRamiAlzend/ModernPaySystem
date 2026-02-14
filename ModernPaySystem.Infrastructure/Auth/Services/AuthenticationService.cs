@@ -14,7 +14,8 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
 {
     public async Task<Result<string>> AuthenticateAsync(string username, string password)
     {
-        var userResult = await uow.Users.GetAsync(x => x.UserName == username,
+        var userResult = await uow.Users.GetAsync(
+            x => x.UserName == username,
             i => i.Include(u => u.Roles)
                   .ThenInclude(rp => rp.Permissions));
 
@@ -32,7 +33,7 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
             .Distinct()
             .ToList();
 
-        return tokenService.GenerateAccessToken(user, permissions);
+        return tokenService.GenerateAccessToken(user, permissions!);
     }
 
     public async Task<Result<List<string>>> GetUserPermissionsAsync(Guid userId)
@@ -56,21 +57,21 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
         if (permissions.Count == 0)
             return ApplicationErrors.UserNotFound;
 
-        return permissions;
+        return permissions!;
     }
 
     public string HashPassword(string password)
     {
         using (var sha256 = SHA256.Create())
         {
-            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
             return Convert.ToBase64String(hashedBytes);
         }
     }
 
     public bool VerifyPassword(string password, string hash)
     {
-        var hashOfInput = HashPassword(password);
+        string hashOfInput = HashPassword(password);
         return hashOfInput.Equals(hash);
     }
 }

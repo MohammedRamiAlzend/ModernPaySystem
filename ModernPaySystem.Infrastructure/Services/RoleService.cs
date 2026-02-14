@@ -102,6 +102,7 @@ public class RoleService : IRoleService
             {
                 return roles.Errors;
             }
+
             var role = roles.Value!.FirstOrDefault(r => r.Name == name);
 
             if (role == null)

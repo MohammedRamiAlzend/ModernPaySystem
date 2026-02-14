@@ -50,6 +50,7 @@ public class LookUpFieldsController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateLookUpFieldDto lookUpField)
     {
         _logger.LogInformation("Creating new lookup field: {FieldName}", lookUpField?.FiledName);
+        ArgumentNullException.ThrowIfNull(lookUpField);
         var result = await _lookUpFieldService.CreateAsync(lookUpField);
         return result.ToActionResult();
     }

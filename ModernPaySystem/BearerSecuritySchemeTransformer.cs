@@ -31,7 +31,8 @@ internal sealed class BearerSecuritySchemeTransformer : IOpenApiDocumentTransfor
         document.AddComponent("Bearer", bearerScheme);
         var securityRequirement = new OpenApiSecurityRequirement
         {
-            [new OpenApiSecuritySchemeReference("Bearer")] = []
+            [new OpenApiSecuritySchemeReference("Bearer")] =
+            []
         };
 
         foreach (var path in document.Paths.Values)

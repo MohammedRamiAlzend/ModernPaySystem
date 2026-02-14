@@ -40,7 +40,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
-        
+
         // Register Lookup Field Services
         services.AddScoped<ILookUpFieldService, LookUpFieldService>();
         services.AddScoped<ILookUpFiledValuesService, LookUpFiledValuesService>();

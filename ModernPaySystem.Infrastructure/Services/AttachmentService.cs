@@ -12,8 +12,7 @@ namespace ModernPaySystem.Infrastructure.Services;
 /// </summary>
 public class AttachmentService(
     IFilesManagerService fileManager,
-    IUnitOfWork unitOfWork,
-    ILogger<AttachmentService> logger) : IAttachmentService
+    IUnitOfWork unitOfWork) : IAttachmentService
 {
     /// <summary>
     /// Uploads a file and associates it with a request.
@@ -238,7 +237,7 @@ public class AttachmentService(
         }
 
         // If this attachment is not associated with any other requests/responses, delete it
-        var isUsedElsewhere = await IsAttachmentUsedElsewhere(attachmentId);
+        bool isUsedElsewhere = await IsAttachmentUsedElsewhere(attachmentId);
         if (!isUsedElsewhere)
         {
             // Delete the file from the file system
@@ -296,7 +295,7 @@ public class AttachmentService(
         }
 
         // If this attachment is not associated with any other requests/responses, delete it
-        var isUsedElsewhere = await IsAttachmentUsedElsewhere(attachmentId);
+        bool isUsedElsewhere = await IsAttachmentUsedElsewhere(attachmentId);
         if (!isUsedElsewhere)
         {
             // Delete the file from the file system
@@ -549,8 +548,7 @@ public class AttachmentService(
             pagedAttachments,
             attachmentsList.Count,
             page,
-            pageSize
-        );
+            pageSize);
     }
 
     public async Task<Result<AttachmentDto>> GetByIdAsync(Guid id)

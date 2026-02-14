@@ -11,8 +11,7 @@ public class PermissionSeederService(
     ApplicationPartManager applicationPartManager,
     IUnitOfWork unitOfWork) : IPermissionSeederService
 {
-    private readonly AppDbContext dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
-    private readonly ApplicationPartManager applicationPartManager = applicationPartManager;
+    private readonly AppDbContext _dbContext = serviceProvider.CreateScope().ServiceProvider.GetRequiredService<AppDbContext>();
 
     public async Task SeedPermissionsAsync(CancellationToken cancellationToken = default)
     {
@@ -63,8 +62,8 @@ public class PermissionSeederService(
 
         if (newPermissions.Count != 0)
         {
-            dbContext.Permissions.AddRange(newPermissions);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            _dbContext.Permissions.AddRange(newPermissions);
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             await AssignPermissionsToSuperAdminRoleAsync(newPermissions, cancellationToken);
         }
@@ -232,18 +231,19 @@ public class PermissionSeederService(
             {
                 return updateResult.Errors;
             }
+
             passwordUpdated = true;
         }
 
         // Ensure SuperAdmin role
-        var hasSuperAdminRole = user.Roles
+        bool hasSuperAdminRole = user.Roles
             .Any(r => r.Id == superAdminRoleId);
 
         if (hasSuperAdminRole)
         {
             if (passwordUpdated)
             {
-                var saveResult = await unitOfWork.SaveChangesAsync();
+                int saveResult = await unitOfWork.SaveChangesAsync();
                 if (saveResult <= 0)
                 {
                     return new Error();
@@ -257,7 +257,7 @@ public class PermissionSeederService(
         var updateUserResult = await unitOfWork.Users.UpdateAsync(user);
         if (passwordUpdated)
         {
-            var saveResult = await unitOfWork.SaveChangesAsync();
+            int saveResult = await unitOfWork.SaveChangesAsync();
             if (saveResult <= 0)
             {
                 return new Error();

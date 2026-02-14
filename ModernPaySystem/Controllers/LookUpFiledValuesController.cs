@@ -56,6 +56,7 @@ public class LookUpFiledValuesController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateLookUpFiledValuesDto lookUpFiledValue)
     {
         _logger.LogInformation("Creating new lookup field value with ID: {LookUpFiledId}", lookUpFiledValue?.LookUpFiledId);
+        ArgumentNullException.ThrowIfNull(lookUpFiledValue);
         var result = await _lookUpFiledValuesService.CreateAsync(lookUpFiledValue);
         return result.ToActionResult();
     }

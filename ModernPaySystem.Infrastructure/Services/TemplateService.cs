@@ -30,7 +30,7 @@ public class TemplateService : ITemplateService
             {
                 return templates.Errors;
             }
-            
+
             var templateDtos = templates.Value!.Select(t => t.ToDto()).ToList();
             return templateDtos;
         }
@@ -104,6 +104,7 @@ public class TemplateService : ITemplateService
             {
                 return templates.Errors;
             }
+
             var template = templates.Value!.FirstOrDefault(t => t.TemplateName == name);
 
             if (template == null)
