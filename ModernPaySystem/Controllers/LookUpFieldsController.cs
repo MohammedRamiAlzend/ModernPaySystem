@@ -78,15 +78,4 @@ public class LookUpFieldsController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get lookup fields by template ID.
-    /// </summary>
-    [HttpGet("by-template/{templateId}")]
-    [EndpointPermission("lookupfields.get-by-template", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByTemplateId(Guid templateId)
-    {
-        _logger.LogInformation("Getting lookup fields by template ID: {TemplateId}", templateId);
-        var result = await _lookUpFieldService.GetByTemplateIdAsync(templateId);
-        return result.ToActionResult();
-    }
 }

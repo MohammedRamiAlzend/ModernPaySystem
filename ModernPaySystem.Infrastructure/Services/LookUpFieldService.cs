@@ -103,8 +103,7 @@ public class LookUpFieldService : ILookUpFieldService
 
             var lookUpFieldEntity = new LookUpField
             {
-                FiledName = lookUpField.FiledName,
-                TemplateId = lookUpField.TemplateId
+                FiledName = lookUpField.FiledName
             };
 
             var addResult = await _unitOfWork.LookUpFields.AddAsync(lookUpFieldEntity);
@@ -142,7 +141,6 @@ public class LookUpFieldService : ILookUpFieldService
             _logger.LogInformation("Updating lookup field: {LookUpFieldId}", id);
 
             existingLookUpField.Value.FiledName = lookUpField.FiledName;
-            existingLookUpField.Value.TemplateId = lookUpField.TemplateId;
 
             var updateResult = await _unitOfWork.LookUpFields.UpdateAsync(existingLookUpField.Value);
             if (updateResult.IsError)
@@ -189,23 +187,4 @@ public class LookUpFieldService : ILookUpFieldService
         }
     }
 
-    public async Task<Result<IEnumerable<LookUpFieldDto>>> GetByTemplateIdAsync(Guid templateId)
-    {
-        try
-        {
-            _logger.LogInformation("Fetching lookup fields by template ID: {TemplateId}", templateId);
-            
-            var lookUpFields = await _unitOfWork.LookUpFields.GetAllAsync(x => x.TemplateId == templateId);
-            if (lookUpFields.IsError)
-                return lookUpFields.Errors;
-
-            var lookUpFieldDtos = lookUpFields.Value!.Select(lf => lf.ToDto()).ToList();
-            return lookUpFieldDtos;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching lookup fields by template ID: {TemplateId}", templateId);
-            return ApplicationErrors.InternalServerError;
-        }
-    }
 }

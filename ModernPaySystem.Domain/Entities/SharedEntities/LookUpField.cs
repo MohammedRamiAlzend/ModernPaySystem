@@ -1,12 +1,8 @@
-﻿using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
-
-namespace ModernPaySystem.Domain.Entities.SharedEntities;
+﻿namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public class LookUpField : Entity<Guid>
 {
     public required string FiledName { get; set; }
-    public Guid TemplateId { get; set; }
-    public Template Template { get; set; }
 
     // Navigation property for LookUpFiledValues
     public ICollection<LookUpFiledValues> LookUpFiledValues { get; set; } = [];
@@ -16,8 +12,7 @@ public class LookUpField : Entity<Guid>
         return new LookUpFieldDto
         {
             Id = this.Id,
-            FiledName = this.FiledName,
-            TemplateId = this.TemplateId
+            FiledName = this.FiledName
         };
     }
 }
@@ -44,19 +39,16 @@ public class LookUpFieldDto
 {
     public Guid Id { get; set; }
     public required string FiledName { get; set; }
-    public Guid TemplateId { get; set; }
 }
 
 public class CreateLookUpFieldDto
 {
     public required string FiledName { get; set; }
-    public Guid TemplateId { get; set; }
 }
 
 public class UpdateLookUpFieldDto
 {
     public required string FiledName { get; set; }
-    public Guid TemplateId { get; set; }
 }
 
 public class LookUpFiledValuesDto

@@ -108,12 +108,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey<SubSystemUser>(ssu => ssu.UserId)
             .OnDelete(DeleteBehavior.Cascade);
             
-        modelBuilder.Entity<LookUpField>()
-            .HasOne(lf => lf.Template)
-            .WithMany(t => t.LookUpFields)
-            .HasForeignKey(lf => lf.TemplateId)
-            .OnDelete(DeleteBehavior.Cascade);
-            
         modelBuilder.Entity<LookUpFiledValues>()
             .HasOne(lfv => lfv.LookUpFiled)
             .WithMany(lf => lf.LookUpFiledValues)

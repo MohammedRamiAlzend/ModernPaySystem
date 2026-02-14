@@ -38,8 +38,5 @@ public interface ILookUpFieldService
     /// </summary>
     Task<Result<bool>> DeleteAsync(Guid id);
 
-    /// <summary>
-    /// Get lookup fields by template ID.
-    /// </summary>
-    Task<Result<IEnumerable<LookUpFieldDto>>> GetByTemplateIdAsync(Guid templateId);
+
 }
