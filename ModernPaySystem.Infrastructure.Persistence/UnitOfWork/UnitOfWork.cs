@@ -28,6 +28,8 @@ public class UnitOfWork : IUnitOfWork
     private IRepositoryBase<TemplateOwnership, Guid>? _templateOwnerships;
     private IRepositoryBase<ResponseAttachment, Guid>? _responseAttachments;
     private IRepositoryBase<RequestAttachment, Guid>? _requestAttachments;
+    private IRepositoryBase<LookUpField, Guid>? _lookUpFields;
+    private IRepositoryBase<LookUpFiledValues, Guid>? _lookUpFiledValues;
 
     public UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger)
     {
@@ -66,6 +68,12 @@ public class UnitOfWork : IUnitOfWork
         _responseAttachments ??= new RepositoryBase<ResponseAttachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<ResponseAttachment, Guid>>());
     public IRepositoryBase<RequestAttachment, Guid> RequestAttachments =>
         _requestAttachments ??= new RepositoryBase<RequestAttachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<RequestAttachment, Guid>>());
+
+    public IRepositoryBase<LookUpField, Guid> LookUpFields =>
+        _lookUpFields ??= new RepositoryBase<LookUpField, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<LookUpField, Guid>>());
+
+    public IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues =>
+        _lookUpFiledValues ??= new RepositoryBase<LookUpFiledValues, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<LookUpFiledValues, Guid>>());
 
     public async Task<int> SaveChangesAsync()
     {

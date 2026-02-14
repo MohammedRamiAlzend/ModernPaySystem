@@ -20,12 +20,11 @@ public static class SeedingServiceRegistration
         // Get seeding configuration from appsettings
         var seedingConfig = new SeedingConfiguration();
         var seedingSection = configuration.GetSection("Seeding");
-        
         if (seedingSection.Exists())
         {
-            var env = configuration["ASPNETCORE_ENVIRONMENT"] ?? "Development";
-            var seedingEnv = env.Equals("Production", StringComparison.OrdinalIgnoreCase) 
-                ? SeedingEnvironment.Production 
+            string env = configuration["ASPNETCORE_ENVIRONMENT"] ?? "Development";
+            var seedingEnv = env.Equals("Production", StringComparison.OrdinalIgnoreCase)
+                ? SeedingEnvironment.Production
                 : SeedingEnvironment.Development;
 
             seedingConfig.Environment = seedingEnv;

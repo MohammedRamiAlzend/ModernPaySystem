@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ModernPaySystem.Domain.Entities.Abstraction
+namespace ModernPaySystem.Domain.Entities.Abstraction;
+
+public class Entity<TKey>
 {
-    public class Entity<TKey>
-    {
-        [Key]
-        public virtual TKey Id { get; set; }
-    }
+    [Key]
+    public virtual TKey Id { get; set; }
 }

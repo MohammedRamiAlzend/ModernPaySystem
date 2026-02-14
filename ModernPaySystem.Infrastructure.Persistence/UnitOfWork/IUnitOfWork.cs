@@ -66,6 +66,16 @@ public interface IUnitOfWork
     IRepositoryBase<RequestAttachment, Guid> RequestAttachments { get; }
 
     /// <summary>
+    /// Repository for LookUpField entities.
+    /// </summary>
+    IRepositoryBase<LookUpField, Guid> LookUpFields { get; }
+
+    /// <summary>
+    /// Repository for LookUpFiledValues entities.
+    /// </summary>
+    IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues { get; }
+
+    /// <summary>
     /// Saves all changes made to the database.
     /// </summary>
     Task<int> SaveChangesAsync();

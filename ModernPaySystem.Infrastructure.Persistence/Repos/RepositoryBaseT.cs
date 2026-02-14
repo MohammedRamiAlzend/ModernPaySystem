@@ -146,7 +146,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
             logger.LogError(e, "Error retrieving entity of type {EntityType}.", typeof(TEntity).Name);
             return new Error(
                 "00",
-                $"Something went wrong while retrieving an entity of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
+                $"Something went wrong while retrieving an entity of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                ErrorKind.Failure);
         }
     }
 
@@ -168,8 +169,10 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         catch (Exception e)
         {
             logger.LogError(e, "Error removing entity of type {EntityType}.", typeof(TEntity).Name);
-            return new Error("00",
-                $"Something went wrong while removing entity of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
+            return new Error(
+                "00",
+                $"Something went wrong while removing entity of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                ErrorKind.Failure);
         }
     }
 
@@ -191,20 +194,20 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
     public async Task<Result<Updated>> UpdateAsync(TEntity entity)
     {
         if (entity == null) return new Error("00", "Entity cannot be null.", ErrorKind.Failure);
-        //if (entity.Id == default) return new Error("00", "Entity key (Id) cannot be zero or null.", ErrorKind.Failure);
-
         try
         {
             dbcontext.Attach(entity);
             dbcontext.Set<TEntity>().Entry(entity).State = EntityState.Modified;
-            var saveResult = await dbcontext.SaveChangesAsync();
+            int saveResult = await dbcontext.SaveChangesAsync();
             return saveResult > 0 ? Result.Updated : new Error("00", "Failed to update entity.", ErrorKind.Failure);
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error updating entity of type {EntityType}.", typeof(TEntity).Name);
-            return new Error("00",
-                $"Something went wrong while updating entity of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
+            return new Error(
+                "00",
+                $"Something went wrong while updating entity of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                ErrorKind.Failure);
         }
     }
 
@@ -217,8 +220,10 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         catch (Exception e)
         {
             logger.LogError(e, "Error retrieving entity of type {EntityType} with id {Id}.", typeof(TEntity).Name, id);
-            return new Error("00",
-                $"Something went wrong while retrieving entity of type {typeof(TEntity).Name} with id {id}. Exception: {e.Message}", ErrorKind.Failure);
+            return new Error(
+                "00",
+                $"Something went wrong while retrieving entity of type {typeof(TEntity).Name} with id {id}. Exception: {e.Message}",
+                ErrorKind.Failure);
         }
     }
 
@@ -255,9 +260,10 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
                 type: ErrorKind.Failure);
         }
     }
+
     private static string? ExtractForeignKeyName(DbUpdateException ex)
     {
-        var message = ex.InnerException?.Message ?? ex.Message;
+        string message = ex.InnerException?.Message ?? ex.Message;
 
         // SQL Server format: "FOREIGN KEY constraint "FK_Table_RefTable"..."
         var match = Regex.Match(message, @"FOREIGN KEY constraint ""?(?<fk>FK_[\w\d_]+)""?", RegexOptions.IgnoreCase);

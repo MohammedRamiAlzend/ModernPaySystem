@@ -5,7 +5,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
 /// <summary>
 /// Orchestrates the seeding process for all entities
 /// Ensures entities are seeded in the correct order respecting dependencies
-/// Follows the Facade Pattern to simplify complex seeding operations
+/// Follows the Facade Pattern to simplify complex seeding operations.
 /// </summary>
 public interface ISeederOrchestrator
 {
@@ -63,7 +63,6 @@ public class SeederOrchestrator : ISeederOrchestrator
         catch (Exception ex)
         {
             _logger.LogError(ex, "An error occurred during database seeding");
-            // Don't throw - allow app to continue even if seeding fails
         }
     }
 
@@ -74,8 +73,8 @@ public class SeederOrchestrator : ISeederOrchestrator
     {
         try
         {
-            var entityName = seeder.GetEntityName();
-            var hasData = await seeder.HasDataAsync(_context);
+            string entityName = seeder.GetEntityName();
+            bool hasData = await seeder.HasDataAsync(_context);
 
             if (hasData && !_configuration.ClearExistingData)
             {

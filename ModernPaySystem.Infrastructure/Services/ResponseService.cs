@@ -137,6 +137,7 @@ public class ResponseService(
             return ApplicationErrors.InternalServerError;
         }
     }
+
     public async Task<Result<bool>> IsRequestHasResponse(Guid requestId)
     {
         var checkIfRequestHasResponse = await unitOfWork.Requests.GetAsync(x => x.Id == requestId, i => i.Include(x => x.Response));

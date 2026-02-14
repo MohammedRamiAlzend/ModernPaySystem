@@ -21,13 +21,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
     public DbSet<TemplateOwnership> TemplateOwnerships { get; set; }
 
+// Lookup Field Entities
+    public DbSet<LookUpField> LookUpFields { get; set; }
+    public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<RequestAttachment>()
             .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
-
 
         modelBuilder.Entity<Request>()
             .HasOne(r => r.Template)
@@ -103,6 +106,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(ssu => ssu.User)
             .WithOne(u => u.SubSystemUser)
             .HasForeignKey<SubSystemUser>(ssu => ssu.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        modelBuilder.Entity<LookUpField>()
+            .HasOne(lf => lf.Template)
+            .WithMany(t => t.LookUpFields)
+            .HasForeignKey(lf => lf.TemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        modelBuilder.Entity<LookUpFiledValues>()
+            .HasOne(lfv => lfv.LookUpFiled)
+            .WithMany(lf => lf.LookUpFiledValues)
+            .HasForeignKey(lfv => lfv.LookUpFiledId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

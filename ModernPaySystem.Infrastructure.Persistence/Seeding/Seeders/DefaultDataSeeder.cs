@@ -14,7 +14,7 @@ public class DefaultDataSeeder : IEntitySeeder
     public async Task<bool> HasDataAsync(AppDbContext context)
     {
         // Check if default roles exist
-        var roleCount = await context.Roles.CountAsync();
+        int roleCount = await context.Roles.CountAsync();
         return roleCount >= 3; // At least SuperAdmin, Admin, NormalUser
     }
 
@@ -30,7 +30,7 @@ public class DefaultDataSeeder : IEntitySeeder
     public string GetEntityName() => "DefaultData";
 
     /// <summary>
-    /// Seeds default roles: SuperAdmin, Admin, NormalUser
+    /// Seeds default roles: SuperAdmin, Admin, NormalUser.
     /// </summary>
     private async Task SeedDefaultRoles(AppDbContext context)
     {
@@ -76,7 +76,7 @@ public class DefaultDataSeeder : IEntitySeeder
 
         if (existingSuperAdmin != null)
         {
-            var hasSuperAdminRole = existingSuperAdmin.Roles
+            bool hasSuperAdminRole = existingSuperAdmin.Roles
                 .Any(ur => ur.Name == "SuperAdmin");
 
             if (!hasSuperAdminRole)
@@ -122,7 +122,7 @@ public class DefaultDataSeeder : IEntitySeeder
     private string HashPassword(string password)
     {
         using var sha256 = System.Security.Cryptography.SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        byte[] hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         return Convert.ToBase64String(hashedBytes);
     }
 }

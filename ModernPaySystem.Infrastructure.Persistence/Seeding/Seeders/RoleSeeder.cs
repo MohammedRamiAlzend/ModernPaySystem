@@ -22,7 +22,7 @@ public class RoleSeeder : EntitySeederBase<Role>
     /// </summary>
     private List<Role> GenerateRoles(int count)
     {
-        var roleNames = new[]
+        string[] roleNames = new[]
         {
             "Admin",
             "Manager",
