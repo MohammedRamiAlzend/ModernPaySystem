@@ -37,6 +37,4 @@ public interface ILookUpFieldService
     /// Delete lookup field.
     /// </summary>
     Task<Result<bool>> DeleteAsync(Guid id);
-
-
 }

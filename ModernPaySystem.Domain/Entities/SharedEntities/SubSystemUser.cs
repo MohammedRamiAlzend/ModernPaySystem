@@ -1,7 +1,4 @@
-﻿using ModernPaySystem.Domain.Entities.Abstraction;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-
-namespace ModernPaySystem.Domain.Entities.SharedEntities;
+﻿namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public class SubSystemUser : Entity<Guid>
 {

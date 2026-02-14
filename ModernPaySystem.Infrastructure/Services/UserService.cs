@@ -1,4 +1,8 @@
+using Microsoft.Extensions.Logging;
+using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.SharedEntities;
+using ModernPaySystem.Infrastructure.Persistence;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -22,10 +26,10 @@ public class UserService : IUserService
         {
             _logger.LogInformation("Fetching all users");
             var users = await _unitOfWork.Users.GetAllAsync();
-            if(users.IsError)
+            if (users.IsError)
                 return users.Errors;
 
-            var userDtos = users.Value!.Select(u => u.ToDto()).ToList();
+            var userDtos = users.Value!.ConvertAll(u => u.ToDto());
             return userDtos;
         }
         catch (Exception ex)
@@ -74,7 +78,7 @@ public class UserService : IUserService
                 return user.Errors;
 
             if (user.Value == null)
-                return ApplicationErrors.UserNotFound;
+                return ApplicationErrors.OperationFailed;
 
             return user.Value.ToDto();
         }
@@ -93,36 +97,22 @@ public class UserService : IUserService
                 return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Fetching user by username: {Username}", username);
-
             var users = await _unitOfWork.Users.GetAllAsync();
-            if(users.IsError)
+            if (users.IsError)
             {
                 return users.Errors;
             }
+            var user = users.Value!.FirstOrDefault(u => u.UserName == username);
 
-            var user = users.Value!.Find(u => u.UserName == username);
+            if (user == null)
+                return ApplicationErrors.OperationFailed;
 
-            return user == null ? (Result<UserDto>)ApplicationErrors.UserNotFound : (Result<UserDto>)user.ToDto();
+            return user.ToDto();
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching user by username: {Username}", username);
             return ApplicationErrors.InternalServerError;
-        }
-    }
-
-    public async Task<bool> UsernameExistsAsync(string username)
-    {
-        try
-        {
-            if (string.IsNullOrWhiteSpace(username))
-                return false;
-
-            return await _unitOfWork.Users.AnyAsync(u => u.UserName == username);
-        }
-        catch
-        {
-            return false;
         }
     }
 
@@ -135,9 +125,6 @@ public class UserService : IUserService
 
             if (string.IsNullOrWhiteSpace(user.UserName))
                 return ApplicationErrors.MissingRequiredField;
-
-            if (await UsernameExistsAsync(user.UserName))
-                return ApplicationErrors.UserAlreadyExists;
 
             _logger.LogInformation("Creating new user: {Username}", user.UserName);
 
@@ -178,7 +165,7 @@ public class UserService : IUserService
                 return existingUser.Errors;
 
             if (existingUser.Value == null)
-                return ApplicationErrors.UserNotFound;
+                return ApplicationErrors.OperationFailed;
 
             _logger.LogInformation("Updating user: {UserId}", id);
 
@@ -214,7 +201,7 @@ public class UserService : IUserService
                 return user.Errors;
 
             if (user.Value == null)
-                return ApplicationErrors.UserNotFound;
+                return ApplicationErrors.OperationFailed;
 
             _logger.LogInformation("Deleting user: {UserId}", id);
 

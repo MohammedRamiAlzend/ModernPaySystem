@@ -8,7 +8,7 @@ namespace ModernPaySystem.Controllers;
 
 /// <summary>
 /// API controller for User management
-/// Provides CRUD operations for users.
+/// Provides CRUD operations for users
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -25,7 +25,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Get all users.
+    /// Get all users
     /// </summary>
     [HttpGet]
     [EndpointPermission("users.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
@@ -53,7 +53,6 @@ public class UsersController : ControllerBase
     /// </summary>
     [HttpGet("by-username/{username}")]
     [EndpointPermission("users.get-by-username", SubSystem.TransactionSystem, PermissionType.Read)]
-    [AllowAnonymous]
     public async Task<IActionResult> GetByUsername(string username)
     {
         _logger.LogInformation("Getting user by username: {Username}", username);
@@ -62,20 +61,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Check if username exists
-    /// </summary>
-    [HttpGet("exists/{username}")]
-    [EndpointPermission("users.username-exists", SubSystem.TransactionSystem, PermissionType.Read)]
-    [AllowAnonymous]
-    public async Task<IActionResult> UsernameExists(string username)
-    {
-        _logger.LogInformation("Checking if username exists: {Username}", username);
-        bool exists = await _userService.UsernameExistsAsync(username);
-        return Ok(new { exists });
-    }
-
-    /// <summary>
-    /// Create new user.
+    /// Create new user
     /// </summary>
     [HttpPost]
     [EndpointPermission("users.create", SubSystem.TransactionSystem, PermissionType.Insert)]
@@ -87,7 +73,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Update user.
+    /// Update user
     /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("users.update", SubSystem.TransactionSystem, PermissionType.Update)]
@@ -99,7 +85,7 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Delete user.
+    /// Delete user
     /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("users.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
