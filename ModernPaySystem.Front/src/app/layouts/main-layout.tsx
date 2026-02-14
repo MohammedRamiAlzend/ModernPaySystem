@@ -73,7 +73,12 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 <Bell className="h-5 w-5" />
                                 <span className="absolute top-2 left-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background"></span>
                             </Button>
-                            <Button variant="ghost" size="icon" className="hidden sm:flex">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="hidden sm:flex"
+                                onClick={() => navigate('/settings')}
+                            >
                                 <Settings className="h-5 w-5" />
                             </Button>
                             <ModeToggle />
