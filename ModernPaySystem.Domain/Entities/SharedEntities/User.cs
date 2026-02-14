@@ -11,14 +11,11 @@ public class User : Entity<Guid>, IAuditableEntity
     public Guid? SubSystemUserId { get; set; }
     public SubSystemUser? SubSystemUser { get; set; }
 
-    // Navigation properties for requests
     public ICollection<Request> RequestsAsRequester { get; set; } = new List<Request>();
     public ICollection<Request> RequestsAsApprover { get; set; } = new List<Request>();
 
-    // Navigation properties for template ownership
     public ICollection<TemplateOwnership> TemplateOwnerships { get; set; } = new List<TemplateOwnership>();
 
-    // Navigation properties for roles
     public ICollection<Role> Roles { get; set; } = new List<Role>();
 
     public string? CreatedByUserId { get; set; }

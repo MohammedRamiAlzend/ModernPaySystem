@@ -1,5 +1,3 @@
-using ModernPaySystem.Domain.Attrs;
-
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public class PermissionEntity : Entity<Guid>

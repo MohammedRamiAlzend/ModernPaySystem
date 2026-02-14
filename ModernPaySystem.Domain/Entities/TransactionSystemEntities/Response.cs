@@ -32,7 +32,7 @@ public class Response : Entity<Guid>, IAuditableEntity
 
         };
     }
-    
+
     // Navigation property for attachments
     public ICollection<ResponseAttachment> ResponseAttachments { get; set; } = [];
 }

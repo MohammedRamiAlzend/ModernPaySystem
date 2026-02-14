@@ -29,11 +29,6 @@ public interface IUserService
     Task<Result<UserDto>> GetByUsernameAsync(string username);
 
     /// <summary>
-    /// Check if username exists.
-    /// </summary>
-    Task<bool> UsernameExistsAsync(string username);
-
-    /// <summary>
     /// Create new user.
     /// </summary>
     Task<Result<UserDto>> CreateAsync(CreateUserDto user);

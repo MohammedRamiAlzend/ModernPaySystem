@@ -5,7 +5,8 @@ public class LookUpField : Entity<Guid>
     public required string FiledName { get; set; }
 
     // Navigation property for LookUpFiledValues
-    public ICollection<LookUpFiledValues> LookUpFiledValues { get; set; } = [];
+    public ICollection<LookUpFiledValues> LookUpFiledValues { get; set; } =
+        [];
 
     public LookUpFieldDto ToDto()
     {

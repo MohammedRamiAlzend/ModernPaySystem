@@ -5,6 +5,7 @@ using ModernPaySystem.Application.Services;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 using ModernPaySystem.Infrastructure.Services;
+using OcrReader;
 
 namespace ModernPaySystem.Infrastructure;
 
@@ -40,10 +41,14 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
-
+        
         // Register Lookup Field Services
         services.AddScoped<ILookUpFieldService, LookUpFieldService>();
         services.AddScoped<ILookUpFiledValuesService, LookUpFiledValuesService>();
+        
+        // Register OCR Service
+        services.AddOcrTesseract();
+        services.AddScoped<IOcrService, OcrService>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {
