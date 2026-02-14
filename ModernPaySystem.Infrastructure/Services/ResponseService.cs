@@ -19,27 +19,20 @@ public class ResponseService(
         {
             logger.LogInformation("Fetching responses for current user");
 
-            // Get the current user ID from the HTTP context
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
-            // Create an expression builder for Response entities
             var responseBuilder = new ExpressionBuilder<Response>();
 
-            // Add a condition to filter responses where the RespondedByUserId matches the current user ID
-            // This represents responses that were created BY the current user
             responseBuilder.And(r => r.RespondedByUserId == currentUserId);
 
-            // Build the expression
             var expression = responseBuilder.Build();
 
-            // Get responses that match the expression
             var responses = await unitOfWork.Responses.FindAsync(expression);
             if (responses.IsError)
                 return responses.Errors;
 
             var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
 
-            // Return an empty list if no responses are found for the current user
             if (!responseDtos.Any())
                 return new List<ResponseDto>();
 
@@ -58,34 +51,25 @@ public class ResponseService(
         {
             logger.LogInformation("Fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
 
-            // Validate parameters
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+            if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            // Get the current user ID from the HTTP context
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
-            // Create an expression builder for Response entities
             var responseBuilder = new ExpressionBuilder<Response>();
 
-            // Add a condition to filter responses where the RespondedByUserId matches the current user ID
-            // This represents responses that were created BY the current user
             responseBuilder.And(r => r.RespondedByUserId == currentUserId);
 
-            // Build the expression
             var expression = responseBuilder.Build();
 
-            // Get responses that match the expression with pagination
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(page, pageSize, expression);
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
 
             var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
-            var pagedResponseDtos = new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
-
-            return pagedResponseDtos;
+            return new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
@@ -296,7 +280,6 @@ public class ResponseService(
             if (responseId == Guid.Empty || files == null || !files.Any())
                 return ApplicationErrors.InvalidInput;
 
-            // Verify the response exists
             var response = await unitOfWork.Responses.GetByIdAsync(responseId);
             if (response.IsError)
                 return response.Errors;
@@ -306,7 +289,6 @@ public class ResponseService(
 
             logger.LogInformation("Adding {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
-            // Process each file and associate it with the response using WebAttachmentService
             foreach (var file in files)
             {
                 if (file.Length > 0)
@@ -319,7 +301,6 @@ public class ResponseService(
 
             logger.LogInformation("Successfully added {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
-            // Return the updated response with its attachments
             var updatedResponse = await unitOfWork.Responses.GetByIdAsync(responseId);
             if (updatedResponse.IsError)
                 return updatedResponse.Errors;
