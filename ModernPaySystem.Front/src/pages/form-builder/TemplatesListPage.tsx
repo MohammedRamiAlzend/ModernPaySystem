@@ -47,13 +47,13 @@ export const TemplatesListPage = () => {
                                 <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">{form.title}</h3>
                             </div>
 
-                            <div className="text-sm text-gray-500 mb-4 line-clamp-2 min-h-[40px]">
+                            {/* <div className="text-sm text-gray-500 mb-4 line-clamp-2 min-h-[40px]">
                                 {form.description || 'لا يوجد وصف'}
-                            </div>
+                            </div> */}
 
                             <div className="flex items-center justify-between text-xs text-gray-400 pt-4 border-t">
                                 <span>{form.fields.length} حقول</span>
-                                <span>ID: {form.id.substring(0, 8)}...</span>
+                                {/* <span>ID: {form.id.substring(0, 8)}...</span> */}
                             </div>
                         </Card>
                     ))

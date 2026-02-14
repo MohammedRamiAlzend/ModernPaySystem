@@ -4,11 +4,14 @@ import type { FormSchema } from '@/entities/form/model/types';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Card } from '@/shared/ui/card';
+import { ChevronDown, Settings2 } from 'lucide-react';
 import { PropertiesPanel } from './PropertiesPanel';
 import { LogicEditor } from './LogicEditor';
 import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import gsap from 'gsap';
+import { useLookUpFields } from '@/features/lookup-management/api/lookupApi';
+import { cn } from '@/shared/lib/utils';
 
 interface FormEditorProps {
     initialForm?: FormSchema;
@@ -31,9 +34,14 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
         isLoading
     } = useFormEditor(initialForm);
 
+    const { data: lookupFields = [], isLoading: isLoadingLookups } = useLookUpFields();
+
     const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
     const [mode, setMode] = useState<'edit' | 'preview'>('edit');
     const [activeTab, setActiveTab] = useState<'fields' | 'logic'>('fields');
+    const [isLookupMenuOpen, setIsLookupMenuOpen] = useState(false);
+    const [isRadioLookupOpen, setIsRadioLookupOpen] = useState(false);
+    const [isCheckLookupOpen, setIsCheckLookupOpen] = useState(false);
 
     // Advanced GSAP FLIP Animation
     const listRef = useRef<HTMLDivElement>(null);
@@ -165,9 +173,119 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                             <Button variant="outline" className="justify-start h-9" onClick={() => addField('number')}>رقم (Number)</Button>
                             <Button variant="outline" className="justify-start h-9" onClick={() => addField('email')}>بريد إلكتروني</Button>
                             <Button variant="outline" className="justify-start h-9" onClick={() => addField('textarea')}>نص طويل</Button>
-                            <Button variant="outline" className="justify-start h-9" onClick={() => addField('select')}>قائمة (Select)</Button>
-                            <Button variant="outline" className="justify-start h-9" onClick={() => addField('radio')}>أزرار اختيار</Button>
-                            <Button variant="outline" className="justify-start h-9" onClick={() => addField('checkbox')}>مربع اختيار</Button>
+
+                            <div className="space-y-1">
+                                <Button variant="outline" className="justify-start h-9 w-full" onClick={() => addField('select')}>قائمة (Select) - عادي</Button>
+                                <Button
+                                    variant="outline"
+                                    className={cn("justify-between h-9 w-full  border-primary/20 ", isLookupMenuOpen ? "bg-primary/5" : "")}
+                                    onClick={() => setIsLookupMenuOpen(!isLookupMenuOpen)}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Settings2 className="w-3 h-3 text-primary" />
+                                        قائمة من الإعدادات
+                                    </span>
+                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isLookupMenuOpen ? 'rotate-180' : ''}`} />
+                                </Button>
+
+                                {isLookupMenuOpen && (
+                                    <div className="animate-in slide-in-from-top-2 duration-200">
+                                        {isLoadingLookups ? (
+                                            <div className="text-[10px] text-center p-2 italic text-muted-foreground animate-pulse">جاري جلب الحقول...</div>
+                                        ) : lookupFields.length > 0 ? (
+                                            <div className="pr-4 space-y-1 border-r-2 border-primary/20 mr-2 py-1">
+                                                {lookupFields.map(f => (
+                                                    <button
+                                                        key={f.id}
+                                                        onClick={() => addField('select', f.id, f.filedName)}
+                                                        className="text-[10px] block w-full text-right py-1.5 px-3 hover:bg-primary/10 rounded-lg transition-colors font-medium border border-transparent hover:border-primary/20"
+                                                    >
+                                                        + {f.filedName}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[10px] text-center p-2 text-muted-foreground italic">لا توجد حقول معرفة</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Radio with LookUp */}
+                            <div className="space-y-1">
+                                <Button variant="outline" className="justify-start h-9 w-full" onClick={() => addField('radio')}>أزرار اختيار - عادي</Button>
+                                <Button
+                                    variant="outline"
+                                    className={cn("justify-between h-9 w-full border-primary/20 ", isRadioLookupOpen ? "bg-primary/5" : "")}
+                                    onClick={() => setIsRadioLookupOpen(!isRadioLookupOpen)}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Settings2 className="w-3 h-3 text-primary" />
+                                        أزرار من الإعدادات
+                                    </span>
+                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isRadioLookupOpen ? 'rotate-180' : ''}`} />
+                                </Button>
+
+                                {isRadioLookupOpen && (
+                                    <div className="animate-in slide-in-from-top-2 duration-200">
+                                        {isLoadingLookups ? (
+                                            <div className="text-[10px] text-center p-2 italic text-muted-foreground animate-pulse">جاري جلب الحقول...</div>
+                                        ) : lookupFields.length > 0 ? (
+                                            <div className="pr-4 space-y-1 border-r-2 border-primary/20 mr-2 py-1">
+                                                {lookupFields.map(f => (
+                                                    <button
+                                                        key={f.id}
+                                                        onClick={() => addField('radio', f.id, f.filedName)}
+                                                        className="text-[10px] block w-full text-right py-1.5 px-3 hover:bg-primary/10 rounded-lg transition-colors font-medium border border-transparent hover:border-primary/20"
+                                                    >
+                                                        + {f.filedName}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[10px] text-center p-2 text-muted-foreground italic">لا توجد حقول معرفة</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Checkbox with LookUp */}
+                            <div className="space-y-1">
+                                <Button variant="outline" className="justify-start h-9 w-full" onClick={() => addField('checkbox')}>مربع اختيار - عادي</Button>
+                                <Button
+                                    variant="outline"
+                                    className={cn("justify-between h-9 w-full border-primary/20 ", isCheckLookupOpen ? "bg-primary/5" : "")}
+                                    onClick={() => setIsCheckLookupOpen(!isCheckLookupOpen)}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Settings2 className="w-3 h-3 text-primary" />
+                                        مربعات من الإعدادات
+                                    </span>
+                                    <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isCheckLookupOpen ? 'rotate-180' : ''}`} />
+                                </Button>
+
+                                {isCheckLookupOpen && (
+                                    <div className="animate-in slide-in-from-top-2 duration-200">
+                                        {isLoadingLookups ? (
+                                            <div className="text-[10px] text-center p-2 italic text-muted-foreground animate-pulse">جاري جلب الحقول...</div>
+                                        ) : lookupFields.length > 0 ? (
+                                            <div className="pr-4 space-y-1 border-r-2 border-primary/20 mr-2 py-1">
+                                                {lookupFields.map(f => (
+                                                    <button
+                                                        key={f.id}
+                                                        onClick={() => addField('checkbox', f.id, f.filedName)}
+                                                        className="text-[10px] block w-full text-right py-1.5 px-3 hover:bg-primary/10 rounded-lg transition-colors font-medium border border-transparent hover:border-primary/20"
+                                                    >
+                                                        + {f.filedName}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-[10px] text-center p-2 text-muted-foreground italic">لا توجد حقول معرفة</div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

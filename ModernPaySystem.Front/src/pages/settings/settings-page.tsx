@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Button } from '@/shared/ui/button';
 import { Switch } from '@/shared/ui/switch';
 import { Label } from '@/shared/ui/label';
 import { useTheme } from '@/app/providers/theme-provider';
@@ -54,10 +53,10 @@ export const SettingsPage = () => {
                 />
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              {/* <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button className="rounded-xl px-10 h-11 font-bold">حفظ التغييرات</Button>
                 <Button variant="outline" className="rounded-xl px-10 h-11 border-none bg-muted hover:bg-muted/80">إعادة تعيين</Button>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
         </TabsContent>
