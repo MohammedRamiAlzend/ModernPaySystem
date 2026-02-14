@@ -13,12 +13,15 @@ interface selectProps {
 }
 
 export const SelectField: React.FC<selectProps> = ({ field, value, onChange, error, disabled, readOnly }) => {
-    const isLookUp = field.dataSource?.type === 'lookup';
-    const { data: lookUpValues = [], isLoading } = useLookUpFieldValues(isLookUp ? field.dataSource!.lookUpFieldId! : null);
+    const dataSource = field.dataSource;
+    const isLookUp = dataSource?.type === 'lookup' || (!!dataSource?.lookUpFieldId);
+    const idToFetch = isLookUp ? (dataSource?.lookUpFieldId || (dataSource as any)?.lookUpFiledId) : null;
+
+    const { data: lookUpValues = [], isLoading } = useLookUpFieldValues(idToFetch);
 
     const options: DataSourceOption[] = isLookUp
-        ? lookUpValues.map(v => ({ label: v.desc, value: v.desc })) // As per user request: result stored is 'desc'
-        : (field.dataSource?.options || []);
+        ? (Array.isArray(lookUpValues) ? lookUpValues.map(v => ({ label: v.desc, value: v.desc })) : [])
+        : (dataSource?.options || []);
 
     return (
         <div className="space-y-2">

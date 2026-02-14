@@ -22,7 +22,7 @@ export const useFormEditor = (initialForm?: FormSchema) => {
             label: customLabel || (lookUpFieldId ? 'حقل من الإعدادات' : `New ${type} Field`),
             validation: [],
             // Initialize dataSource for types that need options
-            dataSource: (type === 'select' || type === 'radio') ? (
+            dataSource: (type === 'select' || type === 'radio' || type === 'checkbox') ? (
                 lookUpFieldId ? {
                     type: 'lookup',
                     lookUpFieldId

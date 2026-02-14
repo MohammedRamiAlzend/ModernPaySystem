@@ -73,15 +73,26 @@ const getDisplayValue = (field: FormField, value: any): string => {
         return '-';
     }
 
-    // Handle select/radio with options
-    if ((field.type === 'select' || field.type === 'radio') && field.dataSource?.options) {
-        const option = field.dataSource.options.find(opt => opt.value === value);
-        return option ? option.label : String(value);
+    // Handle Checkbox - Can be multiple values (array) or single boolean
+    if (field.type === 'checkbox') {
+        if (Array.isArray(value)) {
+            if (value.length === 0) return '-';
+            // Join array values. If it's a LookUp, the values themselves are the 'desc' (labels)
+            return value.join(' ، ');
+        }
+        return value ? 'نعم' : 'لا';
     }
 
-    // Handle checkbox
-    if (field.type === 'checkbox') {
-        return value ? 'نعم' : 'لا';
+    // Handle select/radio - check if we can find a label in static options
+    if ((field.type === 'select' || field.type === 'radio') && field.dataSource?.options) {
+        const option = field.dataSource.options.find(opt => opt.value === value);
+        if (option) return option.label;
+    }
+
+    // If it's a LookUp field, the stored value is already the 'desc' (as per implementation in SelectField/RadioField)
+    // So if we didn't find it in options (which might be empty in the saved schema), just return the value
+    if (field.dataSource?.type === 'lookup') {
+        return String(value);
     }
 
     // Handle date
