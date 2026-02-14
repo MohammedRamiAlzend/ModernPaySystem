@@ -28,5 +28,6 @@
     <ProjectReference Include="..\ModernPaySystem.Infrastructure.Persistence\ModernPaySystem.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="..\\ModernPaySystem.Domain\\ModernPaySystem.Domain.csproj" />
     <ProjectReference Include="..\OcrReader\OcrReader.csproj" />
+    <ProjectReference Include="..\NumberSpelling\NumberSpelling.csproj" />
   </ItemGroup>
 </Project>

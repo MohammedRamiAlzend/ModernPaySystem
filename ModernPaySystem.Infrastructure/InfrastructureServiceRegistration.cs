@@ -6,6 +6,7 @@ using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 using ModernPaySystem.Infrastructure.Services;
 using OcrReader;
+using NumberSpelling;
 
 namespace ModernPaySystem.Infrastructure;
 
@@ -49,6 +50,10 @@ public static class InfrastructureServiceRegistration
         // Register OCR Service
         services.AddOcrTesseract();
         services.AddScoped<IOcrService, OcrService>();
+        
+        // Register Number Spelling Service
+        services.AddNumberSpelling();
+        services.AddScoped<INumberSpellingWrapperService, NumberSpellingWrapperService>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {
