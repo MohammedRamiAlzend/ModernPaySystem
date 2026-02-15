@@ -11,6 +11,7 @@
     <Folder Include="Commons\Extensions\" />
     <Folder Include="Commons\Results\" />
     <Folder Include="DTOs\AuthDtos\" />
+    <Folder Include="DTOs\NewFolder\" />
     <Folder Include="Interfaces\" />
   </ItemGroup>
   <ItemGroup>

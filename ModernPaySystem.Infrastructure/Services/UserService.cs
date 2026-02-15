@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Commons;
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Infrastructure.Persistence;
 
@@ -183,13 +184,23 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         }
     }
 
-    public async Task<Result<List<(string Name, string Value)>>> GetSubSystemsAsync()
+    public async Task<Result<List<SubSystemDto>>> GetSubSystemsAsync()
     {
         try
         {
-            return (List<(string Name, string Value)>)[
-                (Name: nameof(SubSystem.TransactionSystem), ((int)SubSystem.TransactionSystem).ToString()),
-                (Name: nameof(SubSystem.None), ((int)SubSystem.None).ToString())];
+            return (List<SubSystemDto>)[
+
+                new SubSystemDto
+                {
+                    Name = nameof(SubSystem.TransactionSystem),
+                    Value = ((int)SubSystem.TransactionSystem).ToString()
+                },
+                new SubSystemDto
+                {
+                    Name = nameof(SubSystem.None),
+                    Value = ((int)SubSystem.None).ToString()
+                }
+            ];
         }
         catch (Exception ex)
         {
