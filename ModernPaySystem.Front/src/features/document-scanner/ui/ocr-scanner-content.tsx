@@ -33,13 +33,34 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
     hideOcr = false,
     onClose,
 }) => {
+    const {
+        ocrResult,
+        setOcrResult,
+        extract,
+        isPending: isOcrLoading,
+        error: ocrError,
+        languages,
+        defaultLanguage,
+        isLoadingLanguages
+    } = useOcr();
+
     const [ocrLanguage, setOcrLanguage] = useState('ara');
-    const { ocrResult, setOcrResult, extract, isPending: isOcrLoading, error: ocrError } = useOcr();
     const { handleScan, isScanning, scanError } = useScanner();
 
     const [activeImageIndex, setActiveImageIndex] = useState<number | null>(propActiveImageIndex ?? null);
     const [isEditing, setIsEditing] = useState(false);
     const ocrTextAreaRef = useRef<OcrTextAreaRef>(null);
+
+    useEffect(() => {
+        if (languages.length > 0) {
+            const hasAra = languages.some(l => l.code === 'ara');
+            if (hasAra) {
+                setOcrLanguage('ara');
+            } else if (defaultLanguage) {
+                setOcrLanguage(defaultLanguage);
+            }
+        }
+    }, [languages, defaultLanguage]);
 
     useEffect(() => {
         if (propActiveImageIndex !== undefined) {
@@ -138,7 +159,14 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
         if (activeImageIndex == null) return;
         const file = imageFiles[activeImageIndex]?.file;
         if (file) {
-            await extract({ language: ocrLanguage, imageFile: file });
+            try {
+                const data = await extract({ language: ocrLanguage, imageFile: file });
+                if (data?.success) {
+                    setOcrResult(data.extractedText);
+                }
+            } catch (e) {
+                console.error(e);
+            }
         }
     };
 
@@ -216,6 +244,8 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
                             <LanguageSelector
                                 value={ocrLanguage}
                                 onChange={setOcrLanguage}
+                                languages={languages}
+                                isLoading={isLoadingLanguages}
                             />
                         )}
 

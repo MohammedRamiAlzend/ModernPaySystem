@@ -19,6 +19,17 @@ export interface OcrResponse {
     extractedText: string;
 }
 
+export interface Language {
+    code: string;
+    name: string;
+}
+
+export interface SupportedLanguagesResponse {
+    success: boolean;
+    languages: Language[];
+    defaultLanguage: string;
+}
+
 export interface ScannerResponse {
     src: string; // base64
 }
