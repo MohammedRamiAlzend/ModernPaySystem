@@ -3,6 +3,7 @@ import { Switch } from '@/shared/ui/switch';
 import { Label } from '@/shared/ui/label';
 import { useTheme } from '@/app/providers/theme-provider';
 import { LookUpManagement } from '@/features/lookup-management/ui/LookUpManagement';
+import { TemplatesList } from '@/features/form-builder/ui/TemplatesList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { Palette } from 'lucide-react';
 
@@ -21,6 +22,9 @@ export const SettingsPage = () => {
           <TabsTrigger value="lookup" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
             إدارة الحقول (LookUp)
           </TabsTrigger>
+          <TabsTrigger value="templates" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            نماذج الطلبات
+          </TabsTrigger>
           <TabsTrigger value="appearance" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
             المظهر والتفضيلات
           </TabsTrigger>
@@ -28,6 +32,10 @@ export const SettingsPage = () => {
 
         <TabsContent value="lookup" className="mt-0">
           <LookUpManagement />
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-0">
+          <TemplatesList />
         </TabsContent>
 
         <TabsContent value="appearance" className="mt-0">
