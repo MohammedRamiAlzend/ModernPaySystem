@@ -153,7 +153,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
                 return enrollUserToSubSystem.Errors;
 
             int result = await unitOfWork.SaveChangesAsync();
-            if (result < 0)
+            if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully created user: {Username}", user.UserName);
@@ -183,7 +183,9 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             logger.LogInformation("Deleting user: {UserId}", id);
 
             await unitOfWork.Users.RemoveAsync(x => x.Id == user.Value.Id);
-            await unitOfWork.SaveChangesAsync();
+            int result = await unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully deleted user: {UserId}", id);
             return true;

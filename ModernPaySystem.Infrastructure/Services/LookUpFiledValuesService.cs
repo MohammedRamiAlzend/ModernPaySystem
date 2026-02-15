@@ -112,7 +112,7 @@ public class LookUpFiledValuesService : ILookUpFiledValuesService
                 return addResult.Errors;
 
             int result = await _unitOfWork.SaveChangesAsync();
-            if (result < 0)
+            if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully created lookup field value with ID: {LookUpFiledValueId}", lookUpFiledValueEntity.Id);
@@ -148,7 +148,9 @@ public class LookUpFiledValuesService : ILookUpFiledValuesService
             if (updateResult.IsError)
                 return updateResult.Errors;
 
-            await _unitOfWork.SaveChangesAsync();
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully updated lookup field value: {LookUpFiledValueId}", id);
             return existingLookUpFiledValue.Value.ToDto();
@@ -177,7 +179,9 @@ public class LookUpFiledValuesService : ILookUpFiledValuesService
             _logger.LogInformation("Deleting lookup field value: {LookUpFiledValueId}", id);
 
             await _unitOfWork.LookUpFiledValues.RemoveAsync(x => x.Id == lookUpFiledValue.Value.Id);
-            await _unitOfWork.SaveChangesAsync();
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully deleted lookup field value: {LookUpFiledValueId}", id);
             return true;

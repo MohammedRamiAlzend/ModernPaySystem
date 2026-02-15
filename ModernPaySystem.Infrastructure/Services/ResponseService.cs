@@ -233,7 +233,9 @@ public class ResponseService(
             existingResponse.Value.Comment = response.Comment;
 
             await unitOfWork.Responses.UpdateAsync(existingResponse.Value);
-            await unitOfWork.SaveChangesAsync();
+            int result = await unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully updated response: {ResponseId}", id);
             return existingResponse.Value.ToDto();
@@ -262,7 +264,9 @@ public class ResponseService(
             logger.LogInformation("Deleting response: {ResponseId}", id);
 
             await unitOfWork.Responses.RemoveAsync(x => x.Id == response.Value.Id);
-            await unitOfWork.SaveChangesAsync();
+            int result = await unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully deleted response: {ResponseId}", id);
             return true;

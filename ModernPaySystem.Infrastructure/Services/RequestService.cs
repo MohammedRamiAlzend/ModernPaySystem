@@ -190,7 +190,7 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
                 return addResult.Errors;
 
             int result = await unitOfWork.SaveChangesAsync();
-            if (result < 0)
+            if (result <= 0)
                 return ApplicationErrors.DatabaseError;
             foreach (var file in files)
             {
@@ -231,7 +231,9 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             existingRequest.Value.ContentAsJson = request.Content;
 
             await unitOfWork.Requests.UpdateAsync(existingRequest.Value);
-            await unitOfWork.SaveChangesAsync();
+            int result = await unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully updated request: {RequestId}", id);
             return existingRequest.Value.ToDto();
@@ -260,7 +262,9 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             logger.LogInformation("Deleting request: {RequestId}", id);
 
             await unitOfWork.Requests.RemoveAsync(x => x.Id == request.Value.Id);
-            await unitOfWork.SaveChangesAsync();
+            int result = await unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully deleted request: {RequestId}", id);
             return true;

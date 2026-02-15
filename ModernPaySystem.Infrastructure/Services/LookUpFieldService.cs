@@ -111,7 +111,7 @@ public class LookUpFieldService : ILookUpFieldService
                 return addResult.Errors;
 
             int result = await _unitOfWork.SaveChangesAsync();
-            if (result < 0)
+            if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully created lookup field: {FieldName}", lookUpField.FiledName);
@@ -146,7 +146,9 @@ public class LookUpFieldService : ILookUpFieldService
             if (updateResult.IsError)
                 return updateResult.Errors;
 
-            await _unitOfWork.SaveChangesAsync();
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully updated lookup field: {LookUpFieldId}", id);
             return existingLookUpField.Value.ToDto();
@@ -175,7 +177,9 @@ public class LookUpFieldService : ILookUpFieldService
             _logger.LogInformation("Deleting lookup field: {LookUpFieldId}", id);
 
             await _unitOfWork.LookUpFields.RemoveAsync(x => x.Id == lookUpField.Value.Id);
-            await _unitOfWork.SaveChangesAsync();
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully deleted lookup field: {LookUpFieldId}", id);
             return true;

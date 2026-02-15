@@ -71,6 +71,10 @@ public class WebAttachmentService(
             return associationResult.Errors;
         }
 
+        int result = await unitOfWork.SaveChangesAsync();
+        if (result <= 0)
+            return ApplicationErrors.DatabaseError;
+
         return attachment;
     }
 
@@ -134,6 +138,10 @@ public class WebAttachmentService(
             await fileManager.DeleteFileAsync(fileMetadata.FilePath);
             return associationResult.Errors;
         }
+
+        int result = await unitOfWork.SaveChangesAsync();
+        if (result <= 0)
+            return ApplicationErrors.DatabaseError;
 
         return attachment;
     }

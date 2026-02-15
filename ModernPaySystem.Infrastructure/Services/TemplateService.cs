@@ -143,7 +143,7 @@ public class TemplateService : ITemplateService
                 return addResult.Errors;
 
             int result = await _unitOfWork.SaveChangesAsync();
-            if (result < 0)
+            if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully created template: {TemplateName}", template.TemplateName);
@@ -177,7 +177,9 @@ public class TemplateService : ITemplateService
             existingTemplate.Value.TemplateDescription = template.TemplateDescription;
 
             await _unitOfWork.Templates.UpdateAsync(existingTemplate.Value);
-            await _unitOfWork.SaveChangesAsync();
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully updated template: {TemplateId}", id);
             return existingTemplate.Value.ToDto();
@@ -206,7 +208,9 @@ public class TemplateService : ITemplateService
             _logger.LogInformation("Deleting template: {TemplateId}", id);
 
             await _unitOfWork.Templates.RemoveAsync(x => x.Id == template.Value.Id);
-            await _unitOfWork.SaveChangesAsync();
+            int result = await _unitOfWork.SaveChangesAsync();
+            if (result <= 0)
+                return ApplicationErrors.DatabaseError;
 
             _logger.LogInformation("Successfully deleted template: {TemplateId}", id);
             return true;
