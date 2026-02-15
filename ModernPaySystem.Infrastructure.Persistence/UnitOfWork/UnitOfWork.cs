@@ -10,11 +10,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 /// <summary>
 /// Unit of Work implementation for managing multiple repositories and transactions.
 /// </summary>
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger, ILoggerFactory loggerFactory) : IUnitOfWork
 {
-    private readonly AppDbContext _dbContext;
-    private readonly ILogger<UnitOfWork> _logger;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly ILogger<UnitOfWork> _logger = logger;
+    private readonly ILoggerFactory _loggerFactory = loggerFactory;
     private IDbContextTransaction? _transaction;
 
     // Repositories
@@ -31,13 +31,6 @@ public class UnitOfWork : IUnitOfWork
     private IRepositoryBase<RequestAttachment, Guid>? _requestAttachments;
     private IRepositoryBase<LookUpField, Guid>? _lookUpFields;
     private IRepositoryBase<LookUpFiledValues, Guid>? _lookUpFiledValues;
-
-    public UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger, ILoggerFactory loggerFactory)
-    {
-        _dbContext = dbContext;
-        _logger = logger;
-        _loggerFactory = loggerFactory;
-    }
 
     public IRepositoryBase<User, Guid> Users =>
         _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>());
