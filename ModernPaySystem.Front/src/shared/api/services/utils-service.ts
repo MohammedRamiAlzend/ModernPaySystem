@@ -7,6 +7,6 @@ export const utilsService = {
     numberSearchSpelling: async (number: number): Promise<string> => {
         const response = await api.post('/NumberSpelling/convert-decimal-to-arabic', number);
         // The API returns { data: "واحد" }
-        return response.data?.data || response.data;
+        return response.data?.data;
     }
 };

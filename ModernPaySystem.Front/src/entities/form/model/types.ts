@@ -9,7 +9,7 @@ export interface ValidationRule {
 
 export interface LogicAction {
     targetField: string;
-    effect: 'show' | 'hide' | 'enable' | 'disable' | 'require' | 'unrequire';
+    effect: 'show' | 'hide' | 'enable' | 'disable' | 'require' | 'unrequire' | 'spell';
 }
 
 export interface LogicRule {
@@ -58,6 +58,9 @@ export interface FormField {
     layout?: {
         colSpan?: number; // 1-12
         className?: string; // Custom classes
+    };
+    numberSpelling?: {
+        sourceField: string; // The numeric field to watch
     };
 }
 
