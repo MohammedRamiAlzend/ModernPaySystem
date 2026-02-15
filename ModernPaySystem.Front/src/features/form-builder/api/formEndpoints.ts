@@ -214,6 +214,6 @@ export const useRequestResponses = (requestId: string | null) => {
             return [] as TemplateResponse[];
         },
         enabled: !!requestId,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
     });
 };
