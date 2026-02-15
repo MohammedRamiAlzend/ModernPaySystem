@@ -34,12 +34,8 @@ public interface IUserService
     Task<Result<UserDto>> CreateAsync(CreateUserDto user);
 
     /// <summary>
-    /// Update user.
-    /// </summary>
-    Task<Result<UserDto>> UpdateAsync(Guid id, UpdateUserDto user);
-
-    /// <summary>
     /// Delete user.
     /// </summary>
     Task<Result<bool>> DeleteAsync(Guid id);
+    Task<Result<List<(string Name, string Value)>>> GetSubSystemsAsync();
 }

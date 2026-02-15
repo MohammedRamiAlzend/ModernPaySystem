@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Repos;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.Abstraction;
-using ModernPaySystem.Infrastructure.Persistence;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Repos;
 
@@ -20,11 +19,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         try
         {
             await dbcontext.AddAsync(entity);
-            int saveResult = await dbcontext.SaveChangesAsync();
-
-            return saveResult > 0
-                ? Result.Success
-                : new Error("00", "Failed to save entity.", ErrorKind.Failure);
+            return Result.Success;
         }
         catch (DbUpdateException dbEx)
         {
@@ -163,8 +158,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
             if (entity == null) return new Error("00", "Entity not found.", ErrorKind.Failure);
 
             dbcontext.Set<TEntity>().Remove(entity);
-            int saveResult = await dbcontext.SaveChangesAsync();
-            return saveResult > 0 ? Result.Deleted : new Error("00", "Failed to delete entity.", ErrorKind.Failure);
+            return Result.Deleted;
         }
         catch (Exception e)
         {
@@ -187,7 +181,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         catch (Exception e)
         {
             logger.LogError(e, "Error checking existence of entities of type {EntityType}.", typeof(TEntity).Name);
-            return false; // Return false on error, as AnyAsync should be safe
+            return false;
         }
     }
 
@@ -239,7 +233,6 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
             query = query.Where(filter);
             if (transform != null) query = transform(query);
 
-            // If no specific ordering is provided, order by Id descending (newest first, assuming auto-incrementing IDs)
             if (orderBy == null)
             {
                 query = query.OrderByDescending(e => e.Id);
@@ -265,17 +258,14 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
     {
         string message = ex.InnerException?.Message ?? ex.Message;
 
-        // SQL Server format: "FOREIGN KEY constraint "FK_Table_RefTable"..."
         var match = Regex.Match(message, @"FOREIGN KEY constraint ""?(?<fk>FK_[\w\d_]+)""?", RegexOptions.IgnoreCase);
         if (match.Success)
             return match.Groups["fk"].Value;
 
-        // PostgreSQL format example: "insert or update on table ... violates foreign key constraint "FK_Table_RefTable""
         match = Regex.Match(message, @"violates foreign key constraint ""?(?<fk>FK_[\w\d_]+)""?", RegexOptions.IgnoreCase);
         if (match.Success)
             return match.Groups["fk"].Value;
 
-        // MySQL format example: "Cannot add or update a child row: a foreign key constraint fails (`db`.`table`, CONSTRAINT `FK_Table_RefTable` FOREIGN KEY (`Column`)..."
         match = Regex.Match(message, @"CONSTRAINT [`""]?(?<fk>FK_[\w\d_]+)[`""]? FOREIGN KEY", RegexOptions.IgnoreCase);
         if (match.Success)
             return match.Groups["fk"].Value;

@@ -74,18 +74,6 @@ public class UsersController : ControllerBase
     }
 
     /// <summary>
-    /// Update user
-    /// </summary>
-    [HttpPut("{id}")]
-    [EndpointPermission("users.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserDto user)
-    {
-        _logger.LogInformation("Updating user: {UserId}", id);
-        var result = await _userService.UpdateAsync(id, user);
-        return result.ToActionResult();
-    }
-
-    /// <summary>
     /// Delete user
     /// </summary>
     [HttpDelete("{id}")]
@@ -94,6 +82,13 @@ public class UsersController : ControllerBase
     {
         _logger.LogInformation("Deleting user: {UserId}", id);
         var result = await _userService.DeleteAsync(id);
+        return result.ToActionResult();
+    }
+    [HttpGet("subsystems")]
+    public async Task<IActionResult> GetSubSystems()
+    {
+        _logger.LogInformation("Getting all subsystems");
+        var result = await _userService.GetSubSystemsAsync();
         return result.ToActionResult();
     }
 }

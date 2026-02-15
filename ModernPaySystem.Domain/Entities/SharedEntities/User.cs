@@ -52,13 +52,7 @@ public class UserDto
 public class CreateUserDto
 {
     public required string UserName { get; set; }
-    public required string HashedPassword { get; set; }
-    public Guid? SubSystemUserId { get; set; }
+    public required string Password { get; set; }
+    public SubSystem? SubSystem { get; set; }
 }
 
-public class UpdateUserDto
-{
-    public required string UserName { get; set; }
-    public required string HashedPassword { get; set; }
-    public Guid? SubSystemUserId { get; set; }
-}

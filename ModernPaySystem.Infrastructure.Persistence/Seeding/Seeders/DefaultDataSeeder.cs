@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
@@ -7,7 +8,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 /// Seeder for default roles and super admin user
 /// Order: 1 (runs early to establish foundational data).
 /// </summary>
-public class DefaultDataSeeder : IEntitySeeder
+public class DefaultDataSeeder(IPasswordHasher passwordHasher) : IEntitySeeder
 {
     public int Order => 1;
 
@@ -106,7 +107,7 @@ public class DefaultDataSeeder : IEntitySeeder
         {
             Id = Guid.NewGuid(),
             UserName = "1",
-            HashedPassword = HashPassword("1")
+            HashedPassword = passwordHasher.HashPassword("1")
         };
 
         await context.Users.AddAsync(superAdminUser);
@@ -116,13 +117,5 @@ public class DefaultDataSeeder : IEntitySeeder
         await context.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Simple password hashing (use same as in AuthenticationService).
-    /// </summary>
-    private string HashPassword(string password)
-    {
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
-        byte[] hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
-    }
+ 
 }

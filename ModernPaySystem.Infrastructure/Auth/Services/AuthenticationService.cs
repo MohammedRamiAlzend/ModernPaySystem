@@ -10,7 +10,9 @@ global using System.Collections.Generic;
 
 namespace ModernPaySystem.Infrastructure.Auth.Services;
 
-public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) : IAuthenticationService
+public class AuthenticationService(IUnitOfWork uow,
+    ITokenService tokenService,
+    IPasswordHasher passwordHasher) : IAuthenticationService
 {
     public async Task<Result<string>> AuthenticateAsync(string username, string password)
     {
@@ -60,18 +62,9 @@ public class AuthenticationService(IUnitOfWork uow, ITokenService tokenService) 
         return permissions!;
     }
 
-    public string HashPassword(string password)
-    {
-        using (var sha256 = SHA256.Create())
-        {
-            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(hashedBytes);
-        }
-    }
-
     public bool VerifyPassword(string password, string hash)
     {
-        string hashOfInput = HashPassword(password);
+        string hashOfInput = passwordHasher.HashPassword(password);
         return hashOfInput.Equals(hash);
     }
 }

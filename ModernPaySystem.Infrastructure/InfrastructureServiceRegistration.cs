@@ -61,7 +61,7 @@ public static class InfrastructureServiceRegistration
             var uow = provider.GetRequiredService<IUnitOfWork>();
             return new PermissionSeederService(provider, applicationPartManager, uow);
         });
-
+        services.AddScoped<IPasswordHasher, PasswordHasher>();
         return services;
     }
 
