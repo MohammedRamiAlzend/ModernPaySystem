@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormSchema, FormField } from '@/entities/form/model/types';
-import { useSaveForm } from './useForms';
+import { useSaveForm, useUpdateForm } from './useForms';
 
 export const useFormEditor = (initialForm?: FormSchema) => {
     const [form, setForm] = useState<FormSchema>(initialForm || {
@@ -100,11 +100,18 @@ export const useFormEditor = (initialForm?: FormSchema) => {
         }));
     };
 
-    const { mutateAsync: saveMutation, isPending: isSaving } = useSaveForm();
+    const { mutateAsync: saveMutation, isPending: isSavingNew } = useSaveForm();
+    const { mutateAsync: updateMutation, isPending: isUpdating } = useUpdateForm();
 
     const saveForm = async () => {
         try {
-            await saveMutation(form);
+            if (initialForm?.id) {
+                // If we have an initialForm with an ID, it's an update
+                await updateMutation({ id: initialForm.id, form });
+            } else {
+                // Otherwise it's a new form
+                await saveMutation(form);
+            }
             return true;
         } catch (error) {
             console.error(error);
@@ -123,6 +130,6 @@ export const useFormEditor = (initialForm?: FormSchema) => {
         updateLogicRule,
         deleteLogicRule,
         saveForm,
-        isLoading: isSaving
+        isLoading: isSavingNew || isUpdating
     };
 };

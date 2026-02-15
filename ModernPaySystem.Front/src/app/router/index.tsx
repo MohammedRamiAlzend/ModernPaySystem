@@ -16,7 +16,6 @@ const ProcessFormPage = lazyWithPreload(() => import('@/pages/process-form-page'
 const LoginPage = lazyWithPreload(() => import('@/pages/auth/login-page'));
 // const ProfilePage = lazyWithPreload(() => import('@/pages/profile/profile-page'));
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/settings-page'));
-const TemplatesListPage = lazyWithPreload(() => import('@/pages/form-builder/TemplatesListPage').then(module => ({ default: module.TemplatesListPage })));
 const FormEditorPage = lazyWithPreload(() => import('@/pages/form-builder/FormEditorPage').then(module => ({ default: module.FormEditorPage })));
 const RequestPage = lazyWithPreload(() => import('@/pages/form-builder/RequestPage').then(module => ({ default: module.RequestPage })));
 const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/ResponsesPage').then(module => ({ default: module.ResponsesPage })));
@@ -151,20 +150,7 @@ const routesConfig: RouteObject[] = [
         children: [
           {
             index: true,
-            element: <Navigate to="templates" replace />,
-          },
-          {
-            path: 'templates',
-            element: (
-              <Suspense fallback={<LoadingSpinner />}>
-                <TemplatesListPage />
-              </Suspense>
-            ),
-            handle: {
-              crumb: () => 'النماذج',
-              permission: RoutePermissions.AUTHENTICATED,
-              preload: () => TemplatesListPage.preload(),
-            },
+            element: <Navigate to="/settings" replace />,
           },
           {
             path: 'templates/new',

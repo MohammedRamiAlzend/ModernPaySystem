@@ -18,3 +18,4 @@ export { OcrToolbar } from './ui/ocr-toolbar';
 export { OcrTextArea } from './ui/ocr-text-area';
 export type { OcrTextAreaRef } from './ui/ocr-text-area';
 export { LanguageSelector } from './ui/language-selector';
+export { ScannerModal } from './ui/scanner-modal';

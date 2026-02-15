@@ -21,6 +21,11 @@ export const formEndpoints = {
         return response.data;
     },
 
+    updateTemplate: async (id: string, data: CreateTemplateDto): Promise<any> => {
+        const response = await api.put(`/Templates/${id}`, data);
+        return response.data;
+    },
+
     getTemplates: async (): Promise<Template[] | { data: Template[] }> => {
         // User said: "For display, use endpoint: Templates of type post"
         const response = await api.get('/Templates', {});
@@ -164,6 +169,18 @@ export const useCreateTemplate = () => {
         mutationFn: formEndpoints.createTemplate,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['templates'] });
+        }
+    });
+};
+
+export const useUpdateTemplate = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: CreateTemplateDto }) =>
+            formEndpoints.updateTemplate(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: ['forms'] }); // Some hooks use 'forms' key
         }
     });
 };

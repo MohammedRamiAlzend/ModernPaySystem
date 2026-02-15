@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { prefetchRoute } from '@/app/router';
 import { useContractManager } from '@/features/contracts/model/contract-manager';
 import { SearchModal } from '@/shared/ui/common/search-modal';
-import { DeleteConfirmDialog } from '@/shared/ui/common/delete-confirm-dialog';
 import { Button } from '@/shared/ui/button';
+import { useAppDispatch } from '@/app/store';
+import { showConfirm } from '@/app/store/uiSlice';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import {
     Table,
@@ -23,31 +24,27 @@ import {
 import { useState } from 'react';
 
 export const ContractsListWidget = () => {
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const { contracts, setSearchTerm } = useContractManager();
     // const { contracts, setSearchTerm, addContract, updateContract, getContract } = useContractManager();
     const [searchModalOpen, setSearchModalOpen] = useState(false);
-
-    // Deletion states
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [contractToDelete, setContractToDelete] = useState<number | null>(null);
 
     const handleEdit = (id: number) => {
         navigate(`/contracts/edit/${id}`);
     };
 
     const confirmDelete = (id: number) => {
-        setContractToDelete(id);
-        setDeleteDialogOpen(true);
-    };
-
-    const handleDelete = () => {
-        if (contractToDelete !== null) {
-            // Note: In a real implementation, we would have a deleteContract function in the hook
-            // For now, we'll just close the dialog
-            setDeleteDialogOpen(false);
-            setContractToDelete(null);
-        }
+        dispatch(showConfirm({
+            title: 'حذف العقد',
+            message: 'هل أنت متأكد من حذف العقد؟ هذا الإجراء نهائي ولا يمكن التراجع عنه. سيتم حذف كافة البيانات المرتبطة بهذا العقد من النظام بشكل دائم.',
+            variant: 'destructive',
+            confirmLabel: 'حذف العقد',
+            onConfirm: () => {
+                // In a real implementation, we would call the delete function here
+                console.log('Contract deleted:', id);
+            }
+        }));
     };
 
     return (
@@ -182,14 +179,6 @@ export const ContractsListWidget = () => {
             <SearchModal
                 open={searchModalOpen}
                 onClose={() => setSearchModalOpen(false)}
-            />
-
-            <DeleteConfirmDialog
-                open={deleteDialogOpen}
-                onOpenChange={setDeleteDialogOpen}
-                onConfirm={handleDelete}
-                title="هل أنت متأكد من حذف العقد؟"
-                description="هذا الإجراء نهائي ولا يمكن التراجع عنه. سيتم حذف كافة البيانات المرتبطة بهذا العقد من النظام بشكل دائم."
             />
         </AnimatedContainer>
     );

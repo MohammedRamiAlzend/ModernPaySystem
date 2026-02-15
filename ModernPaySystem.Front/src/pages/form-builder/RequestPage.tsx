@@ -8,12 +8,14 @@ import { Label } from '@/shared/ui/label';
 import { useMutation } from '@tanstack/react-query';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import type { CreateRequestDto } from '@/entities/form/model/types';
-import { useAppSelector } from '@/app/store';
+import { useAppSelector, useAppDispatch } from '@/app/store'; // Added useAppDispatch
 import { selectCurrentUser } from '@/app/store/authSlice';
+import { showStatus } from '@/app/store/uiSlice'; // Added showStatus
 import { ImagePlus, X, FileText } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 
 export const RequestPage = () => {
+    const dispatch = useAppDispatch(); // Added dispatch hook
     const { data: templates = [] } = useForms();
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
     const [files, setFiles] = useState<File[]>([]);
@@ -28,12 +30,20 @@ export const RequestPage = () => {
     const submitMutation = useMutation({
         mutationFn: formEndpoints.createRequest,
         onSuccess: () => {
-            alert('تم تقديم الطلب بنجاح');
+            dispatch(showStatus({
+                type: 'success',
+                title: 'تمت العملية',
+                message: 'تم تقديم الطلب بنجاح'
+            }));
             setSelectedTemplateId('');
             setFiles([]);
         },
         onError: () => {
-            alert('حدث خطأ أثناء تقديم الطلب');
+            dispatch(showStatus({
+                type: 'error',
+                title: 'خطأ',
+                message: 'حدث خطأ أثناء تقديم الطلب'
+            }));
         }
     });
 
