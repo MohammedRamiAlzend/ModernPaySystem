@@ -93,3 +93,24 @@ export const useSaveForm = () => {
         },
     });
 };
+
+/**
+ * Hook for updating a form (Update Template)
+ */
+export const useUpdateForm = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async ({ id, form }: { id: string, form: FormSchema }) => {
+            const dto: CreateTemplateDto = {
+                contentAsJson: JSON.stringify(form),
+                templateName: form.title,
+                templateDescription: form.description
+            };
+            return formEndpoints.updateTemplate(id, dto);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['forms'] });
+        },
+    });
+};

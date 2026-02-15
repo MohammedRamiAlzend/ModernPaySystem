@@ -16,7 +16,7 @@ export const FormEditorPage = () => {
     }, [id, forms]);
 
     const handleSaveComplete = () => {
-        navigate('/form-builder/templates');
+        navigate('/settings?tab=templates');
     };
 
     return (
@@ -26,7 +26,7 @@ export const FormEditorPage = () => {
                     key={currentForm?.id || 'new'} // Force re-mount when form changes
                     initialForm={currentForm}
                     onSave={handleSaveComplete}
-                    onCancel={() => navigate('/form-builder/templates')}
+                    onCancel={() => navigate('/settings?tab=templates')}
                 />
             </div>
         </AnimatedContainer>

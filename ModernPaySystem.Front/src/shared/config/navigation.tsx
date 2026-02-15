@@ -30,6 +30,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         icon: <LayoutDashboard className="h-5 w-5" />,
         children: [
             {
+                title: "إدارة النماذج",
+                path: "/settings?tab=templates",
+                icon: <Settings className="h-4 w-4" />,
+            },
+            {
                 title: "تقديم طلب",
                 path: "/form-builder/requests/new",
                 icon: <Send className="h-4 w-4" />,
@@ -46,6 +51,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             }
         ]
     },
+    // {
+    //     title: "إعدادات النظام",
+    //     path: "/settings",
+    //     icon: <Settings className="h-5 w-5" />,
+    // },
 ];
 
 export const FOOTER_NAVIGATION_ITEMS = [
