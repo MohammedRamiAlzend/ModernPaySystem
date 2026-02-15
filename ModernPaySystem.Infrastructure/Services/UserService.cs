@@ -200,6 +200,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
                     Name = nameof(SubSystem.None),
                     Value = ((int)SubSystem.None).ToString()
                 }
+
             ];
         }
         catch (Exception ex)
