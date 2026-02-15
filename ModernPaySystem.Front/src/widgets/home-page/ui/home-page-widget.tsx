@@ -14,8 +14,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/shared/ui/alert-dialog";
-import { ImageMeta, OcrScannerContent } from "@/features/document-scanner";
-import { OcrModal } from "@/shared/ui/modals/ocr-modal";
+import { ImageMeta, ScannerModal } from "@/features/document-scanner";
 import { Scan } from "lucide-react";
 
 export function HomePageWidget() {
@@ -108,17 +107,13 @@ export function HomePageWidget() {
                 </AnimatedContainer>
             )}
 
-            <OcrModal
+            <ScannerModal
                 isOpen={isOcrOpen}
+                imageFiles={imageFiles}
+                setImageFiles={setImageFiles}
+                onApply={handleApplyOcr}
                 onClose={() => setIsOcrOpen(false)}
-            >
-                <OcrScannerContent
-                    imageFiles={imageFiles}
-                    setImageFiles={setImageFiles}
-                    onApply={handleApplyOcr}
-                    onClose={() => setIsOcrOpen(false)}
-                />
-            </OcrModal>
+            />
         </AnimatedContainer>
     );
 }

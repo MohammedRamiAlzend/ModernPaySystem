@@ -20,6 +20,7 @@ export interface BaseModalProps {
     children?: React.ReactNode;
     footer?: React.ReactNode;
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+    maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
     showCloseButton?: boolean;
 }
 
@@ -35,6 +36,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     children,
     footer,
     maxWidth = 'md',
+    maxHeight = 'lg'
 }) => {
     const maxWidthClasses = {
         'sm': 'max-w-[380px]',
@@ -45,33 +47,43 @@ export const BaseModal: React.FC<BaseModalProps> = ({
         '3xl': 'max-w-[1200px]',
         '4xl': 'max-w-[1400px]',
     };
+    const maxHeightClasses = {
+        'sm': 'h-auto max-h-[30vh]',
+        'md': 'h-auto max-h-[50vh]',
+        'lg': 'h-auto max-h-[70vh]',
+        'xl': 'h-auto max-h-[85vh]',
+        '2xl': 'h-auto max-h-[90vh]',
+        '3xl': 'h-auto max-h-[92vh]',
+        '4xl': 'h-auto max-h-[95vh]',
+    };
 
     return (
         <AlertDialog open={isOpen} onOpenChange={onClose}>
             <AlertDialogContent
                 className={cn(
-                    "border-none shadow-2xl rounded-3xl p-0 overflow-hidden bg-background",
-                    maxWidthClasses[maxWidth]
+                    "border-none shadow-2xl rounded-3xl p-0 overflow-hidden bg-background flex flex-col",
+                    maxWidthClasses[maxWidth],
+                    maxHeightClasses[maxHeight]
                 )}
             >
-                <div className="p-4 md:p-6">
-                    <AlertDialogHeader className="text-right space-y-2">
-                        <AlertDialogTitle className="text-2xl font-black  leading-tight">
+                <div className="p-4 md:p-6 flex flex-col h-full overflow-hidden">
+                    <AlertDialogHeader className="text-right space-y-2 shrink-0">
+                        <AlertDialogTitle className="text-2xl font-black leading-tight">
                             {title}
                         </AlertDialogTitle>
                         {description && (
-                            <AlertDialogDescription className=" font-medium text-base leading-relaxed">
+                            <AlertDialogDescription className="font-medium text-base leading-relaxed">
                                 {description}
                             </AlertDialogDescription>
                         )}
                     </AlertDialogHeader>
 
-                    <div className="my-4 overflow-y-auto max-h-[calc(85vh-180px)] pr-2 custom-scrollbar">
+                    <div className="my-4 overflow-y-auto flex-1 pr-2 custom-scrollbar min-h-0">
                         {children}
                     </div>
 
                     {footer && (
-                        <AlertDialogFooter className="mt-4 gap-3 flex-col-reverse sm:flex-row">
+                        <AlertDialogFooter className="mt-auto gap-3 flex-col-reverse sm:flex-row shrink-0">
                             {footer}
                         </AlertDialogFooter>
                     )}

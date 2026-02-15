@@ -37,6 +37,7 @@ export const OcrModal: React.FC<OcrModalProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             maxWidth="3xl"
+            maxHeight="3xl"
             title={
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
