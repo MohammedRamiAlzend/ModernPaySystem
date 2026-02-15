@@ -1,5 +1,4 @@
 using WordFileTest.NumberToArabicText;
-
 namespace NumberSpelling;
 
 public class NumberSpellingService : INumberSpellingService
