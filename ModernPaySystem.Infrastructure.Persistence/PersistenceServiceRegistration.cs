@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ModernPaySystem.Infrastructure.Persistence.Interceptors;
 
 namespace ModernPaySystem.Infrastructure.Persistence;
 
@@ -17,7 +18,9 @@ public static class PersistenceServiceRegistration
         IConfiguration configuration)
     {
         // Register DbContext
-        services.AddDbContext<AppDbContext>(options =>
+        services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+        {
+
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"),
                 sqlServerOptionsAction: sqlOptions =>
@@ -27,7 +30,9 @@ public static class PersistenceServiceRegistration
                         maxRetryCount: 3,
                         maxRetryDelay: TimeSpan.FromSeconds(30),
                         errorNumbersToAdd: null);
-                }));
+                });
+            options.AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>());
+        });
 
         return services;
     }

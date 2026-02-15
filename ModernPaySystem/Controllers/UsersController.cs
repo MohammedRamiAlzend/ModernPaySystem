@@ -91,4 +91,24 @@ public class UsersController : ControllerBase
         var result = await _userService.GetSubSystemsAsync();
         return result.ToActionResult();
     }
+
+    /// <summary>
+    /// Get users by subsystem
+    /// </summary>
+    [HttpGet("by-subsystem/{subSystemId:int}")]
+    [EndpointPermission("users.get-by-subsystem", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetBySubSystem([FromRoute] int subSystemId)
+    {
+        _logger.LogInformation("Getting users by subsystem ID: {SubSystemId}", subSystemId);
+        
+        // Convert the integer to SubSystem enum
+        if (!Enum.IsDefined(typeof(SubSystem), subSystemId))
+        {
+            return BadRequest($"Invalid subsystem ID: {subSystemId}");
+        }
+        
+        var subSystem = (SubSystem)subSystemId;
+        var result = await _userService.GetBySubSystemAsync(subSystem);
+        return result.ToActionResult();
+    }
 }

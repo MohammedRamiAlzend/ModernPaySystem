@@ -38,5 +38,11 @@ public interface IUserService
     /// Delete user.
     /// </summary>
     Task<Result<bool>> DeleteAsync(Guid id);
+    
+    /// <summary>
+    /// Get users by subsystem.
+    /// </summary>
+    Task<Result<IEnumerable<UserDto>>> GetBySubSystemAsync(SubSystem subSystem);
+    
     Task<Result<List<SubSystemDto>>> GetSubSystemsAsync();
 }

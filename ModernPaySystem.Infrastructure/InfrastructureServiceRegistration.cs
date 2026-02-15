@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Application.Services;
 using ModernPaySystem.Infrastructure.Auth.Services;
+using ModernPaySystem.Infrastructure.Persistence.Interceptors;
 using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 using ModernPaySystem.Infrastructure.Services;
-using OcrReader;
 using NumberSpelling;
+using OcrReader;
 
 namespace ModernPaySystem.Infrastructure;
 
@@ -54,6 +55,7 @@ public static class InfrastructureServiceRegistration
         // Register Number Spelling Service
         services.AddNumberSpelling();
         services.AddScoped<INumberSpellingWrapperService, NumberSpellingWrapperService>();
+        services.AddTransient<AuditInterceptor>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {

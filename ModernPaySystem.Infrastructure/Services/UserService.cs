@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Commons;
@@ -17,7 +18,9 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         try
         {
             logger.LogInformation("Fetching all users");
-            var users = await unitOfWork.Users.GetAllAsync();
+            var users = await unitOfWork.Users.GetAllAsync(
+                transform: query => query.Include(x => x.SubSystemUser)
+            );
             if (users.IsError)
                 return users.Errors;
 
@@ -43,7 +46,11 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
                 return ApplicationErrors.InvalidInput;
 
-            var pagedUsers = await unitOfWork.Users.GetPagedAsync(page, pageSize);
+            var pagedUsers = await unitOfWork.Users.GetPagedAsync(
+                page, 
+                pageSize,
+                transform: query => query.Include(x => x.SubSystemUser)
+            );
             if (pagedUsers.IsError)
                 return pagedUsers.Errors;
 
@@ -64,7 +71,10 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         try
         {
             logger.LogInformation("Fetching user by id: {UserId}", id);
-            var user = await unitOfWork.Users.GetByIdAsync(id);
+            var user = await unitOfWork.Users.GetAsync(
+                u => u.Id == id,
+                transform: query => query.Include(x => x.SubSystemUser)
+            );
 
             if (user.IsError)
                 return user.Errors;
@@ -89,17 +99,18 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
                 return ApplicationErrors.InvalidInput;
 
             logger.LogInformation("Fetching user by username: {Username}", username);
-            var users = await unitOfWork.Users.GetAllAsync();
-            if (users.IsError)
-            {
-                return users.Errors;
-            }
-            var user = users.Value!.FirstOrDefault(u => u.UserName == username);
+            var user = await unitOfWork.Users.GetAsync(
+                u => u.UserName == username,
+                transform: query => query.Include(x => x.SubSystemUser)
+            );
 
-            if (user == null)
+            if (user.IsError)
+                return user.Errors;
+
+            if (user.Value == null)
                 return ApplicationErrors.OperationFailed;
 
-            return user.ToDto();
+            return user.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -180,6 +191,38 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting user: {UserId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<IEnumerable<UserDto>>> GetBySubSystemAsync(SubSystem subSystem)
+    {
+        try
+        {
+            logger.LogInformation("Fetching users by subsystem: {SubSystem}", subSystem);
+            
+            // Get all SubSystemUser records for the specified subsystem
+            var subSystemUsers = await unitOfWork.SubSystemUsers.GetAllAsync(s => s.SubSystem == subSystem);
+            if (subSystemUsers.IsError)
+                return subSystemUsers.Errors;
+
+            // Extract user IDs from SubSystemUser records
+            var userIds = subSystemUsers.Value!.Select(su => su.UserId).ToList();
+
+            // Get users based on the extracted IDs, including SubSystemUser navigation property
+            var users = await unitOfWork.Users.GetAllAsync(
+                u => userIds.Contains(u.Id),
+                transform: query => query.Include(x => x.SubSystemUser)
+            );
+            if (users.IsError)
+                return users.Errors;
+
+            var userDtos = users.Value!.ConvertAll(u => u.ToDto());
+            return userDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching users by subsystem: {SubSystem}", subSystem);
             return ApplicationErrors.InternalServerError;
         }
     }
