@@ -29,11 +29,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         path: "/form-builder/actioned",
         icon: <LayoutDashboard className="h-5 w-5" />,
         children: [
-            {
-                title: "إدارة النماذج",
-                path: "/settings?tab=templates",
-                icon: <Settings className="h-4 w-4" />,
-            },
+            // {
+            //     title: "إدارة النماذج",
+            //     path: "/settings?tab=templates",
+            //     icon: <Settings className="h-4 w-4" />,
+            // },
             {
                 title: "تقديم طلب",
                 path: "/form-builder/requests/new",
