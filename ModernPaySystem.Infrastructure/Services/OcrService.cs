@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Domain.Commons;
 using OcrReader;
+using System.IO;
 
 namespace ModernPaySystem.Infrastructure.Services;
 

@@ -1,18 +1,18 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { extractText } from '../api/ocr.api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { extractText, getSupportedLanguages } from '../api/ocr.api';
 import { OcrRequest } from './types';
 
 export const useOcr = () => {
     const [ocrResult, setOcrResult] = useState('');
 
+    const { data: languagesData, isLoading: isLoadingLanguages } = useQuery({
+        queryKey: ['ocr-languages'],
+        queryFn: getSupportedLanguages,
+    });
+
     const ocrMutation = useMutation({
         mutationFn: (request: OcrRequest) => extractText(request),
-        onSuccess: (data) => {
-            if (data.success) {
-                setOcrResult((prev) => prev ? `${prev}\n\n${data.extractedText}` : data.extractedText);
-            }
-        },
     });
 
     return {
@@ -21,5 +21,8 @@ export const useOcr = () => {
         error: ocrMutation.error,
         ocrResult,
         setOcrResult,
+        languages: languagesData?.languages || [],
+        defaultLanguage: languagesData?.defaultLanguage,
+        isLoadingLanguages,
     };
 };
