@@ -11,7 +11,6 @@ import { Input } from '@/shared/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Plus, Trash2, Edit2, Loader2, ChevronLeft, ChevronRight, Settings2, List } from 'lucide-react';
-import { DeleteConfirmDialog } from '@/shared/ui/common/delete-confirm-dialog';
 import {
     Dialog,
     DialogContent,
@@ -22,7 +21,7 @@ import {
 } from '@/shared/ui/dialog';
 import { Label } from '@/shared/ui/label';
 import { useAppDispatch } from '@/app/store';
-import { showStatus } from '@/app/store/uiSlice';
+import { showStatus, showConfirm } from '@/app/store/uiSlice';
 
 export const LookUpManagement = () => {
     const dispatch = useAppDispatch();
@@ -33,9 +32,6 @@ export const LookUpManagement = () => {
     const [editingValue, setEditingValue] = useState<{ id: string, desc: string } | null>(null);
     const [fieldName, setFieldName] = useState('');
     const [valueDesc, setValueDesc] = useState('');
-
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [deleteTarget, setDeleteTarget] = useState<{ type: 'field' | 'value', id: string, data?: any } | null>(null);
 
     const { data: fields = [], isLoading: isLoadingFields } = useLookUpFields();
     const { data: values = [], isLoading: isLoadingValues } = useLookUpFieldValues(selectedField?.id || null);
@@ -75,8 +71,17 @@ export const LookUpManagement = () => {
             }));
             return;
         }
-        setDeleteTarget({ type: 'field', id: field.id });
-        setIsDeleteDialogOpen(true);
+
+        dispatch(showConfirm({
+            title: 'حذف الحقل',
+            message: `هل أنت متأكد من حذف الحقل "${field.filedName}"؟ لا يمكن التراجع عن هذا الإجراء.`,
+            variant: 'destructive',
+            confirmLabel: 'حذف',
+            onConfirm: async () => {
+                await deleteField.mutateAsync(field.id);
+                if (selectedField?.id === field.id) setSelectedField(null);
+            }
+        }));
     };
 
     const handleAddValue = () => {
@@ -110,23 +115,18 @@ export const LookUpManagement = () => {
         setIsValueDialogOpen(false);
     };
 
-    const handleDeleteValueClick = (id: string) => {
-        setDeleteTarget({ type: 'value', id });
-        setIsDeleteDialogOpen(true);
+    const handleDeleteValueClick = (id: string, desc: string) => {
+        dispatch(showConfirm({
+            title: 'حذف القيمة',
+            message: `هل أنت متأكد من حذف القيمة "${desc}"؟`,
+            variant: 'destructive',
+            confirmLabel: 'حذف',
+            onConfirm: () => {
+                deleteValue.mutate(id);
+            }
+        }));
     };
 
-    const confirmDelete = async () => {
-        if (!deleteTarget) return;
-
-        if (deleteTarget.type === 'field') {
-            await deleteField.mutateAsync(deleteTarget.id);
-            if (selectedField?.id === deleteTarget.id) setSelectedField(null);
-        } else {
-            await deleteValue.mutateAsync(deleteTarget.id);
-        }
-        setIsDeleteDialogOpen(false);
-        setDeleteTarget(null);
-    };
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6" style={{ direction: 'rtl' }}>
@@ -249,7 +249,7 @@ export const LookUpManagement = () => {
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-                                                                    onClick={() => handleDeleteValueClick(value.id)}
+                                                                    onClick={() => handleDeleteValueClick(value.id, value.desc)}
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
                                                                 </Button>
@@ -341,13 +341,6 @@ export const LookUpManagement = () => {
                 </DialogContent>
             </Dialog>
 
-            <DeleteConfirmDialog
-                open={isDeleteDialogOpen}
-                onOpenChange={setIsDeleteDialogOpen}
-                onConfirm={confirmDelete}
-                title={deleteTarget?.type === 'field' ? 'حذف الحقل' : 'حذف القيمة'}
-                description={`هل أنت متأكد من حذف ${deleteTarget?.type === 'field' ? 'هذا الحقل' : 'هذه القيمة'}؟`}
-            />
         </div>
     );
 };
