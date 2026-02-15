@@ -1,10 +1,18 @@
-﻿namespace ModernPaySystem.Infrastructure.Services;
+using BCrypt.Net;
+
+namespace ModernPaySystem.Infrastructure.Services;
 
 public class PasswordHasher : IPasswordHasher
 {
+    private const int WorkFactor = 12;
+
     public string HashPassword(string password)
     {
-        byte[] hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
+        return BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
+    }
+
+    public bool VerifyPassword(string password, string hash)
+    {
+        return BCrypt.Net.BCrypt.Verify(password, hash);
     }
 }

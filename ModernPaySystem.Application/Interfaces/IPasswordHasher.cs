@@ -1,8 +1,6 @@
-﻿namespace ModernPaySystem.Application.Interfaces;
+namespace ModernPaySystem.Application.Interfaces;
 public interface IPasswordHasher
 {
-    /// <summary>
-    /// Hashes a plain text password.
-    /// </summary>
     string HashPassword(string password);
+    bool VerifyPassword(string password, string hash);
 }

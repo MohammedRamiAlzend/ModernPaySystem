@@ -17,7 +17,6 @@ public static class PersistenceServiceRegistration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Register DbContext
         services.AddDbContext<AppDbContext>((serviceProvider, options) =>
         {
 

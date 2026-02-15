@@ -26,7 +26,7 @@ public class AuthenticationService(IUnitOfWork uow,
 
         var user = userResult.Value;
 
-        if (!VerifyPassword(password, user.HashedPassword))
+        if (!passwordHasher.VerifyPassword(password, user.HashedPassword))
             return ApplicationErrors.InvalidCredentials;
 
         var permissions = user.Roles
@@ -60,11 +60,5 @@ public class AuthenticationService(IUnitOfWork uow,
             return ApplicationErrors.UserNotFound;
 
         return permissions!;
-    }
-
-    public bool VerifyPassword(string password, string hash)
-    {
-        string hashOfInput = passwordHasher.HashPassword(password);
-        return hashOfInput.Equals(hash);
     }
 }

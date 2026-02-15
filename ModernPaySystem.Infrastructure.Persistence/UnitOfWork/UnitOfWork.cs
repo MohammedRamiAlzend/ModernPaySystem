@@ -14,6 +14,7 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly AppDbContext _dbContext;
     private readonly ILogger<UnitOfWork> _logger;
+    private readonly ILoggerFactory _loggerFactory;
     private IDbContextTransaction? _transaction;
 
     // Repositories
@@ -31,49 +32,51 @@ public class UnitOfWork : IUnitOfWork
     private IRepositoryBase<LookUpField, Guid>? _lookUpFields;
     private IRepositoryBase<LookUpFiledValues, Guid>? _lookUpFiledValues;
 
-    public UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger)
+    public UnitOfWork(AppDbContext dbContext, ILogger<UnitOfWork> logger, ILoggerFactory loggerFactory)
     {
         _dbContext = dbContext;
         _logger = logger;
+        _loggerFactory = loggerFactory;
     }
 
     public IRepositoryBase<User, Guid> Users =>
-        _users ??= new RepositoryBase<User, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<User, Guid>>());
+        _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>());
 
     public IRepositoryBase<Role, Guid> Roles =>
-        _roles ??= new RepositoryBase<Role, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<Role, Guid>>());
+        _roles ??= new RepositoryBase<Role, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Role, Guid>>());
 
     public IRepositoryBase<PermissionEntity, Guid> Permissions =>
-        _permissions ??= new RepositoryBase<PermissionEntity, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<PermissionEntity, Guid>>());
+        _permissions ??= new RepositoryBase<PermissionEntity, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<PermissionEntity, Guid>>());
 
     public IRepositoryBase<SubSystemUser, Guid> SubSystemUsers =>
-        _subSystemUsers ??= new RepositoryBase<SubSystemUser, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<SubSystemUser, Guid>>());
+        _subSystemUsers ??= new RepositoryBase<SubSystemUser, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<SubSystemUser, Guid>>());
 
     public IRepositoryBase<Attachment, Guid> Attachments =>
-        _attachments ??= new RepositoryBase<Attachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<Attachment, Guid>>());
+        _attachments ??= new RepositoryBase<Attachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Attachment, Guid>>());
 
     public IRepositoryBase<Template, Guid> Templates =>
-        _templates ??= new RepositoryBase<Template, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<Template, Guid>>());
+        _templates ??= new RepositoryBase<Template, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Template, Guid>>());
 
     public IRepositoryBase<Request, Guid> Requests =>
-        _requests ??= new RepositoryBase<Request, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<Request, Guid>>());
+        _requests ??= new RepositoryBase<Request, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Request, Guid>>());
 
     public IRepositoryBase<Response, Guid> Responses =>
-        _responses ??= new RepositoryBase<Response, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<Response, Guid>>());
+        _responses ??= new RepositoryBase<Response, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Response, Guid>>());
 
     public IRepositoryBase<TemplateOwnership, Guid> TemplateOwnerships =>
-        _templateOwnerships ??= new RepositoryBase<TemplateOwnership, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<TemplateOwnership, Guid>>());
+        _templateOwnerships ??= new RepositoryBase<TemplateOwnership, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<TemplateOwnership, Guid>>());
 
     public IRepositoryBase<ResponseAttachment, Guid> ResponseAttachments =>
-        _responseAttachments ??= new RepositoryBase<ResponseAttachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<ResponseAttachment, Guid>>());
+        _responseAttachments ??= new RepositoryBase<ResponseAttachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ResponseAttachment, Guid>>());
+
     public IRepositoryBase<RequestAttachment, Guid> RequestAttachments =>
-        _requestAttachments ??= new RepositoryBase<RequestAttachment, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<RequestAttachment, Guid>>());
+        _requestAttachments ??= new RepositoryBase<RequestAttachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<RequestAttachment, Guid>>());
 
     public IRepositoryBase<LookUpField, Guid> LookUpFields =>
-        _lookUpFields ??= new RepositoryBase<LookUpField, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<LookUpField, Guid>>());
+        _lookUpFields ??= new RepositoryBase<LookUpField, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<LookUpField, Guid>>());
 
     public IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues =>
-        _lookUpFiledValues ??= new RepositoryBase<LookUpFiledValues, Guid>(_dbContext, new LoggerFactory().CreateLogger<RepositoryBase<LookUpFiledValues, Guid>>());
+        _lookUpFiledValues ??= new RepositoryBase<LookUpFiledValues, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<LookUpFiledValues, Guid>>());
 
     public async Task<int> SaveChangesAsync()
     {
