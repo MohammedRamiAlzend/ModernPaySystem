@@ -349,6 +349,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                         {selectedField ? (
                             <PropertiesPanel
                                 field={selectedField}
+                                allFields={form.fields}
                                 onChange={(updates) => updateField(selectedField.id, updates)}
                             />
                         ) : (

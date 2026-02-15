@@ -3,6 +3,8 @@ import { validateForm } from '@/shared/lib/form-engine/validation';
 import { evaluateLogicRules } from '@/shared/lib/form-engine/logicEngine';
 import type { FieldStates } from '@/shared/lib/form-engine/logicEngine';
 import type { FormSchema } from '@/entities/form/model/types';
+import { utilsService } from '@/shared/api/services/utils-service';
+
 export const useFormRenderer = (schema: FormSchema, onSubmit: (data: Record<string, any>) => void, initialData?: Record<string, any>) => {
     const [formData, setFormData] = useState<Record<string, any>>(() => {
         const initial: Record<string, any> = {};
@@ -39,10 +41,18 @@ export const useFormRenderer = (schema: FormSchema, onSubmit: (data: Record<stri
         fieldStatesRef.current = fieldStates;
     }, [fieldStates]);
 
+    const spellingTimeoutRef = useRef<Record<string, any>>({});
+
     const handleChange = (fieldName: string, value: any) => {
+        // Clear any existing timeout for this field's spelling
+        if (spellingTimeoutRef.current[fieldName]) {
+            clearTimeout(spellingTimeoutRef.current[fieldName]);
+        }
+
         setFormData(prev => {
             const nextData = { ...prev, [fieldName]: value };
 
+            // 1. Handle Logic Rules (Visibility, Enabled, etc.)
             if (schema.logic) {
                 const updatedFieldStates = evaluateLogicRules(
                     schema.logic,
@@ -66,6 +76,30 @@ export const useFormRenderer = (schema: FormSchema, onSubmit: (data: Record<stri
 
             return nextData;
         });
+
+        // 2. Handle Automatic Number Spelling (Debounced)
+        const dependentFields = schema.fields.filter(f => f.numberSpelling?.sourceField === fieldName);
+        if (dependentFields.length > 0) {
+            const numericValue = parseFloat(value);
+            if (!isNaN(numericValue)) {
+                spellingTimeoutRef.current[fieldName] = setTimeout(() => {
+                    utilsService.numberSearchSpelling(numericValue).then(spelling => {
+                        setFormData(current => ({
+                            ...current,
+                            ...Object.fromEntries(dependentFields.map(f => [f.name, spelling]))
+                        }));
+                    });
+                }, 600);
+            } else {
+                setFormData(current => {
+                    const next = { ...current };
+                    dependentFields.forEach(f => {
+                        next[f.name] = '';
+                    });
+                    return next;
+                });
+            }
+        }
 
         if (errors[fieldName]) {
             setErrors(prev => {

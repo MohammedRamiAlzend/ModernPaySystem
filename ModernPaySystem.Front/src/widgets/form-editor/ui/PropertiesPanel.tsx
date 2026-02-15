@@ -6,10 +6,11 @@ import { Button } from '@/shared/ui/button';
 
 interface PropertiesPanelProps {
     field: FormField;
+    allFields: FormField[];
     onChange: (updates: Partial<FormField>) => void;
 }
 
-export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, onChange }) => {
+export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFields, onChange }) => {
     return (
         <div className="space-y-4 p-4 border rounded-md bg-card">
             <h3 className="font-semibold mb-2">خصائص الحقل</h3>
@@ -204,6 +205,40 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, onChang
                     </select>
                 </div>
             </div>
+
+            {/* Advanced: Number Spelling */}
+            {(field.type === 'text' || field.type === 'textarea') && (
+                <div className="space-y-3 border-t pt-4 bg-primary/5 p-3 rounded-xl border border-primary/10">
+                    <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <Label className="font-bold text-primary">تحويل الرقم إلى نص (Tafqeet)</Label>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed">
+                        عند تفعيل هذا الخيار، سيقوم هذا الحقل تلقائياً بكتابة الرقم المحول من الحقل المختار باللغة العربية.
+                    </p>
+                    <select
+                        className="flex h-9 w-full rounded-xl border border-primary/20 bg-background px-3 py-1 text-sm shadow-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all dark:bg-[#1a1a1a]"
+                        value={field.numberSpelling?.sourceField || ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            onChange({
+                                numberSpelling: val ? { sourceField: val } : undefined,
+                                initialEnabled: val ? 'enabled' : field.initialEnabled // Auto-disable if linked
+                            });
+                        }}
+                    >
+                        <option value="">-- غير مفعل --</option>
+                        {allFields
+                            .filter(f => f.id !== field.id && (f.type === 'number' || f.type === 'text'))
+                            .map(f => (
+                                <option key={f.id} value={f.name}>
+                                    {f.label} ({f.name})
+                                </option>
+                            ))
+                        }
+                    </select>
+                </div>
+            )}
         </div>
     );
 };
