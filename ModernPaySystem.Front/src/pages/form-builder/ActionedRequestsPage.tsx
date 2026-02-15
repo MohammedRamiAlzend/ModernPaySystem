@@ -9,8 +9,11 @@ import { useForms } from '@/features/form-builder/model/useForms';
 import { Button } from '@/shared/ui/button';
 import type { TemplateRequest, FormResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
+import { useAppDispatch } from '@/app/store';
+import { showStatus } from '@/app/store/uiSlice';
 
 export default function ActionedRequestsPage() {
+    const dispatch = useAppDispatch();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [viewingResponse, setViewingResponse] = useState<FormResponse | null>(null);
 
@@ -20,7 +23,11 @@ export default function ActionedRequestsPage() {
     const handleViewRequest = (request: TemplateRequest) => {
         const schema = templates.find(t => t.id === request.templateId);
         if (!schema) {
-            alert('النموذج المرتبط بهذا الطلب غير موجود');
+            dispatch(showStatus({
+                type: 'warning',
+                title: 'تنبيه',
+                message: 'النموذج المرتبط بهذا الطلب غير موجود'
+            }));
             return;
         }
 
@@ -36,7 +43,11 @@ export default function ActionedRequestsPage() {
             setViewingResponse(mappedResponse);
             setIsModalOpen(true);
         } catch (e) {
-            alert('خطأ في تحليل بيانات الطلب');
+            dispatch(showStatus({
+                type: 'error',
+                title: 'خطأ في التحليل',
+                message: 'خطأ في تحليل بيانات الطلب'
+            }));
         }
     };
 

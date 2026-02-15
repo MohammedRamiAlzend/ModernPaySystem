@@ -16,15 +16,22 @@ import {
 } from "@/shared/ui/alert-dialog";
 import { ImageMeta, ScannerModal } from "@/features/document-scanner";
 import { Scan } from "lucide-react";
+import { useAppDispatch } from "@/app/store";
+import { showStatus } from "@/app/store/uiSlice";
 
 export function HomePageWidget() {
+    const dispatch = useAppDispatch();
     const [showAlert, setShowAlert] = useState(false);
     const [isOcrOpen, setIsOcrOpen] = useState(false);
     const [imageFiles, setImageFiles] = useState<ImageMeta[]>([]);
 
     const handleConfirm = () => {
         console.log("النتيجة: تم التأكيد (Confirmed)");
-        alert("تم تنفيذ العملية بنجاح!");
+        dispatch(showStatus({
+            type: 'success',
+            title: 'تم تنفيذ العملية',
+            message: 'تم تنفيذ العملية بنجاح!'
+        }));
     };
 
     const handleCancel = () => {
@@ -34,7 +41,11 @@ export function HomePageWidget() {
     const handleApplyOcr = (text: string, files: ImageMeta[]) => {
         console.log("OCR Result:", text);
         console.log("Files:", files);
-        alert(`تم استخراج النص بنجاح وطرد ${files.length} ملفات.\nالنص: ${text.substring(0, 50)}...`);
+        dispatch(showStatus({
+            type: 'success',
+            title: 'نجاح الاستخراج',
+            message: `تم استخراج النص بنجاح من ${files.length} ملفات.`
+        }));
         setIsOcrOpen(false);
     };
 

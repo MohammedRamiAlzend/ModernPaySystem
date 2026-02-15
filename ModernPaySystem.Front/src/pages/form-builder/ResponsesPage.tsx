@@ -7,8 +7,9 @@ import { Textarea } from '@/shared/ui/textarea';
 import { Label } from '@/shared/ui/label';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { Input } from '@/shared/ui/input';
-import { useAppSelector } from '@/app/store';
+import { useAppSelector, useAppDispatch } from '@/app/store';
 import { selectCurrentUser } from '@/app/store/authSlice';
+import { showStatus } from '@/app/store/uiSlice';
 import { MessageSquare, Clock, FileText, ChevronRight, Eye, Reply, Paperclip, X } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
@@ -17,6 +18,7 @@ import type { FormResponse, TemplateRequest } from '@/entities/form/model/types'
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 export const ResponsesPage = () => {
+    const dispatch = useAppDispatch();
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
@@ -31,14 +33,22 @@ export const ResponsesPage = () => {
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
         onSuccess: () => {
-            alert('تم إرسال الرد بنجاح');
+            dispatch(showStatus({
+                type: 'success',
+                title: 'تمت العملية',
+                message: 'تم إرسال الرد بنجاح'
+            }));
             queryClient.invalidateQueries({ queryKey: ['requests'] });
             setComment('');
             setRequestId('');
             setFiles([]);
         },
         onError: () => {
-            alert('فشل إرسال الرد');
+            dispatch(showStatus({
+                type: 'error',
+                title: 'خطأ',
+                message: 'فشل إرسال الرد'
+            }));
         }
     });
 
@@ -69,7 +79,11 @@ export const ResponsesPage = () => {
     const handleViewRequest = (request: TemplateRequest) => {
         const schema = templates.find(t => t.id === request.templateId);
         if (!schema) {
-            alert('النموذج المرتبط بهذا الطلب غير موجود');
+            dispatch(showStatus({
+                type: 'warning',
+                title: 'تنبيه',
+                message: 'النموذج المرتبط بهذا الطلب غير موجود'
+            }));
             return;
         }
 
@@ -85,7 +99,11 @@ export const ResponsesPage = () => {
             setViewingResponse(mappedResponse);
             setIsModalOpen(true);
         } catch (e) {
-            alert('خطأ في تحليل بيانات الطلب');
+            dispatch(showStatus({
+                type: 'error',
+                title: 'خطأ في التحليل',
+                message: 'خطأ في تحليل بيانات الطلب'
+            }));
         }
     };
 

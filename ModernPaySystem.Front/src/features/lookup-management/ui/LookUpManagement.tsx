@@ -21,8 +21,11 @@ import {
     DialogDescription
 } from '@/shared/ui/dialog';
 import { Label } from '@/shared/ui/label';
+import { useAppDispatch } from '@/app/store';
+import { showStatus } from '@/app/store/uiSlice';
 
 export const LookUpManagement = () => {
+    const dispatch = useAppDispatch();
     const [selectedField, setSelectedField] = useState<LookUpField | null>(null);
     const [isFieldDialogOpen, setIsFieldDialogOpen] = useState(false);
     const [isValueDialogOpen, setIsValueDialogOpen] = useState(false);
@@ -65,7 +68,11 @@ export const LookUpManagement = () => {
         // Check if field has values
         const fieldValues = await fetchLookUpFieldValues(field.id);
         if (fieldValues && fieldValues.length > 0) {
-            alert('لا يمكن حذف هذا الحقل لأنه يحتوي على قيم مرتبطة به. يرجى حذف القيم أولاً.');
+            dispatch(showStatus({
+                type: 'warning',
+                title: 'لا يمكن الحذف',
+                message: 'لا يمكن حذف هذا الحقل لأنه يحتوي على قيم مرتبطة به. يرجى حذف القيم أولاً.'
+            }));
             return;
         }
         setDeleteTarget({ type: 'field', id: field.id });
@@ -148,8 +155,8 @@ export const LookUpManagement = () => {
                                     key={field.id}
                                     onClick={() => setSelectedField(field)}
                                     className={`group p-3 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between ${selectedField?.id === field.id
-                                            ? 'border-primary bg-primary/5 shadow-md'
-                                            : 'border-transparent hover:border-primary/30 hover:bg-accent'
+                                        ? 'border-primary bg-primary/5 shadow-md'
+                                        : 'border-transparent hover:border-primary/30 hover:bg-accent'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
