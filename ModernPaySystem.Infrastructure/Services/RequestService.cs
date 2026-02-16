@@ -283,7 +283,6 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (requestId == Guid.Empty || files == null || !files.Any())
                 return ApplicationErrors.InvalidInput;
 
-            // Verify the request exists
             var request = await unitOfWork.Requests.GetByIdAsync(requestId);
             if (request.IsError)
                 return request.Errors;
@@ -293,7 +292,6 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
 
             logger.LogInformation("Adding {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
-            // Process each file and associate it with the request using WebAttachmentService
             foreach (var file in files)
             {
                 if (file.Length > 0)
@@ -306,7 +304,6 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
 
             logger.LogInformation("Successfully added {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
-            // Return the updated request with its attachments
             var updatedRequest = await unitOfWork.Requests.GetByIdAsync(requestId);
             if (updatedRequest.IsError)
                 return updatedRequest.Errors;
@@ -360,26 +357,17 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         {
             logger.LogInformation("Fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
 
-            // Validate parameters
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationErrors.InvalidInput;
 
-            // Get the current user ID from the HTTP context
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
-            // Create an expression builder for Request entities
             var requestBuilder = new ExpressionBuilder<Request>();
 
-            // Add a condition to filter requests where the ApproverId matches the current user ID
-            // This represents requests that were sent TO the current user (they are the approver)
             requestBuilder.And(r => r.ApproverId == currentUserId);
 
-            // Build the expression
             var expression = requestBuilder.Build();
 
-            // Get requests that match the expression with pagination
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression);
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -402,23 +390,17 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         {
             logger.LogInformation("Fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", page, pageSize, hasResponse);
 
-            // Validate parameters
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
-                return ApplicationErrors.InvalidInput;
 
-            // Create an expression builder for Request entities
             var requestBuilder = new ExpressionBuilder<Request>();
 
-            // Add a condition to filter requests based on whether they have a response
             requestBuilder.And(r => r.ResponseId.HasValue == hasResponse);
 
-            // Build the expression
             var expression = requestBuilder.Build();
 
-            // Get requests that match the expression with pagination
-            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression);
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression,
+                i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
 
