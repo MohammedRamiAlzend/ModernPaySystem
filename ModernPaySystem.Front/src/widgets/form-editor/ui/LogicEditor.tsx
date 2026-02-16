@@ -71,7 +71,7 @@ export const LogicEditor: React.FC<LogicEditorProps> = ({ form, onUpdateRule, on
                                     <div className="space-y-2">
                                         <Label>القيمة</Label>
                                         <Input
-                                            value={rule.when.value}
+                                            value={typeof rule.when.value === 'boolean' ? String(rule.when.value) : rule.when.value}
                                             onChange={(e) => onUpdateRule(ruleIdx, { when: { ...rule.when, value: e.target.value } })}
                                             placeholder="القيمة..."
                                         />

@@ -16,6 +16,9 @@ export const ResponsesPage = () => {
         requests,
         isLoading,
         templates,
+        totalPages,
+        page,
+        setPage,
         isPending,
         setComment,
         handleSubmit,
@@ -37,6 +40,9 @@ export const ResponsesPage = () => {
                     selectedRequestId={requestId}
                     onSelectRequest={handleSelectRequest}
                     onViewRequest={handleViewRequest}
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
                 />
 
                 <ResponseForm

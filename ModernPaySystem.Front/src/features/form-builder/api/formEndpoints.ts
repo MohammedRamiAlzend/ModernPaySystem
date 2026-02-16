@@ -8,7 +8,8 @@ import type {
     CreateRequestDto,
     CreateResponseDto,
     TemplateRequest,
-    TemplateResponse
+    TemplateResponse,
+    PagedResult
 } from '@/entities/form/model/types';
 
 // --- API Service ---
@@ -59,8 +60,8 @@ export const formEndpoints = {
         return response.data;
     },
 
-    getRequestsByActionStatus: async (hasResponse: boolean): Promise<{ data: TemplateRequest[] }> => {
-        const response = await api.get(`/Requests/GetAllRequestsNeedAction/${hasResponse}`);
+    getRequestsByActionStatus: async (hasResponse: boolean, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.get(`/Requests/GetPagedRequestsNeedAction/${hasResponse}?page=${page}&pageSize=${pageSize}`);
         return response.data;
     },
 
@@ -134,11 +135,11 @@ export const formEndpoints = {
 
 // --- Hooks ---
 
-export const useRequests = (hasResponse: boolean = false) => {
+export const useRequests = (hasResponse: boolean = false, page: number = 1, pageSize: number = 15) => {
     return useQuery({
-        queryKey: ['requests', hasResponse],
+        queryKey: ['requests', hasResponse, page, pageSize],
         queryFn: async () => {
-            const res = await formEndpoints.getRequestsByActionStatus(hasResponse);
+            const res = await formEndpoints.getRequestsByActionStatus(hasResponse, page, pageSize);
             return res.data;
         },
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
