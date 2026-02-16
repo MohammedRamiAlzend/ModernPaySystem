@@ -75,4 +75,9 @@ public interface IRequestService
     /// Get paged requests received by the current user (where the current user is the approver).
     /// </summary>
     Task<Result<PagedList<RequestDto>>> GetReceivedRequestsPagedAsync(int page, int pageSize);
+
+    /// <summary>
+    /// Get paged requests with hasResponse filter.
+    /// </summary>
+    Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize, bool hasResponse);
 }

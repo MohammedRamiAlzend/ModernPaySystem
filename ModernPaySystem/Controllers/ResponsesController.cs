@@ -110,4 +110,16 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         var result = await responseService.AddFilesToResponseAsync(responseId, files);
         return result.ToActionResult();
     }
+
+    /// <summary>
+    /// Get paged responses.
+    /// </summary>
+    [HttpGet("paged")]
+    [EndpointPermission("responses.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting paged responses, page: {Page}, size: {PageSize}", page, pageSize);
+        var result = await responseService.GetPagedAsync(page, pageSize);
+        return result.ToActionResult();
+    }
 }

@@ -1,6 +1,7 @@
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using Microsoft.AspNetCore.Http;
 using ExpressionBuilderLib.src.Core;
+using System.Linq.Expressions;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -19,19 +20,11 @@ public class ResponseService(
         {
             logger.LogInformation("Fetching responses for current user");
 
-            var currentUserId = httpContextServiceManager.GetCurrentUserId();
-
-            var responseBuilder = new ExpressionBuilder<Response>();
-
-            responseBuilder.And(r => r.RespondedByUserId == currentUserId);
-
-            var expression = responseBuilder.Build();
-
-            var responses = await unitOfWork.Responses.FindAsync(expression);
+            var responses = await unitOfWork.Responses.FindAsync(UserFilter());
             if (responses.IsError)
                 return responses.Errors;
 
-            var responseDtos = responses.Value!.Select(r => r.ToDto()).ToList();
+            var responseDtos = responses.Value!.ConvertAll(r => r.ToDto());
 
             if (!responseDtos.Any())
                 return new List<ResponseDto>();
@@ -44,7 +37,13 @@ public class ResponseService(
             return ApplicationErrors.InternalServerError;
         }
     }
-
+    public Expression<Func<Response, bool>> UserFilter()
+    {
+        var currentUserId = httpContextServiceManager.GetCurrentUserId();
+        var responseBuilder = new ExpressionBuilder<Response>();
+        responseBuilder.And(r => r.RespondedByUserId == currentUserId);
+        return responseBuilder.Build();
+    }
     public async Task<Result<PagedList<ResponseDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
@@ -56,15 +55,7 @@ public class ResponseService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var currentUserId = httpContextServiceManager.GetCurrentUserId();
-
-            var responseBuilder = new ExpressionBuilder<Response>();
-
-            responseBuilder.And(r => r.RespondedByUserId == currentUserId);
-
-            var expression = responseBuilder.Build();
-
-            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(page, pageSize, expression);
+            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(page, pageSize, UserFilter());
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
 

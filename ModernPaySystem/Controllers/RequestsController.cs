@@ -121,4 +121,28 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         var result = await requestService.DeleteAsync(id);
         return result.ToActionResult();
     }
+
+    /// <summary>
+    /// Get paged requests.
+    /// </summary>
+    [HttpGet("paged")]
+    [EndpointPermission("requests.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting paged requests, page: {Page}, size: {PageSize}", page, pageSize);
+        var result = await requestService.GetPagedAsync(page, pageSize);
+        return result.ToActionResult();
+    }
+
+    /// <summary>
+    /// Get paged requests need action.
+    /// </summary>
+    [HttpGet("GetPagedRequestsNeedAction/{hasResponse}")]
+    [EndpointPermission("requests.get-paged-need-action", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetPagedRequestsNeedAction(bool hasResponse, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting paged requests need action, hasResponse: {HasResponse}, page: {Page}, size: {PageSize}", hasResponse, page, pageSize);
+        var result = await requestService.GetPagedAsync(page, pageSize, hasResponse);
+        return result.ToActionResult();
+    }
 }

@@ -395,4 +395,42 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             return ApplicationErrors.InternalServerError;
         }
     }
+
+    public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize, bool hasResponse)
+    {
+        try
+        {
+            logger.LogInformation("Fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", page, pageSize, hasResponse);
+
+            // Validate parameters
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+                return ApplicationErrors.InvalidInput;
+
+            // Create an expression builder for Request entities
+            var requestBuilder = new ExpressionBuilder<Request>();
+
+            // Add a condition to filter requests based on whether they have a response
+            requestBuilder.And(r => r.ResponseId.HasValue == hasResponse);
+
+            // Build the expression
+            var expression = requestBuilder.Build();
+
+            // Get requests that match the expression with pagination
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression);
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
+
+            return pagedRequestDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", page, pageSize, hasResponse);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
 }
