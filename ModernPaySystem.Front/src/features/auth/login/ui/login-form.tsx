@@ -2,6 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import axios from 'axios';
 import { useLogin } from '../model/use-login';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -35,8 +36,9 @@ export const LoginForm: React.FC = () => {
         login(data);
     };
 
-    const errorMessage = (error as any)?.response?.data?.message ||
-        'فشل تسجيل الدخول. يرجى التأكد من البيانات والمحاولة مرة أخرى.';
+    const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.message || 'فشل تسجيل الدخول. يرجى التأكد من البيانات والمحاولة مرة أخرى.'
+        : 'فشل تسجيل الدخول. يرجى التأكد من البيانات والمحاولة مرة أخرى.';
 
     return (
         <AnimatedContainer className="w-full">

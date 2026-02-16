@@ -5,6 +5,7 @@ import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
+import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
 import { useActionedRequestsLogic } from '@/features/form-builder/model/useActionedRequestsLogic';
 
 export const ActionedRequestsPage = () => {
@@ -71,45 +72,12 @@ export const ActionedRequestsPage = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="space-y-1.5 max-w-xs">
-                                                {(() => {
-                                                    try {
-                                                        const data = JSON.parse(request.content);
-                                                        const schema = templates.find(t => t.id === request.templateId);
-                                                        const fields = schema?.fields || [];
-
-                                                        // Get first 3 fields that have values
-                                                        const displayFields = fields
-                                                            .filter(field => data[field.name] !== undefined && data[field.name] !== null && data[field.name] !== '')
-                                                            .slice(0, 3);
-
-                                                        if (displayFields.length === 0) {
-                                                            return (
-                                                                <div className="text-xs text-muted-foreground italic">
-                                                                    لا توجد بيانات
-                                                                </div>
-                                                            );
-                                                        }
-
-                                                        return displayFields.map((field, idx) => (
-                                                            <div key={idx} className="flex items-start gap-2 text-xs">
-                                                                <span className="font-semibold text-muted-foreground whitespace-nowrap">
-                                                                    {field.label}:
-                                                                </span>
-                                                                <span className="text-foreground font-medium truncate">
-                                                                    {String(data[field.name])}
-                                                                </span>
-                                                            </div>
-                                                        ));
-                                                    } catch (e) {
-                                                        return (
-                                                            <div className="text-xs text-muted-foreground italic">
-                                                                خطأ في البيانات
-                                                            </div>
-                                                        );
-                                                    }
-                                                })()}
-                                            </div>
+                                            <RequestFieldsPreview
+                                                content={request.content}
+                                                fields={templates.find(t => t.id === request.templateId)?.fields || []}
+                                                variant="inline"
+                                                className="space-y-1.5 max-w-xs"
+                                            />
                                         </td>
                                         <td className="px-6 py-4">
                                             <UserDisplay
