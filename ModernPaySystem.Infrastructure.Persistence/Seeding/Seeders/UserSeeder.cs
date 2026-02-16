@@ -1,5 +1,6 @@
 using Bogus;
 using Microsoft.EntityFrameworkCore;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
@@ -10,6 +11,13 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 /// </summary>
 public class UserSeeder : EntitySeederBase<User>
 {
+    private readonly IPasswordHasher _passwordHasher;
+
+    public UserSeeder(IPasswordHasher passwordHasher)
+    {
+        _passwordHasher = passwordHasher;
+    }
+
     public override int Order => 3;
 
     public override async Task SeedAsync(AppDbContext context, SeedingConfiguration configuration)
@@ -37,7 +45,7 @@ public class UserSeeder : EntitySeederBase<User>
         var faker = new Faker<User>()
             .RuleFor(u => u.Id, f => Guid.NewGuid())
             .RuleFor(u => u.UserName, f => f.Internet.UserName())
-            .RuleFor(u => u.HashedPassword, f => HashPassword("123456"));
+            .RuleFor(u => u.HashedPassword, f => _passwordHasher.HashPassword("123456"));
 
         return faker.Generate(count);
     }
@@ -64,16 +72,6 @@ public class UserSeeder : EntitySeederBase<User>
         }
 
         await context.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// Simple password hashing (use same as in AuthenticationService).
-    /// </summary>
-    private string HashPassword(string password)
-    {
-        using var sha256 = System.Security.Cryptography.SHA256.Create();
-        byte[] hashedBytes = sha256.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
     }
 
     /// <summary>
