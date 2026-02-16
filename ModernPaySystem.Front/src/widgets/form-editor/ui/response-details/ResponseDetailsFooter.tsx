@@ -30,29 +30,29 @@ export const ResponseDetailsFooter: React.FC<ResponseDetailsFooterProps> = ({
     hasZipImages
 }) => {
     return (
-        <div className="flex flex-col gap-3 w-full">
-            <div className="flex gap-3 w-full">
+        <div className="flex flex-col gap-2 w-full">
+            <div className="flex gap-2 w-full">
                 <Button
                     onClick={onDownloadPDF}
                     disabled={isGeneratingPDF}
-                    className="flex-1 h-12 rounded-xl shadow-lg shadow-primary/20 gap-2 font-bold"
+                    className="flex-1 h-10 rounded-xl shadow-md gap-2 font-bold text-sm"
                 >
                     {isGeneratingPDF ? (
                         <>
-                            <Loader2 className="w-5 h-5 animate-spin" /> جاري التحميل...
+                            <Loader2 className="w-4 h-4 animate-spin" /> جاري التحميل...
                         </>
                     ) : (
                         <>
-                            <Download className="w-5 h-5" /> تحميل PDF
+                            <Download className="w-4 h-4" /> تحميل PDF
                         </>
                     )}
                 </Button>
                 <Button
                     onClick={onPrint}
                     variant="outline"
-                    className="flex-1 h-12 rounded-xl font-bold gap-2"
+                    className="flex-1 h-10 rounded-xl font-bold gap-2 text-sm"
                 >
-                    <Printer className="w-5 h-5" /> طباعة
+                    <Printer className="w-4 h-4" /> طباعة
                 </Button>
             </div>
 
@@ -62,15 +62,15 @@ export const ResponseDetailsFooter: React.FC<ResponseDetailsFooterProps> = ({
                         onClick={onDownloadAttachments}
                         disabled={isDownloadingAttachments}
                         variant="secondary"
-                        className="w-full h-12 rounded-xl font-bold gap-2"
+                        className="w-full h-10 rounded-xl font-bold gap-2 text-sm"
                     >
                         {isDownloadingAttachments ? (
                             <>
-                                <Loader2 className="w-5 h-5 animate-spin" /> جاري التحميل...
+                                <Loader2 className="w-4 h-4 animate-spin" /> جاري التحميل...
                             </>
                         ) : (
                             <>
-                                <FileArchive className="w-5 h-5" /> تحميل كافة المرفقات ({attachmentsCount})
+                                <FileArchive className="w-4 h-4" /> تحميل كافة المرفقات ({attachmentsCount})
                             </>
                         )}
                     </Button>
@@ -80,15 +80,15 @@ export const ResponseDetailsFooter: React.FC<ResponseDetailsFooterProps> = ({
                             onClick={onDownloadImagesPDF}
                             disabled={isGeneratingImagesPDF}
                             variant="outline"
-                            className="w-full h-12 rounded-xl font-bold gap-2 border-primary/20 text-primary hover:bg-primary/5"
+                            className="w-full h-10 rounded-xl font-bold gap-2 border-primary/20 text-primary hover:bg-primary/5 text-sm"
                         >
                             {isGeneratingImagesPDF ? (
                                 <>
-                                    <Loader2 className="w-5 h-5 animate-spin" /> جاري إنشاء PDF...
+                                    <Loader2 className="w-4 h-4 animate-spin" /> جاري إنشاء PDF...
                                 </>
                             ) : (
                                 <>
-                                    <FileDown className="w-5 h-5" /> دمج الصور في ملف PDF واحد
+                                    <FileDown className="w-4 h-4" /> دمج الصور في ملف PDF واحد
                                 </>
                             )}
                         </Button>
@@ -96,7 +96,7 @@ export const ResponseDetailsFooter: React.FC<ResponseDetailsFooterProps> = ({
                 </div>
             )}
 
-            <Button variant="ghost" onClick={onClose} className="h-12 rounded-xl font-bold gap-2 px-6">
+            <Button variant="ghost" onClick={onClose} className="h-9 rounded-xl font-bold gap-2 px-6 text-xs text-muted-foreground">
                 إغلاق
             </Button>
         </div>
