@@ -4,6 +4,7 @@ import { Clock, FileText, Eye, ChevronRight, Paperclip, MessageSquare } from 'lu
 import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from './RequestFieldsPreview';
+import { Pagination } from '@/shared/ui/common/pagination';
 import type { FormSchema, TemplateRequest } from '@/entities/form/model/types';
 
 interface IncomingRequestsListProps {
@@ -13,6 +14,9 @@ interface IncomingRequestsListProps {
     selectedRequestId: string;
     onSelectRequest: (id: string) => void;
     onViewRequest: (request: TemplateRequest) => void;
+    page: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
 }
 
 export const IncomingRequestsList = ({
@@ -21,14 +25,25 @@ export const IncomingRequestsList = ({
     templates,
     selectedRequestId,
     onSelectRequest,
-    onViewRequest
+    onViewRequest,
+    page,
+    totalPages,
+    onPageChange
 }: IncomingRequestsListProps) => {
     return (
         <Card className="lg:col-span-2 p-6 overflow-hidden flex flex-col h-[700px]">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-primary">
-                <Clock className="w-5 h-5" />
-                الطلبات الواردة
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2 text-primary">
+                    <Clock className="w-5 h-5" />
+                    الطلبات الواردة
+                </h2>
+                <Pagination
+                    currentPage={page}
+                    totalPages={totalPages}
+                    onPageChange={onPageChange}
+                    className="gap-1"
+                />
+            </div>
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                 {isLoading ? (
@@ -117,6 +132,16 @@ export const IncomingRequestsList = ({
                     </div>
                 )}
             </div>
+
+            {totalPages > 1 && (
+                <div className="mt-4 pt-4 border-t">
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        onPageChange={onPageChange}
+                    />
+                </div>
+            )}
         </Card>
     );
 };

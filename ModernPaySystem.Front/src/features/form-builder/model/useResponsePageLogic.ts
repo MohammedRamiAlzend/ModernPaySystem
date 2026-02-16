@@ -15,7 +15,9 @@ export const useResponsePageLogic = () => {
     const [files, setFiles] = useState<File[]>([]);
 
     const currentUser = useAppSelector(selectCurrentUser);
-    const { data: requests = [], isLoading } = useRequests();
+    const [page, setPage] = useState(1);
+    const { data: pagedRequests, isLoading } = useRequests(false, page, 15);
+    const requests = pagedRequests?.items || [];
     const { data: templates = [] } = useForms();
 
     const responseMutation = useMutation({
@@ -77,6 +79,10 @@ export const useResponsePageLogic = () => {
         requests,
         isLoading,
         templates,
+        totalItems: pagedRequests?.totalItems || 0,
+        totalPages: pagedRequests?.totalPages || 0,
+        page,
+        setPage,
         isPending: responseMutation.isPending,
         setComment,
         handleSubmit,

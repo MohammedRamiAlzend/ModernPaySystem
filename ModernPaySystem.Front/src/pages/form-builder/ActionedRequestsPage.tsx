@@ -7,12 +7,17 @@ import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
 import { useActionedRequestsLogic } from '@/features/form-builder/model/useActionedRequestsLogic';
+import { Pagination } from '@/shared/ui/common/pagination';
 
 export const ActionedRequestsPage = () => {
     const {
         requests,
         isLoading,
         templates,
+        totalItems,
+        totalPages,
+        page,
+        setPage,
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
@@ -29,16 +34,22 @@ export const ActionedRequestsPage = () => {
                         <History className="w-5 h-5" />
                         الطلبات المؤرشفة
                     </h2>
-                    <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
-                        {requests.length} طلب مكتمل
-                    </span>
+                    <div className="flex items-center gap-4">
+                        <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
+                            {totalItems} طلب مكتمل
+                        </span>
+                        <Pagination
+                            currentPage={page}
+                            totalPages={totalPages}
+                            onPageChange={setPage}
+                        />
+                    </div>
                 </div>
 
-                <div className="overflow-x-auto custom-scrollbar">
+                <div className="overflow-x-auto flex-1 custom-scrollbar">
                     <table className="w-full text-right border-collapse" dir="rtl">
-                        <thead className="bg-muted/30">
+                        <thead className="bg-muted/30 sticky top-0 z-10 backdrop-blur-md">
                             <tr>
-                                {/* <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">رقم الطلب</th> */}
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم النموذج (Form)</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">البيانات المقدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم (Requester)</th>
@@ -58,9 +69,6 @@ export const ActionedRequestsPage = () => {
                             ) : requests.length > 0 ? (
                                 requests.map((request) => (
                                     <tr key={request.id} className="hover:bg-muted/20 transition-colors group">
-                                        {/* <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
-                                            {request.id.split('-')[0].toUpperCase()}
-                                        </td> */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
@@ -88,7 +96,7 @@ export const ActionedRequestsPage = () => {
                                             />
                                         </td>
                                         <td className="px-6 py-4 text-xs text-muted-foreground">
-                                            {new Date(request.createdAt || '').toLocaleDateString('ar-EG') || request.createdAt}
+                                            {request.createdAt ? new Date(request.createdAt).toLocaleDateString('ar-EG') : '---'}
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <Button
@@ -115,6 +123,14 @@ export const ActionedRequestsPage = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="mt-6 pt-6 border-t">
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        onPageChange={setPage}
+                    />
                 </div>
             </Card>
 
