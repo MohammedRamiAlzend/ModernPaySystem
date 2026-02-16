@@ -212,11 +212,25 @@ export const ResponsesPage = () => {
                                     </div>
 
 
-                                    <div className="mt-3 flex items-center gap-4 text-[10px] text-muted-foreground">
-                                        {request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0 && (
-                                            <span className="flex items-center gap-1">
-                                                <Paperclip className="w-3 h-3" />
-                                                {request.requestAttachmentDtos.length} ملفات مرفقة مع الطلب
+                                    <div className="mt-3 flex items-center justify-between gap-4 text-[10px] text-muted-foreground">
+                                        <div className="flex items-center gap-4">
+                                            {request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0 && (
+                                                <span className="flex items-center gap-1">
+                                                    <Paperclip className="w-3 h-3" />
+                                                    {request.requestAttachmentDtos.length} ملفات مرفقة
+                                                </span>
+                                            )}
+                                        </div>
+                                        {request.createdAt && (
+                                            <span className="flex items-center gap-1 bg-muted/40 px-2 py-0.5 rounded-full">
+                                                <Clock className="w-2.5 h-2.5" />
+                                                {new Date(request.createdAt).toLocaleString('ar-EG', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit'
+                                                })}
                                             </span>
                                         )}
                                     </div>
