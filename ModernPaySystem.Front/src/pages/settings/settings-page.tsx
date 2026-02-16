@@ -1,17 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Switch } from '@/shared/ui/switch';
-import { Label } from '@/shared/ui/label';
-import { useTheme } from '@/app/providers/theme-provider';
-import { LookUpManagement } from '@/features/lookup-management/ui/LookUpManagement';
-import { TemplatesList } from '@/features/form-builder/ui/TemplatesList';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { Palette } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { SETTINGS_CONFIG } from './config/settings-config';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export const SettingsPage = () => {
-  const { theme, setTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
-  const activeTab = searchParams.get('tab') || 'lookup';
+  const activeTab = searchParams.get('tab') || SETTINGS_CONFIG[0].id;
 
   const handleTabChange = (value: string) => {
     setSearchParams({ tab: value });
@@ -24,57 +19,31 @@ export const SettingsPage = () => {
         <p className="text-muted-foreground">قم بتخصيص خيارات النظام والحقول المساعدة</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue="lookup" className="space-y-6">
-        <TabsList className="bg-muted/50 p-1 rounded-2xl h-12 inline-flex items-center gap-1">
-          <TabsTrigger value="lookup" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-            إدارة الحقول (LookUp)
-          </TabsTrigger>
-          <TabsTrigger value="templates" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-            نماذج الطلبات
-          </TabsTrigger>
-          <TabsTrigger value="appearance" className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm">
-            المظهر والتفضيلات
-          </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={handleTabChange} defaultValue={SETTINGS_CONFIG[0].id} className="space-y-6">
+        <TabsList className="bg-muted/50 p-1 rounded-2xl h-12 inline-flex items-center gap-1 overflow-x-auto overflow-y-hidden no-scrollbar max-w-full">
+          {SETTINGS_CONFIG.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="rounded-xl px-6 data-[state=active]:bg-background data-[state=active]:shadow-sm whitespace-nowrap"
+              onMouseEnter={() => tab.preload?.()}
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="lookup" className="mt-0">
-          <LookUpManagement />
-        </TabsContent>
-
-        <TabsContent value="templates" className="mt-0">
-          <TemplatesList />
-        </TabsContent>
-
-        <TabsContent value="appearance" className="mt-0">
-          <Card className="max-w-3xl border-none shadow-lg bg-card/50 backdrop-blur-sm">
-            <CardHeader>
-              <div className="flex items-center gap-2 mb-1">
-                <Palette className="w-5 h-5 text-primary" />
-                <CardTitle>المظهر</CardTitle>
+        {SETTINGS_CONFIG.map((tab) => (
+          <TabsContent key={tab.id} value={tab.id} className="mt-0">
+            <Suspense fallback={
+              <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
               </div>
-              <CardDescription>تحكم في كيفية ظهور التطبيق لك</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between p-4 bg-muted/20 rounded-2xl">
-                <div className="space-y-1">
-                  <Label className="text-base font-bold">الوضع الليلي</Label>
-                  <p className="text-sm text-muted-foreground">
-                    تفعيل المظهر الداكن للتطبيق لراحة العين
-                  </p>
-                </div>
-                <Switch
-                  checked={theme === 'dark'}
-                  onCheckedChange={(checked: boolean) => setTheme(checked ? 'dark' : 'light')}
-                />
-              </div>
-
-              {/* <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button className="rounded-xl px-10 h-11 font-bold">حفظ التغييرات</Button>
-                <Button variant="outline" className="rounded-xl px-10 h-11 border-none bg-muted hover:bg-muted/80">إعادة تعيين</Button>
-              </div> */}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            }>
+              {tab.component}
+            </Suspense>
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
