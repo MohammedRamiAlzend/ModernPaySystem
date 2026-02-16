@@ -15,7 +15,7 @@ const evaluateCondition = (condition: LogicRule['when'], formData: Record<string
             // eslint-disable-next-line eqeqeq
             return fieldValue != value;
         case 'contains':
-            return fieldValue && typeof fieldValue === 'string' && fieldValue.includes(value);
+            return fieldValue && typeof fieldValue === 'string' && fieldValue.includes(String(value));
         case 'greaterThan':
             return num(fieldValue) > num(value);
         case 'lessThan':
@@ -25,9 +25,9 @@ const evaluateCondition = (condition: LogicRule['when'], formData: Record<string
         case 'lessThanOrEqual':
             return num(fieldValue) <= num(value);
         case 'startsWith':
-            return fieldValue && typeof fieldValue === 'string' && fieldValue.startsWith(value);
+            return fieldValue && typeof fieldValue === 'string' && fieldValue.startsWith(String(value));
         case 'endsWith':
-            return fieldValue && typeof fieldValue === 'string' && fieldValue.endsWith(value);
+            return fieldValue && typeof fieldValue === 'string' && fieldValue.endsWith(String(value));
         default:
             return false;
     }
@@ -53,13 +53,13 @@ export const evaluateLogicRules = (
 
     allFields.forEach(field => {
         // Use initialVisibility/initialEnabled if set, otherwise fall back to hidden/disabled
-        const isInitiallyVisible = field.initialVisibility === 'hidden' ? false : 
-                                   field.initialVisibility === 'visible' ? true :
-                                   field.hidden !== true;
+        const isInitiallyVisible = field.initialVisibility === 'hidden' ? false :
+            field.initialVisibility === 'visible' ? true :
+                field.hidden !== true;
         const isInitiallyEnabled = field.initialEnabled === 'disabled' ? false :
-                                    field.initialEnabled === 'enabled' ? true :
-                                    field.disabled !== true;
-        
+            field.initialEnabled === 'enabled' ? true :
+                field.disabled !== true;
+
         newFieldStates[field.name] = {
             visible: isInitiallyVisible,
             enabled: isInitiallyEnabled,

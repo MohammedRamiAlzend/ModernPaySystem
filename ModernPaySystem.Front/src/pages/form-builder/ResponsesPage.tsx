@@ -16,7 +16,6 @@ export const ResponsesPage = () => {
         requests,
         isLoading,
         templates,
-        totalItems,
         totalPages,
         page,
         setPage,
