@@ -16,7 +16,7 @@ export interface LogicRule {
     when: {
         field: string;
         operator: 'equals' | 'notEquals' | 'contains' | 'greaterThan' | 'lessThan' | 'greaterThanOrEqual' | 'lessThanOrEqual' | 'startsWith' | 'endsWith';
-        value: any;
+        value: string | number | boolean;
     };
     actions: LogicAction[];
 }
@@ -43,7 +43,7 @@ export interface FormField {
     type: FieldType;
     label: string;
     placeholder?: string;
-    defaultValue?: any;
+    defaultValue?: string | number | boolean | string[];
     validation?: ValidationRule[];
     dataSource?: DataSource;
     hidden?: boolean;
@@ -99,16 +99,42 @@ export interface CreateRequestDto {
     files?: File[]; // For multi-part file upload
 }
 
+/** Represents a file attachment from the API */
+export interface AttachmentDto {
+    id: string;
+    fileName: string;
+    contentType: string | null;
+    fileSize: number | null;
+    filePath: string | null;
+    createdAt: string | null;
+}
+
+/** Represents the join entity between a request and its attachments */
+export interface RequestAttachmentDto {
+    id: string;
+    requestId: string;
+    attachmentId: string;
+    attachmentDto: AttachmentDto | null;
+}
+
+/** Lightweight user reference as returned in nested API responses */
+export interface UserReference {
+    id: string;
+    userName: string;
+    subSystemUserId: string | null;
+    subSystem: number | null;
+}
+
 export interface TemplateRequest {
     id: string;
     templateId: string;
     requesterId: string;
     approverId: string;
     content: string;
-    requestAttachmentDtos?: any[];
+    requestAttachmentDtos?: RequestAttachmentDto[];
     template?: Template | null;
-    requester?: any | null;
-    approver?: any | null;
+    requester?: UserReference | null;
+    approver?: UserReference | null;
     createdAt?: string | null;
 }
 
@@ -117,6 +143,14 @@ export interface CreateResponseDto {
     requestId: string;
     respondedByUserId: string;
     files?: File[];
+}
+
+/** Represents the join entity between a response and its attachments */
+export interface ResponseAttachmentDto {
+    id: string;
+    responseId: string;
+    attachmentId: string;
+    attachmentDto: AttachmentDto | null;
 }
 
 export interface TemplateResponse {
@@ -128,13 +162,8 @@ export interface TemplateResponse {
     createdAt: string | null;
     updatedByUserId: string | null;
     updatedAt: string | null;
-    request: any | null;
-    responseAttachments: {
-        id: string;
-        responseId: string;
-        attachmentId: string;
-        attachmentDto: any | null;
-    }[];
+    request: TemplateRequest | null;
+    responseAttachments: ResponseAttachmentDto[];
     attachmentCount: number;
 }
 
@@ -142,8 +171,8 @@ export interface FormResponse {
     id: string;
     formId: string;
     submittedAt: string;
-    data: Record<string, any>;
+    data: Record<string, string | number | boolean | string[] | null>;
     /** The complete form schema at the time of submission */
     schema: FormSchema;
-    attachments?: any[];
+    attachments?: RequestAttachmentDto[];
 }

@@ -52,7 +52,7 @@ export const ResponseForm = ({
                         <Textarea
                             placeholder="اكتب تعليقك هنا..."
                             value={comment}
-                            onChange={(e: any) => onCommentChange(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onCommentChange(e.target.value)}
                             rows={5}
                             className="resize-none rounded-xl"
                         />

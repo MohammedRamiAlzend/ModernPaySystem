@@ -21,7 +21,7 @@ export const formEndpoints = {
         return response.data;
     },
 
-    updateTemplate: async (id: string, data: CreateTemplateDto): Promise<any> => {
+    updateTemplate: async (id: string, data: CreateTemplateDto): Promise<{ data: Template }> => {
         const response = await api.put(`/Templates/${id}`, data);
         return response.data;
     },
@@ -33,7 +33,7 @@ export const formEndpoints = {
     },
 
     // Requests
-    createRequest: async (data: CreateRequestDto): Promise<any> => {
+    createRequest: async (data: CreateRequestDto): Promise<{ data: TemplateRequest }> => {
         const formData = new FormData();
         formData.append('TemplateId', data.TemplateId);
         formData.append('RequesterId', data.RequesterId);
@@ -71,7 +71,7 @@ export const formEndpoints = {
         return response.data;
     },
 
-    createResponse: async (data: CreateResponseDto): Promise<any> => {
+    createResponse: async (data: CreateResponseDto): Promise<{ data: TemplateResponse }> => {
         const formData = new FormData();
         if (data.comment) formData.append('comment', data.comment);
         formData.append('requestId', data.requestId);
@@ -148,16 +148,16 @@ export const useRequests = (hasResponse: boolean = false) => {
 export const useTemplates = () => {
     return useQuery({
         queryKey: ['templates'],
-        queryFn: async () => {
+        queryFn: async (): Promise<Template[]> => {
             const res = await formEndpoints.getTemplates();
-            // Handle if data is array or single object or { data: [] }
-            let data: any = res;
-            if (res && 'data' in res && Array.isArray((res as any).data)) {
-                data = (res as any).data;
+            // Handle if data is wrapped in { data: [] }
+            if (res && !Array.isArray(res) && 'data' in res && Array.isArray(res.data)) {
+                return res.data;
             }
 
-            if (Array.isArray(data)) return data as Template[];
-            return [data] as Template[];
+            if (Array.isArray(res)) return res;
+            // Shouldn't normally reach here, but handle gracefully
+            return [];
         },
         ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
     });
@@ -203,12 +203,10 @@ export const useRequestResponses = (requestId: string | null) => {
         queryKey: ['responses', requestId],
         queryFn: async () => {
             if (!requestId) return [];
-            // Handle API wrapping
             const res = await formEndpoints.getResponsesByRequestId(requestId);
-            // Some API calls return { data: [...] }, some return array directly. 
-            // The type says { data: TemplateResponse[] }, so let's check.
-            if ('data' in res && Array.isArray((res as any).data)) {
-                return (res as any).data as TemplateResponse[];
+            // Handle API wrapping: { data: [...] } vs direct array
+            if ('data' in res && Array.isArray(res.data)) {
+                return res.data;
             }
             if (Array.isArray(res)) return res as TemplateResponse[];
             return [] as TemplateResponse[];

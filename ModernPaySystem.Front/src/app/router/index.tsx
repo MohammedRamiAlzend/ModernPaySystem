@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { createBrowserRouter, type RouteObject, Outlet, matchRoutes, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
+import { ErrorBoundary } from '@/shared/ui/common/error-boundary';
 import { NotFoundPage } from '@/pages/not-found-page';
 import { ErrorPage } from '@/pages/error-page';
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
@@ -58,7 +59,7 @@ const routesConfig: RouteObject[] = [
       },
       {
         path: 'contracts',
-        element: <Outlet />,
+        element: <ErrorBoundary context="عقود الإيجار"><Outlet /></ErrorBoundary>,
         children: [
           {
             index: true,
@@ -104,9 +105,11 @@ const routesConfig: RouteObject[] = [
       {
         path: 'processes',
         element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <ProcessFormPage />
-          </Suspense>
+          <ErrorBoundary context="معاملات سريعة">
+            <Suspense fallback={<LoadingSpinner />}>
+              <ProcessFormPage />
+            </Suspense>
+          </ErrorBoundary>
         ),
         handle: {
           crumb: () => 'العمليات',
@@ -142,7 +145,7 @@ const routesConfig: RouteObject[] = [
       },
       {
         path: 'form-builder',
-        element: <Outlet />,
+        element: <ErrorBoundary context="نظام المراسلات"><Outlet /></ErrorBoundary>,
         handle: {
           crumb: () => 'بناء النماذج',
           permission: RoutePermissions.AUTHENTICATED,
@@ -272,11 +275,17 @@ const routesConfig: RouteObject[] = [
   },
 ];
 
+interface RouteHandle {
+  crumb?: () => string;
+  permission?: RoutePermissions;
+  preload?: () => void;
+}
+
 export const prefetchRoute = (path: string) => {
   const matches = matchRoutes(routesConfig, path);
   if (matches) {
     matches.forEach((match) => {
-      const handle = match.route.handle as any;
+      const handle = match.route.handle as RouteHandle | undefined;
       if (handle?.preload) {
         handle.preload();
       }
