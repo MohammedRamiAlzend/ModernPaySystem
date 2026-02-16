@@ -1,55 +1,22 @@
-import { useState } from 'react';
-import { useRequests } from '@/features/form-builder/api/formEndpoints';
 import { Card } from '@/shared/ui/card';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { FileText, Eye, History } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
-import { useForms } from '@/features/form-builder/model/useForms';
 import { Button } from '@/shared/ui/button';
-import type { TemplateRequest, FormResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
-import { useAppDispatch } from '@/app/store';
-import { showStatus } from '@/app/store/uiSlice';
+import { useActionedRequestsLogic } from '@/features/form-builder/model/useActionedRequestsLogic';
 
-export default function ActionedRequestsPage() {
-    const dispatch = useAppDispatch();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [viewingResponse, setViewingResponse] = useState<FormResponse | null>(null);
-
-    const { data: requests = [], isLoading } = useRequests(true); // Fetch responded requests
-    const { data: templates = [] } = useForms();
-
-    const handleViewRequest = (request: TemplateRequest) => {
-        const schema = templates.find(t => t.id === request.templateId);
-        if (!schema) {
-            dispatch(showStatus({
-                type: 'warning',
-                title: 'تنبيه',
-                message: 'النموذج المرتبط بهذا الطلب غير موجود'
-            }));
-            return;
-        }
-
-        try {
-            const mappedResponse: FormResponse = {
-                id: request.id,
-                formId: request.templateId,
-                submittedAt: request.createdAt || new Date().toISOString(),
-                data: JSON.parse(request.content),
-                schema: schema,
-                attachments: request.requestAttachmentDtos
-            };
-            setViewingResponse(mappedResponse);
-            setIsModalOpen(true);
-        } catch (e) {
-            dispatch(showStatus({
-                type: 'error',
-                title: 'خطأ في التحليل',
-                message: 'خطأ في تحليل بيانات الطلب'
-            }));
-        }
-    };
+export const ActionedRequestsPage = () => {
+    const {
+        requests,
+        isLoading,
+        templates,
+        isModalOpen,
+        setIsModalOpen,
+        viewingResponse,
+        handleViewRequest
+    } = useActionedRequestsLogic();
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
@@ -70,7 +37,7 @@ export default function ActionedRequestsPage() {
                     <table className="w-full text-right border-collapse" dir="rtl">
                         <thead className="bg-muted/30">
                             <tr>
-                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">رقم الطلب</th>
+                                {/* <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">رقم الطلب</th> */}
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم النموذج (Form)</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">البيانات المقدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم (Requester)</th>
@@ -90,9 +57,9 @@ export default function ActionedRequestsPage() {
                             ) : requests.length > 0 ? (
                                 requests.map((request) => (
                                     <tr key={request.id} className="hover:bg-muted/20 transition-colors group">
-                                        <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
+                                        {/* <td className="px-6 py-4 text-xs font-mono text-muted-foreground">
                                             {request.id.split('-')[0].toUpperCase()}
-                                        </td>
+                                        </td> */}
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
@@ -194,3 +161,5 @@ export default function ActionedRequestsPage() {
         </AnimatedContainer>
     );
 };
+
+export default ActionedRequestsPage;
