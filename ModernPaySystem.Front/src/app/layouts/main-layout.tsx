@@ -1,12 +1,14 @@
-import { Outlet, useNavigate, useLocation } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
+// import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { ModeToggle } from "@/shared/ui/common/mode-toggle"
-import { Settings, Bell, Menu, Home } from "lucide-react"
+import { Settings, Bell, Menu } from "lucide-react"
+// import { Settings, Bell, Menu, Home } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Sidebar } from "@/widgets/sidebar/ui/sidebar"
-import { NAVIGATION_ITEMS } from "@/shared/config/navigation"
+// import { NAVIGATION_ITEMS } from "@/shared/config/navigation"
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet"
 import { useState } from "react"
-import { PrefetchNavLink } from "@/shared/navigation/prefetch-nav-link"
+// import { PrefetchNavLink } from "@/shared/navigation/prefetch-nav-link"
 import { useAppSelector } from "@/app/store"
 import { selectCurrentUser } from "@/app/store/authSlice"
 
@@ -18,7 +20,7 @@ export function MainLayout({ children }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const currentUser = useAppSelector(selectCurrentUser);
     const navigate = useNavigate();
-    const location = useLocation();
+    // const location = useLocation();
 
     return (
         <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -94,7 +96,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 </main>
 
                 {/* Mobile Tab Bar Nav */}
-                <nav className="md:hidden fixed bottom-6 left-6 right-6 h-16 border bg-background/80 backdrop-blur-xl rounded-2xl flex justify-around items-center z-40 shadow-2xl border-white/10 px-2">
+                {/* <nav className="md:hidden fixed bottom-6 left-6 right-6 h-16 border bg-background/80 backdrop-blur-xl rounded-2xl flex justify-around items-center z-40 shadow-2xl border-white/10 px-2">
                     {(() => {
                         const activeParent = NAVIGATION_ITEMS.find(item =>
                             item.children?.some(child => location.pathname.startsWith(child.path)) ||
@@ -145,7 +147,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                             </PrefetchNavLink>
                         ));
                     })()}
-                </nav>
+                </nav> */}
             </div>
         </div>
     )

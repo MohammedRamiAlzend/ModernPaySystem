@@ -41,7 +41,8 @@ export const IncomingRequestsList = ({
                     currentPage={page}
                     totalPages={totalPages}
                     onPageChange={onPageChange}
-                    className="gap-1"
+                    className="mt-4 hidden md:flex gap-1"
+
                 />
             </div>
 

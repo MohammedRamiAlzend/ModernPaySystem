@@ -42,6 +42,7 @@ export const ActionedRequestsPage = () => {
                             currentPage={page}
                             totalPages={totalPages}
                             onPageChange={setPage}
+                            className="mt-4 hidden md:flex"
                         />
                     </div>
                 </div>

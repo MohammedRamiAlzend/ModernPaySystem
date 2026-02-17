@@ -12,7 +12,9 @@ import {
 import { useAppDispatch } from '@/app/store';
 import { logout } from '@/app/store/authSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useTemplates } from '@/features/form-builder/api/formEndpoints';
+import { FileText } from 'lucide-react';
 
 interface SidebarProps {
     className?: string;
@@ -27,14 +29,58 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
+    // Fetch Templates
+    const { data: templates } = useTemplates();
+
+    // Dynamically build navigation items
+    const navItems = useMemo(() => {
+        return NAVIGATION_ITEMS.map(item => {
+            // Target the specific section "منصة خدمات ريف دمشق"
+            // Identifying by title or path. Path "/form-builder/actioned" seems to be reused, but let's check title or unique properties.
+            // The item has path "/form-builder/actioned".
+            if (item.title === "منصة خدمات ريف دمشق") {
+                const templateChildren = templates?.map(t => ({
+                    title: t.templateName,
+                    path: `/form-builder/requests/new?templateId=${t.id}`,
+                    icon: <FileText className="h-3 w-3" />,
+                })) || [];
+
+                const templatesSection = {
+                    title: "أنواع النماذج",
+                    path: "templates-section", // Virtual path for toggling
+                    icon: <FileText className="h-4 w-4" />,
+                    children: templateChildren
+                };
+
+                return {
+                    ...item,
+                    children: [templatesSection, ...(item.children || [])]
+                };
+            }
+            return item;
+        });
+    }, [templates]);
+
     // Auto-expand parent if child is active
     useEffect(() => {
-        NAVIGATION_ITEMS.forEach(item => {
-            if (item.children?.some(child => location.pathname.startsWith(child.path))) {
+        navItems.forEach(item => {
+            if (item.children?.some(child => {
+                // Check direct children
+                if (location.pathname.startsWith(child.path)) return true;
+                // Check grandchildren
+                return child.children?.some(grandChild => location.pathname + location.search === grandChild.path || location.pathname.startsWith(grandChild.path.split('?')[0]));
+            })) {
                 setExpandedItems(prev => ({ ...prev, [item.path]: true }));
             }
+
+            // Also expand the "Templates" section if a template is active
+            item.children?.forEach(child => {
+                if (child.children?.some(grandChild => location.search.includes(grandChild.path.split('?')[1] || 'impossible'))) {
+                    setExpandedItems(prev => ({ ...prev, [child.path]: true }));
+                }
+            });
         });
-    }, [location.pathname]);
+    }, [location.pathname, location.search, navItems]);
 
     const toggleExpand = (path: string, e: React.MouseEvent) => {
         e.preventDefault();
@@ -88,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
 
             {/* Navigation Items */}
             <div className="flex-1 overflow-y-auto py-6 px-3 space-y-2">
-                {NAVIGATION_ITEMS.map((item) => {
+                {navItems.map((item) => {
                     const isExpanded = expandedItems[item.path];
                     const hasChildren = item.children && item.children.length > 0;
 
@@ -141,22 +187,77 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                             {/* Render Children */}
                             {!isCollapsed && hasChildren && isExpanded && (
                                 <div className="mr-8 space-y-1 border-r pr-2 border-border/50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    {item.children!.map((child) => (
-                                        <PrefetchNavLink
-                                            key={child.path}
-                                            to={child.path}
-                                            onClick={onItemClick}
-                                            className={({ isActive }) => cn(
-                                                "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-sm",
-                                                isActive
-                                                    ? "bg-primary text-primary-foreground font-medium"
-                                                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                                            )}
-                                        >
-                                            <div className="opacity-70">{child.icon}</div>
-                                            <span className='font-bold'>{child.title} </span>
-                                        </PrefetchNavLink>
-                                    ))}
+                                    {item.children!.map((child) => {
+                                        const hasGrandChildren = child.children && child.children.length > 0;
+                                        const isChildExpanded = expandedItems[child.path];
+
+                                        if (hasGrandChildren) {
+                                            return (
+                                                <div key={child.path} className="space-y-1">
+                                                    <button
+                                                        onClick={(e) => toggleExpand(child.path, e)}
+                                                        className={cn(
+                                                            "w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-sm",
+                                                            "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                        )}
+                                                    >
+                                                        <div className="opacity-70">{child.icon}</div>
+                                                        <span className='font-bold flex-1 text-right'>{child.title}</span>
+                                                        <div className={cn(
+                                                            "transition-transform duration-200",
+                                                            isChildExpanded ? "-rotate-90" : "rotate-0"
+                                                        )}>
+                                                            <ChevronLeft className="h-3 w-3 opacity-50" />
+                                                        </div>
+                                                    </button>
+
+                                                    {isChildExpanded && (
+                                                        <div className="mr-6 space-y-1 border-r pr-2 border-border/50 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                            {child.children!.map(grandChild => (
+                                                                <PrefetchNavLink
+                                                                    key={grandChild.path}
+                                                                    to={grandChild.path}
+                                                                    onClick={onItemClick}
+                                                                    className={() => {
+                                                                        const isCurrent = (location.pathname + location.search) === grandChild.path;
+                                                                        return cn(
+                                                                            "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-xs",
+                                                                            isCurrent
+                                                                                ? "bg-primary/10 text-primary font-bold shadow-sm"
+                                                                                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <div className="opacity-70">{grandChild.icon}</div>
+                                                                    <span className='truncate'>{grandChild.title}</span>
+                                                                </PrefetchNavLink>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        }
+
+                                        return (
+                                            <PrefetchNavLink
+                                                key={child.path}
+                                                to={child.path}
+                                                onClick={onItemClick}
+                                                className={() => {
+                                                    const isStrictlyActive = (location.pathname + location.search) === child.path;
+                                                    return cn(
+                                                        "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 text-sm",
+                                                        isStrictlyActive
+                                                            ? "bg-primary text-primary-foreground font-medium shadow-md shadow-primary/20"
+                                                            : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                    );
+                                                }}
+                                            >
+                                                <div className="opacity-70">{child.icon}</div>
+                                                <span className='font-bold'>{child.title} </span>
+                                            </PrefetchNavLink>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>

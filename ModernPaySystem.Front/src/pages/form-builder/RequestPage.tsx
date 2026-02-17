@@ -1,9 +1,10 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
 import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { Card } from '@/shared/ui/card';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/ui/select';
+// import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/shared/ui/select';
 import { Label } from '@/shared/ui/label';
 import { useMutation } from '@tanstack/react-query';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
@@ -16,8 +17,30 @@ import { Button } from '@/shared/ui/button';
 
 export const RequestPage = () => {
     const dispatch = useAppDispatch(); // Added dispatch hook
+    const [searchParams, setSearchParams] = useSearchParams();
     const { data: templates = [] } = useForms();
-    const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+
+    // Initialize from URL or empty
+    const paramTemplateId = searchParams.get('templateId') || '';
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string>(paramTemplateId);
+
+    // Sync URL when local state changes
+    useEffect(() => {
+        if (selectedTemplateId) {
+            setSearchParams(prev => {
+                prev.set('templateId', selectedTemplateId);
+                return prev;
+            });
+        }
+    }, [selectedTemplateId, setSearchParams]);
+
+    // Also update local state if URL changes externally (e.g. navigation)
+    useEffect(() => {
+        if (paramTemplateId && paramTemplateId !== selectedTemplateId) {
+            setSelectedTemplateId(paramTemplateId);
+        }
+    }, [paramTemplateId]);
+
     const [files, setFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const currentUser = useAppSelector(selectCurrentUser);
@@ -75,10 +98,11 @@ export const RequestPage = () => {
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold mb-6">تقديم طلب جديد</h1>
+            {/* <h1 className="text-3xl font-bold mb-6"> {selectedTemplate?.title}</h1> */}
 
             {/* Top Bar: Template Selection & File Upload */}
             <Card className="p-4 flex flex-col md:flex-row items-center gap-4 bg-background/50 backdrop-blur-sm sticky top-4 z-10 shadow-md border-primary/10">
-                <div className="flex-1 w-full md:w-auto">
+                {/* <div className="flex-1 w-full md:w-auto">
                     <Label className="mb-2 block text-xs font-bold text-muted-foreground">اختر النموذج</Label>
                     <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
                         <SelectTrigger className="h-10">
@@ -90,7 +114,7 @@ export const RequestPage = () => {
                             ))}
                         </SelectContent>
                     </Select>
-                </div>
+                </div> */}
 
                 {selectedTemplate && (
                     <div className="flex-1 w-full md:w-auto flex items-end gap-2">

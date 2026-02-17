@@ -1,5 +1,6 @@
 
-import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Send, Archive } from "lucide-react";
+import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive } from "lucide-react";
+// import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Send, Archive } from "lucide-react";
 
 export interface NavigationItem {
     title: string;
@@ -25,7 +26,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         icon: <ClipboardList className="h-5 w-5" />,
     },
     {
-        title: "نظام المراسلات",
+        title: "منصة خدمات ريف دمشق",
         path: "/form-builder/actioned",
         icon: <LayoutDashboard className="h-5 w-5" />,
         children: [
@@ -34,11 +35,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             //     path: "/settings?tab=templates",
             //     icon: <Settings className="h-4 w-4" />,
             // },
-            {
-                title: "تقديم طلب",
-                path: "/form-builder/requests/new",
-                icon: <Send className="h-4 w-4" />,
-            },
+            // {
+            //     title: "تقديم طلب",
+            //     path: "/form-builder/requests/new",
+            //     icon: <Send className="h-4 w-4" />,
+            // },
             {
                 title: "الرد على الطلبات",
                 path: "/form-builder/responses",
