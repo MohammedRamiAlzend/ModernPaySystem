@@ -149,6 +149,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
             onClose={onClose}
             title={schema.title}
             maxWidth="2xl"
+            maxHeight='4xl'
             footer={
                 <ResponseDetailsFooter
                     onClose={onClose}
