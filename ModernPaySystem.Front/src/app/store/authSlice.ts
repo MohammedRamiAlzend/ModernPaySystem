@@ -5,6 +5,7 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 export interface User {
   id: string;
   username: string;
+  subsystem: string;
   permissions: string[];
   roles: string[];
 }
@@ -73,5 +74,6 @@ export const selectIsAuthenticated = (state: RootState): boolean => state.auth.i
 export const selectAuthToken = (state: RootState): string | null => state.auth.token;
 export const selectUserPermissions = (state: RootState): string[] => state.auth.user?.permissions || [];
 export const selectUserRoles = (state: RootState): string[] => state.auth.user?.roles || [];
+export const selectUserSubsystem = (state: RootState): string => state.auth.user?.subsystem || '';
 
 export default authSlice.reducer;

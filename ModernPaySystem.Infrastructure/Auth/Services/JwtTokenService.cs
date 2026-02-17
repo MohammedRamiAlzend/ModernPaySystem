@@ -5,6 +5,7 @@ global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.Extensions.Configuration;
 global using ModernPaySystem.Domain.Entities.SharedEntities;
 global using ModernPaySystem.Application.Services;
+global using System.Linq;
 
 namespace ModernPaySystem.Infrastructure.Auth.Services;
 
@@ -25,14 +26,21 @@ public class JwtTokenService : ITokenService
 
         var signingCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
 
+        // Defensive null checks to avoid NullReferenceException when parts of `user` are missing.
         var claims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.UserName),
-            new(ClaimTypes.System, user.SubSystemUser.SubSystem.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user != null ? user.Id.ToString() : string.Empty)
         };
 
-        foreach (string? permission in permissions.Where(x => x != null))
+        if (!string.IsNullOrEmpty(user?.UserName))
+            claims.Add(new Claim(ClaimTypes.Name, user.UserName));
+
+        // Only add subsystem claim when SubSystemUser and SubSystem are present.
+        if (user?.SubSystemUser?.SubSystem != null)
+            claims.Add(new Claim(ClaimTypes.System, user.SubSystemUser.SubSystem.ToString()));
+
+        // Guard against a null permissions list and skip null/empty permission entries.
+        foreach (string permission in (permissions ?? Enumerable.Empty<string>()).Where(x => !string.IsNullOrEmpty(x)))
         {
             claims.Add(new Claim("permission", permission));
         }

@@ -23,6 +23,7 @@ export const useLogin = () => {
             const user: User = {
                 id: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
                 username: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+                subsystem: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/system"] || '',
                 permissions: decoded.permission || [],
                 roles: roles,
             };
