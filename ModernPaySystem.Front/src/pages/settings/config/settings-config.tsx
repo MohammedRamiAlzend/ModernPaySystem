@@ -18,7 +18,7 @@ export interface SettingsTab {
 export const SETTINGS_CONFIG: SettingsTab[] = [
     {
         id: 'lookup',
-        label: 'إدارة الحقول (LookUp)',
+        label: 'إدارة الحقول العامة',
         description: 'إدارة المسميات الرئيسية للنظام والحقول المساعدة',
         component: <LookUpManagement />,
         preload: () => LookUpManagement.preload()
