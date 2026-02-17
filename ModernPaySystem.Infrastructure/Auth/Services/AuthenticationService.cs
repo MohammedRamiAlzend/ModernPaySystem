@@ -19,7 +19,8 @@ public class AuthenticationService(IUnitOfWork uow,
         var userResult = await uow.Users.GetAsync(
             x => x.UserName == username,
             i => i.Include(u => u.Roles)
-                  .ThenInclude(rp => rp.Permissions));
+                  .ThenInclude(rp => rp.Permissions)
+                  .Include(x => x.SubSystemUser));
 
         if (userResult.IsError)
             return ApplicationErrors.InvalidCredentials;

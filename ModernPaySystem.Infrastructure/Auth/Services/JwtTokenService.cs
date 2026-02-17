@@ -28,10 +28,10 @@ public class JwtTokenService : ITokenService
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.UserName)
+            new(ClaimTypes.Name, user.UserName),
+            new(ClaimTypes.System, user.SubSystemUser.SubSystem.ToString()),
         };
 
-        // Add permissions as claims
         foreach (string? permission in permissions.Where(x => x != null))
         {
             claims.Add(new Claim("permission", permission));
