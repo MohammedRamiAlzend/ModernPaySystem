@@ -29,11 +29,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select';
-import { useAppDispatch } from '@/app/store';
+import { useAppDispatch, useAppSelector } from '@/app/store';
 import { showStatus, showConfirm } from '@/app/store/uiSlice';
+import { selectUserSubsystem } from '@/app/store/authSlice';
 
 export const UserManagement = () => {
     const dispatch = useAppDispatch();
+    const currentUserSubsystem = useAppSelector(selectUserSubsystem);
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>('all');
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -51,7 +53,8 @@ export const UserManagement = () => {
         setEditingUser(null);
         setUserName('');
         setPassword('');
-        setUserSubSystem('0');
+        // إذا كان المستخدم الحالي لديه نظام فرعي محدد، يتم تعيينه تلقائياً وإجباري
+        setUserSubSystem(currentUserSubsystem || '0');
         setIsUserDialogOpen(true);
     };
 
@@ -74,20 +77,26 @@ export const UserManagement = () => {
             return;
         }
 
+        const targetSubSystemValue = subSystems.find(ss =>
+            ss.value.toString() == userSubSystem.toString() || ss.name.toString() == userSubSystem.toString()
+        )?.value || "0";
+        // console.log(subSystems, targetSubSystemValue);
         try {
             if (editingUser) {
                 await updateUser.mutateAsync({
                     id: editingUser.id,
                     userName,
                     password: password.trim() || undefined,
-                    subSystem: parseInt(userSubSystem)
+                    // subSystem: parseInt(userSubSystem)
+                    subSystem: parseInt(targetSubSystemValue)
                 });
                 dispatch(showStatus({ type: 'success', title: 'نجاح', message: 'تم تحديث المستخدم بنجاح' }));
             } else {
                 await createUser.mutateAsync({
                     userName,
                     password,
-                    subSystem: parseInt(userSubSystem)
+                    // subSystem: parseInt(userSubSystem)
+                    subSystem: parseInt(targetSubSystemValue)
                 });
                 dispatch(showStatus({ type: 'success', title: 'نجاح', message: 'تم إضافة المستخدم بنجاح' }));
             }
@@ -272,20 +281,24 @@ export const UserManagement = () => {
                                 className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary"
                             />
                         </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="subSystem">النظام الفرعي</Label>
-                            <Select value={userSubSystem} onValueChange={setUserSubSystem}>
-                                <SelectTrigger className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary">
-                                    <SelectValue placeholder="اختر النظام" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {subSystems.map(ss => (
-                                        <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {!currentUserSubsystem &&
+                            <div className="space-y-2">
+                                <Label htmlFor="subSystem">النظام الفرعي</Label>
+                                <Select value={userSubSystem} onValueChange={setUserSubSystem}>
+                                    <SelectTrigger
+                                        disabled={!!currentUserSubsystem}
+                                        className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary disabled:opacity-80 disabled:bg-muted"
+                                    >
+                                        <SelectValue placeholder="اختر النظام" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {subSystems.map(ss => (
+                                            <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        }
                     </div>
 
                     <DialogFooter className="gap-2 sm:gap-0 mt-2">
