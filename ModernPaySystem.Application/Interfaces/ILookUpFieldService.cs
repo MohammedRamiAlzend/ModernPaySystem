@@ -1,6 +1,3 @@
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-
 namespace ModernPaySystem.Application.Interfaces;
 
 /// <summary>

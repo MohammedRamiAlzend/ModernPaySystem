@@ -1,9 +1,5 @@
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for Number Spelling operations
-/// Provides conversion of numbers to Arabic words
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -18,9 +14,6 @@ public class NumberSpellingController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Convert a decimal number to Arabic words
-    /// </summary>
     [HttpPost("convert-decimal-to-arabic")]
     [EndpointPermission("numberspelling.convert-decimal", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> ConvertDecimalToArabic([FromBody] decimal number)
@@ -30,9 +23,6 @@ public class NumberSpellingController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Convert an integer number to Arabic words
-    /// </summary>
     [HttpPost("convert-int-to-arabic")]
     [EndpointPermission("numberspelling.convert-int", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> ConvertIntToArabic([FromBody] int number)
@@ -42,9 +32,6 @@ public class NumberSpellingController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Convert a long number to Arabic words
-    /// </summary>
     [HttpPost("convert-long-to-arabic")]
     [EndpointPermission("numberspelling.convert-long", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> ConvertLongToArabic([FromBody] long number)

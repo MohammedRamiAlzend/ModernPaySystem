@@ -5,38 +5,12 @@ using System.Linq.Expressions;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
-/// <summary>
-/// Implementation of Response service CRUD operations.
-/// </summary>
 public class ResponseService(
     IUnitOfWork unitOfWork,
     IWebAttachmentService webAttachmentService,
     IHttpContextServiceManager httpContextServiceManager,
     ILogger<ResponseService> logger) : IResponseService
 {
-    public async Task<Result<IEnumerable<ResponseDto>>> GetAllAsync()
-    {
-        try
-        {
-            logger.LogInformation("Fetching responses for current user");
-
-            var responses = await unitOfWork.Responses.FindAsync(UserFilter());
-            if (responses.IsError)
-                return responses.Errors;
-
-            var responseDtos = responses.Value!.ConvertAll(r => r.ToDto());
-
-            if (!responseDtos.Any())
-                return new List<ResponseDto>();
-
-            return responseDtos;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching responses for current user");
-            return ApplicationErrors.InternalServerError;
-        }
-    }
     public Expression<Func<Response, bool>> UserFilter()
     {
         var currentUserId = httpContextServiceManager.GetCurrentUserId();

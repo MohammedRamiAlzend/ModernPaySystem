@@ -16,6 +16,7 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public Guid? ResponseId { get; set; }
     public Response? Response { get; set; }
+    public bool Responsed { get; set; } = false;
     public required string ContentAsJson { get; set; }
 
     // Navigation property for attachments
@@ -70,16 +71,7 @@ public class RequestDto
 public class CreateRequestDto
 {
     public Guid TemplateId { get; set; }
-    public Guid RequesterId { get; set; }
     public Guid ApproverId { get; set; }
     public required string Content { get; set; }
     public List<IFormFile>? Files { get; set; } = [];
-}
-
-public class UpdateRequestDto
-{
-    public Guid TemplateId { get; set; }
-    public Guid RequesterId { get; set; }
-    public Guid ApproverId { get; set; }
-    public required string Content { get; set; }
 }

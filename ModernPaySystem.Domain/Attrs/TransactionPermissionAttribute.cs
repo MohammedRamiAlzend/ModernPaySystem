@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ModernPaySystem.Domain.Attrs;
+﻿namespace ModernPaySystem.Domain.Attrs;
 
 public class TransactionPermissionAttribute(
     string key,

@@ -1,9 +1,5 @@
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for OCR operations
-/// Provides text extraction from images and PDFs
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -18,9 +14,6 @@ public class OcrController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Extract text from an image file
-    /// </summary>
     [HttpPost("extract-text-from-image")]
     [EndpointPermission("ocr.extract-text-from-image", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> ExtractTextFromImage([FromForm] IFormFile imageFile, [FromQuery] string language = "eng")
@@ -30,7 +23,6 @@ public class OcrController : ControllerBase
             return BadRequest("No image file provided");
         }
 
-        // Validate file type
         var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".tif" };
         var fileExtension = Path.GetExtension(imageFile.FileName).ToLower();
 
@@ -41,17 +33,14 @@ public class OcrController : ControllerBase
 
         try
         {
-            // Save the uploaded file temporarily
             var tempFilePath = Path.GetTempFileName() + fileExtension;
             using (var stream = new FileStream(tempFilePath, FileMode.Create))
             {
                 await imageFile.CopyToAsync(stream);
             }
 
-            // Extract text using OCR
             var result = await _ocrService.ExtractTextFromImageAsync(tempFilePath, language);
             
-            // Clean up temporary file
             if (System.IO.File.Exists(tempFilePath))
             {
                 System.IO.File.Delete(tempFilePath);
@@ -87,9 +76,6 @@ public class OcrController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Extract text from a PDF file
-    /// </summary>
     [HttpPost("extract-text-from-pdf")]
     [EndpointPermission("ocr.extract-text-from-pdf", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> ExtractTextFromPdf([FromForm] IFormFile pdfFile, [FromQuery] string language = "eng")
@@ -99,7 +85,6 @@ public class OcrController : ControllerBase
             return BadRequest("No PDF file provided");
         }
 
-        // Validate file type
         var fileExtension = Path.GetExtension(pdfFile.FileName).ToLower();
         if (fileExtension != ".pdf")
         {
@@ -108,17 +93,14 @@ public class OcrController : ControllerBase
 
         try
         {
-            // Save the uploaded file temporarily
             var tempFilePath = Path.GetTempFileName() + ".pdf";
             using (var stream = new FileStream(tempFilePath, FileMode.Create))
             {
                 await pdfFile.CopyToAsync(stream);
             }
 
-            // Extract text using OCR
             var result = await _ocrService.ExtractTextFromPdfAsync(tempFilePath, language);
 
-            // Clean up temporary file
             if (System.IO.File.Exists(tempFilePath))
             {
                 System.IO.File.Delete(tempFilePath);
@@ -154,9 +136,6 @@ public class OcrController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Get supported languages for OCR
-    /// </summary>
     [HttpGet("supported-languages")]
     [EndpointPermission("ocr.supported-languages", SubSystem.TransactionSystem, PermissionType.Read)]
     public IActionResult GetSupportedLanguages()
@@ -186,7 +165,6 @@ public class OcrController : ControllerBase
     }
 }
 
-// Response DTOs for OpenAPI compatibility
 public class OcrResponse
 {
     public bool Success { get; set; }

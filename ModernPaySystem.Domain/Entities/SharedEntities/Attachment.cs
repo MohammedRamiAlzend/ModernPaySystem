@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Text;
-using ModernPaySystem.Domain.Entities.Abstraction;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+﻿using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 

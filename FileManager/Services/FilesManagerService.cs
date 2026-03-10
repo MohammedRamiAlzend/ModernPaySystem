@@ -1,5 +1,4 @@
 ﻿using FileManager.Abstractions;
-using FileManager.Models;
 using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
 using ModernPaySystem.Domain.Commons;
@@ -10,9 +9,9 @@ namespace FileManager.Services;
 /// Backward compatible file manager service that wraps the enhanced file manager
 /// for use with web applications
 /// </summary>
-public class FilesManagerService : IFilesManagerService
+public class FilesManagerService(IFileManager? fileManager = null) : IFilesManagerService
 {
-    private readonly IFileManager _fileManager;
+    private readonly IFileManager _fileManager = fileManager ?? new Core.EnhancedFileManager();
     private readonly string[] _defaultAllowedExtensions = {
         ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
         ".txt", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
@@ -22,11 +21,6 @@ public class FilesManagerService : IFilesManagerService
     public string UploadsDirectory => Path.Combine("Diwan", "Uploads");
 
     public string RootDirectory => _fileManager.RootDirectory;
-
-    public FilesManagerService(IFileManager? fileManager = null)
-    {
-        _fileManager = fileManager ?? new Core.EnhancedFileManager();
-    }
 
     public async Task<Result<FileMetadata>> SaveFileAsync(IFormFile file, string? subDirectory = null, string? customFileName = null)
     {
@@ -56,7 +50,7 @@ public class FilesManagerService : IFilesManagerService
                 await file.CopyToAsync(stream);
                 var fileContent = stream.ToArray();
                 var result = await _fileManager.WriteFileAsync(fullFilePath, fileContent);
-                
+
                 if (!result.Success)
                 {
                     return ApplicationErrors.FileOperationFailed(result.ErrorMessage ?? "Unknown error");

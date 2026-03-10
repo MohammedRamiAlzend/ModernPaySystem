@@ -2,18 +2,11 @@ using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for Response management
-/// Provides CRUD operations and response-specific queries.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class ResponsesController(IResponseService responseService, ILogger<ResponsesController> logger) : ControllerBase
 {
-    /// <summary>
-    /// Get all responses.
-    /// </summary>
     [HttpGet]
     [EndpointPermission("responses.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
@@ -23,9 +16,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get response by id.
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("responses.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -35,9 +25,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get responses by request id.
-    /// </summary>
     [HttpGet("by-request/{requestId}")]
     [EndpointPermission("responses.get-by-request-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByRequestId(Guid requestId)
@@ -47,9 +34,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get responses by responder id.
-    /// </summary>
     [HttpGet("by-responder/{responderId}")]
     [EndpointPermission("responses.get-by-responder-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByResponderId(Guid responderId)
@@ -59,9 +43,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Create new response.
-    /// </summary>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [EndpointPermission("responses.create", SubSystem.TransactionSystem, PermissionType.Insert)]
@@ -73,9 +54,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Update response.
-    /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("responses.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateResponseDto response)
@@ -85,9 +63,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Delete response.
-    /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("responses.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
@@ -97,9 +72,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Add files to a response.
-    /// </summary>
     [HttpPost("AddFilesToResponse")]
     [Consumes("multipart/form-data")]
     [EndpointPermission("responses.add-Files", SubSystem.TransactionSystem, PermissionType.Insert)]
@@ -111,9 +83,6 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get paged responses.
-    /// </summary>
     [HttpGet("paged")]
     [EndpointPermission("responses.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)

@@ -6,10 +6,6 @@ using ModernPaySystem.Infrastructure.Extensions;
 
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for Template management
-/// Provides CRUD operations for templates.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -24,9 +20,6 @@ public class TemplatesController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all templates.
-    /// </summary>
     [HttpGet]
     [EndpointPermission("templates.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
@@ -36,9 +29,6 @@ public class TemplatesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get template by id.
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("templates.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -48,9 +38,6 @@ public class TemplatesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get template by name.
-    /// </summary>
     [HttpGet("by-name/{name}")]
     [EndpointPermission("templates.get-by-name", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByName(string name)
@@ -60,9 +47,6 @@ public class TemplatesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Create new template.
-    /// </summary>
     [HttpPost]
     [EndpointPermission("templates.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] CreateTemplateDto template)
@@ -72,9 +56,6 @@ public class TemplatesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Update template.
-    /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("templates.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTemplateDto template)
@@ -84,9 +65,6 @@ public class TemplatesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Delete template.
-    /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("templates.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)

@@ -6,10 +6,10 @@ using ExpressionBuilderLib.src.Core;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
-/// <summary>
-/// Implementation of Request service CRUD operations.
-/// </summary>
-public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService webAttachmentService, IHttpContextServiceManager httpContextServiceManager) : IRequestService
+public class RequestService(
+    IUnitOfWork unitOfWork, ILogger<RequestService> logger,
+    IWebAttachmentService webAttachmentService,
+    IHttpContextServiceManager httpContextServiceManager) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
@@ -66,10 +66,9 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         {
             logger.LogInformation("Fetching paged requests, page: {Page}, size: {PageSize}", page, pageSize);
 
-            // Validate parameters
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100) // Limit max page size to prevent abuse
+            if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize);
@@ -115,11 +114,11 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         try
         {
             logger.LogInformation("Fetching requests for requester: {RequesterId}", requesterId);
-            var requests = await unitOfWork.Requests.GetAllAsync();
+            var requests = await unitOfWork.Requests.GetAllAsync(r => r.RequesterId == requesterId);
             if (requests.IsError)
                 return requests.Errors;
 
-            var requesterRequests = requests.Value!.Where(r => r.RequesterId == requesterId).Select(r => r.ToDto()).ToList();
+            var requesterRequests = requests.Value!.Select(r => r.ToDto()).ToList();
             return requesterRequests;
         }
         catch (Exception ex)
@@ -173,14 +172,14 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (request == null)
                 return ApplicationErrors.InvalidInput;
 
-            if (request.TemplateId == Guid.Empty || request.RequesterId == Guid.Empty || request.ApproverId == Guid.Empty)
+            if (request.TemplateId == Guid.Empty || request.ApproverId == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            logger.LogInformation("Creating new request for requester: {RequesterId}", request.RequesterId);
+            logger.LogInformation("Creating new request for requester: {RequesterId}", httpContextServiceManager.GetCurrentUserId());
             var requestEntity = new Request
             {
                 TemplateId = request.TemplateId,
-                RequesterId = request.RequesterId,
+                RequesterId = httpContextServiceManager.GetCurrentUserId(),
                 ApproverId = request.ApproverId,
                 ContentAsJson = request.Content
             };
@@ -205,42 +204,6 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating request");
-            return ApplicationErrors.InternalServerError;
-        }
-    }
-
-    public async Task<Result<RequestDto>> UpdateAsync(Guid id, UpdateRequestDto request)
-    {
-        try
-        {
-            if (id == Guid.Empty || request == null)
-                return ApplicationErrors.InvalidInput;
-
-            var existingRequest = await unitOfWork.Requests.GetByIdAsync(id);
-            if (existingRequest.IsError)
-                return existingRequest.Errors;
-
-            if (existingRequest.Value == null)
-                return ApplicationErrors.RequestNotFound;
-
-            logger.LogInformation("Updating request: {RequestId}", id);
-
-            existingRequest.Value.TemplateId = request.TemplateId;
-            existingRequest.Value.RequesterId = request.RequesterId;
-            existingRequest.Value.ApproverId = request.ApproverId;
-            existingRequest.Value.ContentAsJson = request.Content;
-
-            await unitOfWork.Requests.UpdateAsync(existingRequest.Value);
-            int result = await unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
-
-            logger.LogInformation("Successfully updated request: {RequestId}", id);
-            return existingRequest.Value.ToDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error updating request: {RequestId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -317,74 +280,8 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetReceivedRequestsAsync()
-    {
-        try
-        {
-            logger.LogInformation("Fetching requests received by current user");
 
-            // Get the current user ID from the HTTP context
-            var currentUserId = httpContextServiceManager.GetCurrentUserId();
-
-            // Create an expression builder for Request entities
-            var requestBuilder = new ExpressionBuilder<Request>();
-
-            // Add a condition to filter requests where the ApproverId matches the current user ID
-            // This represents requests that were sent TO the current user (they are the approver)
-            requestBuilder.And(r => r.ApproverId == currentUserId);
-
-            // Build the expression
-            var expression = requestBuilder.Build();
-
-            // Get requests that match the expression
-            var requests = await unitOfWork.Requests.FindAsync(expression);
-            if (requests.IsError)
-                return requests.Errors;
-
-            var requestDtos = requests.Value!.Select(r => r.ToDto()).ToList();
-            return requestDtos;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching requests received by current user");
-            return ApplicationErrors.InternalServerError;
-        }
-    }
-
-    public async Task<Result<PagedList<RequestDto>>> GetReceivedRequestsPagedAsync(int page, int pageSize)
-    {
-        try
-        {
-            logger.LogInformation("Fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
-
-            if (page <= 0)
-                return ApplicationErrors.InvalidInput;
-
-            var currentUserId = httpContextServiceManager.GetCurrentUserId();
-
-            var requestBuilder = new ExpressionBuilder<Request>();
-
-            requestBuilder.And(r => r.ApproverId == currentUserId);
-
-            var expression = requestBuilder.Build();
-
-            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression);
-            if (pagedRequests.IsError)
-                return pagedRequests.Errors;
-
-            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
-            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
-
-            return pagedRequestDtos;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching paged requests received by current user, page: {Page}, size: {PageSize}", page, pageSize);
-            return ApplicationErrors.InternalServerError;
-        }
-    }
-
-    public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize, bool hasResponse)
+    public async Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(int page, int pageSize, bool hasResponse)
     {
         try
         {
@@ -395,7 +292,8 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
 
             var requestBuilder = new ExpressionBuilder<Request>();
 
-            requestBuilder.And(r => r.ResponseId.HasValue == hasResponse);
+            requestBuilder.And(r => r.RequesterId == httpContextServiceManager.GetCurrentUserId());
+            requestBuilder.And(r => r.Responsed == hasResponse);
 
             var expression = requestBuilder.Build();
 

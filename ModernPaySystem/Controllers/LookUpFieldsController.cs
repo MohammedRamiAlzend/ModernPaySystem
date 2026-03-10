@@ -1,9 +1,5 @@
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for LookUpField management
-/// Provides CRUD operations for lookup fields.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -18,9 +14,6 @@ public class LookUpFieldsController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all lookup fields.
-    /// </summary>
     [HttpGet]
     [EndpointPermission("lookupfields.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
@@ -30,9 +23,6 @@ public class LookUpFieldsController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get lookup field by id.
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("lookupfields.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -42,9 +32,6 @@ public class LookUpFieldsController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Create new lookup field.
-    /// </summary>
     [HttpPost]
     [EndpointPermission("lookupfields.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] CreateLookUpFieldDto lookUpField)
@@ -55,9 +42,6 @@ public class LookUpFieldsController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Update lookup field.
-    /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("lookupfields.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateLookUpFieldDto lookUpField)
@@ -67,9 +51,6 @@ public class LookUpFieldsController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Delete lookup field.
-    /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("lookupfields.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)

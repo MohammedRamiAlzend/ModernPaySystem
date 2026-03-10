@@ -1,20 +1,14 @@
 using System.Runtime.Versioning;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using ModernPaySystem.Infrastructure.Services;
 
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for Request management
-/// Provides CRUD operations and request-specific queries.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class RequestsController(IRequestService requestService, ILogger<RequestsController> logger) : ControllerBase
 {
-    /// <summary>
-    /// Get all requests.
-    /// </summary>
     [HttpGet]
     [EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
@@ -24,10 +18,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get all Requests need Action.
-    /// </summary>
-    /// <param name="hasResponse"></param>
     [HttpGet("GetAllRequestsNeedAction/{hasResponse}")]
     [EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAllRequestsNeedAction(bool hasResponse)
@@ -37,9 +27,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get request by id.
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("requests.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -49,9 +36,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get requests by requester id.
-    /// </summary>
     [HttpGet("by-requester/{requesterId}")]
     [EndpointPermission("requests.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByRequesterId(Guid requesterId)
@@ -61,9 +45,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get requests by approver id.
-    /// </summary>
     [HttpGet("by-approver/{approverId}")]
     [EndpointPermission("requests.get-by-approver-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByApproverId(Guid approverId)
@@ -73,9 +54,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get requests by template id.
-    /// </summary>
     [HttpGet("by-template/{templateId}")]
     [EndpointPermission("requests.get-by-template-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByTemplateId(Guid templateId)
@@ -85,34 +63,15 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Create new request.
-    /// </summary>
     [HttpPost]
     [Consumes("multipart/form-data")]
     [EndpointPermission("requests.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromForm] CreateRequestDto request)
     {
-        logger.LogInformation("Creating new request for requester: {RequesterId}", request?.RequesterId);
         var result = await requestService.CreateAsync(request, request.Files);
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Update request.
-    /// </summary>
-    [HttpPut("{id}")]
-    [EndpointPermission("requests.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRequestDto request)
-    {
-        logger.LogInformation("Updating request: {RequestId}", id);
-        var result = await requestService.UpdateAsync(id, request);
-        return result.ToActionResult();
-    }
-
-    /// <summary>
-    /// Delete request.
-    /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("requests.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
@@ -122,9 +81,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get paged requests.
-    /// </summary>
     [HttpGet("paged")]
     [EndpointPermission("requests.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -134,15 +90,12 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get paged requests need action.
-    /// </summary>
     [HttpGet("GetPagedRequestsNeedAction/{hasResponse}")]
     [EndpointPermission("requests.get-paged-need-action", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetPagedRequestsNeedAction(bool hasResponse, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         logger.LogInformation("Getting paged requests need action, hasResponse: {HasResponse}, page: {Page}, size: {PageSize}", hasResponse, page, pageSize);
-        var result = await requestService.GetPagedAsync(page, pageSize, hasResponse);
+        var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, hasResponse);
         return result.ToActionResult();
     }
 }

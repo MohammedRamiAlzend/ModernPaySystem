@@ -1,5 +1,3 @@
-using ModernPaySystem.Domain.Commons;
-
 namespace ModernPaySystem.Application.Interfaces;
 
 /// <summary>

@@ -6,10 +6,6 @@ using ModernPaySystem.Infrastructure.Extensions;
 
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for User management
-/// Provides CRUD operations for users
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -24,9 +20,6 @@ public class UsersController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all users
-    /// </summary>
     [HttpGet]
     [EndpointPermission("users.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
@@ -36,9 +29,6 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get user by id
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("users.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -48,9 +38,6 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get user by username
-    /// </summary>
     [HttpGet("by-username/{username}")]
     [EndpointPermission("users.get-by-username", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByUsername(string username)
@@ -60,9 +47,6 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Create new user
-    /// </summary>
     [HttpPost]
     [EndpointPermission("users.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] CreateUserDto user)
@@ -73,9 +57,6 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Delete user
-    /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("users.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
@@ -92,16 +73,12 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get users by subsystem
-    /// </summary>
     [HttpGet("by-subsystem/{subSystemId:int}")]
     [EndpointPermission("users.get-by-subsystem", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetBySubSystem([FromRoute] int subSystemId)
     {
         _logger.LogInformation("Getting users by subsystem ID: {SubSystemId}", subSystemId);
         
-        // Convert the integer to SubSystem enum
         if (!Enum.IsDefined(typeof(SubSystem), subSystemId))
         {
             return BadRequest($"Invalid subsystem ID: {subSystemId}");
