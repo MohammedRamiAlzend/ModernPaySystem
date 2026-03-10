@@ -1,7 +1,6 @@
-global using ModernPaySystem.Domain.Commons;
-global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
-global using System.Collections.Generic;
 global using System;
+global using System.Collections.Generic;
+global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using Microsoft.AspNetCore.Http;
 
 namespace ModernPaySystem.Application.Interfaces;

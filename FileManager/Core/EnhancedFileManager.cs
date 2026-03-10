@@ -32,8 +32,6 @@ public class EnhancedFileManager : IFileManager
         }
     }
 
-    #region File Operations
-
     public async Task<FileOperationResult> CopyFileAsync(string sourcePath, string destinationPath, bool overwrite = false)
     {
         try
@@ -237,10 +235,6 @@ public class EnhancedFileManager : IFileManager
         }
     }
 
-    #endregion
-
-    #region Directory Operations
-
     public async Task<DirectoryOperationResult> CreateDirectoryAsync(string directoryPath)
     {
         try
@@ -420,10 +414,6 @@ public class EnhancedFileManager : IFileManager
         }
     }
 
-    #endregion
-
-    #region Search and Listing
-
     public async Task<ListingResult> ListDirectoryAsync(string directoryPath, string? searchPattern = null, bool includeSubdirectories = false)
     {
         try
@@ -559,10 +549,6 @@ public class EnhancedFileManager : IFileManager
             return new SearchResult(false, ex.Message);
         }
     }
-
-    #endregion
-
-    #region Utilities
 
     public string GetContentType(string fileExtension)
     {
@@ -706,5 +692,4 @@ public class EnhancedFileManager : IFileManager
         }
     }
 
-    #endregion
 }

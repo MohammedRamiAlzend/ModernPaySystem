@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using ExpressionBuilderLib.src.Core;
 using ExpressionBuilderLib.src.Core.Enums;
 
@@ -94,7 +92,7 @@ public class Class1
 
         // Combine expressions using ExpressionCombiner
         var combinedExpression = ExpressionCombiner.Combine(ageExpression, nameExpression, LogicalOperator.And);
-        
+
         // Or use the ExpressionBuilder to combine expressions
         var builder = new ExpressionBuilder<Person>();
         builder.AddCondition(ageExpression, LogicalOperator.And)
@@ -128,7 +126,7 @@ public class Class1
     {
         // Create an expression for string contains operation
         var containsExpression = DynamicExpressionBuilder.CreateStringContainsExpression<Person>("Name", "oh");
-        
+
         var compiledFunction = containsExpression.Compile();
 
         // Example usage with sample data
@@ -148,7 +146,7 @@ public class Class1
             Console.WriteLine($"Name: {person.Name}, Age: {person.Age}");
         }
     }
-    
+
     /// <summary>
     /// Demonstrates how to use ExpressionBuilderLib to filter requests for a specific user
     /// This example shows how to implement a method similar to what would be used in RequestService

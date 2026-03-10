@@ -1,18 +1,10 @@
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for Attachment management
-/// Provides CRUD operations and attachment-specific queries.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class AttachmentsController(IAttachmentService attachmentService, ILogger<AttachmentsController> logger) : ControllerBase
 {
-
-    /// <summary>
-    /// Get attachment by id.
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("attachments.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -22,9 +14,6 @@ public class AttachmentsController(IAttachmentService attachmentService, ILogger
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Downloads all files associated with a request as a ZIP archive.
-    /// </summary>
     [HttpGet("request/{requestId}/download-all")]
     [EndpointPermission("attachments.download-all-from-request", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> DownloadAllFilesFromRequest(Guid requestId)
@@ -39,9 +28,6 @@ public class AttachmentsController(IAttachmentService attachmentService, ILogger
         return File(result.Value!, "application/zip", $"Request_{requestId}_Attachments.zip");
     }
 
-    /// <summary>
-    /// Downloads all files associated with a response as a ZIP archive.
-    /// </summary>
     [HttpGet("response/{responseId}/download-all")]
     [EndpointPermission("attachments.download-all-from-response", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> DownloadAllFilesFromResponse(Guid responseId)

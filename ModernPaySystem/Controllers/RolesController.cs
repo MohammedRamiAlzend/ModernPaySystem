@@ -6,10 +6,6 @@ using ModernPaySystem.Infrastructure.Extensions;
 
 namespace ModernPaySystem.Controllers;
 
-/// <summary>
-/// API controller for Role management
-/// Provides CRUD operations for roles
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -24,9 +20,6 @@ public class RolesController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Get all roles
-    /// </summary>
     [HttpGet]
     [EndpointPermission("roles.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetAll()
@@ -36,9 +29,6 @@ public class RolesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get role by id
-    /// </summary>
     [HttpGet("{id}")]
     [EndpointPermission("roles.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -48,9 +38,6 @@ public class RolesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Get role by name
-    /// </summary>
     [HttpGet("by-name/{name}")]
     [EndpointPermission("roles.get-by-name", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByName(string name)
@@ -60,9 +47,6 @@ public class RolesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Create new role
-    /// </summary>
     [HttpPost]
     [EndpointPermission("roles.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] CreateRoleDto role)
@@ -72,9 +56,6 @@ public class RolesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Update role
-    /// </summary>
     [HttpPut("{id}")]
     [EndpointPermission("roles.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRoleDto role)
@@ -84,9 +65,6 @@ public class RolesController : ControllerBase
         return result.ToActionResult();
     }
 
-    /// <summary>
-    /// Delete role
-    /// </summary>
     [HttpDelete("{id}")]
     [EndpointPermission("roles.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)

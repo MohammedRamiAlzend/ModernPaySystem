@@ -1,5 +1,4 @@
 ﻿using FileManager.Abstractions;
-using FileManager.Models;
 using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
 using ModernPaySystem.Domain.Commons;
@@ -51,7 +50,7 @@ public class FilesManagerService(IFileManager? fileManager = null) : IFilesManag
                 await file.CopyToAsync(stream);
                 var fileContent = stream.ToArray();
                 var result = await _fileManager.WriteFileAsync(fullFilePath, fileContent);
-                
+
                 if (!result.Success)
                 {
                     return ApplicationErrors.FileOperationFailed(result.ErrorMessage ?? "Unknown error");

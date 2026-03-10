@@ -26,7 +26,6 @@
   <ItemGroup>
     <Folder Include="Diwan\Uploads\TransactionSystem\Requests\" />
     <Folder Include="Diwan\Uploads\TransactionSystem\Responses\" />
-    <Folder Include="Uploads\" />
   </ItemGroup>
 
 </Project>

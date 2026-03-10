@@ -34,7 +34,7 @@ public static class FileManagerServiceCollectionExtensions
     {
         var options = new FileManagerOptions();
         configureOptions(options);
-        
+
         services.AddSingleton<IFileManager>(provider => new EnhancedFileManager(options.RootDirectory));
         services.AddScoped<IFilesManagerService, FilesManagerService>();
         return services;

@@ -1,5 +1,3 @@
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using Microsoft.AspNetCore.Http;
 
 namespace ModernPaySystem.Application.Interfaces;

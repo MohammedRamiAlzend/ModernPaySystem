@@ -1,5 +1,4 @@
-﻿using ModernPaySystem.Domain.Entities.Abstraction;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+﻿using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
@@ -16,7 +15,7 @@ public class User : Entity<Guid>, IAuditableEntity
 
     public ICollection<TemplateOwnership> TemplateOwnerships { get; set; } = new List<TemplateOwnership>();
 
-    public ICollection<Role> Roles { get; set; } = new List<Role>();
+    public ICollection<Role> Roles { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -57,4 +56,3 @@ public class CreateUserDto
     public required string Password { get; set; }
     public SubSystem? SubSystem { get; set; }
 }
-

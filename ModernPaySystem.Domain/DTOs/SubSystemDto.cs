@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ModernPaySystem.Domain.DTOs;
+﻿namespace ModernPaySystem.Domain.DTOs;
 
 public class SubSystemDto
 {

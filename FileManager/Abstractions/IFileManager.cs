@@ -12,8 +12,6 @@ public interface IFileManager
     /// </summary>
     string RootDirectory { get; }
 
-    #region File Operations
-    
     /// <summary>
     /// Copies a file from source to destination
     /// </summary>
@@ -77,10 +75,6 @@ public interface IFileManager
     /// <returns>File information</returns>
     Task<FileInfoResult> GetFileInfoAsync(string filePath);
 
-    #endregion
-
-    #region Directory Operations
-
     /// <summary>
     /// Creates a directory
     /// </summary>
@@ -135,10 +129,6 @@ public interface IFileManager
     /// <returns>Directory information</returns>
     Task<DirectoryInfoResult> GetDirectoryInfoAsync(string directoryPath);
 
-    #endregion
-
-    #region Search and Listing
-
     /// <summary>
     /// Lists files and directories in a directory
     /// </summary>
@@ -156,10 +146,6 @@ public interface IFileManager
     /// <param name="searchOption">Search options</param>
     /// <returns>Search results</returns>
     Task<SearchResult> SearchFilesAsync(string searchPath, FileSearchCriteria searchCriteria, SearchOption searchOption = SearchOption.TopDirectoryOnly);
-
-    #endregion
-
-    #region Utilities
 
     /// <summary>
     /// Gets the content type for a file extension
@@ -198,5 +184,4 @@ public interface IFileManager
     /// <returns>Cleanup result</returns>
     Task<CleanupResult> CleanupOldFilesAsync(int olderThanDays = 30, string? cleanupPattern = null);
 
-    #endregion
 }

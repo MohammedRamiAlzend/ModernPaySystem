@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ModernPaySystem.Domain.Attrs;
+﻿namespace ModernPaySystem.Domain.Attrs;
 
 [AttributeUsage(AttributeTargets.Method)]
 public class EndpointPermissionAttribute(
