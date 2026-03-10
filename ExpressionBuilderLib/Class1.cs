@@ -244,7 +244,7 @@ public class Class1
 /// Sample Request class to demonstrate the expression builder functionality
 /// In the actual implementation, this would be from ModernPaySystem.Domain.Entities.TransactionSystemEntities
 /// </summary>
-public class k
+public class Request
 {
     public Guid Id { get; set; }
     public Guid TemplateId { get; set; }
