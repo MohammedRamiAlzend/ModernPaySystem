@@ -7,14 +7,6 @@ namespace ModernPaySystem.Controllers;
 [Authorize]
 public class ResponsesController(IResponseService responseService, ILogger<ResponsesController> logger) : ControllerBase
 {
-    [HttpGet]
-    [EndpointPermission("responses.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetAll()
-    {
-        logger.LogInformation("Getting all responses");
-        var result = await responseService.GetAllAsync();
-        return result.ToActionResult();
-    }
 
     [HttpGet("{id}")]
     [EndpointPermission("responses.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
