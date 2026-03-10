@@ -29,5 +29,5 @@ public interface IRequestService
 
     Task<Result<PagedList<RequestDto>>> GetReceivedRequestsPagedAsync(int page, int pageSize);
 
-    Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize, bool hasResponse);
+    Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(int page, int pageSize, bool hasResponse);
 }

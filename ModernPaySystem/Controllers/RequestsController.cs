@@ -95,7 +95,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     public async Task<IActionResult> GetPagedRequestsNeedAction(bool hasResponse, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         logger.LogInformation("Getting paged requests need action, hasResponse: {HasResponse}, page: {Page}, size: {PageSize}", hasResponse, page, pageSize);
-        var result = await requestService.GetPagedAsync(page, pageSize, hasResponse);
+        var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, hasResponse);
         return result.ToActionResult();
     }
 }
