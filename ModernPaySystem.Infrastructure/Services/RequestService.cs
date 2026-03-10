@@ -9,7 +9,10 @@ namespace ModernPaySystem.Infrastructure.Services;
 /// <summary>
 /// Implementation of Request service CRUD operations.
 /// </summary>
-public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logger, IWebAttachmentService webAttachmentService, IHttpContextServiceManager httpContextServiceManager) : IRequestService
+public class RequestService(
+    IUnitOfWork unitOfWork, ILogger<RequestService> logger,
+    IWebAttachmentService webAttachmentService,
+    IHttpContextServiceManager httpContextServiceManager) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
@@ -173,14 +176,14 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
             if (request == null)
                 return ApplicationErrors.InvalidInput;
 
-            if (request.TemplateId == Guid.Empty || request.RequesterId == Guid.Empty || request.ApproverId == Guid.Empty)
+            if (request.TemplateId == Guid.Empty|| request.ApproverId == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            logger.LogInformation("Creating new request for requester: {RequesterId}", request.RequesterId);
+            logger.LogInformation("Creating new request for requester: {RequesterId}", httpContextServiceManager.GetCurrentUserId());
             var requestEntity = new Request
             {
                 TemplateId = request.TemplateId,
-                RequesterId = request.RequesterId,
+                RequesterId = httpContextServiceManager.GetCurrentUserId(),
                 ApproverId = request.ApproverId,
                 ContentAsJson = request.Content
             };
@@ -205,42 +208,6 @@ public class RequestService(IUnitOfWork unitOfWork, ILogger<RequestService> logg
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating request");
-            return ApplicationErrors.InternalServerError;
-        }
-    }
-
-    public async Task<Result<RequestDto>> UpdateAsync(Guid id, UpdateRequestDto request)
-    {
-        try
-        {
-            if (id == Guid.Empty || request == null)
-                return ApplicationErrors.InvalidInput;
-
-            var existingRequest = await unitOfWork.Requests.GetByIdAsync(id);
-            if (existingRequest.IsError)
-                return existingRequest.Errors;
-
-            if (existingRequest.Value == null)
-                return ApplicationErrors.RequestNotFound;
-
-            logger.LogInformation("Updating request: {RequestId}", id);
-
-            existingRequest.Value.TemplateId = request.TemplateId;
-            existingRequest.Value.RequesterId = request.RequesterId;
-            existingRequest.Value.ApproverId = request.ApproverId;
-            existingRequest.Value.ContentAsJson = request.Content;
-
-            await unitOfWork.Requests.UpdateAsync(existingRequest.Value);
-            int result = await unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
-
-            logger.LogInformation("Successfully updated request: {RequestId}", id);
-            return existingRequest.Value.ToDto();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error updating request: {RequestId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }

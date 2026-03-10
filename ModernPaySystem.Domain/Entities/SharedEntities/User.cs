@@ -29,7 +29,7 @@ public class User : Entity<Guid>, IAuditableEntity
             Id = this.Id,
             UserName = this.UserName,
             SubSystemUserId = this.SubSystemUserId,
-            SubSystem = this.SubSystemUser?.SubSystem,  // Include subsystem from the relationship
+            SubSystem = this.SubSystemUser?.SubSystem,       
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
@@ -43,7 +43,7 @@ public class UserDto
     public Guid Id { get; set; }
     public required string UserName { get; set; }
     public Guid? SubSystemUserId { get; set; }
-    public SubSystem? SubSystem { get; set; }  // Added subsystem information
+    public SubSystem? SubSystem { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }

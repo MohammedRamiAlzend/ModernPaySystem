@@ -1,5 +1,6 @@
 using System.Runtime.Versioning;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using ModernPaySystem.Infrastructure.Services;
 
 namespace ModernPaySystem.Controllers;
 
@@ -67,17 +68,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     [EndpointPermission("requests.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromForm] CreateRequestDto request)
     {
-        logger.LogInformation("Creating new request for requester: {RequesterId}", request?.RequesterId);
         var result = await requestService.CreateAsync(request, request.Files);
-        return result.ToActionResult();
-    }
-
-    [HttpPut("{id}")]
-    [EndpointPermission("requests.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRequestDto request)
-    {
-        logger.LogInformation("Updating request: {RequestId}", id);
-        var result = await requestService.UpdateAsync(id, request);
         return result.ToActionResult();
     }
 
