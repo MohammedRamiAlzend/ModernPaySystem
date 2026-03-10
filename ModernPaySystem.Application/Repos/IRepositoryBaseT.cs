@@ -1,4 +1,6 @@
-﻿namespace ModernPaySystem.Application.Repos;
+﻿global using System.Linq;
+
+namespace ModernPaySystem.Application.Repos;
 
 public interface IRepositoryBase<TEntity, TKey>
     where TEntity : Entity<TKey>

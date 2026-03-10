@@ -11,7 +11,10 @@ export const store = configureStore({
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
-            serializableCheck: false,
+            serializableCheck: {
+                ignoredPaths: ['ui.confirm.onConfirm', 'ui.confirm.onCancel'],
+                ignoredActions: ['ui/showConfirm'],
+            },
         }),
     devTools: true,
 })

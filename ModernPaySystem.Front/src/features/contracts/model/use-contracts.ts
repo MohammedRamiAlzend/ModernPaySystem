@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '../api/baseApi';
-import type { Contract, CreateContractInput, UpdateContractInput } from '../types/contract';
-import { QUERY_STRATEGIES, UpdateStrategy } from '../constants/query-strategies';
+import api from '@/shared/api/baseApi';
+import type { Contract } from '@/entities/contracts/types/contract-types';
+import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
+
+export type CreateContractInput = Omit<Contract, 'id' | 'status'>;
+export type UpdateContractInput = Partial<CreateContractInput>;
 
 /**
  * مفتاح الكاش الأساسي للعقود (Query Key)

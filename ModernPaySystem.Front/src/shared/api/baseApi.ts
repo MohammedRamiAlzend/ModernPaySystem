@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { store } from '@/app/store';
+import { showStatus } from '@/app/store/uiSlice';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
@@ -24,8 +26,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        console.log(error);
         const status = error.response?.status;
+        const message = error.response?.data?.message || error.message || 'حدث خطأ في الاتصال بالخادم';
+
         // التعامل مع أخطاء 401 (غير مصرح به)
         if (status === 401) {
             localStorage.removeItem('token');
@@ -35,6 +38,13 @@ api.interceptors.response.use(
             if (window.location.pathname !== '/auth/login') {
                 window.location.href = '/auth/login';
             }
+        } else {
+            // إظهار رسالة خطأ لباقي الأخطاء
+            store.dispatch(showStatus({
+                type: 'error',
+                title: 'خطأ',
+                message: message
+            }));
         }
 
         return Promise.reject(error);

@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '@/app/store';
 import { loginSuccess, User } from '@/app/store/authSlice';
+import { showStatus } from '@/app/store/uiSlice';
 import { login } from '../api/login.api';
 import { LoginCredentials, DecodedToken } from './types';
 import { jwtDecode } from 'jwt-decode';
@@ -35,6 +36,11 @@ export const useLogin = () => {
             navigate(decodeURIComponent(redirectUrl), { replace: true });
         },
         onError: (error: any) => {
+            dispatch(showStatus({
+                type: 'error',
+                title: 'فشل تسجيل الدخول',
+                message: error.response?.data?.message || 'تأكد من صحة البيانات وحاول مرة أخرى'
+            }));
             console.error('Login failed:', error);
         },
     });
