@@ -10,9 +10,9 @@ namespace FileManager.Services;
 /// Backward compatible file manager service that wraps the enhanced file manager
 /// for use with web applications
 /// </summary>
-public class FilesManagerService : IFilesManagerService
+public class FilesManagerService(IFileManager? fileManager = null) : IFilesManagerService
 {
-    private readonly IFileManager _fileManager;
+    private readonly IFileManager _fileManager = fileManager ?? new Core.EnhancedFileManager();
     private readonly string[] _defaultAllowedExtensions = {
         ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
         ".txt", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".tif",
@@ -22,11 +22,6 @@ public class FilesManagerService : IFilesManagerService
     public string UploadsDirectory => Path.Combine("Diwan", "Uploads");
 
     public string RootDirectory => _fileManager.RootDirectory;
-
-    public FilesManagerService(IFileManager? fileManager = null)
-    {
-        _fileManager = fileManager ?? new Core.EnhancedFileManager();
-    }
 
     public async Task<Result<FileMetadata>> SaveFileAsync(IFormFile file, string? subDirectory = null, string? customFileName = null)
     {
