@@ -17,10 +17,10 @@ const ProcessFormPage = lazyWithPreload(() => import('@/pages/process-form-page'
 const LoginPage = lazyWithPreload(() => import('@/pages/auth/login-page'));
 // const ProfilePage = lazyWithPreload(() => import('@/pages/profile/profile-page'));
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/settings-page'));
-const FormEditorPage = lazyWithPreload(() => import('@/pages/form-builder/FormEditorPage').then(module => ({ default: module.FormEditorPage })));
-const RequestPage = lazyWithPreload(() => import('@/pages/form-builder/RequestPage').then(module => ({ default: module.RequestPage })));
-const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/ResponsesPage').then(module => ({ default: module.ResponsesPage })));
-const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/ActionedRequestsPage'));
+const FormEditorPage = lazyWithPreload(() => import('@/pages/form-builder/form-editor-page').then(module => ({ default: module.FormEditorPage })));
+const RequestPage = lazyWithPreload(() => import('@/pages/form-builder/request-page').then(module => ({ default: module.RequestPage })));
+const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/responses-page').then(module => ({ default: module.ResponsesPage })));
+const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/actioned-requests-page'));
 
 const RoutePermissions = {
   PUBLIC: 'PUBLIC',

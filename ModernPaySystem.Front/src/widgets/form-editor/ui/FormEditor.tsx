@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useRef } from 'react';
-import { useFormEditor } from '@/features/form-builder/model/useFormEditor';
+import { useFormEditor } from '@/features/form-builder/model/use-form-editor';
 import type { FormSchema } from '@/entities/form/model/types';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';

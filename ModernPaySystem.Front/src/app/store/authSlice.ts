@@ -65,9 +65,7 @@ export const {
 
 // export const registerSuccess = loginSuccess;
 
-type RootState = {
-  auth: AuthState;
-};
+import type { RootState } from './index';
 
 export const selectCurrentUser = (state: RootState): User | null => state.auth.user;
 export const selectIsAuthenticated = (state: RootState): boolean => state.auth.isAuthenticated;
