@@ -16,7 +16,6 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public Guid? ResponseId { get; set; }
     public Response? Response { get; set; }
-    public bool Responsed { get; set; } = false;
     public required string ContentAsJson { get; set; }
 
     // Navigation property for attachments
