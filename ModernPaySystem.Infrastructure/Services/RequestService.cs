@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ExpressionBuilderLib.src.Core;
 
@@ -76,9 +75,7 @@ public class RequestService(
                 return pagedRequests.Errors;
 
             var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
-            var pagedRequestDtos = new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
-
-            return pagedRequestDtos;
+            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
@@ -118,7 +115,7 @@ public class RequestService(
             if (requests.IsError)
                 return requests.Errors;
 
-            var requesterRequests = requests.Value!.Select(r => r.ToDto()).ToList();
+            var requesterRequests = requests.Value!.ConvertAll(r => r.ToDto());
             return requesterRequests;
         }
         catch (Exception ex)
@@ -133,12 +130,12 @@ public class RequestService(
         try
         {
             logger.LogInformation("Fetching requests for approver: {ApproverId}", approverId);
+
             var requests = await unitOfWork.Requests.GetAllAsync();
             if (requests.IsError)
                 return requests.Errors;
 
-            var approverRequests = requests.Value!.Where(r => r.ApproverId == approverId).Select(r => r.ToDto()).ToList();
-            return approverRequests;
+            return requests.Value!.Where(r => r.ApproverId == approverId).Select(r => r.ToDto()).ToList();
         }
         catch (Exception ex)
         {
@@ -152,11 +149,13 @@ public class RequestService(
         try
         {
             logger.LogInformation("Fetching requests for template: {TemplateId}", templateId);
-            var requests = await unitOfWork.Requests.GetAllAsync();
+
+            var requests = await unitOfWork.Requests.GetAllAsync(r => r.TemplateId == templateId);
+
             if (requests.IsError)
                 return requests.Errors;
-            var templateRequests = requests.Value!.Where(r => r.TemplateId == templateId).Select(r => r.ToDto()).ToList();
-            return templateRequests;
+
+            return requests.Value!.ConvertAll(r => r.ToDto());
         }
         catch (Exception ex)
         {
@@ -297,8 +296,12 @@ public class RequestService(
 
             var expression = requestBuilder.Build();
 
-            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, expression,
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
+                page,
+                pageSize,
+                expression,
                 i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);
+
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
 
