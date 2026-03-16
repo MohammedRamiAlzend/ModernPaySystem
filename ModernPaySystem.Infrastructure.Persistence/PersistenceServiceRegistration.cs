@@ -19,16 +19,15 @@ public static class PersistenceServiceRegistration
     {
         services.AddDbContext<AppDbContext>((serviceProvider, options) =>
         {
-
-            options.UseSqlServer(
+            options.UseNpgsql(
                 configuration.GetConnectionString("DefaultConnection"),
-                sqlServerOptionsAction: sqlOptions =>
+                npgsqlOptionsAction: sqlOptions =>
                 {
                     sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
                     sqlOptions.EnableRetryOnFailure(
                         maxRetryCount: 3,
                         maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorNumbersToAdd: null);
+                        errorCodesToAdd: null);
                 });
             options.AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>());
         });
