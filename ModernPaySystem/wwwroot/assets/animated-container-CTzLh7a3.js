@@ -1,0 +1,1 @@
+import{j as o,a as r}from"./index-C-EFZiFI.js";function l({children:n,className:a,show:i=!0,duration:t=500,delay:e=0,...m}){return i?o.jsx("div",{className:r("animate-in fade-in fill-mode-both",a),style:{animationDuration:`${t}ms`,animationDelay:`${e}ms`},...m,children:n}):null}export{l as A};

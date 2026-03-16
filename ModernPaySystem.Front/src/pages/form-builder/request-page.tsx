@@ -93,7 +93,7 @@ export const RequestPage = () => {
             dispatch(showStatus({
                 type: 'warning',
                 title: 'تنبيه',
-                message: 'يرجى اختيار الموافق أولاً'
+                message: 'يرجى اختيار المرسل اليه أولاً'
             }));
             return;
         }
