@@ -17,8 +17,8 @@
 mono_crash.*
 
 # ازالة البيلد من المشروع
-wwwroot/*
-!wwwroot/.gitkeep
+ModernPaySystem/wwwroot/*
+!ModernPaySystem/wwwroot/.gitkeep
 
 # Build results
 [Dd]ebug/
