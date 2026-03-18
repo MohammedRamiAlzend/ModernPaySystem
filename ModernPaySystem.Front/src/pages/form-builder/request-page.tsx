@@ -7,15 +7,14 @@ import { Card } from '@/shared/ui/card';
 import { useMutation } from '@tanstack/react-query';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import type { CreateRequestDto } from '@/entities/form/model/types';
-import { useAppSelector, useAppDispatch } from '@/app/store';
-import { selectCurrentUser } from '@/app/store/authSlice';
-import { showStatus } from '@/app/store/uiSlice';
+import { useAuthStore } from '@/app/store/authStore';
+import { useUIStore } from '@/app/store/uiStore';
 import { ImagePlus, X, FileText, Shield } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserPicker } from '@/features/users/ui/UserPicker';
 
 export const RequestPage = () => {
-    const dispatch = useAppDispatch();
+    const { showStatus } = useUIStore();
     const [searchParams, setSearchParams] = useSearchParams();
     const { data: templates = [] } = useForms();
 
@@ -45,7 +44,7 @@ export const RequestPage = () => {
 
     const [files, setFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const currentUser = useAppSelector(selectCurrentUser);
+    const currentUser = useAuthStore((state) => state.user);
 
     const selectedTemplate = useMemo(() =>
         templates.find(t => t.id === selectedTemplateId),
@@ -55,11 +54,11 @@ export const RequestPage = () => {
     const submitMutation = useMutation({
         mutationFn: formEndpoints.createRequest,
         onSuccess: () => {
-            dispatch(showStatus({
+            showStatus({
                 type: 'success',
                 title: 'تمت العملية',
                 message: 'تم تقديم الطلب بنجاح'
-            }));
+            });
             // لإعادة تعيين الفورم، نقوم بتغيير الـ Key الخاص بالمكون
             setFormKey(prev => prev + 1);
             setFiles([]);
@@ -67,11 +66,11 @@ export const RequestPage = () => {
             // لا نحذف selectedTemplateId كي يبقى الفورم ظاهراً
         },
         onError: () => {
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ',
                 message: 'حدث خطأ أثناء تقديم الطلب'
-            }));
+            });
         }
     });
 
@@ -90,11 +89,11 @@ export const RequestPage = () => {
         if (!selectedTemplate || !currentUser) return;
 
         if (!approverId) {
-            dispatch(showStatus({
+            showStatus({
                 type: 'warning',
                 title: 'تنبيه',
                 message: 'يرجى اختيار المرسل اليه أولاً'
-            }));
+            });
             return;
         }
 

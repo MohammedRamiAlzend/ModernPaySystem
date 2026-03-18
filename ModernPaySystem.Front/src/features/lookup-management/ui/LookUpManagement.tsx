@@ -20,11 +20,10 @@ import {
     DialogDescription
 } from '@/shared/ui/dialog';
 import { Label } from '@/shared/ui/label';
-import { useAppDispatch } from '@/app/store';
-import { showStatus, showConfirm } from '@/app/store/uiSlice';
+import { useUIStore } from '@/app/store/uiStore';
 
 export const LookUpManagement = () => {
-    const dispatch = useAppDispatch();
+    const { showStatus, showConfirm } = useUIStore();
     const [selectedField, setSelectedField] = useState<LookUpField | null>(null);
     const [isFieldDialogOpen, setIsFieldDialogOpen] = useState(false);
     const [isValueDialogOpen, setIsValueDialogOpen] = useState(false);
@@ -64,15 +63,15 @@ export const LookUpManagement = () => {
         // Check if field has values
         const fieldValues = await fetchLookUpFieldValues(field.id);
         if (fieldValues && fieldValues.length > 0) {
-            dispatch(showStatus({
+            showStatus({
                 type: 'warning',
                 title: 'لا يمكن الحذف',
                 message: 'لا يمكن حذف هذا الحقل لأنه يحتوي على قيم مرتبطة به. يرجى حذف القيم أولاً.'
-            }));
+            });
             return;
         }
 
-        dispatch(showConfirm({
+        showConfirm({
             title: 'حذف الحقل',
             message: `هل أنت متأكد من حذف الحقل "${field.filedName}"؟ لا يمكن التراجع عن هذا الإجراء.`,
             variant: 'destructive',
@@ -81,7 +80,7 @@ export const LookUpManagement = () => {
                 await deleteField.mutateAsync(field.id);
                 if (selectedField?.id === field.id) setSelectedField(null);
             }
-        }));
+        });
     };
 
     const handleAddValue = () => {
@@ -116,7 +115,7 @@ export const LookUpManagement = () => {
     };
 
     const handleDeleteValueClick = (id: string, desc: string) => {
-        dispatch(showConfirm({
+        showConfirm({
             title: 'حذف القيمة',
             message: `هل أنت متأكد من حذف القيمة "${desc}"؟`,
             variant: 'destructive',
@@ -124,7 +123,7 @@ export const LookUpManagement = () => {
             onConfirm: () => {
                 deleteValue.mutate(id);
             }
-        }));
+        });
     };
 
 

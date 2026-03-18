@@ -1,20 +1,16 @@
-// import { useAppSelector } from '@/app/store';
-// import { selectCurrentUser } from '@/app/store/authSlice';
+// import { useAuthStore } from '@/app/store/authStore';
 // import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 // import { Avatar, AvatarFallback, AvatarImage } from '@/shared/ui/avatar';
 // import { Button } from '@/shared/ui/button';
 // import { Badge } from '@/shared/ui/badge';
 // import { useNavigate } from 'react-router-dom';
-// import { useAppDispatch } from '@/app/store';
-// import { logout } from '@/app/store/authSlice';
 
 // export const ProfilePage = () => {
-//   const user = useAppSelector(selectCurrentUser);
-//   const dispatch = useAppDispatch();
+//   const { user, logout } = useAuthStore();
 //   const navigate = useNavigate();
 
 //   const handleLogout = () => {
-//     dispatch(logout());
+//     logout();
 //     navigate('/auth/login');
 //   };
 

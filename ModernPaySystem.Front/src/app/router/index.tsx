@@ -10,7 +10,7 @@ import { MainLayout } from '../layouts/main-layout';
 import { AuthLayout } from '../layouts/auth-layout';
 
 // Lazy load pages
-const HomePage = lazyWithPreload(() => import('@/pages/home-page'));
+// const HomePage = lazyWithPreload(() => import('@/pages/home-page'));
 const ContractsPage = lazyWithPreload(() => import('@/pages/contracts-page'));
 const ContractFormPage = lazyWithPreload(() => import('@/pages/contract-form-page'));
 const ProcessFormPage = lazyWithPreload(() => import('@/pages/process-form-page'));

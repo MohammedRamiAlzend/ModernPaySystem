@@ -4,7 +4,7 @@ import { Label } from '@/shared/ui/label';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 import { Button } from '@/shared/ui/button';
-import { User } from '@/app/store/authSlice';
+import { User } from '@/app/store/authStore';
 
 interface ResponseFormProps {
     requestId: string;

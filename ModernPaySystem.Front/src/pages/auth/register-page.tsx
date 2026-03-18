@@ -7,9 +7,8 @@
 // // import { Input } from '@/components/ui/input';
 // // import { Label } from '@/components/ui/label';
 // import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/shared/ui/card';
-// import { useAppDispatch } from '@/app/store';
-// // import { useAppDispatch } from '@/store';
-// import { registerSuccess } from '@/app/store/authSlice';
+// import { useAuthStore } from '@/app/store/authStore';
+// import { useUIStore } from '@/app/store/uiStore';
 // import { Label } from '@/shared/ui/label';
 // import { Input } from '@/shared/ui/input';
 // import { Button } from '@/shared/ui/button';
@@ -29,7 +28,7 @@
 // type RegisterFormValues = z.infer<typeof registerSchema>;
 
 // export const RegisterPage = () => {
-//   const dispatch = useAppDispatch();
+//   const { loginSuccess } = useAuthStore();
 //   const navigate = useNavigate();
 //   const [error, setError] = useState<string | null>(null);
 //   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +63,7 @@
 //       // Assuming the API returns user data and token
 //       const { user, token } = response.data;
 
-//       dispatch(registerSuccess({ user, token }));
+//       loginSuccess(user, token);
 
 //       // Navigate to home after successful registration
 //       navigate('/', { replace: true });

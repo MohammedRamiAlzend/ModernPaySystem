@@ -6,8 +6,7 @@ import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { getVisibleFields, prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
 import { formEndpoints, useRequestResponses } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
-import { useAppDispatch } from '@/app/store';
-import { showStatus } from '@/app/store/uiSlice';
+import { useUIStore } from '@/app/store/uiStore';
 
 // Sub-components
 import { ResponseItem } from './response-details/ResponseItem';
@@ -30,7 +29,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
     schema: fallbackSchema,
     response
 }) => {
-    const dispatch = useAppDispatch();
+    const { showStatus } = useUIStore();
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [isDownloadingAttachments, setIsDownloadingAttachments] = useState(false);
     const [zipImages, setZipImages] = useState<ZipImage[]>([]);
@@ -114,11 +113,11 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
             await formEndpoints.downloadRequestAttachments(response.id);
         } catch (error) {
             console.error('Error downloading attachments:', error);
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ في التحميل',
                 message: 'فشل تحميل المرفقات'
-            }));
+            });
         } finally {
             setIsDownloadingAttachments(false);
         }
@@ -131,11 +130,11 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
             await imagesToPdf(zipImages, `Attachments_${response?.id.split('-')[0]}`);
         } catch (error) {
             console.error('Error generating Images PDF:', error);
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ في التحميل',
                 message: 'فشل إنشاء ملف PDF للصور'
-            }));
+            });
         } finally {
             setIsGeneratingImagesPDF(false);
         }

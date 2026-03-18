@@ -1,25 +1,23 @@
 import React from 'react';
-import { useAppDispatch, useAppSelector } from '@/app/store';
-import { hideStatus, hideConfirm } from '@/app/store/uiSlice';
+import { useUIStore } from '@/app/store/uiStore';
 import { StatusDialog } from './status-dialog';
 import { ConfirmDialog } from './confirm-dialog';
 
 export const GlobalDialogContainer: React.FC = () => {
-    const dispatch = useAppDispatch();
-    const { status, confirm } = useAppSelector((state) => state.ui);
+    const { status, confirm, hideStatus, hideConfirm } = useUIStore();
 
     const handleStatusClose = () => {
-        dispatch(hideStatus());
+        hideStatus();
     };
 
     const handleConfirmClose = () => {
         if (confirm.onCancel) confirm.onCancel();
-        dispatch(hideConfirm());
+        hideConfirm();
     };
 
     const handleConfirmAction = () => {
         if (confirm.onConfirm) confirm.onConfirm();
-        dispatch(hideConfirm());
+        hideConfirm();
     };
 
     return (

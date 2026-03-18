@@ -5,8 +5,7 @@ import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
 import type { TemplateResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
-import { useAppDispatch } from '@/app/store';
-import { showStatus } from '@/app/store/uiSlice';
+import { useUIStore } from '@/app/store/uiStore';
 
 interface ResponseItemProps {
     response: TemplateResponse;
@@ -14,7 +13,7 @@ interface ResponseItemProps {
 }
 
 export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
-    const dispatch = useAppDispatch();
+    const { showStatus } = useUIStore();
     const [showAttachments, setShowAttachments] = useState(false);
     const [images, setImages] = useState<ZipImage[]>([]);
     const [isLoadingImages, setIsLoadingImages] = useState(false);
@@ -42,11 +41,11 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 setIsAllImages(content.isAllImages);
             } catch (error) {
                 console.error('Failed to load response images', error);
-                dispatch(showStatus({
+                showStatus({
                     type: 'error',
                     title: 'خطأ في التحميل',
                     message: 'فشل تحميل محتوى المرفقات'
-                }));
+                });
             } finally {
                 setIsLoadingImages(false);
             }
@@ -60,11 +59,11 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
             await imagesToPdf(images, `Response_Attachments_${response.id.split('-')[0]}`);
         } catch (error) {
             console.error('Error generating PDF:', error);
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ في التحميل',
                 message: 'فشل إنشاء ملف PDF'
-            }));
+            });
         } finally {
             setIsGeneratingPdf(false);
         }
@@ -75,11 +74,11 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
             await formEndpoints.downloadResponseAttachments(response.id);
         } catch (e) {
             console.error(e);
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ في التحميل',
                 message: 'فشل تحميل المرفقات'
-            }));
+            });
         }
     };
 

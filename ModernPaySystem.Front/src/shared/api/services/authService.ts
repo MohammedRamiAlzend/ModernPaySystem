@@ -1,5 +1,5 @@
 import api from '../baseApi';
-import type { User } from '@/app/store/authSlice';
+import type { User } from '@/app/store/authStore';
 
 export interface LoginCredentials {
     userName: string;

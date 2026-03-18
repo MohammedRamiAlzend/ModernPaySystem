@@ -9,8 +9,7 @@ import {
     LayoutDashboard,
     LogOut
 } from 'lucide-react';
-import { useAppDispatch } from '@/app/store';
-import { logout } from '@/app/store/authSlice';
+import { useAuthStore } from '@/app/store/authStore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
 import { useTemplates } from '@/features/form-builder/api/formEndpoints';
@@ -23,7 +22,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const dispatch = useAppDispatch();
+    const logoutAction = useAuthStore((state) => state.logout);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -108,7 +107,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     };
 
     const handleLogout = () => {
-        dispatch(logout());
+        logoutAction();
         navigate('/auth/login');
         if (onItemClick) onItemClick();
     };

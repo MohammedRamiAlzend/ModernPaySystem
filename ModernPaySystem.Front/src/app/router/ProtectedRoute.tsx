@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 // import { useLocation, Navigate, useSearchParams } from 'react-router-dom';
-import { useAppSelector } from '@/app/store';
-import { selectCurrentUser, selectIsAuthenticated } from '@/app/store/authSlice'; // We'll create this slice
+import { useAuthStore } from '@/app/store/authStore';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,8 +12,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   permission = 'AUTHENTICATED'
 }) => {
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const currentUser = useAppSelector(selectCurrentUser);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const currentUser = useAuthStore((state) => state.user);
   const location = useLocation();
   // const [searchParams] = useSearchParams();
 

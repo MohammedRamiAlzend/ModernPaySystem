@@ -1,21 +1,20 @@
 import { useState } from 'react';
-import { useAppDispatch } from '@/app/store';
-import { showStatus } from '@/app/store/uiSlice';
+import { useUIStore } from '@/app/store/uiStore';
 import type { FormResponse, TemplateRequest, FormSchema } from '@/entities/form/model/types';
 
 export const useRequestDetails = (templates: FormSchema[]) => {
-    const dispatch = useAppDispatch();
+    const { showStatus } = useUIStore();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [viewingResponse, setViewingResponse] = useState<FormResponse | null>(null);
 
     const handleViewRequest = (request: TemplateRequest) => {
         const schema = templates.find(t => t.id === request.templateId);
         if (!schema) {
-            dispatch(showStatus({
+            showStatus({
                 type: 'warning',
                 title: 'تنبيه',
                 message: 'النموذج المرتبط بهذا الطلب غير موجود'
-            }));
+            });
             return;
         }
 
@@ -31,11 +30,11 @@ export const useRequestDetails = (templates: FormSchema[]) => {
             setViewingResponse(mappedResponse);
             setIsModalOpen(true);
         } catch (e) {
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ في التحليل',
                 message: 'خطأ في تحليل بيانات الطلب'
-            }));
+            });
         }
     };
 

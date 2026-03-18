@@ -2,19 +2,18 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { formEndpoints, useRequests } from '../api/formEndpoints';
 import { useForms } from './useForms';
-import { useAppSelector, useAppDispatch } from '@/app/store';
-import { selectCurrentUser } from '@/app/store/authSlice';
-import { showStatus } from '@/app/store/uiSlice';
+import { useAuthStore } from '@/app/store/authStore';
+import { useUIStore } from '@/app/store/uiStore';
 import { useRequestDetails } from './useRequestDetails';
 
 export const useResponsePageLogic = () => {
-    const dispatch = useAppDispatch();
+    const { showStatus } = useUIStore();
     const queryClient = useQueryClient();
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
 
-    const currentUser = useAppSelector(selectCurrentUser);
+    const currentUser = useAuthStore((state) => state.user);
     const [page, setPage] = useState(1);
     const { data: pagedRequests, isLoading } = useRequests(false, page, 15);
     const requests = pagedRequests?.items || [];
@@ -23,22 +22,22 @@ export const useResponsePageLogic = () => {
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
         onSuccess: () => {
-            dispatch(showStatus({
+            showStatus({
                 type: 'success',
                 title: 'تمت العملية',
                 message: 'تم إرسال الرد بنجاح'
-            }));
+            });
             queryClient.invalidateQueries({ queryKey: ['requests'] });
             setComment('');
             setRequestId('');
             setFiles([]);
         },
         onError: () => {
-            dispatch(showStatus({
+            showStatus({
                 type: 'error',
                 title: 'خطأ',
                 message: 'فشل إرسال الرد'
-            }));
+            });
         }
     });
 

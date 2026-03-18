@@ -29,13 +29,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select';
-import { useAppDispatch, useAppSelector } from '@/app/store';
-import { showStatus, showConfirm } from '@/app/store/uiSlice';
-import { selectUserSubsystem } from '@/app/store/authSlice';
+import { useUIStore } from '@/app/store/uiStore';
+import { useAuthStore } from '@/app/store/authStore';
 
 export const UserManagement = () => {
-    const dispatch = useAppDispatch();
-    const currentUserSubsystem = useAppSelector(selectUserSubsystem);
+    const { showStatus, showConfirm } = useUIStore();
+    const currentUserSubsystem = useAuthStore((state) => state.user?.subsystem);
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>('all');
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -68,12 +67,12 @@ export const UserManagement = () => {
 
     const handleSaveUser = async () => {
         if (!userName.trim()) {
-            dispatch(showStatus({ type: 'error', title: 'خطأ', message: 'يرجى إدخال اسم المستخدم' }));
+            showStatus({ type: 'error', title: 'خطأ', message: 'يرجى إدخال اسم المستخدم' });
             return;
         }
 
         if (!editingUser && !password.trim()) {
-            dispatch(showStatus({ type: 'error', title: 'خطأ', message: 'يرجى إدخال كلمة المرور' }));
+            showStatus({ type: 'error', title: 'خطأ', message: 'يرجى إدخال كلمة المرور' });
             return;
         }
 
@@ -90,7 +89,7 @@ export const UserManagement = () => {
                     // subSystem: parseInt(userSubSystem)
                     subSystem: parseInt(targetSubSystemValue)
                 });
-                dispatch(showStatus({ type: 'success', title: 'نجاح', message: 'تم تحديث المستخدم بنجاح' }));
+                showStatus({ type: 'success', title: 'نجاح', message: 'تم تحديث المستخدم بنجاح' });
             } else {
                 await createUser.mutateAsync({
                     userName,
@@ -98,16 +97,16 @@ export const UserManagement = () => {
                     // subSystem: parseInt(userSubSystem)
                     subSystem: parseInt(targetSubSystemValue)
                 });
-                dispatch(showStatus({ type: 'success', title: 'نجاح', message: 'تم إضافة المستخدم بنجاح' }));
+                showStatus({ type: 'success', title: 'نجاح', message: 'تم إضافة المستخدم بنجاح' });
             }
             setIsUserDialogOpen(false);
         } catch (error) {
-            dispatch(showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء حفظ البيانات' }));
+            showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء حفظ البيانات' });
         }
     };
 
     const handleDeleteUserClick = (user: User) => {
-        dispatch(showConfirm({
+        showConfirm({
             title: 'حذف المستخدم',
             message: `هل أنت متأكد من حذف المستخدم "${user.userName}"؟ لا يمكن التراجع عن هذا الإجراء.`,
             variant: 'destructive',
@@ -115,12 +114,12 @@ export const UserManagement = () => {
             onConfirm: async () => {
                 try {
                     await deleteUser.mutateAsync(user.id);
-                    dispatch(showStatus({ type: 'success', title: 'نجاح', message: 'تم حذف المستخدم بنجاح' }));
+                    showStatus({ type: 'success', title: 'نجاح', message: 'تم حذف المستخدم بنجاح' });
                 } catch (error) {
-                    dispatch(showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء الحذف' }));
+                    showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء الحذف' });
                 }
             }
-        }));
+        });
     };
 
     return (

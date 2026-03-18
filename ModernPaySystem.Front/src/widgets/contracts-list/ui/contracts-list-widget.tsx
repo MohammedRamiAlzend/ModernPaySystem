@@ -4,8 +4,7 @@ import { prefetchRoute } from '@/app/router';
 import { useContractManager } from '@/features/contracts/model/contract-manager';
 import { SearchModal } from '@/shared/ui/common/search-modal';
 import { Button } from '@/shared/ui/button';
-import { useAppDispatch } from '@/app/store';
-import { showConfirm } from '@/app/store/uiSlice';
+import { useUIStore } from '@/app/store/uiStore';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import {
     Table,
@@ -24,7 +23,7 @@ import {
 import { useState } from 'react';
 
 export const ContractsListWidget = () => {
-    const dispatch = useAppDispatch();
+    const { showConfirm } = useUIStore();
     const navigate = useNavigate();
     const { contracts, setSearchTerm } = useContractManager();
     // const { contracts, setSearchTerm, addContract, updateContract, getContract } = useContractManager();
@@ -35,7 +34,7 @@ export const ContractsListWidget = () => {
     };
 
     const confirmDelete = (id: number) => {
-        dispatch(showConfirm({
+        showConfirm({
             title: 'حذف العقد',
             message: 'هل أنت متأكد من حذف العقد؟ هذا الإجراء نهائي ولا يمكن التراجع عنه. سيتم حذف كافة البيانات المرتبطة بهذا العقد من النظام بشكل دائم.',
             variant: 'destructive',
@@ -44,7 +43,7 @@ export const ContractsListWidget = () => {
                 // In a real implementation, we would call the delete function here
                 console.log('Contract deleted:', id);
             }
-        }));
+        });
     };
 
     return (

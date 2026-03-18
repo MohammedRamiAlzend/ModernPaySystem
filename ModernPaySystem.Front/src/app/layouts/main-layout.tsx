@@ -1,7 +1,8 @@
 import { Outlet, useNavigate } from "react-router-dom"
 // import { Outlet, useNavigate, useLocation } from "react-router-dom"
 import { ModeToggle } from "@/shared/ui/common/mode-toggle"
-import { Settings, Bell, Menu } from "lucide-react"
+import { Settings, Menu } from "lucide-react"
+// import { Settings, Bell, Menu } from "lucide-react"
 // import { Settings, Bell, Menu, Home } from "lucide-react"
 import { Button } from "@/shared/ui/button"
 import { Sidebar } from "@/widgets/sidebar/ui/sidebar"
@@ -9,8 +10,7 @@ import { Sidebar } from "@/widgets/sidebar/ui/sidebar"
 import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet"
 import { useState } from "react"
 // import { PrefetchNavLink } from "@/shared/navigation/prefetch-nav-link"
-import { useAppSelector } from "@/app/store"
-import { selectCurrentUser } from "@/app/store/authSlice"
+import { useAuthStore } from '@/app/store/authStore';
 
 interface MainLayoutProps {
     children?: React.ReactNode
@@ -18,7 +18,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const currentUser = useAppSelector(selectCurrentUser);
+    const currentUser = useAuthStore((state) => state.user);
     const navigate = useNavigate();
     // const location = useLocation();
 

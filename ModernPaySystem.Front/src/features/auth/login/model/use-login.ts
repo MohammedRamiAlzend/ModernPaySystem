@@ -1,15 +1,15 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAppDispatch } from '@/app/store';
-import { loginSuccess, User } from '@/app/store/authSlice';
-import { showStatus } from '@/app/store/uiSlice';
+import { useAuthStore } from '@/app/store/authStore';
+import { useUIStore } from '@/app/store/uiStore';
 import { login } from '../api/login.api';
 import { LoginCredentials, DecodedToken } from './types';
 import { jwtDecode } from 'jwt-decode';
 
 export const useLogin = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
+    const loginSuccessState = useAuthStore((state) => state.loginSuccess);
+    const showStatusState = useUIStore((state) => state.showStatus);
     const [searchParams] = useSearchParams();
     const redirectUrl = searchParams.get('redirect') || '/';
 
@@ -21,7 +21,7 @@ export const useLogin = () => {
 
             const roles = Array.isArray(decoded.role) ? decoded.role : [decoded.role];
 
-            const user: User = {
+            const user = {
                 id: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"],
                 username: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
                 subsystem: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/system"] || '',
@@ -29,18 +29,17 @@ export const useLogin = () => {
                 roles: roles,
             };
 
-            // تحديث حالة Redux
-            dispatch(loginSuccess({ user, token }));
+            loginSuccessState(user, token);
 
             // التوجيه
             navigate(decodeURIComponent(redirectUrl), { replace: true });
         },
         onError: (error: any) => {
-            dispatch(showStatus({
+            showStatusState({
                 type: 'error',
                 title: 'فشل تسجيل الدخول',
                 message: error.response?.data?.message || 'تأكد من صحة البيانات وحاول مرة أخرى'
-            }));
+            });
             console.error('Login failed:', error);
         },
     });
