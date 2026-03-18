@@ -71,10 +71,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                         {/* Right Side Actions */}
                         <div className="flex items-center gap-2 sm:gap-4">
 
-                            <Button variant="ghost" size="icon" className="relative hidden sm:flex">
+                            {/* <Button variant="ghost" size="icon" className="relative hidden sm:flex">
                                 <Bell className="h-5 w-5" />
                                 <span className="absolute top-2 left-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background"></span>
-                            </Button>
+                            </Button> */}
                             <Button
                                 variant="ghost"
                                 size="icon"
