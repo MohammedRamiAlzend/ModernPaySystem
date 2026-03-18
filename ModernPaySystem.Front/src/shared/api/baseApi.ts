@@ -12,7 +12,7 @@ const api = axios.create({
 // إضافة interceptors للتعامل مع التوكن أو الأخطاء بشكل مركزي
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -31,8 +31,8 @@ api.interceptors.response.use(
 
         // التعامل مع أخطاء 401 (غير مصرح به)
         if (status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
 
             // Redirect to login if not already there
             if (window.location.pathname !== '/auth/login') {

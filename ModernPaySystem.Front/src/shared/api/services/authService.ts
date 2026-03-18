@@ -18,7 +18,8 @@ export const authService = {
     },
 
     logout: () => {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user'); // Also removing user
     },
 
     getCurrentUser: async (): Promise<User> => {

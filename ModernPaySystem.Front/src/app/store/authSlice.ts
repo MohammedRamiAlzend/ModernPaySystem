@@ -16,9 +16,9 @@ interface AuthState {
   isAuthenticated: boolean;
 }
 
-// محاولة استعادة البيانات من localStorage عند التشغيل
-const savedToken = localStorage.getItem('token');
-const savedUser = localStorage.getItem('user');
+// محاولة استعادة البيانات من sessionStorage عند التشغيل
+const savedToken = sessionStorage.getItem('token');
+const savedUser = sessionStorage.getItem('user');
 
 const initialState: AuthState = {
   user: savedUser ? JSON.parse(savedUser) : null,
@@ -35,8 +35,8 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
 
-      localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      sessionStorage.setItem('token', action.payload.token);
+      sessionStorage.setItem('user', JSON.stringify(action.payload.user));
     },
 
     logout: (state) => {
@@ -44,14 +44,14 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
 
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
     },
 
     updateUserProfile: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
         state.user = { ...state.user, ...action.payload };
-        localStorage.setItem('user', JSON.stringify(state.user));
+        sessionStorage.setItem('user', JSON.stringify(state.user));
       }
     },
   },
