@@ -154,7 +154,7 @@ export const RequestPage = () => {
                         <UserPicker
                             onUserSelect={setApproverId}
                             className="!grid-cols-1"
-                            label="الموافق على الطلب"
+                            label="مستلم الطلب (المرسل إليه) "
                         />
                     </Card>
 

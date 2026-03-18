@@ -27,7 +27,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+    const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(() => {
+        const initialStates: Record<string, boolean> = {};
+        
+        const setInitialStates = (items: typeof NAVIGATION_ITEMS) => {
+            items.forEach(item => {
+                if (item.isOpen) {
+                    initialStates[item.path] = true;
+                }
+                if (item.children) {
+                    setInitialStates(item.children);
+                }
+            });
+        };
+
+        setInitialStates(NAVIGATION_ITEMS);
+        return initialStates;
+    });
 
     // Fetch Templates
     const { data: templates } = useTemplates();

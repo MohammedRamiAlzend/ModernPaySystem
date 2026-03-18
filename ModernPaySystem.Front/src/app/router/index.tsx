@@ -45,16 +45,17 @@ const routesConfig: RouteObject[] = [
     errorElement: <ErrorPage />,
     children: [
       {
+        // element: (
+        //   <Suspense fallback={<LoadingSpinner />}>
+        //     <HomePage />
+        //   </Suspense>
+        // ),
         index: true,
-        element: (
-          <Suspense fallback={<LoadingSpinner />}>
-            <HomePage />
-          </Suspense>
-        ),
+        element: <Navigate to="/form-builder/responses" replace />,
         handle: {
           crumb: () => 'الرئيسية',
           permission: RoutePermissions.AUTHENTICATED,
-          preload: () => HomePage.preload(),
+          // preload: () => HomePage.preload(),
         },
       },
       {
@@ -197,9 +198,9 @@ const routesConfig: RouteObject[] = [
           {
             path: 'responses',
             element: (
-              <Suspense fallback={<LoadingSpinner />}>
+              <Suspense fallback={< LoadingSpinner />} >
                 <ResponsesPage />
-              </Suspense>
+              </Suspense >
             ),
             handle: {
               crumb: () => 'الردود',

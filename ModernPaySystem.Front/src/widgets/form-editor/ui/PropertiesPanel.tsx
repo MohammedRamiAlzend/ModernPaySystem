@@ -15,13 +15,13 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
         <div className="space-y-4 p-4 border rounded-md bg-card">
             <h3 className="font-semibold mb-2">خصائص الحقل</h3>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
                 <Label>الاسم البرمجي (Name)</Label>
                 <Input
                     value={field.name}
                     onChange={e => onChange({ name: e.target.value })}
                 />
-            </div>
+            </div> */}
 
             <div className="space-y-2">
                 <Label>العنوان (Label)</Label>
