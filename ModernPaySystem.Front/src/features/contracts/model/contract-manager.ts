@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
+import { useQueryState, parseAsString } from 'nuqs';
 import { useContracts as useContractProvider } from '@/app/providers/contract-provider';
 import type { ContractFormData } from '@/entities/contracts/types/contract-types';
 
@@ -10,7 +11,10 @@ export const useContractManager = () => {
     getContract: providerGetContract
   } = useContractProvider();
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useQueryState(
+    'q',
+    parseAsString.withDefault('').withOptions({ shallow: true, throttleMs: 300 })
+  );
 
   const filteredContracts = useMemo(() => {
     if (!searchTerm) return contracts;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryState, parseAsInteger } from 'nuqs';
 import { formEndpoints, useRequests } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useAuthStore } from '@/app/store/authStore';
@@ -14,7 +15,7 @@ export const useResponsePageLogic = () => {
     const [files, setFiles] = useState<File[]>([]);
 
     const currentUser = useAuthStore((state) => state.user);
-    const [page, setPage] = useState(1);
+    const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
     const { data: pagedRequests, isLoading } = useRequests(false, page, 15);
     const requests = pagedRequests?.items || [];
     const { data: templates = [] } = useForms();

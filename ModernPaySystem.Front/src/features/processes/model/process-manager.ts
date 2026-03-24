@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQueryState, parseAsInteger, parseAsString } from 'nuqs';
 import type { Client, KinshipType, Service, OperationDetail, Operation, ProcessFormData } from '@/entities/processes/types/process-types';
 
 // Custom hook for managing processes
 export const useProcessManager = () => {
-    // State
+    // ... rest of state stays same ...
     const [formData, setFormData] = useState<ProcessFormData>({
         CODE: 0,
         CODE_CLIENT: 0,
@@ -23,9 +24,9 @@ export const useProcessManager = () => {
     const [operationsList, setOperationsList] = useState<Operation[]>([]);
 
     const [isEditMode, setIsEditMode] = useState(false);
-    const [currentRecordIndex, setCurrentRecordIndex] = useState(0);
+    const [currentRecordIndex, setCurrentRecordIndex] = useQueryState('id', parseAsInteger.withDefault(0));
     const [totalRecords, setTotalRecords] = useState(0);
-    const [searchDate, setSearchDate] = useState('');
+    const [searchDate, setSearchDate] = useQueryState('date', parseAsString.withDefault(''));
     const [username] = useState('المستخدم الحالي');
 
     const clientInputRef = useRef<HTMLInputElement>(null);

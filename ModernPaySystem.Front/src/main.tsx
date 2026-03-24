@@ -7,9 +7,11 @@ import { ContractProvider } from './app/providers/contract-provider.tsx'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './shared/lib/query-client'
 import { GlobalDialogContainer } from './shared/ui/modals/status-dialog-container'
+import { NuqsAdapter } from 'nuqs/adapters/react-router';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <NuqsAdapter>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="dark" storageKey="paysystem-theme">
           <ContractProvider>
@@ -18,5 +20,6 @@ createRoot(document.getElementById('root')!).render(
           </ContractProvider>
         </ThemeProvider>
       </QueryClientProvider>
+    </NuqsAdapter>
   </StrictMode>,
 )

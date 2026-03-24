@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useQueryState, parseAsString } from 'nuqs';
 import {
     useLookUpFields,
     useLookUpFieldValues,
@@ -6,6 +7,7 @@ import {
     LookUpField,
     fetchLookUpFieldValues
 } from '../api/lookupApi';
+// ... other imports ...
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
@@ -24,7 +26,17 @@ import { useUIStore } from '@/app/store/uiStore';
 
 export const LookUpManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
-    const [selectedField, setSelectedField] = useState<LookUpField | null>(null);
+    const { data: fields = [], isLoading: isLoadingFields } = useLookUpFields();
+    const [fieldId, setFieldId] = useQueryState('field', parseAsString.withDefault(''));
+    
+    const selectedField = useMemo(() => 
+        fields.find(f => f.id === fieldId) || null
+    , [fields, fieldId]);
+
+    const setSelectedField = (field: LookUpField | null) => {
+        setFieldId(field?.id || null);
+    };
+
     const [isFieldDialogOpen, setIsFieldDialogOpen] = useState(false);
     const [isValueDialogOpen, setIsValueDialogOpen] = useState(false);
     const [editingField, setEditingField] = useState<LookUpField | null>(null);
@@ -32,7 +44,6 @@ export const LookUpManagement = () => {
     const [fieldName, setFieldName] = useState('');
     const [valueDesc, setValueDesc] = useState('');
 
-    const { data: fields = [], isLoading: isLoadingFields } = useLookUpFields();
     const { data: values = [], isLoading: isLoadingValues } = useLookUpFieldValues(selectedField?.id || null);
     const { createField, updateField, deleteField, createValue, updateValue, deleteValue } = useLookUpMutations();
 
