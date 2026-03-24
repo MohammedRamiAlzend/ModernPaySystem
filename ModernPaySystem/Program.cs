@@ -3,7 +3,6 @@ global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.Seeding;
 global using ModernPaySystem.Infrastructure;
 global using ModernPaySystem.Infrastructure.Auth;
-global using NumberSpelling;
 
 var builder = WebApplication.CreateBuilder(args);
 
