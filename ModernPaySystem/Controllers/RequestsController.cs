@@ -38,28 +38,28 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
 
     [HttpGet("by-requester/{requesterId}")]
     [EndpointPermission("requests.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByRequesterId(Guid requesterId)
+    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        logger.LogInformation("Getting requests for requester: {RequesterId}", requesterId);
-        var result = await requestService.GetByRequesterIdAsync(requesterId);
+        logger.LogInformation("Getting paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
+        var result = await requestService.GetByRequesterIdAsync(requesterId, page, pageSize);
         return result.ToActionResult();
     }
 
     [HttpGet("by-approver/{approverId}")]
     [EndpointPermission("requests.get-by-approver-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByApproverId(Guid approverId)
+    public async Task<IActionResult> GetByApproverId(Guid approverId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        logger.LogInformation("Getting requests for approver: {ApproverId}", approverId);
-        var result = await requestService.GetByApproverIdAsync(approverId);
+        logger.LogInformation("Getting paged requests for approver: {ApproverId}, page: {Page}, size: {PageSize}", approverId, page, pageSize);
+        var result = await requestService.GetByApproverIdAsync(approverId, page, pageSize);
         return result.ToActionResult();
     }
 
     [HttpGet("by-template/{templateId}")]
     [EndpointPermission("requests.get-by-template-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByTemplateId(Guid templateId)
+    public async Task<IActionResult> GetByTemplateId(Guid templateId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        logger.LogInformation("Getting requests for template: {TemplateId}", templateId);
-        var result = await requestService.GetByTemplateIdAsync(templateId);
+        logger.LogInformation("Getting paged requests for template: {TemplateId}, page: {Page}, size: {PageSize}", templateId, page, pageSize);
+        var result = await requestService.GetByTemplateIdAsync(templateId, page, pageSize);
         return result.ToActionResult();
     }
 

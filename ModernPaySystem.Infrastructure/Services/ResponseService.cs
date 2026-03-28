@@ -65,61 +65,100 @@ public class ResponseService(
         }
     }
 
-    public async Task<Result<IEnumerable<ResponseDto>>> GetByRequestIdAsync(Guid requestId)
+    public async Task<Result<PagedList<ResponseDto>>> GetByRequestIdAsync(Guid requestId, int page, int pageSize)
     {
         try
         {
-            logger.LogInformation("Fetching responses for request: {requestId}", requestId);
-            var responses = await unitOfWork.Responses.GetAllAsync(null, x => x.Include(i => i.ResponseAttachments));
-            if (responses.IsError)
-                return responses.Errors;
+            logger.LogInformation("Fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, page, pageSize);
 
-            var requestResponses = responses.Value!.Where(r => r.RequestId == requestId).Select(r => r.ToDto()).ToList();
-            return requestResponses;
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
+
+            var requestFilter = new ExpressionBuilder<Response>();
+            requestFilter.And(r => r.RequestId == requestId);
+
+            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
+                page,
+                pageSize,
+                requestFilter.Build(),
+                i => i.Include(r => r.ResponseAttachments));
+
+            if (pagedResponses.IsError)
+                return pagedResponses.Errors;
+
+            var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching responses for request: {requestId}", requestId);
+            logger.LogError(ex, "Error fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
 
-    public async Task<Result<IEnumerable<ResponseDto>>> GetByResponderIdAsync(Guid responderId)
+    public async Task<Result<PagedList<ResponseDto>>> GetByResponderIdAsync(Guid responderId, int page, int pageSize)
     {
         try
         {
-            logger.LogInformation("Fetching responses for responder: {ResponderId}", responderId);
-            var responses = await unitOfWork.Responses.GetAllAsync();
-            if (responses.IsError)
-                return responses.Errors;
+            logger.LogInformation("Fetching paged responses for responder: {ResponderId}, page: {Page}, size: {PageSize}", responderId, page, pageSize);
 
-            var responderResponses = responses.Value!.Where(r => r.RespondedByUserId == responderId).Select(r => r.ToDto()).ToList();
-            return responderResponses;
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
+
+            var responderFilter = new ExpressionBuilder<Response>();
+            responderFilter.And(r => r.RespondedByUserId == responderId);
+
+            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
+                page,
+                pageSize,
+                responderFilter.Build(),
+                i => i.Include(r => r.ResponseAttachments));
+
+            if (pagedResponses.IsError)
+                return pagedResponses.Errors;
+
+            var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching responses for responder: {ResponderId}", responderId);
+            logger.LogError(ex, "Error fetching paged responses for responder: {ResponderId}, page: {Page}, size: {PageSize}", responderId, page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
-    public async Task<Result<IEnumerable<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, int page = 1, int pageSize = 10)
+    public async Task<Result<PagedList<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, int page, int pageSize)
     {
         try
         {
-            logger.LogInformation("Fetching responses for requester: {requesterId}", requesterId);
-            var responses = await unitOfWork.Responses.GetAllAsync(
-                r => r.Request.RequesterId == requesterId,
-                i => i.Include(x => x.Request));
+            logger.LogInformation("Fetching paged responses for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
 
-            if (responses.IsError)
-                return responses.Errors;
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
 
-            var responderResponses = responses.Value!.ConvertAll(r => r.ToDto());
-            return responderResponses;
+            var requesterFilter = new ExpressionBuilder<Response>();
+            requesterFilter.And(r => r.Request.RequesterId == requesterId);
+
+            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
+                page,
+                pageSize,
+                requesterFilter.Build(),
+                i => i.Include(r => r.Request).ThenInclude(r => r.RequestAttachments));
+
+            if (pagedResponses.IsError)
+                return pagedResponses.Errors;
+
+            var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching responses for responder: {ResponderId}", requesterId);
+            logger.LogError(ex, "Error fetching paged responses for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }

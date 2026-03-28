@@ -13,11 +13,11 @@ public interface IRequestService
 
     Task<Result<RequestDto>> GetByIdAsync(Guid id);
 
-    Task<Result<IEnumerable<RequestDto>>> GetByRequesterIdAsync(Guid requesterId);
+    Task<Result<PagedList<RequestDto>>> GetByRequesterIdAsync(Guid requesterId, int page, int pageSize);
 
-    Task<Result<IEnumerable<RequestDto>>> GetByApproverIdAsync(Guid approverId);
+    Task<Result<PagedList<RequestDto>>> GetByApproverIdAsync(Guid approverId, int page, int pageSize);
 
-    Task<Result<IEnumerable<RequestDto>>> GetByTemplateIdAsync(Guid templateId);
+    Task<Result<PagedList<RequestDto>>> GetByTemplateIdAsync(Guid templateId, int page, int pageSize);
 
     Task<Result<RequestDto>> CreateAsync(CreateRequestDto request, List<IFormFile> files);
 

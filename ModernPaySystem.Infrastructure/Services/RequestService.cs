@@ -106,60 +106,101 @@ public class RequestService(
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetByRequesterIdAsync(Guid requesterId)
+    public async Task<Result<PagedList<RequestDto>>> GetByRequesterIdAsync(Guid requesterId, int page, int pageSize)
     {
         try
         {
-            logger.LogInformation("Fetching requests for requester: {RequesterId}", requesterId);
-            var requests = await unitOfWork.Requests.GetAllAsync(r => r.RequesterId == requesterId);
-            if (requests.IsError)
-                return requests.Errors;
+            logger.LogInformation("Fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
 
-            var requesterRequests = requests.Value!.ConvertAll(r => r.ToDto());
-            return requesterRequests;
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
+
+            var requesterFilter = new ExpressionBuilder<Request>();
+            requesterFilter.And(r => r.RequesterId == requesterId);
+
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
+                page,
+                pageSize,
+                requesterFilter.Build(),
+                i => i.Include(r => r.RequestAttachments));
+
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching requests for requester: {RequesterId}", requesterId);
+            logger.LogError(ex, "Error fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetByApproverIdAsync(Guid approverId)
+    public async Task<Result<PagedList<RequestDto>>> GetByApproverIdAsync(Guid approverId, int page, int pageSize)
     {
         try
         {
-            logger.LogInformation("Fetching requests for approver: {ApproverId}", approverId);
+            logger.LogInformation("Fetching paged requests for approver: {ApproverId}, page: {Page}, size: {PageSize}", approverId, page, pageSize);
 
-            var requests = await unitOfWork.Requests.GetAllAsync();
-            if (requests.IsError)
-                return requests.Errors;
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
 
-            return requests.Value!.Where(r => r.ApproverId == approverId).Select(r => r.ToDto()).ToList();
+            var approverFilter = new ExpressionBuilder<Request>();
+            approverFilter.And(r => r.ApproverId == approverId);
+
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
+                page,
+                pageSize,
+                approverFilter.Build(),
+                i => i.Include(r => r.RequestAttachments));
+
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching requests for approver: {ApproverId}", approverId);
+            logger.LogError(ex, "Error fetching paged requests for approver: {ApproverId}, page: {Page}, size: {PageSize}", approverId, page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetByTemplateIdAsync(Guid templateId)
+    public async Task<Result<PagedList<RequestDto>>> GetByTemplateIdAsync(Guid templateId, int page, int pageSize)
     {
         try
         {
-            logger.LogInformation("Fetching requests for template: {TemplateId}", templateId);
+            logger.LogInformation("Fetching paged requests for template: {TemplateId}, page: {Page}, size: {PageSize}", templateId, page, pageSize);
 
-            var requests = await unitOfWork.Requests.GetAllAsync(r => r.TemplateId == templateId);
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
 
-            if (requests.IsError)
-                return requests.Errors;
+            var templateFilter = new ExpressionBuilder<Request>();
+            templateFilter.And(r => r.TemplateId == templateId);
 
-            return requests.Value!.ConvertAll(r => r.ToDto());
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
+                page,
+                pageSize,
+                templateFilter.Build(),
+                i => i.Include(r => r.RequestAttachments));
+
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching requests for template: {TemplateId}", templateId);
+            logger.LogError(ex, "Error fetching paged requests for template: {TemplateId}, page: {Page}, size: {PageSize}", templateId, page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
