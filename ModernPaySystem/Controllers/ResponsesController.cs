@@ -35,6 +35,15 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
+    [HttpGet("by-requester/{requesterId}")]
+    [EndpointPermission("responses.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting responses for requester: {RequesterId}", requesterId);
+        var result = await responseService.GetResponsesByRequesterIdAsync(requesterId, page, pageSize);
+        return result.ToActionResult();
+    }
+
     [HttpPost]
     [Consumes("multipart/form-data")]
     [EndpointPermission("responses.create", SubSystem.TransactionSystem, PermissionType.Insert)]

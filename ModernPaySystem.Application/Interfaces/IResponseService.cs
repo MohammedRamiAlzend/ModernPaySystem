@@ -13,6 +13,8 @@ public interface IResponseService
 
     Task<Result<IEnumerable<ResponseDto>>> GetByResponderIdAsync(Guid responderId);
 
+    Task<Result<IEnumerable<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, int page = 1, int pageSize = 10);
+
     Task<Result<ResponseDto>> CreateAsync(CreateResponseDto response);
 
     Task<Result<ResponseDto>> UpdateAsync(Guid id, UpdateResponseDto response);

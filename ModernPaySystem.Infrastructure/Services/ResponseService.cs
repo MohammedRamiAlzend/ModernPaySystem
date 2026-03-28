@@ -102,7 +102,27 @@ public class ResponseService(
             return ApplicationErrors.InternalServerError;
         }
     }
+    public async Task<Result<IEnumerable<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            logger.LogInformation("Fetching responses for requester: {requesterId}", requesterId);
+            var responses = await unitOfWork.Responses.GetAllAsync(
+                r => r.Request.RequesterId == requesterId,
+                i => i.Include(x => x.Request));
 
+            if (responses.IsError)
+                return responses.Errors;
+
+            var responderResponses = responses.Value!.ConvertAll(r => r.ToDto());
+            return responderResponses;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching responses for responder: {ResponderId}", requesterId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
     public async Task<Result<bool>> IsRequestHasResponse(Guid requestId)
     {
         var checkIfRequestHasResponse = await unitOfWork.Requests.GetAsync(x => x.Id == requestId, i => i.Include(x => x.Response));
