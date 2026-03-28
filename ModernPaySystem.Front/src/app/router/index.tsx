@@ -204,7 +204,7 @@ const routesConfig: RouteObject[] = [
               </Suspense >
             ),
             handle: {
-              crumb: () => 'الردود',
+              crumb: () => 'الرد على الطلبات',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => ResponsesPage.preload(),
             },
@@ -217,7 +217,7 @@ const routesConfig: RouteObject[] = [
               </Suspense>
             ),
             handle: {
-              crumb: () => 'الأرشيف',
+              crumb: () => 'الردود الصادرة',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => ActionedRequestsPage.preload(),
             },
@@ -230,7 +230,7 @@ const routesConfig: RouteObject[] = [
               </Suspense>
             ),
             handle: {
-              crumb: () => 'الردود المستلمة',
+              crumb: () => 'الردود الواردة',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => MyResponsesPage.preload(),
             },
