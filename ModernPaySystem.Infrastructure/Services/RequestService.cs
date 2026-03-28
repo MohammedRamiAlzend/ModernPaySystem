@@ -291,7 +291,7 @@ public class RequestService(
 
             var requestBuilder = new ExpressionBuilder<Request>();
 
-            requestBuilder.And(r => r.RequesterId == httpContextServiceManager.GetCurrentUserId());
+            requestBuilder.And(r => r.ApproverId == httpContextServiceManager.GetCurrentUserId());
             requestBuilder.And(r => r.ResponseId.HasValue == hasResponse);
 
             var expression = requestBuilder.Build();
