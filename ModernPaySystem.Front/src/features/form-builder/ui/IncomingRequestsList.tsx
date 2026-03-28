@@ -8,7 +8,7 @@ import { Pagination } from '@/shared/ui/common/pagination';
 import type { FormSchema, TemplateRequest } from '@/entities/form/model/types';
 
 interface IncomingRequestsListProps {
-    requests: TemplateRequest[];
+    requests: (TemplateRequest & { isNew?: boolean })[];
     isLoading: boolean;
     templates: FormSchema[];
     selectedRequestId: string;
@@ -58,17 +58,22 @@ export const IncomingRequestsList = ({
                             onClick={() => onSelectRequest(request.id)}
                             className={`p-4 rounded-xl border-2 transition-all cursor-pointer group ${selectedRequestId === request.id
                                 ? 'border-primary bg-primary/5'
-                                : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                                : request.isNew 
+                                    ? 'border-primary/30 bg-primary/5 hover:border-primary/50'
+                                    : 'border-border hover:border-primary/50 hover:bg-muted/30'
                                 }`}
                         >
                             <div className="flex justify-between items-start mb-3">
                                 <div className="flex items-center gap-2">
-                                    <div className="p-2 bg-primary/10 rounded-lg">
-                                        <FileText className="w-4 h-4 text-primary" />
+                                    <div className={`p-2 rounded-lg ${request.isNew ? 'bg-primary/20' : 'bg-primary/10'}`}>
+                                        <FileText className={`w-4 h-4 ${request.isNew ? 'text-primary animate-pulse' : 'text-primary'}`} />
                                     </div>
                                     <div>
-                                        <div className="font-bold text-sm truncate max-w-[200px]">
+                                        <div className="font-bold text-sm truncate max-w-[200px] flex items-center gap-2">
                                             {templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`}
+                                            {request.isNew && (
+                                                <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md">جديد</span>
+                                            )}
                                         </div>
                                         <div className="text-[10px] mt-0.5">
                                             <UserDisplay

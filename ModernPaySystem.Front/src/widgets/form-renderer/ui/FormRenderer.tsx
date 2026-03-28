@@ -62,21 +62,13 @@ export const FormRenderer: React.FC<FormRendererProps> = ({ schema, onSubmit, in
 
       {!readOnly && (
         <div className="flex items-center justify-end gap-4 pt-6 border-t mt-8">
-          {isSubmitted && (
-            <span className="text-primary font-bold flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-500">
-              <span className="w-8 h-8 rounded-full  flex items-center justify-center">
-                <Save className="w-4 h-4" />
-              </span>
-              تم حفظ البيانات بنجاح!
-            </span>
-          )}
           <Button
             type="submit"
             disabled={isSubmitted}
-            className={`gap-2 px-8 py-6 text-lg font-bold shadow-lg rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${isSubmitted ? 'bg-green-600 hover:bg-green-600' : 'shadow-primary/20'}`}
+            className={`gap-2 px-8 py-6 text-lg font-bold shadow-lg rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${isSubmitted ? 'bg-muted hover:bg-muted font-normal' : 'shadow-primary/20'}`}
           >
             {isSubmitted ? (
-              <>تم الحفظ</>
+              <>جاري المعالجة...</>
             ) : (
               <>
                 <Save className="w-5 h-5" /> حفظ البيانات

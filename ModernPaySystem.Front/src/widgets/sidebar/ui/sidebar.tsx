@@ -12,8 +12,12 @@ import {
 import { useAuthStore } from '@/app/store/authStore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useMemo } from 'react';
-import { useTemplates } from '@/features/form-builder/api/formEndpoints';
+import { useResponsesByRequester, useRequests, useTemplates } from '@/features/form-builder/api/formEndpoints';
+import { useBadgeCount } from '@/shared/hooks/use-badge-count';
 import { FileText } from 'lucide-react';
+
+const LAST_SEEN_RESPONSES_KEY = 'last_seen_total_responses';
+const LAST_SEEN_PENDING_KEY = 'last_seen_total_pending';
 
 interface SidebarProps {
     className?: string;
@@ -22,9 +26,25 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const user = useAuthStore((state) => state.user);
     const logoutAction = useAuthStore((state) => state.logout);
     const navigate = useNavigate();
     const location = useLocation();
+
+    // 1. Incoming Responses (For Requester)
+    const { data: pagedResponses } = useResponsesByRequester(user?.id || null, 1, 1);
+    const totalResponses = (pagedResponses as any)?.totalItems || 0;
+    const incomingResponsesBadge = useBadgeCount(totalResponses, LAST_SEEN_RESPONSES_KEY, '/form-builder/my-responses');
+
+    // 2. Pending Requests (For Approver)
+    const { data: pagedPending } = useRequests(false, 1, 1);
+    const totalPending = pagedPending?.totalItems || 0;
+    const pendingRequestsBadge = useBadgeCount(totalPending, LAST_SEEN_PENDING_KEY, '/form-builder/responses');
+
+    const badges = useMemo(() => ({
+        '/form-builder/my-responses': incomingResponsesBadge,
+        '/form-builder/responses': pendingRequestsBadge,
+    }), [incomingResponsesBadge, pendingRequestsBadge]);
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(() => {
         const initialStates: Record<string, boolean> = {};
@@ -269,7 +289,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                                                 }}
                                             >
                                                 <div className="opacity-70">{child.icon}</div>
-                                                <span className='font-bold'>{child.title} </span>
+                                                <span className='font-bold flex-1'>{child.title} </span>
+                                                {(badges as any)[child.path] > 0 && (
+                                                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground animate-in zoom-in-50 duration-300">
+                                                        {(badges as any)[child.path]}
+                                                    </span>
+                                                )}
                                             </PrefetchNavLink>
                                         );
                                     })}
