@@ -62,7 +62,7 @@ export const RequestPage = () => {
             // لإعادة تعيين الفورم، نقوم بتغيير الـ Key الخاص بالمكون
             setFormKey(prev => prev + 1);
             setFiles([]);
-            setApproverId('');
+            // setApproverId('');
             // لا نحذف selectedTemplateId كي يبقى الفورم ظاهراً
         },
         onError: () => {
