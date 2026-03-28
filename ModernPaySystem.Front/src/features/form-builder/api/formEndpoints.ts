@@ -129,6 +129,11 @@ export const formEndpoints = {
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
+    },
+
+    getResponsesByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateResponse> }> => {
+        const response = await api.get(`/Responses/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
+        return response.data;
     }
 };
 
@@ -214,5 +219,18 @@ export const useRequestResponses = (requestId: string | null) => {
         },
         enabled: !!requestId,
         ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
+    });
+};
+
+export const useResponsesByRequester = (requesterId: string | null, page: number = 1, pageSize: number = 10) => {
+    return useQuery({
+        queryKey: ['responses', 'by-requester', requesterId, page, pageSize],
+        queryFn: async () => {
+            if (!requesterId) return null;
+            const res = await formEndpoints.getResponsesByRequesterId(requesterId, page, pageSize);
+            return res.data;
+        },
+        enabled: !!requesterId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };
