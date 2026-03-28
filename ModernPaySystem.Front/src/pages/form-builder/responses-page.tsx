@@ -1,7 +1,8 @@
+import { useState, useEffect } from 'react';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { IncomingRequestsList } from '@/features/form-builder/ui/IncomingRequestsList';
-import { ResponseForm } from '@/features/form-builder/ui/ResponseForm';
+import { ProcessRequestModal } from '@/features/form-builder/ui/ProcessRequestModal';
 import { useResponsePageLogic } from '@/features/form-builder/model/useResponsePageLogic';
 
 export const ResponsesPage = () => {
@@ -14,6 +15,7 @@ export const ResponsesPage = () => {
         viewingResponse,
         currentUser,
         requests,
+        selectedRequest,
         isLoading,
         templates,
         totalPages,
@@ -21,6 +23,7 @@ export const ResponsesPage = () => {
         setPage,
         isPending,
         setComment,
+        setRequestId,
         handleSubmit,
         handleFileChange,
         removeFile,
@@ -28,11 +31,37 @@ export const ResponsesPage = () => {
         handleViewRequest
     } = useResponsePageLogic();
 
-    return (
-        <AnimatedContainer className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold">الرد على الطلبات</h1>
+    const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    // Automatically open process modal when a request is selected (row click)
+    useEffect(() => {
+        if (requestId && selectedRequest) {
+            setIsProcessModalOpen(true);
+        }
+    }, [requestId, selectedRequest]);
+
+    // Cleanup when closing process modal
+    const handleCloseProcessModal = () => {
+        setIsProcessModalOpen(false);
+        setRequestId(''); // Clear selection
+    };
+
+    return (
+        <AnimatedContainer className="container mx-auto p-4 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b">
+                <div>
+                     <h1 className="text-3xl font-black text-primary">الردود والطلبات الواردة</h1>
+                     <p className="text-muted-foreground text-sm mt-1">قم بمراجعة الطلبات واتخاذ القرارات اللازمة بشأنها</p>
+                </div>
+                <div className="flex items-center gap-3">
+                     <span className="px-4 py-2 bg-primary/5 text-primary text-xs font-bold rounded-2xl border border-primary/10 flex items-center gap-2">
+                         <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                         {requests.length} طلبات متاحة للمعالجة
+                     </span>
+                </div>
+            </div>
+
+            <div className="h-[calc(100vh-200px)]">
                 <IncomingRequestsList
                     requests={requests}
                     isLoading={isLoading}
@@ -44,9 +73,15 @@ export const ResponsesPage = () => {
                     totalPages={totalPages}
                     onPageChange={setPage}
                 />
+            </div>
 
-                <ResponseForm
-                    requestId={requestId}
+            {/* Modal 1: Processing Workflow (Row Click) */}
+            {selectedRequest && (
+                <ProcessRequestModal
+                    isOpen={isProcessModalOpen}
+                    onClose={handleCloseProcessModal}
+                    request={selectedRequest}
+                    template={templates.find(t => t.id === selectedRequest.templateId) || null}
                     comment={comment}
                     files={files}
                     isPending={isPending}
@@ -54,10 +89,13 @@ export const ResponsesPage = () => {
                     onCommentChange={setComment}
                     onFileChange={handleFileChange}
                     onRemoveFile={removeFile}
-                    onSubmit={handleSubmit}
+                    onSubmit={async () => {
+                        await handleSubmit();
+                    }}
                 />
-            </div>
+            )}
 
+            {/* Modal 2: Viewing Details Only (Eye Icon Click) */}
             {viewingResponse && (
                 <ResponseDetailsModal
                     isOpen={isModalOpen}

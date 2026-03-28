@@ -103,6 +103,8 @@ export const useResponsePageLogic = () => {
         setRequestId(id);
     };
 
+    const selectedRequest = requests.find(r => r.id === requestId);
+
     return {
         requestId,
         comment,
@@ -112,6 +114,7 @@ export const useResponsePageLogic = () => {
         viewingResponse,
         currentUser,
         requests,
+        selectedRequest,
         isLoading,
         templates,
         totalItems: pagedRequests?.totalItems || 0,
@@ -120,6 +123,7 @@ export const useResponsePageLogic = () => {
         setPage,
         isPending: responseMutation.isPending,
         setComment,
+        setRequestId,
         handleSubmit,
         handleFileChange,
         removeFile,

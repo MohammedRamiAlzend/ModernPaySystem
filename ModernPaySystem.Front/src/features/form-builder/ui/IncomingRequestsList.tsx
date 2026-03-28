@@ -31,7 +31,7 @@ export const IncomingRequestsList = ({
     onPageChange
 }: IncomingRequestsListProps) => {
     return (
-        <Card className="lg:col-span-2 p-6 overflow-hidden flex flex-col h-[700px]">
+        <Card className="p-6 overflow-hidden flex flex-col h-full shadow-lg border-primary/5">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold flex items-center gap-2 text-primary">
                     <Clock className="w-5 h-5" />

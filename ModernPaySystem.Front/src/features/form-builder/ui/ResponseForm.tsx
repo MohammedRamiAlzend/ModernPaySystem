@@ -37,7 +37,7 @@ export const ResponseForm = ({
                     إرسال رد
                 </h2>
                 <div className="space-y-4">
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                         <Label className="text-sm font-bold">معرف الطلب المستهدف</Label>
                         <Input
                             placeholder="اختر طلباً من القائمة أو أدخل المعرف"
@@ -45,7 +45,7 @@ export const ResponseForm = ({
                             disabled
                             className="bg-muted/30 rounded-xl h-11"
                         />
-                    </div>
+                    </div> */}
 
                     <div className="space-y-2">
                         <Label className="text-sm font-bold">نص الرد / القرار</Label>
