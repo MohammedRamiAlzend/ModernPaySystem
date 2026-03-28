@@ -65,6 +65,11 @@ export const formEndpoints = {
         return response.data;
     },
 
+    getRequestsByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.get(`/Requests/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
+        return response.data;
+    },
+
 
     // Responses
     getResponsesByRequestId: async (requestId: string): Promise<{ data: TemplateResponse[] }> => {
@@ -228,6 +233,19 @@ export const useResponsesByRequester = (requesterId: string | null, page: number
         queryFn: async () => {
             if (!requesterId) return null;
             const res = await formEndpoints.getResponsesByRequesterId(requesterId, page, pageSize);
+            return res.data;
+        },
+        enabled: !!requesterId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestsByRequester = (requesterId: string | null, page: number = 1, pageSize: number = 10) => {
+    return useQuery({
+        queryKey: ['requests', 'by-requester', requesterId, page, pageSize],
+        queryFn: async () => {
+            if (!requesterId) return null;
+            const res = await formEndpoints.getRequestsByRequesterId(requesterId, page, pageSize);
             return res.data;
         },
         enabled: !!requesterId,

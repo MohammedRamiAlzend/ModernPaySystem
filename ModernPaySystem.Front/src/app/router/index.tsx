@@ -22,6 +22,7 @@ const RequestPage = lazyWithPreload(() => import('@/pages/form-builder/request-p
 const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/responses-page').then(module => ({ default: module.ResponsesPage })));
 const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/actioned-requests-page'));
 const MyResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/my-responses-page'));
+const MyRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/my-requests-page'));
 
 const RoutePermissions = {
   PUBLIC: 'PUBLIC',
@@ -220,6 +221,19 @@ const routesConfig: RouteObject[] = [
               crumb: () => 'الردود الصادرة',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => ActionedRequestsPage.preload(),
+            },
+          },
+          {
+            path: 'my-requests',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <MyRequestsPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'طلباتي المرسلة',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => MyRequestsPage.preload(),
             },
           },
           {

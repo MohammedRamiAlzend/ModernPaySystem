@@ -1,16 +1,16 @@
 import { Card } from '@/shared/ui/card';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
-import { FileText, Eye, CheckCircle2 } from 'lucide-react';
+import { FileText, Eye, History } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
-import type { TemplateRequest } from '@/entities/form/model/types';
-import { useMyResponsesLogic } from '@/features/form-builder/model/useMyResponsesLogic';
+import { useMyRequestsLogic } from '@/features/form-builder/model/useMyRequestsLogic';
 import { Pagination } from '@/shared/ui/common/pagination';
+import type { TemplateRequest } from '@/entities/form/model/types';
 
-export const MyResponsesPage = () => {
+export const MyRequestsPage = () => {
     const {
         requests,
         isLoading,
@@ -23,21 +23,21 @@ export const MyResponsesPage = () => {
         setIsModalOpen,
         viewingResponse,
         handleViewRequest
-    } = useMyResponsesLogic();
+    } = useMyRequestsLogic();
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold">الطلبات التي تم الرد عليها</h1>
+            <h1 className="text-3xl font-bold">طلباتي</h1>
 
             <Card className="p-6 overflow-hidden flex flex-col min-h-[600px]">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold flex items-center gap-2 text-primary">
-                        <CheckCircle2 className="w-5 h-5" />
-                        طلباتي المستجاب لها
+                        <History className="w-5 h-5" />
+                        سجل الطلبات المقدمة
                     </h2>
                     <div className="flex items-center gap-4">
                         <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
-                            {totalItems} رد مستلم
+                            {totalItems} طلب مقدم
                         </span>
                         <Pagination
                             currentPage={page}
@@ -55,7 +55,7 @@ export const MyResponsesPage = () => {
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم النموذج</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">محتوى الطلب</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">الموافق/المسؤول</th>
-                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ الرد</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ التقديم</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">الإجراءات</th>
                             </tr>
                         </thead>
@@ -69,28 +69,18 @@ export const MyResponsesPage = () => {
                                     </tr>
                                 ))
                             ) : requests.length > 0 ? (
-                                requests.map((request: TemplateRequest & { respondedAt?: string; isNew?: boolean }) => (
-                                     <tr 
-                                         key={request.id} 
-                                         className={`transition-colors group ${request.isNew ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/20'}`}
-                                     >
-                                         <td className="px-6 py-4">
-                                             <div className="flex items-center gap-3">
-                                                 <div className={`p-2 rounded-lg transition-colors ${request.isNew ? 'bg-primary/20' : 'bg-primary/10 group-hover:bg-primary/20'}`}>
-                                                     <FileText className="w-4 h-4 text-primary" />
-                                                 </div>
-                                                 <div className="flex flex-col">
-                                                     <span className="font-bold text-sm flex items-center gap-2">
-                                                         {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
-                                                         {request.isNew && (
-                                                             <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md animate-pulse">
-                                                                 جديد
-                                                             </span>
-                                                         )}
-                                                     </span>
-                                                 </div>
-                                             </div>
-                                         </td>
+                                requests.map((request: TemplateRequest) => (
+                                    <tr key={request.id} className="hover:bg-muted/20 transition-colors group">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                                    <FileText className="w-4 h-4 text-primary" />
+                                                </div>
+                                                <span className="font-bold text-sm">
+                                                    {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
+                                                </span>
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4">
                                             <RequestFieldsPreview
                                                 content={request.content}
@@ -108,7 +98,7 @@ export const MyResponsesPage = () => {
                                             />
                                         </td>
                                         <td className="px-6 py-4 text-xs text-muted-foreground">
-                                            {request.respondedAt ? new Date(request.respondedAt).toLocaleDateString('ar-EG') : '---'}
+                                            {request.createdAt ? new Date(request.createdAt).toLocaleDateString('ar-EG') : '---'}
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <Button
@@ -118,7 +108,7 @@ export const MyResponsesPage = () => {
                                                 onClick={() => handleViewRequest(request)}
                                             >
                                                 <Eye className="w-4 h-4" />
-                                                عرض الرد
+                                                عرض التفاصيل
                                             </Button>
                                         </td>
                                     </tr>
@@ -127,8 +117,8 @@ export const MyResponsesPage = () => {
                                 <tr>
                                     <td colSpan={6} className="py-20 text-center">
                                         <div className="flex flex-col items-center justify-center text-muted-foreground">
-                                            <CheckCircle2 className="w-12 h-12 mb-3 opacity-20" />
-                                            <p className="font-medium">لا توجد طلبات تم الرد عليها حالياً</p>
+                                            <History className="w-12 h-12 mb-3 opacity-20" />
+                                            <p className="font-medium">لا توجد طلبات مقدمة حالياً</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -158,4 +148,4 @@ export const MyResponsesPage = () => {
     );
 };
 
-export default MyResponsesPage;
+export default MyRequestsPage;

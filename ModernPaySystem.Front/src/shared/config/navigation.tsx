@@ -1,5 +1,5 @@
 
-import { LayoutDashboard, Settings, Reply, Archive, FileCheck } from "lucide-react";
+import { LayoutDashboard, Settings, Reply, Archive, FileCheck, List } from "lucide-react";
 // import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive } from "lucide-react";
 
 export interface NavigationItem {
@@ -52,6 +52,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "الردود الواردة",
                 path: "/form-builder/my-responses",
                 icon: <FileCheck className="h-4 w-4" />,
+            },
+
+            {
+                title: "طلباتي",
+                path: "/form-builder/my-requests",
+                icon: <List className="h-4 w-4" />,
             },
 
             {
