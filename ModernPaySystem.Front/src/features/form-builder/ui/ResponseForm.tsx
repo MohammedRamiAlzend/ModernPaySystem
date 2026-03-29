@@ -1,7 +1,6 @@
 import { Card } from '@/shared/ui/card';
 import { Reply, Paperclip, FileText, X } from 'lucide-react';
 import { Label } from '@/shared/ui/label';
-import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 import { Button } from '@/shared/ui/button';
 import { User } from '@/app/store/authStore';

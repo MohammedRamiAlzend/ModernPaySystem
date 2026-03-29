@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/shared/ui/card';
 import { FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
 import type { FormSchema, TemplateRequest, FormResponse } from '@/entities/form/model/types';
