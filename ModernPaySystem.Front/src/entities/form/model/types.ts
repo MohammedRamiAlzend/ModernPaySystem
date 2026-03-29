@@ -78,6 +78,7 @@ export interface CreateTemplateDto {
     contentAsJson: string; // JSON string of the form schema
     templateName: string;
     templateDescription?: string | null;
+    isExternal?: boolean;
 }
 
 export interface Template {
@@ -89,6 +90,7 @@ export interface Template {
     createdAt: string | null; // Date string
     updatedByUserId: string | null;
     updatedAt: string | null; // Date string
+    isExternal: boolean;
 }
 
 export interface CreateRequestDto {

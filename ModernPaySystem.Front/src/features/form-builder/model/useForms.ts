@@ -17,7 +17,7 @@ export const useForms = () => {
             const templates = Array.isArray(result) ? result :
                 (Array.isArray(result.data) ? result.data : [result.data]);
 
-            return templates.filter(Boolean).map(t => {
+            return templates.filter(Boolean).filter(t => !t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi")).map(t => {
                 try {
                     let parsed;
                     try {

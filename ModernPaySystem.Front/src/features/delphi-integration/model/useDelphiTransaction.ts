@@ -9,7 +9,7 @@ import type { FormSchema } from '@/entities/form/model/types';
  * It ensures the fixed "Delphi" template exists on the server and is up-to-date before use.
  */
 export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
-    const { data: templates = [], isLoading: isLoadingTemplates } = useTemplates();
+    const { data: templates = [], isLoading: isLoadingTemplates } = useTemplates(true);
     const { mutateAsync: createTemplate, isPending: isCreatingTemplate } = useCreateTemplate();
     const { mutateAsync: updateTemplate, isPending: isUpdatingTemplate } = useUpdateTemplate();
 
@@ -47,7 +47,8 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
                             data: {
                                 templateName: DELPHI_TEMPLATE_NAME,
                                 templateDescription: DELPHI_FIXED_SCHEMA.description || null,
-                                contentAsJson: JSON.stringify(DELPHI_FIXED_SCHEMA)
+                                contentAsJson: JSON.stringify(DELPHI_FIXED_SCHEMA),
+                                isExternal: true
                             }
                         });
                     }
@@ -68,7 +69,8 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
                     const newTemplateDto = {
                         templateName: DELPHI_TEMPLATE_NAME,
                         templateDescription: DELPHI_FIXED_SCHEMA.description || null,
-                        contentAsJson: JSON.stringify(DELPHI_FIXED_SCHEMA)
+                        contentAsJson: JSON.stringify(DELPHI_FIXED_SCHEMA),
+                        isExternal: true
                     };
                     const response = await createTemplate(newTemplateDto);
 

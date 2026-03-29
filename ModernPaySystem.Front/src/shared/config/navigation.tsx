@@ -1,6 +1,6 @@
 
-import { LayoutDashboard, Settings, Reply, Archive, FileCheck, List } from "lucide-react";
-// import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive } from "lucide-react";
+import { LayoutDashboard, Settings, Reply, Archive, FileCheck } from "lucide-react";
+// import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive,List } from "lucide-react";
 
 export interface NavigationItem {
     title: string;

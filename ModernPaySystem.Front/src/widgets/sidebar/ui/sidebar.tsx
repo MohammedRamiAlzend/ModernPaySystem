@@ -74,11 +74,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
             // Identifying by title or path. Path "/form-builder/actioned" seems to be reused, but let's check title or unique properties.
             // The item has path "/form-builder/actioned".
             if (item.title === "منصة خدمات ريف دمشق") {
-                const templateChildren = templates?.map(t => ({
-                    title: t.templateName,
-                    path: `/form-builder/requests/new?templateId=${t.id}`,
-                    icon: <FileText className="h-3 w-3" />,
-                })) || [];
+                const templateChildren = templates
+                    ?.filter(t => !t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"))
+                    ?.map(t => ({
+                        title: t.templateName,
+                        path: `/form-builder/requests/new?templateId=${t.id}`,
+                        icon: <FileText className="h-3 w-3" />,
+                    })) || [];
 
                 const templatesSection = {
                     title: "أنواع النماذج",

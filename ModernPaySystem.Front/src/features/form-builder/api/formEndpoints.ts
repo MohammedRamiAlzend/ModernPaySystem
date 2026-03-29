@@ -156,18 +156,20 @@ export const useRequests = (hasResponse: boolean = false, page: number = 1, page
     });
 };
 
-export const useTemplates = () => {
+export const useTemplates = (showExternal: boolean = false) => {
     return useQuery({
-        queryKey: ['templates'],
+        queryKey: ['templates', showExternal],
         queryFn: async (): Promise<Template[]> => {
             const res = await formEndpoints.getTemplates();
+            const filterFn = (t: Template) => showExternal || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"));
+            
+            if (Array.isArray(res)) return res.filter(filterFn);
+            
             // Handle if data is wrapped in { data: [] }
             if (res && !Array.isArray(res) && 'data' in res && Array.isArray(res.data)) {
-                return res.data;
+                return (res.data as Template[]).filter(filterFn);
             }
 
-            if (Array.isArray(res)) return res;
-            // Shouldn't normally reach here, but handle gracefully
             return [];
         },
         ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
