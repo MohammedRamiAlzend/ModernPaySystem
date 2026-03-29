@@ -8,16 +8,16 @@ import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strat
  * Hook for fetching forms (Templates)
  * Maps backend Template -> Frontend FormSchema
  */
-export const useForms = () => {
+export const useForms = (showAll: boolean = false) => {
     const query = useQuery({
-        queryKey: ['forms'],
+        queryKey: ['forms', showAll],
         queryFn: async () => {
             const result = await formEndpoints.getTemplates();
             // Support both array response or object with data array
             const templates = Array.isArray(result) ? result :
                 (Array.isArray(result.data) ? result.data : [result.data]);
 
-            return templates.filter(Boolean).filter(t => !t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi")).map(t => {
+            return templates.filter(Boolean).filter(t => showAll || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"))).map(t => {
                 try {
                     let parsed;
                     try {

@@ -39,7 +39,7 @@ export const useResponsePageLogic = () => {
         isNew: !seenIds.includes(r.id)
     }));
 
-    const { data: templates = [] } = useForms();
+    const { data: templates = [] } = useForms(true);
 
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,

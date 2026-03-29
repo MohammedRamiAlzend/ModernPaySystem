@@ -50,7 +50,7 @@ export const useMyResponsesLogic = () => {
             isNew: !seenIds.includes(resp.id) // Check if this response ID has been seen
         })) || [];
 
-    const { data: templates = [] } = useForms();
+    const { data: templates = [] } = useForms(true);
 
     const { isModalOpen: isDetailsOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails(templates);
 
