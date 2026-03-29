@@ -3,7 +3,7 @@ import { useResponsesByRequester } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useRequestDetails } from './useRequestDetails';
 import { useAuthStore } from '@/app/store/authStore';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const SEEN_RESPONSES_KEY = 'seen_responses_ids';
 
@@ -11,19 +11,23 @@ export const useMyResponsesLogic = () => {
     const { user } = useAuthStore();
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
     const { data: pagedResponses, isLoading } = useResponsesByRequester(user?.id || null, page, 15);
-    const [seenIds, setSeenIds] = useState<string[]>([]);
-
+    
     // Load seen IDs from localStorage on mount
-    useEffect(() => {
+    const [seenIds, setSeenIds] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return [];
         const saved = localStorage.getItem(SEEN_RESPONSES_KEY);
         if (saved) {
             try {
-                setSeenIds(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse seen responses", e);
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    return parsed;
+                }
+            } catch {
+                console.error("Failed to parse seen responses");
             }
         }
-    }, []);
+        return [];
+    });
 
     // We handle both cases: Paginated Object with .items OR direct array from API
     const responseItems = Array.isArray(pagedResponses) 

@@ -89,7 +89,7 @@ export const processDelphiData = (raw: DelphiInput): DelphiValidationResult => {
         } else {
             warnings.push("Could not parse date format, using as is");
         }
-    } catch (e) {
+    } catch {
         warnings.push("Date parsing failed");
     }
 

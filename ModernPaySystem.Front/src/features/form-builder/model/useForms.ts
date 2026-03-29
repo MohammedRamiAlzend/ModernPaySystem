@@ -22,7 +22,7 @@ export const useForms = (showAll: boolean = false) => {
                     let parsed;
                     try {
                         parsed = JSON.parse(t.contentAsJson);
-                    } catch (e) {
+                    } catch {
                         // Fallback for single-quoted JSON (unsafe but handles user's specific case if malformed)
                         // Only apply if standard parse fails
                         console.warn('Standard JSON parse failed, trying single-quote replacement', t.contentAsJson);
@@ -40,8 +40,8 @@ export const useForms = (showAll: boolean = false) => {
                     schema.title = t.templateName;
                     schema.description = t.templateDescription || '';
                     return schema;
-                } catch (e) {
-                    console.error('Failed to parse template content', t, e);
+                } catch {
+                    console.error('Failed to parse template content', t);
                     return null;
                 }
             }).filter((f): f is FormSchema => f !== null);

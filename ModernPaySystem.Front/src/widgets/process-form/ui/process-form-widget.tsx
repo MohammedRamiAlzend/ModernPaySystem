@@ -42,7 +42,7 @@ export const ProcessFormWidget = () => {
         addService
     } = useProcessManager();
 
-    const handleRowClick = (_: any, __: number) => {
+    const handleRowClick = () => {
         handleNavigate('first'); // Reset to first record if needed
         // Set the current record index and form data
         // This would need to be handled differently in a real implementation

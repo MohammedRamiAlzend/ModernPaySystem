@@ -77,7 +77,7 @@ export const DelphiTransactionPage = () => {
 
             setRawInput(""); // Clear for next one
             setFiles([]);    // Clear files
-        } catch (e) {
+        } catch {
             showStatus({
                 type: 'error',
                 title: 'فشل الإرسال',

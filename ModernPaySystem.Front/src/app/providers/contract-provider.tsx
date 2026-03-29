@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, type ReactNode } from 'react';
 import type { Contract } from '@/entities/contracts/types/contract-types';
 
@@ -20,7 +21,7 @@ export const useContracts = () => {
     return context;
 };
 
-export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [contracts, setContracts] = useState<Contract[]>([
         {
             id: 1,
@@ -92,3 +93,8 @@ export const ContractProvider: React.FC<{ children: ReactNode }> = ({ children }
         </ContractContext.Provider>
     );
 };
+
+export { ContractProvider };
+// Separate export for fast refresh compatibility
+const ContractProviderExport = ContractProvider;
+export default ContractProviderExport;

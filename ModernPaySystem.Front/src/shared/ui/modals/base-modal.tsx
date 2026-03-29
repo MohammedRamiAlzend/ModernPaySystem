@@ -22,6 +22,7 @@ export interface BaseModalProps {
     maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
     maxHeight?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
     showCloseButton?: boolean;
+    hideHeaderVisually?: boolean;
 }
 
 /**
@@ -36,7 +37,8 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     children,
     footer,
     maxWidth = 'md',
-    maxHeight = 'lg'
+    maxHeight = 'lg',
+    hideHeaderVisually = false
 }) => {
     const maxWidthClasses = {
         'sm': 'max-w-[380px]',
@@ -67,15 +69,13 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                 )}
             >
                 <div className="p-4 md:p-6 flex flex-col h-full overflow-hidden">
-                    <AlertDialogHeader className="text-right space-y-2 shrink-0">
-                        <AlertDialogTitle className="text-2xl font-black leading-tight">
-                            {title}
+                    <AlertDialogHeader className={cn("text-right space-y-2 shrink-0", (hideHeaderVisually || (!title && !description)) && "sr-only")}>
+                        <AlertDialogTitle className={cn("text-2xl font-black leading-tight", !title && !hideHeaderVisually && "sr-only")}>
+                            {title || 'تنبيه'}
                         </AlertDialogTitle>
-                        {description && (
-                            <AlertDialogDescription className="font-medium text-base leading-relaxed">
-                                {description}
-                            </AlertDialogDescription>
-                        )}
+                        <AlertDialogDescription className={cn("font-medium text-base leading-relaxed", !description && !hideHeaderVisually && "sr-only")}>
+                            {description || title || 'تنبيه'}
+                        </AlertDialogDescription>
                     </AlertDialogHeader>
 
                     <div className="my-4 overflow-y-auto flex-1 pr-2 custom-scrollbar min-h-0">

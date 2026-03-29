@@ -100,7 +100,7 @@ export const UserManagement = () => {
                 showStatus({ type: 'success', title: 'نجاح', message: 'تم إضافة المستخدم بنجاح' });
             }
             setIsUserDialogOpen(false);
-        } catch (error) {
+        } catch {
             showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء حفظ البيانات' });
         }
     };
@@ -115,7 +115,7 @@ export const UserManagement = () => {
                 try {
                     await deleteUser.mutateAsync(user.id);
                     showStatus({ type: 'success', title: 'نجاح', message: 'تم حذف المستخدم بنجاح' });
-                } catch (error) {
+                } catch {
                     showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء الحذف' });
                 }
             }

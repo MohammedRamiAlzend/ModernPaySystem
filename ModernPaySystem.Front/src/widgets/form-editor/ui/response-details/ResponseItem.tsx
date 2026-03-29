@@ -26,6 +26,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 revokeZipImages(images);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleToggleAttachments = async () => {

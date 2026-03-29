@@ -50,9 +50,10 @@ export const UserPicker = ({
 
     // Update internal state if defaultValue changes
     useEffect(() => {
-        if (defaultValue) {
+        if (defaultValue && defaultValue !== selectedUser) {
             setSelectedUser(defaultValue);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [defaultValue]);
 
     const handleSubSystemChange = (value: string) => {

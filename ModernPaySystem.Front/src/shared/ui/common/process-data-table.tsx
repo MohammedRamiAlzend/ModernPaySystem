@@ -28,7 +28,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
 }
 
-const ProcessDataTable = <T extends {}>({
+const ProcessDataTable = <T extends Record<string, unknown>>({
   columns,
   data,
   caption,

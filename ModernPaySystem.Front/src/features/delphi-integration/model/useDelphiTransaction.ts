@@ -52,7 +52,7 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
                             }
                         });
                     }
-                } catch (_) {
+                } catch {
                     // If parsing fails, we still continue with the local schema
                 }
 
@@ -79,9 +79,9 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
                     // Use local schema + real DB id
                     const createdTemplate = response.data;
                     setTemplateToUse({ ...DELPHI_FIXED_SCHEMA, id: createdTemplate.id });
-                } catch (e) {
+                } catch (error) {
                     setSyncError("Failed to create fixed Delphi template on server");
-                    console.error("Sync error:", e);
+                    console.error("Sync error:", error);
                 } finally {
                     isSyncingRef.current = false;
                 }
@@ -100,7 +100,7 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
             inputObj = typeof rawInput === 'string' ? JSON.parse(rawInput) : rawInput;
             const result = processDelphiData(inputObj);
             setProcessedData(result);
-        } catch (e) {
+        } catch {
             setProcessedData({
                 status: 'error',
                 errors: ["Invalid JSON received from source app"],

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useQueryState, parseAsInteger } from 'nuqs';
 import { formEndpoints, useRequests } from '../api/formEndpoints';
@@ -15,19 +15,23 @@ export const useResponsePageLogic = () => {
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
-    const [seenIds, setSeenIds] = useState<string[]>([]);
-
+    
     // Load seen IDs from localStorage
-    useEffect(() => {
+    const [seenIds, setSeenIds] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return [];
         const saved = localStorage.getItem(SEEN_REQUESTS_KEY);
         if (saved) {
             try {
-                setSeenIds(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse seen requests", e);
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    return parsed;
+                }
+            } catch {
+                console.error("Failed to parse seen requests");
             }
         }
-    }, []);
+        return [];
+    });
 
     const currentUser = useAuthStore((state) => state.user);
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));

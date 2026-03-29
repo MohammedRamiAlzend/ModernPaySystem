@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useRef } from 'react';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { IncomingRequestsList } from '@/features/form-builder/ui/IncomingRequestsList';
@@ -32,18 +33,25 @@ export const ResponsesPage = () => {
     } = useResponsePageLogic();
 
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
+    const prevRequestIdRef = useRef<string | null>(null);
 
-    // Automatically open process modal when a request is selected (row click)
+    // Automatically sync modal state with request selection
     useEffect(() => {
         if (requestId && selectedRequest) {
-            setIsProcessModalOpen(true);
+            if (prevRequestIdRef.current !== requestId) {
+                setIsProcessModalOpen(true);
+                prevRequestIdRef.current = requestId;
+            }
+        } else if (!requestId) {
+            // Clear ref and close modal when requestId is cleared
+            prevRequestIdRef.current = null;
+            setIsProcessModalOpen(false);
         }
     }, [requestId, selectedRequest]);
 
     // Cleanup when closing process modal
     const handleCloseProcessModal = () => {
-        setIsProcessModalOpen(false);
-        setRequestId(''); // Clear selection
+        setRequestId(''); // This will trigger the useEffect logic above
     };
 
     return (

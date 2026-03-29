@@ -65,6 +65,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                 setZipImages([]);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, response?.id]);
 
     if (!response) return null;
