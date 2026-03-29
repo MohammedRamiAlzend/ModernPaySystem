@@ -60,7 +60,7 @@ export const IncomingRequestsList = ({
                             onClick={() => onSelectRequest(request.id)}
                             className={`p-4 rounded-xl border-2 transition-all cursor-pointer group ${selectedRequestId === request.id
                                 ? 'border-primary bg-primary/5'
-                                : request.isNew 
+                                : request.isNew
                                     ? 'border-primary/30 bg-primary/5 hover:border-primary/50'
                                     : 'border-border hover:border-primary/50 hover:bg-muted/30'
                                 }`}
@@ -83,7 +83,7 @@ export const IncomingRequestsList = ({
                                                 </span>
                                             )}
                                             {!showActioned && !request.isNew && (
-                                                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-600 text-[10px] font-bold rounded-md">قيد الانتظار</span>
+                                                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-600 text-[14px] font-bold rounded-md">قيد الانتظار</span>
                                             )}
                                         </div>
                                         <div className="text-[10px] mt-0.5">
