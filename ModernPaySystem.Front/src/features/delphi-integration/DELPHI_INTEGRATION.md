@@ -93,13 +93,13 @@ export const DELPHI_FIXED_SCHEMA: FormSchema = {
 
 **أ) مزامنة النموذج مع السيرفر:**
 ```
-تحميل قائمة النماذج
+تحميل قائمة النماذج (مع تفعيل showExternal=true لرؤية النماذج المخفية)
     ↓
 هل يوجد نموذج باسم DELPHI_TEMPLATE_NAME؟
     ├── نعم → هل المخطط محدّث (عدد الحقول مطابق)?
     │           ├── نعم → استخدمه مباشرة
     │           └── لا  → حدّثه تلقائياً في قاعدة البيانات
-    └── لا  → أنشئه (مرة واحدة فقط بفضل isSyncingRef)
+    └── لا  → أنشئه مع وسم isExternal: true (مرة واحدة فقط بفضل isSyncingRef)
 ```
 
 **ب) معالجة بيانات JSON الخام:**  
@@ -204,14 +204,12 @@ import { processDelphiEvalData, type DelphiEvalInput } from './delphi-property-e
 import type { FormSchema } from '@/entities/form/model/types';
 
 export const useDelphiEvalTransaction = (rawInput?: string) => {
-    // نفس منطق useDelphiTransaction تماماً
-    // استبدل فقط:
-    //   DELPHI_TEMPLATE_NAME  → DELPHI_EVAL_TEMPLATE_NAME
-    //   DELPHI_FIXED_SCHEMA   → DELPHI_EVAL_SCHEMA
-    //   processDelphiData     → processDelphiEvalData
+    // 1. استدعاء القوالب مع تفعيل showExternal لرؤية القوالب التقنية
+    const { data: templates = [] } = useTemplates(true);
     
-    // ... (انسخ من useDelphiTransaction.ts وعدّل الثوابت)
-};
+    // ... باقي منطق useDelphiTransaction تماماً
+    // مع تعيين isExternal: true عند الإنشاء/التعديل
+}
 ```
 
 ---
@@ -293,4 +291,4 @@ const DelphiEvalPage = lazyWithPreload(() =>
 
 > [!NOTE]
 > **تحديث الـ schema في DB:** يتم تلقائياً عند كل تشغيل للصفحة إذا اختلف عدد الحقول.  
-> لتحديث **محتوى** الحقل (وليس عددها)، يمكنك `تعديل مقارنة hash` في `useDelphiTransaction.ts`.
+> يتم إرسال وسم `isExternal: true` لضمان بقاء النموذج مخفياً عن القوائم العامة والـ Sidebar.
