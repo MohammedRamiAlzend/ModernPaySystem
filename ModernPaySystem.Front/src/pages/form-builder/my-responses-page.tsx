@@ -70,27 +70,27 @@ export const MyResponsesPage = () => {
                                 ))
                             ) : requests.length > 0 ? (
                                 requests.map((request: TemplateRequest & { respondedAt?: string; isNew?: boolean }) => (
-                                     <tr 
-                                         key={request.id} 
-                                         className={`transition-colors group ${request.isNew ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/20'}`}
-                                     >
-                                         <td className="px-6 py-4">
-                                             <div className="flex items-center gap-3">
-                                                 <div className={`p-2 rounded-lg transition-colors ${request.isNew ? 'bg-primary/20' : 'bg-primary/10 group-hover:bg-primary/20'}`}>
-                                                     <FileText className="w-4 h-4 text-primary" />
-                                                 </div>
-                                                 <div className="flex flex-col">
-                                                     <span className="font-bold text-sm flex items-center gap-2">
-                                                         {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
-                                                         {request.isNew && (
-                                                             <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md animate-pulse">
-                                                                 جديد
-                                                             </span>
-                                                         )}
-                                                     </span>
-                                                 </div>
-                                             </div>
-                                         </td>
+                                    <tr
+                                        key={request.id}
+                                        className={`transition-colors group ${request.isNew ? 'bg-primary/5 hover:bg-primary/10' : 'hover:bg-muted/20'}`}
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`p-2 rounded-lg transition-colors ${request.isNew ? 'bg-primary/20' : 'bg-primary/10 group-hover:bg-primary/20'}`}>
+                                                    <FileText className="w-4 h-4 text-primary" />
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="font-bold text-sm flex items-center gap-2">
+                                                        {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
+                                                        {request.isNew && (
+                                                            <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md animate-pulse">
+                                                                جديد
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
                                         <td className="px-6 py-4">
                                             <RequestFieldsPreview
                                                 content={request.content}

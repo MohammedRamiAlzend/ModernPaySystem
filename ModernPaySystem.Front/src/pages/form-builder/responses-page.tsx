@@ -28,9 +28,7 @@ export const ResponsesPage = () => {
         handleFileChange,
         removeFile,
         handleSelectRequest,
-        handleViewRequest,
-        showActioned,
-        setShowActioned
+        handleViewRequest
     } = useResponsePageLogic();
 
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -55,26 +53,12 @@ export const ResponsesPage = () => {
                      <h1 className="text-3xl font-black text-primary">الردود والطلبات الواردة</h1>
                      <p className="text-muted-foreground text-sm mt-1">قم بمراجعة الطلبات واتخاذ القرارات اللازمة بشأنها</p>
                 </div>
-                 <div className="flex items-center gap-3">
-                      <div className="flex p-1 bg-muted rounded-2xl overflow-hidden border">
-                          <button 
-                              onClick={() => setShowActioned(false)}
-                              className={`px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${!showActioned ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:bg-muted-foreground/10'}`}
-                          >
-                              قيد الانتظار
-                          </button>
-                          <button 
-                              onClick={() => setShowActioned(true)}
-                              className={`px-4 py-1.5 text-xs font-bold rounded-xl transition-all ${showActioned ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:bg-muted-foreground/10'}`}
-                          >
-                              تم الرد عليها
-                          </button>
-                      </div>
-                      <span className="px-4 py-2 bg-primary/5 text-primary text-xs font-bold rounded-2xl border border-primary/10 flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${!showActioned ? 'bg-primary animate-pulse' : 'bg-emerald-500'}`} />
-                          {requests.length} {showActioned ? 'طلبات تمت معالجتها' : 'طلبات متاحة للمعالجة'}
-                      </span>
-                 </div>
+                <div className="flex items-center gap-3">
+                     <span className="px-4 py-2 bg-primary/5 text-primary text-xs font-bold rounded-2xl border border-primary/10 flex items-center gap-2">
+                         <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                         {requests.length} طلبات متاحة للمعالجة
+                     </span>
+                </div>
             </div>
 
             <div className="h-[calc(100vh-200px)]">
@@ -88,7 +72,6 @@ export const ResponsesPage = () => {
                     page={page}
                     totalPages={totalPages}
                     onPageChange={setPage}
-                    showActioned={showActioned}
                 />
             </div>
 

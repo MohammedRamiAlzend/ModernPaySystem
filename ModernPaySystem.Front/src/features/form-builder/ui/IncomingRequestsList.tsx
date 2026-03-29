@@ -17,7 +17,6 @@ interface IncomingRequestsListProps {
     page: number;
     totalPages: number;
     onPageChange: (page: number) => void;
-    showActioned?: boolean;
 }
 
 export const IncomingRequestsList = ({
@@ -29,8 +28,7 @@ export const IncomingRequestsList = ({
     onViewRequest,
     page,
     totalPages,
-    onPageChange,
-    showActioned
+    onPageChange
 }: IncomingRequestsListProps) => {
     return (
         <Card className="p-6 overflow-hidden flex flex-col h-full shadow-lg border-primary/5">
@@ -75,15 +73,6 @@ export const IncomingRequestsList = ({
                                             {templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`}
                                             {request.isNew && (
                                                 <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md">جديد</span>
-                                            )}
-                                            {showActioned && (
-                                                <span className="px-1.5 py-0.5 bg-emerald-500 text-[10px] text-white rounded-md flex items-center gap-1">
-                                                    <div className="w-1 h-1 bg-white rounded-full animate-pulse" />
-                                                    تم الرد
-                                                </span>
-                                            )}
-                                            {!showActioned && !request.isNew && (
-                                                <span className="px-1.5 py-0.5 bg-amber-500/20 text-amber-600 text-[14px] font-bold rounded-md">قيد الانتظار</span>
                                             )}
                                         </div>
                                         <div className="text-[10px] mt-0.5">

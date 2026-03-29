@@ -6,7 +6,12 @@ import { getVisibleFields } from '@/shared/lib/form-engine/response-evaluator';
 import { ResponseDetailsData } from '@/widgets/form-editor/ui/response-details/ResponseDetailsData';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
-import { extractImagesFromZip, revokeZipImages, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
+import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage } from '@/shared/utils/zip-handler';
+import { Printer, Download, FileDown } from 'lucide-react';
+import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
+import { prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
+import { Button } from '@/shared/ui/button';
+import { useUIStore } from '@/app/store/uiStore';
 
 interface SelectedRequestPreviewProps {
     request: TemplateRequest | null;
@@ -14,8 +19,12 @@ interface SelectedRequestPreviewProps {
 }
 
 export const SelectedRequestPreview = ({ request, template }: SelectedRequestPreviewProps) => {
+    const { showStatus } = useUIStore();
     const [zipImages, setZipImages] = useState<ZipImage[]>([]);
     const [isLoadingImages, setIsLoadingImages] = useState(false);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [isGeneratingImagesPDF, setIsGeneratingImagesPDF] = useState(false);
+    const [isAllImages, setIsAllImages] = useState(false);
 
     // Load images from ZIP
     useEffect(() => {
@@ -24,8 +33,9 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                 setIsLoadingImages(true);
                 try {
                     const blob = await formEndpoints.fetchRequestAttachmentsBlob(request.id);
-                    const content: ZipContent = await extractImagesFromZip(blob);
-                    setZipImages(content.images);
+                    const data = await extractImagesFromZip(blob);
+                    setZipImages(data.images);
+                    setIsAllImages(data.isAllImages);
                 } catch (error) {
                     console.error('Failed to load images from ZIP', error);
                 } finally {
@@ -73,21 +83,98 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
 
     const visibleFields = getVisibleFields(pseudoResponse);
 
+    const handlePrint = () => {
+        if (!template) return;
+        const printFields = prepareFieldsForPrint(pseudoResponse);
+        printFormResponse(
+            template.title,
+            new Date(request.createdAt || '').toLocaleString('ar-EG'),
+            printFields,
+            'rtl'
+        );
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!template) return;
+        setIsGeneratingPDF(true);
+        try {
+            const printFields = prepareFieldsForPrint(pseudoResponse);
+            await generateFormPDF(
+                template.title,
+                new Date(request.createdAt || '').toLocaleString('ar-EG'),
+                printFields,
+                'rtl'
+            );
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            showStatus({ type: 'error', title: 'خطأ', message: 'فشل إنشاء ملف PDF' });
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
+
+    const handleDownloadImagesPDF = async () => {
+        if (zipImages.length === 0) return;
+        setIsGeneratingImagesPDF(true);
+        try {
+            await imagesToPdf(zipImages, `Attachments_${request.id.split('-')[0]}`);
+        } catch (error) {
+            console.error('Error generating images PDF:', error);
+            showStatus({ type: 'error', title: 'خطأ', message: 'فشل إنشاء ملف PDF للصور' });
+        } finally {
+            setIsGeneratingImagesPDF(false);
+        }
+    };
+
     return (
         <Card className="flex flex-col h-full overflow-hidden border-primary/20 bg-muted/5">
-            <div className="p-4 border-b bg-muted/20 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div className="p-4 border-b bg-muted/20 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 overflow-hidden">
                     <div className="p-2 bg-primary/10 rounded-lg">
                         <FileText className="w-4 h-4 text-primary" />
                     </div>
-                    <div>
-                        <h3 className="font-bold text-sm">{template.title}</h3>
+                    <div className="overflow-hidden">
+                        <h3 className="font-bold text-sm truncate">{template.title}</h3>
                         <div className="flex items-center gap-2 mt-0.5">
                             <UserDisplay userId={request.requesterId} className="text-[10px] text-muted-foreground" showIcon iconClassName="w-2.5 h-2.5" />
                             <span className="text-[10px] text-border">|</span>
                             <span className="text-[10px] text-muted-foreground">{new Date(request.createdAt || '').toLocaleString('ar-EG')}</span>
                         </div>
                     </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handlePrint}
+                        title="طباعة"
+                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                        <Printer className="w-4 h-4" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={isGeneratingPDF}
+                        onClick={handleDownloadPDF}
+                        title="تحميل PDF"
+                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                        {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Download className="w-4 h-4" />}
+                    </Button>
+                    {isAllImages && zipImages.length > 0 && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isGeneratingImagesPDF}
+                            onClick={handleDownloadImagesPDF}
+                            title="تحميل الصور كـ PDF"
+                            className="h-8 w-8 rounded-lg hover:bg-emerald-50 text-emerald-600 hover:text-emerald-700 transition-colors"
+                        >
+                            {isGeneratingImagesPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                        </Button>
+                    )}
                 </div>
             </div>
 
