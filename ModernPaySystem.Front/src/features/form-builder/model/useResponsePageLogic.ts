@@ -30,8 +30,9 @@ export const useResponsePageLogic = () => {
     }, []);
 
     const currentUser = useAuthStore((state) => state.user);
+    const [showActioned, setShowActioned] = useState(false);
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
-    const { data: pagedRequests, isLoading } = useRequests(false, page, 15);
+    const { data: pagedRequests, isLoading } = useRequests(showActioned, page, 15);
     
     // Map requests to include isNew status
     const requests = (pagedRequests?.items || []).map(r => ({
@@ -128,6 +129,8 @@ export const useResponsePageLogic = () => {
         handleFileChange,
         removeFile,
         handleSelectRequest,
-        handleViewRequest
+        handleViewRequest,
+        showActioned,
+        setShowActioned
     };
 };

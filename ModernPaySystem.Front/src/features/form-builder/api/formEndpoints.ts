@@ -217,11 +217,16 @@ export const useRequestResponses = (requestId: string | null) => {
         queryFn: async () => {
             if (!requestId) return [];
             const res = await formEndpoints.getResponsesByRequestId(requestId);
-            // Handle API wrapping: { data: [...] } vs direct array
-            if ('data' in res && Array.isArray(res.data)) {
-                return res.data;
+            
+            // Handle PagedResult wrapping: { data: { items: [...] } }
+            if (res && typeof res === 'object' && 'data' in res) {
+                const inner = res.data as any;
+                if (Array.isArray(inner)) return inner;
+                if (inner && Array.isArray(inner.items)) return inner.items;
             }
+            
             if (Array.isArray(res)) return res as TemplateResponse[];
+            
             return [] as TemplateResponse[];
         },
         enabled: !!requestId,
