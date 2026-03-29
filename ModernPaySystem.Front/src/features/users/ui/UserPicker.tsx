@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useAuthStore } from '@/app/store/authStore';
 import { useUsers, useSubSystems } from '../api/usersApi';
 import { Label } from '@/shared/ui/label';
 import {
@@ -18,6 +19,7 @@ interface UserPickerProps {
     subSystemPlaceholder?: string;
     defaultValue?: string;
     defaultSubSystemId?: string;
+    showCurrentUser?: boolean;
     className?: string;
 }
 
@@ -28,13 +30,23 @@ export const UserPicker = ({
     subSystemPlaceholder = "اختر النظام...",
     defaultValue,
     defaultSubSystemId = "1",
+    showCurrentUser = false,
     className
 }: UserPickerProps) => {
+    const { user: currentUserData } = useAuthStore();
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(defaultSubSystemId);
     const [selectedUser, setSelectedUser] = useState<string>(defaultValue || '');
 
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
-    const { data: users = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
+    const { data: rawUsers = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
+
+    // Filter out current user if showCurrentUser is false
+    const users = useMemo(() => {
+        if (showCurrentUser || !currentUserData) return rawUsers;
+        // The DTO might have id (Guid) or user_id or something else
+        // In User.ts (Backend) it is Guid Id. In authStore it is id.
+        return rawUsers.filter(u => u.id !== currentUserData.id);
+    }, [rawUsers, showCurrentUser, currentUserData]);
 
     // Update internal state if defaultValue changes
     useEffect(() => {

@@ -46,6 +46,7 @@ export const RequestSubmissionSidebar = ({
                     className="!grid-cols-1"
                     label={approverLabel}
                     defaultValue={approverId}
+                    showCurrentUser={false}
                 />
             </SidebarSection>
 
