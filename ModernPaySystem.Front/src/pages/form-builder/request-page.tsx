@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
@@ -12,36 +12,21 @@ import { useUIStore } from '@/app/store/uiStore';
 import { FileText } from 'lucide-react';
 import { RequestSubmissionSidebar } from '@/features/form-builder/ui/RequestSubmissionSidebar';
 
+/**
+ * RequestPage: Handles the submission of a new form request.
+ * Uses templateId from URL to load the correct schema.
+ */
 export const RequestPage = () => {
     const { showStatus } = useUIStore();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const { data: templates = [] } = useForms();
-
     const [formKey, setFormKey] = useState(0);
 
-    // Initialize from URL or empty
-    const paramTemplateId = searchParams.get('templateId') || '';
-    const [selectedTemplateId, setSelectedTemplateId] = useState<string>(paramTemplateId);
+    // Get templateId directly from URL (Single source of truth to avoid infinite loops)
+    const selectedTemplateId = searchParams.get('templateId') || '';
     const [approverId, setApproverId] = useState<string>('');
-
-    // Sync URL when local state changes
-    useEffect(() => {
-        if (selectedTemplateId) {
-            setSearchParams(prev => {
-                prev.set('templateId', selectedTemplateId);
-                return prev;
-            });
-        }
-    }, [selectedTemplateId, setSearchParams]);
-
-    // Also update local state if URL changes externally (e.g. navigation)
-    useEffect(() => {
-        if (paramTemplateId && paramTemplateId !== selectedTemplateId) {
-            setSelectedTemplateId(paramTemplateId);
-        }
-    }, [paramTemplateId]);
-
     const [files, setFiles] = useState<File[]>([]);
+    
     const currentUser = useAuthStore((state) => state.user);
 
     const selectedTemplate = useMemo(() =>
@@ -57,11 +42,9 @@ export const RequestPage = () => {
                 title: 'تمت العملية',
                 message: 'تم تقديم الطلب بنجاح'
             });
-            // لإعادة تعيين الفورم، نقوم بتغيير الـ Key الخاص بالمكون
+            // Reset form by changing key
             setFormKey(prev => prev + 1);
             setFiles([]);
-            // setApproverId('');
-            // لا نحذف selectedTemplateId كي يبقى الفورم ظاهراً
         },
         onError: () => {
             showStatus({
@@ -71,8 +54,6 @@ export const RequestPage = () => {
             });
         }
     });
-
-    // Removed internal file handlers, now in RequestSubmissionSidebar.
 
     const handleSubmit = async (formData: any) => {
         if (!selectedTemplate || !currentUser) return;
