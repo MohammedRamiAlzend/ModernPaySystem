@@ -210,7 +210,7 @@ export const UserManagement = () => {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                        className="h-8 hidden w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
                                                         onClick={() => handleEditUser(user)}
                                                     >
                                                         <Edit2 className="w-4 h-4" />
