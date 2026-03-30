@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
@@ -12,7 +12,6 @@ import { useLocation } from 'react-router-dom';
  */
 export const useBadgeCount = (totalCount: number, storageKey: string, targetPath: string) => {
     const location = useLocation();
-    const hasSyncedRef = useRef(false);
 
     // Initialize lastSeen from localStorage
     const [lastSeen, setLastSeen] = useState<number>(() => {
@@ -22,12 +21,11 @@ export const useBadgeCount = (totalCount: number, storageKey: string, targetPath
 
     // Synchronize lastSeen when user visits the target page
     useEffect(() => {
-        if (location.pathname === targetPath && totalCount > 0 && !hasSyncedRef.current) {
+        if (location.pathname === targetPath && totalCount !== lastSeen) {
             setLastSeen(totalCount);
             localStorage.setItem(storageKey, String(totalCount));
-            hasSyncedRef.current = true;
         }
-    }, [location.pathname, totalCount, targetPath, storageKey]);
+    }, [location.pathname, totalCount, targetPath, storageKey, lastSeen]);
 
     // Calculate unread count
     const badgeCount = useMemo(() => {
