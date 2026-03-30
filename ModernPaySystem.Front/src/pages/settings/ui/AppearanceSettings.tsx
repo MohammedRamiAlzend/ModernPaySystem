@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Switch } from '@/shared/ui/switch';
 import { Label } from '@/shared/ui/label';
-import { useTheme } from '@/app/providers/theme-provider';
+import { useTheme } from '@/app/providers/theme-context';
 import { Palette } from 'lucide-react';
 
 export const AppearanceSettings = () => {

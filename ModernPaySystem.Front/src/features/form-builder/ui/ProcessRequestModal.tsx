@@ -14,7 +14,6 @@ interface ProcessRequestModalProps {
     comment: string;
     files: File[];
     isPending: boolean;
-    currentUser: any;
     onCommentChange: (value: string) => void;
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onFilesAdd: (files: File[]) => void;
@@ -30,7 +29,6 @@ export const ProcessRequestModal = ({
     comment,
     files,
     isPending,
-    currentUser,
     onCommentChange,
     onFileChange,
     onFilesAdd,
@@ -65,7 +63,6 @@ export const ProcessRequestModal = ({
                         comment={comment}
                         files={files}
                         isPending={isPending}
-                        currentUser={currentUser}
                         onCommentChange={onCommentChange}
                         onFileChange={onFileChange}
                         onFilesAdd={onFilesAdd}

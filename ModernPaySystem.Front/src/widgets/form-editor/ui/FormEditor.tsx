@@ -102,7 +102,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
             // Update reference for next move
             positionsRef.current[id] = last;
         });
-    }, [form.fields]); // Triggered when fields order/content changes
+    }, [form.fields, activeTab, mode]); // Triggered when fields order/content changes or tab/mode switches
 
     const handleSave = async () => {
         const success = await saveForm();

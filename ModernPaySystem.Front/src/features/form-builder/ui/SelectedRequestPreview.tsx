@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/shared/ui/card';
 import { FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
 import type { FormSchema, TemplateRequest, FormResponse } from '@/entities/form/model/types';
@@ -26,6 +26,8 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
     const [isGeneratingImagesPDF, setIsGeneratingImagesPDF] = useState(false);
     const [isAllImages, setIsAllImages] = useState(false);
 
+    const zipImagesRef = useRef<ZipImage[]>([]);
+
     // Load images from ZIP
     useEffect(() => {
         if (request?.id && request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0) {
@@ -35,6 +37,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                     const blob = await formEndpoints.fetchRequestAttachmentsBlob(request.id);
                     const data = await extractImagesFromZip(blob);
                     setZipImages(data.images);
+                    zipImagesRef.current = data.images;
                     setIsAllImages(data.isAllImages);
                 } catch (error) {
                     console.error('Failed to load images from ZIP', error);
@@ -46,12 +49,13 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
         }
 
         return () => {
-            if (zipImages.length > 0) {
-                revokeZipImages(zipImages);
+            if (zipImagesRef.current.length > 0) {
+                revokeZipImages(zipImagesRef.current);
+                zipImagesRef.current = [];
                 setZipImages([]);
             }
         };
-    }, [request?.id]);
+    }, [request?.id, request?.requestAttachmentDtos]);
 
     if (!request || !template) {
         return (

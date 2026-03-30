@@ -69,13 +69,13 @@ export const ContractFormWidget = () => {
         if (id && !hasLoadedRef.current) {
             const contract = getContract(parseInt(id));
             if (contract) {
-                setFormData({
-                    ...formData,
+                setFormData(prev => ({
+                    ...prev,
                     ...contract,
                     rentAmount: contract.rentAmount.toString(),
                     lessorId: contract.lessorId.toString(),
                     tenantId: contract.tenantId.toString(),
-                });
+                }));
                 hasLoadedRef.current = true;
             }
         }

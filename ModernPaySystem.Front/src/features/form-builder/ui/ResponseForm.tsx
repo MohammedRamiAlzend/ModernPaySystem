@@ -4,7 +4,6 @@ import { Reply, Paperclip, FileText, X, Scan } from 'lucide-react';
 import { Label } from '@/shared/ui/label';
 import { Textarea } from '@/shared/ui/textarea';
 import { Button } from '@/shared/ui/button';
-import { User } from '@/app/store/authStore';
 import { ScannerModal } from '@/features/document-scanner';
 import type { ImageMeta } from '@/features/document-scanner';
 
@@ -13,7 +12,6 @@ interface ResponseFormProps {
     comment: string;
     files: File[];
     isPending: boolean;
-    currentUser: User | null;
     onCommentChange: (value: string) => void;
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onFilesAdd?: (files: File[]) => void;
@@ -26,7 +24,6 @@ export const ResponseForm = ({
     comment,
     files,
     isPending,
-    currentUser,
     onCommentChange,
     onFileChange,
     onFilesAdd,

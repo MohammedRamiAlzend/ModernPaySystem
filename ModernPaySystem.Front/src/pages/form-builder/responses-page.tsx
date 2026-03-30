@@ -14,7 +14,6 @@ export const ResponsesPage = () => {
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
-        currentUser,
         requests,
         selectedRequest,
         isLoading,
@@ -94,7 +93,6 @@ export const ResponsesPage = () => {
                     comment={comment}
                     files={files}
                     isPending={isPending}
-                    currentUser={currentUser}
                     onCommentChange={setComment}
                     onFileChange={handleFileChange}
                     onFilesAdd={handleFilesAdd}
