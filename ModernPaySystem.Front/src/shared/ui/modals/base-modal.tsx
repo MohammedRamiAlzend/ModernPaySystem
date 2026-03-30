@@ -70,11 +70,11 @@ export const BaseModal: React.FC<BaseModalProps> = ({
             >
                 <div className="p-4 md:p-6 flex flex-col h-full overflow-hidden">
                     <AlertDialogHeader className={cn("text-right space-y-2 shrink-0", (hideHeaderVisually || (!title && !description)) && "sr-only")}>
-                        <AlertDialogTitle className={cn("text-2xl font-black leading-tight", !title && !hideHeaderVisually && "sr-only")}>
-                            {title || 'تنبيه'}
+                        <AlertDialogTitle asChild className={cn("text-2xl font-black leading-tight", !title && !hideHeaderVisually && "sr-only")}>
+                            <div>{title || 'تنبيه'}</div>
                         </AlertDialogTitle>
-                        <AlertDialogDescription className={cn("font-medium text-base leading-relaxed", !description && !hideHeaderVisually && "sr-only")}>
-                            {description || title || 'تنبيه'}
+                        <AlertDialogDescription asChild className={cn("font-medium text-base leading-relaxed", !description && !hideHeaderVisually && "sr-only")}>
+                            <div>{description || title || 'تنبيه'}</div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
 

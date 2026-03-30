@@ -17,6 +17,7 @@ interface ProcessRequestModalProps {
     currentUser: any;
     onCommentChange: (value: string) => void;
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onFilesAdd: (files: File[]) => void;
     onRemoveFile: (index: number) => void;
     onSubmit: () => void;
 }
@@ -32,6 +33,7 @@ export const ProcessRequestModal = ({
     currentUser,
     onCommentChange,
     onFileChange,
+    onFilesAdd,
     onRemoveFile,
     onSubmit
 }: ProcessRequestModalProps) => {
@@ -66,6 +68,7 @@ export const ProcessRequestModal = ({
                         currentUser={currentUser}
                         onCommentChange={onCommentChange}
                         onFileChange={onFileChange}
+                        onFilesAdd={onFilesAdd}
                         onRemoveFile={onRemoveFile}
                         onSubmit={onSubmit}
                     />

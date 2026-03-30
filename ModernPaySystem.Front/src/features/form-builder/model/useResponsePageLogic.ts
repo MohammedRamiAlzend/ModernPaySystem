@@ -98,6 +98,10 @@ export const useResponsePageLogic = () => {
         }
     };
 
+    const handleFilesAdd = (newFiles: File[]) => {
+        setFiles(prev => [...prev, ...newFiles]);
+    };
+
     const removeFile = (index: number) => {
         setFiles(prev => prev.filter((_, i) => i !== index));
     };
@@ -130,6 +134,7 @@ export const useResponsePageLogic = () => {
         setRequestId,
         handleSubmit,
         handleFileChange,
+        handleFilesAdd,
         removeFile,
         handleSelectRequest,
         handleViewRequest

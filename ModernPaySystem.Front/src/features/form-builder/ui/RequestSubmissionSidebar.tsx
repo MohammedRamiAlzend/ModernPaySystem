@@ -1,9 +1,11 @@
-import { useRef } from 'react';
-import { Shield, ImagePlus, FileText, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Shield, ImagePlus, FileText, X, Scan } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserPicker } from '@/features/users/ui/UserPicker';
 import { SidebarSection } from '@/shared/ui/sidebar-section';
 import { cn } from '@/shared/lib/utils';
+import { ScannerModal } from '@/features/document-scanner';
+import type { ImageMeta } from '@/features/document-scanner';
 
 interface RequestSubmissionSidebarProps {
     approverId: string;
@@ -25,12 +27,21 @@ export const RequestSubmissionSidebar = ({
     approverLabel = "المرسل إليه"
 }: RequestSubmissionSidebarProps) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
+    const [scannedFiles, setScannedFiles] = useState<ImageMeta[]>([]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
             onFilesChange([...files, ...newFiles]);
         }
+    };
+
+    const handleScannerApply = (_ocrText: string, images: ImageMeta[]) => {
+        const newFiles = images.map(img => img.file);
+        onFilesChange([...files, ...newFiles]);
+        setIsScannerOpen(false);
+        setScannedFiles([]); // Clear local temporary files after applying
     };
 
     const removeFile = (index: number) => {
@@ -50,18 +61,32 @@ export const RequestSubmissionSidebar = ({
                 />
             </SidebarSection>
 
-            {/* File Upload */}
+            {/* File Upload & Scanner */}
             {showFiles && (
                 <SidebarSection title="المرفقات" icon={ImagePlus}>
-                    <div className="space-y-4">
-                        <Button
-                            variant="outline"
-                            className="w-full h-12 gap-2 border-dashed border-primary/20 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all rounded-xl"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <ImagePlus className="w-5 h-5" />
-                            <span>إرفاق ملفات ({files.length})</span>
-                        </Button>
+                    <div className="space-y-3">
+                        <div className="flex gap-2">
+                             <Button
+                                variant="outline"
+                                className="flex-1 h-12 gap-2 border-dashed border-primary/20 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all rounded-xl"
+                                onClick={() => fileInputRef.current?.click()}
+                                title="إرفاق ملفات من الكمبيوتر"
+                            >
+                                <ImagePlus className="w-5 h-5" />
+                                <span className="text-xs">إرفاق ({files.length})</span>
+                            </Button>
+                            
+                            <Button
+                                variant="outline"
+                                className="flex-1 h-12 gap-2 border-dashed border-sky-200 hover:border-sky-500 hover:bg-sky-50 hover:text-sky-600 transition-all rounded-xl"
+                                onClick={() => setIsScannerOpen(true)}
+                                title="مسح ضوئي من الماسح (Scanner)"
+                            >
+                                <Scan className="w-5 h-5" />
+                                <span className="text-xs">مسح ضوئي</span>
+                            </Button>
+                        </div>
+
                         <input
                             type="file"
                             multiple
@@ -72,12 +97,12 @@ export const RequestSubmissionSidebar = ({
                         />
 
                         {files.length > 0 && (
-                            <div className="space-y-2 mt-4">
+                            <div className="space-y-2 mt-4 max-h-[150px] overflow-y-auto pr-1 custom-scrollbar">
                                 {files.map((file, idx) => (
                                     <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border text-xs group/item hover:bg-muted/80 transition-colors">
                                         <div className="flex items-center gap-2 truncate">
                                             {file.type.startsWith('image/') ? <ImagePlus className="w-3 h-3 text-primary/70" /> : <FileText className="w-3 h-3 text-primary/70" />}
-                                            <span className="truncate max-w-[150px]">{file.name}</span>
+                                            <span className="truncate max-w-[140px]">{file.name}</span>
                                         </div>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
@@ -93,6 +118,16 @@ export const RequestSubmissionSidebar = ({
                     </div>
                 </SidebarSection>
             )}
+
+            {/* Document Scanner Modal */}
+            <ScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onApply={handleScannerApply}
+                imageFiles={scannedFiles}
+                setImageFiles={setScannedFiles}
+                acceptAllFiles={true}
+            />
         </div>
     );
 };

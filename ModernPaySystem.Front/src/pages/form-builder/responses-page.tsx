@@ -27,6 +27,7 @@ export const ResponsesPage = () => {
         setRequestId,
         handleSubmit,
         handleFileChange,
+        handleFilesAdd,
         removeFile,
         handleSelectRequest,
         handleViewRequest
@@ -96,6 +97,7 @@ export const ResponsesPage = () => {
                     currentUser={currentUser}
                     onCommentChange={setComment}
                     onFileChange={handleFileChange}
+                    onFilesAdd={handleFilesAdd}
                     onRemoveFile={removeFile}
                     onSubmit={async () => {
                         await handleSubmit();
