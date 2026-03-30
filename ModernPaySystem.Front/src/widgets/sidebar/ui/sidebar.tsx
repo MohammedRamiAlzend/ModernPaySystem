@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(() => {
         const initialStates: Record<string, boolean> = {};
-        
+
         const setInitialStates = (items: typeof NAVIGATION_ITEMS) => {
             items.forEach(item => {
                 if (item.isOpen) {
@@ -83,7 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                     })) || [];
 
                 const templatesSection = {
-                    title: "أنواع النماذج",
+                    title: "الخدمات ",
                     path: "templates-section", // Virtual path for toggling
                     icon: <FileText className="h-4 w-4" />,
                     children: templateChildren
@@ -149,8 +149,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                         <LayoutDashboard className="text-primary-foreground h-5 w-5" />
                     </div>
                     {!isCollapsed && (
-                        <span className="text-xl font-bold text-primary whitespace-nowrap animate-in fade-in slide-in-from-right-4">
-                            PaySystem
+                        <span className="text-lg font-bold text-primary whitespace-nowrap animate-in fade-in slide-in-from-right-4">
+                            منصة خدمات ريف دمشق
                         </span>
                     )}
                 </PrefetchNavLink>

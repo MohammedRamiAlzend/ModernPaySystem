@@ -64,7 +64,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                                     <span className="text-primary-foreground font-bold">P</span>
                                 </div>
-                                <span className="font-bold text-primary tracking-tight">PaySystem</span>
+                                <span className="font-bold text-primary tracking-tight">منصة خدمات ريف دمشق</span>
                             </div>
                         </div>
 
