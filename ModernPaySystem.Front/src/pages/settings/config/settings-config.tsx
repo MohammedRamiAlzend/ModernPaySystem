@@ -32,7 +32,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
     },
     {
         id: 'templates',
-        label: 'نماذج الطلبات',
+        label: 'نماذج الخدمات',
         description: 'إدارة وتخصيص نماذج الطلبات والمعاملات',
         component: <TemplatesList />,
         preload: () => TemplatesList.preload()
