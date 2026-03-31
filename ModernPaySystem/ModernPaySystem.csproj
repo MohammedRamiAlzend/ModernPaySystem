@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- Auto-build frontend before backend build -->
+  <Target Name="BuildFrontend" BeforeTargets="BeforeBuild" Condition="'$(BuildingProject)' == 'true' AND '$(WatchBuild)' != 'true'">
+    <Exec Command="npm run build" WorkingDirectory="..\ModernPaySystem.Front" Condition="Exists('..\ModernPaySystem.Front\package.json')" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
@@ -26,6 +31,7 @@
   <ItemGroup>
     <Folder Include="Diwan\Uploads\TransactionSystem\Requests\" />
     <Folder Include="Diwan\Uploads\TransactionSystem\Responses\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>

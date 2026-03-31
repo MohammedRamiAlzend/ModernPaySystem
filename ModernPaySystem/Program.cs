@@ -6,6 +6,9 @@ global using ModernPaySystem.Infrastructure.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#if DEBUG == false
+builder.WebHost.UseUrls("http://0.0.0.0:7010/");
+#endif
 builder.Services.AddPersistenceServices(builder.Configuration);
 
 builder.Services.AddSeeding(builder.Configuration);
@@ -55,11 +58,13 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
+app.UseRouting();
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("AllowAll");
+app.MapFallbackToFile("index.html");
+app.UseStaticFiles();
 app.MapControllers();
-
 app.Run();
