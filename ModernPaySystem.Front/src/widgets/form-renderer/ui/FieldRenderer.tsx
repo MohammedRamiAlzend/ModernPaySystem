@@ -5,6 +5,8 @@ import { TextareaField } from './fields/TextareaField';
 import { SelectField } from './fields/SelectField';
 import { CheckboxField } from './fields/CheckboxField';
 import { RadioField } from './fields/RadioField';
+import { DateField } from './fields/DateField';
+import { LabelField } from './fields/LabelField';
 
 interface FieldRendererProps {
     field: FormField;
@@ -32,6 +34,10 @@ export const FieldRenderer: React.FC<FieldRendererProps> = ({ field, value, onCh
                 return <CheckboxField field={field} value={value} onChange={onChange} error={error} disabled={disabled} readOnly={readOnly} />;
             case 'radio':
                 return <RadioField field={field} value={value} onChange={onChange} error={error} disabled={disabled} readOnly={readOnly} />;
+            case 'date':
+                return <DateField field={field} value={value} onChange={onChange} error={error} disabled={disabled} readOnly={readOnly} />;
+            case 'label':
+                return <LabelField field={field} value={value} onChange={onChange} error={error} disabled={disabled} readOnly={readOnly} />;
             default:
                 return <div className="text-red-500">Unsupported field: {field.type}</div>;
         }

@@ -19,7 +19,7 @@ export const useFormEditor = (initialForm?: FormSchema) => {
             id: crypto.randomUUID(),
             name: `field_${Date.now()}`,
             type,
-            label: customLabel || (lookUpFieldId ? 'حقل من الإعدادات' : `New ${type} Field`),
+            label: customLabel || (lookUpFieldId ? 'حقل من الإعدادات' : type === 'date' ? 'حقل تاريخ جديد' : type === 'label' ? 'نص توضيحي جديد' : `New ${type} Field`),
             validation: [],
             // Initialize dataSource for types that need options
             dataSource: (type === 'select' || type === 'radio' || type === 'checkbox') ? (

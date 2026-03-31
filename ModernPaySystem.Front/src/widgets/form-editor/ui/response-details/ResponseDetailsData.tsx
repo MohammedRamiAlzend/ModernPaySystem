@@ -30,14 +30,27 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({ visibl
 
                     return (
                         <div key={field.id} className={`${spanClass} border-b border-gray-100/50 pb-2`}>
-                            <div className="flex flex-col gap-1 text-right">
-                                <span className="text-xs font-bold text-muted-foreground">
-                                    {field.label}
-                                </span>
-                                <span className="text-base font-semibold text-foreground break-words">
-                                    {displayValue || '-'}
-                                </span>
-                            </div>
+                            {field.type === 'label' ? (
+                                <div className="flex flex-col gap-1 text-right py-1">
+                                    <span className="text-lg font-bold text-primary">
+                                        {field.label}
+                                    </span>
+                                    {displayValue && (
+                                        <span className="text-sm text-muted-foreground italic">
+                                            {displayValue}
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-1 text-right">
+                                    <span className="text-xs font-bold text-muted-foreground">
+                                        {field.label}
+                                    </span>
+                                    <span className="text-base font-semibold text-foreground break-words">
+                                        {displayValue || '-'}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     );
                 })}

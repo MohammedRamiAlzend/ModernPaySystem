@@ -5,6 +5,7 @@ interface PrintField {
     label: string;
     value: string;
     colSpan: number;
+    type?: string;
 }
 
 /**
@@ -31,6 +32,28 @@ export const generateFormPDF = async (
     // Generate fields HTML
     const fieldsHtml = fields.map(field => {
         const widthPercent = (field.colSpan / 12) * 100;
+
+        if (field.type === 'label') {
+            return `
+                <div style="
+                    width: 100%;
+                    padding: 20px 8px 10px 8px;
+                    border-bottom: 2px solid #16a34a;
+                    margin-top: 15px;
+                    margin-bottom: 10px;
+                    box-sizing: border-box;
+                ">
+                    <h2 style="
+                        margin: 0;
+                        font-size: 18px;
+                        font-weight: 800;
+                        color: #16a34a;
+                    ">${field.label}</h2>
+                    ${field.value ? `<p style="font-size: 13px; color: #666; margin: 5px 0 0 0;">${field.value}</p>` : ''}
+                </div>
+            `;
+        }
+
         return `
             <div style="
                 width: ${widthPercent}%;
@@ -166,6 +189,18 @@ export const printFormResponse = (
     // Generate fields HTML
     const fieldsHtml = fields.map(field => {
         const widthPercent = (field.colSpan / 12) * 100;
+        
+        if (field.type === 'label') {
+            return `
+                <div class="field-item label-item" style="width: 100%; border-bottom: 2px solid #16a34a; background-color: #f8fafc; padding-top: 20px;">
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <span class="field-label" style="font-size: 14pt; color: #16a34a;">${field.label}</span>
+                        ${field.value ? `<span class="field-value" style="font-size: 10pt; color: #64748b; font-style: italic;">${field.value}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
         return `
             <div class="field-item" style="width: ${widthPercent}%;">
                 <span class="field-label">${field.label}:</span>

@@ -32,7 +32,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
             </div>
 
             <div className="space-y-2">
-                <Label>Placeholder</Label>
+                <Label>{field.type === 'label' ? 'وصف إضافي (Description)' : 'Placeholder'}</Label>
                 <Input
                     value={field.placeholder || ''}
                     onChange={e => onChange({ placeholder: e.target.value })}
@@ -52,17 +52,19 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
                     </select>
                 </div>
 
-                <div className="space-y-2">
-                    <Label className="text-xs">الحالة (Enabled)</Label>
-                    <select
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring dark:bg-[#1a1a1a] dark:text-white"
-                        value={field.initialEnabled || 'enabled'}
-                        onChange={(e) => onChange({ initialEnabled: e.target.value as 'enabled' | 'disabled' })}
-                    >
-                        <option value="enabled">مفعل (Enabled)</option>
-                        <option value="disabled">معطل (Disabled)</option>
-                    </select>
-                </div>
+                {field.type !== 'label' && (
+                    <div className="space-y-2">
+                        <Label className="text-xs">الحالة (Enabled)</Label>
+                        <select
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring dark:bg-[#1a1a1a] dark:text-white"
+                            value={field.initialEnabled || 'enabled'}
+                            onChange={(e) => onChange({ initialEnabled: e.target.value as 'enabled' | 'disabled' })}
+                        >
+                            <option value="enabled">مفعل (Enabled)</option>
+                            <option value="disabled">معطل (Disabled)</option>
+                        </select>
+                    </div>
+                )}
             </div>
 
             <div className="space-y-2 border-t pt-4">
@@ -139,72 +141,74 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
             )}
 
             {/* Validation Rules Section */}
-            <div className="space-y-2 border-t pt-4">
-                <Label className="font-semibold">قواعد التحقق (Validation)</Label>
-                <div className="space-y-3">
-                    {field.validation?.map((rule, idx) => (
-                        <div key={idx} className="p-2 border rounded bg-muted/20 space-y-2 relative">
-                            <button
-                                className="absolute top-1 left-1 text-gray-400 hover:text-red-500"
-                                onClick={() => {
-                                    const newValidation = field.validation?.filter((_, i) => i !== idx);
-                                    onChange({ validation: newValidation });
-                                }}
-                            >
-                                ×
-                            </button>
-                            <div className="text-[10px] font-bold uppercase">{rule.rule}</div>
-                            {rule.rule !== 'required' && (
-                                <Input
-                                    className="h-7 text-xs"
-                                    value={rule.value || ''}
-                                    onChange={(e) => {
-                                        const newValidation = [...(field.validation || [])];
-                                        newValidation[idx] = { ...rule, value: e.target.value };
+            {field.type !== 'label' && (
+                <div className="space-y-2 border-t pt-4">
+                    <Label className="font-semibold">قواعد التحقق (Validation)</Label>
+                    <div className="space-y-3">
+                        {field.validation?.map((rule, idx) => (
+                            <div key={idx} className="p-2 border rounded bg-muted/20 space-y-2 relative">
+                                <button
+                                    className="absolute top-1 left-1 text-gray-400 hover:text-red-500"
+                                    onClick={() => {
+                                        const newValidation = field.validation?.filter((_, i) => i !== idx);
                                         onChange({ validation: newValidation });
                                     }}
-                                    placeholder="القيمة..."
+                                >
+                                    ×
+                                </button>
+                                <div className="text-[10px] font-bold uppercase">{rule.rule}</div>
+                                {rule.rule !== 'required' && (
+                                    <Input
+                                        className="h-7 text-xs"
+                                        value={rule.value || ''}
+                                        onChange={(e) => {
+                                            const newValidation = [...(field.validation || [])];
+                                            newValidation[idx] = { ...rule, value: e.target.value };
+                                            onChange({ validation: newValidation });
+                                        }}
+                                        placeholder="القيمة..."
+                                    />
+                                )}
+                                <Input
+                                    className="h-7 text-xs"
+                                    value={rule.message || ''}
+                                    onChange={(e) => {
+                                        const newValidation = [...(field.validation || [])];
+                                        newValidation[idx] = { ...rule, message: e.target.value };
+                                        onChange({ validation: newValidation });
+                                    }}
+                                    placeholder="الرسالة..."
                                 />
-                            )}
-                            <Input
-                                className="h-7 text-xs"
-                                value={rule.message || ''}
-                                onChange={(e) => {
-                                    const newValidation = [...(field.validation || [])];
-                                    newValidation[idx] = { ...rule, message: e.target.value };
+                            </div>
+                        ))}
+                        <select
+                            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
+                            onChange={(e) => {
+                                const ruleType = e.target.value as any;
+                                if (!ruleType) return;
+                                const newValidation = [...(field.validation || [])];
+                                if (!newValidation.some(v => v.rule === ruleType)) {
+                                    newValidation.push({
+                                        rule: ruleType,
+                                        value: '',
+                                        message: ruleType === 'required' ? 'هذا الحقل مطلوب' : 'قيمة غير صحيحة'
+                                    });
                                     onChange({ validation: newValidation });
-                                }}
-                                placeholder="الرسالة..."
-                            />
-                        </div>
-                    ))}
-                    <select
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm"
-                        onChange={(e) => {
-                            const ruleType = e.target.value as any;
-                            if (!ruleType) return;
-                            const newValidation = [...(field.validation || [])];
-                            if (!newValidation.some(v => v.rule === ruleType)) {
-                                newValidation.push({
-                                    rule: ruleType,
-                                    value: '',
-                                    message: ruleType === 'required' ? 'هذا الحقل مطلوب' : 'قيمة غير صحيحة'
-                                });
-                                onChange({ validation: newValidation });
-                            }
-                            e.target.value = "";
-                        }}
-                    >
-                        <option value="">+ إضافة قاعدة...</option>
-                        <option value="required">مطلوب (Required)</option>
-                        <option value="minLength">أصغر طول</option>
-                        <option value="maxLength">أكبر طول</option>
-                        <option value="minValue">أصغر قيمة</option>
-                        <option value="maxValue">أكبر قيمة</option>
-                        <option value="pattern">Regex Pattern</option>
-                    </select>
+                                }
+                                e.target.value = "";
+                            }}
+                        >
+                            <option value="">+ إضافة قاعدة...</option>
+                            <option value="required">مطلوب (Required)</option>
+                            <option value="minLength">أصغر طول</option>
+                            <option value="maxLength">أكبر طول</option>
+                            <option value="minValue">أصغر قيمة</option>
+                            <option value="maxValue">أكبر قيمة</option>
+                            <option value="pattern">Regex Pattern</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Advanced: Number Spelling */}
             {(field.type === 'text' || field.type === 'textarea') && (
