@@ -7,7 +7,7 @@ export const useActionedRequestsLogic = () => {
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
     const { data: pagedRequests, isLoading } = useRequests(true, page, 15); // Fetch responded requests
     const requests = pagedRequests?.items || [];
-    const { data: templates = [] } = useForms();
+    const { data: templates = [] } = useForms(true);
 
     const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest } = useRequestDetails(templates);
 

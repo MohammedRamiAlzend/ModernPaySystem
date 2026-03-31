@@ -9,10 +9,8 @@ const evaluateCondition = (condition: LogicRule['when'], formData: Record<string
 
     switch (operator) {
         case 'equals':
-            // eslint-disable-next-line eqeqeq
             return fieldValue == value;
         case 'notEquals':
-            // eslint-disable-next-line eqeqeq
             return fieldValue != value;
         case 'contains':
             return fieldValue && typeof fieldValue === 'string' && fieldValue.includes(String(value));

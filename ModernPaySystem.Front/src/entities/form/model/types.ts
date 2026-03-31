@@ -1,5 +1,5 @@
 
-export type FieldType = 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date';
+export type FieldType = 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date' | 'label';
 
 export interface ValidationRule {
     rule: 'required' | 'minLength' | 'maxLength' | 'pattern' | 'minValue' | 'maxValue';
@@ -78,6 +78,7 @@ export interface CreateTemplateDto {
     contentAsJson: string; // JSON string of the form schema
     templateName: string;
     templateDescription?: string | null;
+    isExternal?: boolean;
 }
 
 export interface Template {
@@ -89,6 +90,7 @@ export interface Template {
     createdAt: string | null; // Date string
     updatedByUserId: string | null;
     updatedAt: string | null; // Date string
+    isExternal: boolean;
 }
 
 export interface CreateRequestDto {

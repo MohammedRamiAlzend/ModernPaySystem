@@ -102,7 +102,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
             // Update reference for next move
             positionsRef.current[id] = last;
         });
-    }, [form.fields]); // Triggered when fields order/content changes
+    }, [form.fields, activeTab, mode]); // Triggered when fields order/content changes or tab/mode switches
 
     const handleSave = async () => {
         const success = await saveForm();
@@ -173,6 +173,8 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                             <Button variant="outline" className="justify-start h-9" onClick={() => addField('number')}>رقم (Number)</Button>
                             <Button variant="outline" className="justify-start h-9" onClick={() => addField('email')}>بريد إلكتروني</Button>
                             <Button variant="outline" className="justify-start h-9" onClick={() => addField('textarea')}>نص طويل</Button>
+                            <Button variant="outline" className="justify-start h-9" onClick={() => addField('date')}>تاريخ (Date)</Button>
+                            <Button variant="outline" className="justify-start h-9 text-blue-600 border-blue-200 bg-blue-50/10" onClick={() => addField('label')}>نص توضيحي فقط (Label Only)</Button>
 
                             <div className="space-y-1">
                                 <Button variant="outline" className="justify-start h-9 w-full" onClick={() => addField('select')}>قائمة (Select) - عادي</Button>

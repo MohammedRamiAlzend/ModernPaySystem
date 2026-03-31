@@ -29,7 +29,7 @@ export const useRequestDetails = (templates: FormSchema[]) => {
             };
             setViewingResponse(mappedResponse);
             setIsModalOpen(true);
-        } catch (e) {
+        } catch {
             showStatus({
                 type: 'error',
                 title: 'خطأ في التحليل',

@@ -51,8 +51,9 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
     const [isEditing, setIsEditing] = useState(false);
     const ocrTextAreaRef = useRef<OcrTextAreaRef>(null);
 
+    // Initialize language when languages are loaded
     useEffect(() => {
-        if (languages.length > 0) {
+        if (languages.length > 0 && !ocrLanguage) {
             const hasAra = languages.some(l => l.code === 'ara');
             if (hasAra) {
                 setOcrLanguage('ara');
@@ -60,13 +61,16 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
                 setOcrLanguage(defaultLanguage);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [languages, defaultLanguage]);
 
+    // Sync external index change - only update if different
     useEffect(() => {
-        if (propActiveImageIndex !== undefined) {
+        if (propActiveImageIndex !== undefined && propActiveImageIndex !== activeImageIndex) {
             setActiveImageIndex(propActiveImageIndex);
         }
         setIsEditing(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [propActiveImageIndex]);
 
     useEffect(() => {

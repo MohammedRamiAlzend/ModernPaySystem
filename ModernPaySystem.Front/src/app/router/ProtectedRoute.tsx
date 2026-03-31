@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 // import { useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/app/store/authStore';
@@ -17,8 +17,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
   // const [searchParams] = useSearchParams();
 
-  // Determine if user has required permission
-  const hasPermission = (): boolean => {
+  // Determine if user has required permission - wrapped in useCallback to stabilize reference
+  const hasPermission = useCallback((): boolean => {
     if (permission === 'PUBLIC') return true;
     if (!isAuthenticated) return false;
 
@@ -32,7 +32,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       default:
         return isAuthenticated;
     }
-  };
+  }, [isAuthenticated, currentUser?.roles, permission]);
 
   // Redirect URL for after login
   const redirectUrl = `${location.pathname}${location.search}`;

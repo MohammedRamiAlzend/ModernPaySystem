@@ -8,21 +8,21 @@ import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strat
  * Hook for fetching forms (Templates)
  * Maps backend Template -> Frontend FormSchema
  */
-export const useForms = () => {
+export const useForms = (showAll: boolean = false) => {
     const query = useQuery({
-        queryKey: ['forms'],
+        queryKey: ['forms', showAll],
         queryFn: async () => {
             const result = await formEndpoints.getTemplates();
             // Support both array response or object with data array
             const templates = Array.isArray(result) ? result :
                 (Array.isArray(result.data) ? result.data : [result.data]);
 
-            return templates.filter(Boolean).map(t => {
+            return templates.filter(Boolean).filter(t => showAll || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"))).map(t => {
                 try {
                     let parsed;
                     try {
                         parsed = JSON.parse(t.contentAsJson);
-                    } catch (e) {
+                    } catch {
                         // Fallback for single-quoted JSON (unsafe but handles user's specific case if malformed)
                         // Only apply if standard parse fails
                         console.warn('Standard JSON parse failed, trying single-quote replacement', t.contentAsJson);
@@ -40,8 +40,8 @@ export const useForms = () => {
                     schema.title = t.templateName;
                     schema.description = t.templateDescription || '';
                     return schema;
-                } catch (e) {
-                    console.error('Failed to parse template content', t, e);
+                } catch {
+                    console.error('Failed to parse template content', t);
                     return null;
                 }
             }).filter((f): f is FormSchema => f !== null);

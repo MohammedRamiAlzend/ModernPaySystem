@@ -31,7 +31,7 @@ export const IncomingRequestsList = ({
     onPageChange
 }: IncomingRequestsListProps) => {
     return (
-        <Card className="lg:col-span-2 p-6 overflow-hidden flex flex-col h-[700px]">
+        <Card className="p-6 overflow-hidden flex flex-col h-full shadow-lg border-primary/5">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold flex items-center gap-2 text-primary">
                     <Clock className="w-5 h-5" />
@@ -58,7 +58,7 @@ export const IncomingRequestsList = ({
                             onClick={() => onSelectRequest(request.id)}
                             className={`p-4 rounded-xl border-2 transition-all cursor-pointer group ${selectedRequestId === request.id
                                 ? 'border-primary bg-primary/5'
-                                : request.isNew 
+                                : request.isNew
                                     ? 'border-primary/30 bg-primary/5 hover:border-primary/50'
                                     : 'border-border hover:border-primary/50 hover:bg-muted/30'
                                 }`}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BaseModal } from '@/shared/ui/modals/base-modal';
-import type { FormSchema, FormResponse } from '@/entities/form/model/types';
+import type { FormSchema, FormResponse, TemplateResponse } from '@/entities/form/model/types';
 import { MessageSquare } from 'lucide-react';
 import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { getVisibleFields, prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
@@ -65,6 +65,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                 setZipImages([]);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, response?.id]);
 
     if (!response) return null;
@@ -195,7 +196,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                         </div>
 
                         <div className="space-y-4">
-                            {responses.map((resp) => (
+                            {responses.map((resp: TemplateResponse) => (
                                 <ResponseItem
                                     key={resp.id}
                                     response={resp}

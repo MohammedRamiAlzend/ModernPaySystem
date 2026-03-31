@@ -26,6 +26,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 revokeZipImages(images);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleToggleAttachments = async () => {
@@ -39,6 +40,11 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 const content: ZipContent = await extractImagesFromZip(blob);
                 setImages(content.images);
                 setIsAllImages(content.isAllImages);
+                
+                // Fallback for empty images if totalFiles > 0
+                if (content.images.length === 0 && content.totalFiles > 0) {
+                    console.warn("Images not found in ZIP, total files:", content.totalFiles);
+                }
             } catch (error) {
                 console.error('Failed to load response images', error);
                 showStatus({
@@ -104,12 +110,14 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 {response.comment}
             </p>
 
-            {response.responseAttachments && response.responseAttachments.length > 0 && (
+            {((response.responseAttachments && response.responseAttachments.length > 0) || 
+               ((response as any).responseAttachmentDtos && (response as any).responseAttachmentDtos.length > 0) || 
+               (response.attachmentCount > 0)) && (
                 <div className="pt-3 border-t border-emerald-50">
                     <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                             <FileArchive className="w-3 h-3" />
-                            {response.responseAttachments.length} مرفقات
+                            {(response.responseAttachments?.length || (response as any).responseAttachmentDtos?.length || response.attachmentCount || 0)} مرفقات
                         </span>
 
                         <div className="flex gap-2">

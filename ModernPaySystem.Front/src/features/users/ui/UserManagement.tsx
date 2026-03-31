@@ -100,7 +100,7 @@ export const UserManagement = () => {
                 showStatus({ type: 'success', title: 'نجاح', message: 'تم إضافة المستخدم بنجاح' });
             }
             setIsUserDialogOpen(false);
-        } catch (error) {
+        } catch {
             showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء حفظ البيانات' });
         }
     };
@@ -115,7 +115,7 @@ export const UserManagement = () => {
                 try {
                     await deleteUser.mutateAsync(user.id);
                     showStatus({ type: 'success', title: 'نجاح', message: 'تم حذف المستخدم بنجاح' });
-                } catch (error) {
+                } catch {
                     showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء الحذف' });
                 }
             }
@@ -210,7 +210,7 @@ export const UserManagement = () => {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                        className="h-8 hidden w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
                                                         onClick={() => handleEditUser(user)}
                                                     >
                                                         <Edit2 className="w-4 h-4" />

@@ -41,7 +41,7 @@ export const FormsList: React.FC<FormsListProps> = ({ onEdit, onCreate }) => {
         <div className="container mx-auto p-6 space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">بناء النماذج (Form Builder)</h1>
-                <Button onClick={onCreate}>+ إنشاء نموذج جديد</Button>
+                <Button onClick={onCreate}>+ إنشاء خدمة جديدة</Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

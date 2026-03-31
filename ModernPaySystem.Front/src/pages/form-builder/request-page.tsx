@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
@@ -9,41 +9,24 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import type { CreateRequestDto } from '@/entities/form/model/types';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
-import { ImagePlus, X, FileText, Shield } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { UserPicker } from '@/features/users/ui/UserPicker';
+import { FileText } from 'lucide-react';
+import { RequestSubmissionSidebar } from '@/features/form-builder/ui/RequestSubmissionSidebar';
 
+/**
+ * RequestPage: Handles the submission of a new form request.
+ * Uses templateId from URL to load the correct schema.
+ */
 export const RequestPage = () => {
     const { showStatus } = useUIStore();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const { data: templates = [] } = useForms();
-
     const [formKey, setFormKey] = useState(0);
 
-    // Initialize from URL or empty
-    const paramTemplateId = searchParams.get('templateId') || '';
-    const [selectedTemplateId, setSelectedTemplateId] = useState<string>(paramTemplateId);
+    // Get templateId directly from URL (Single source of truth to avoid infinite loops)
+    const selectedTemplateId = searchParams.get('templateId') || '';
     const [approverId, setApproverId] = useState<string>('');
-
-    // Sync URL when local state changes
-    useEffect(() => {
-        if (selectedTemplateId) {
-            setSearchParams(prev => {
-                prev.set('templateId', selectedTemplateId);
-                return prev;
-            });
-        }
-    }, [selectedTemplateId, setSearchParams]);
-
-    // Also update local state if URL changes externally (e.g. navigation)
-    useEffect(() => {
-        if (paramTemplateId && paramTemplateId !== selectedTemplateId) {
-            setSelectedTemplateId(paramTemplateId);
-        }
-    }, [paramTemplateId]);
-
     const [files, setFiles] = useState<File[]>([]);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    
     const currentUser = useAuthStore((state) => state.user);
 
     const selectedTemplate = useMemo(() =>
@@ -59,11 +42,9 @@ export const RequestPage = () => {
                 title: 'تمت العملية',
                 message: 'تم تقديم الطلب بنجاح'
             });
-            // لإعادة تعيين الفورم، نقوم بتغيير الـ Key الخاص بالمكون
+            // Reset form by changing key
             setFormKey(prev => prev + 1);
             setFiles([]);
-            // setApproverId('');
-            // لا نحذف selectedTemplateId كي يبقى الفورم ظاهراً
         },
         onError: () => {
             showStatus({
@@ -73,17 +54,6 @@ export const RequestPage = () => {
             });
         }
     });
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newFiles = Array.from(e.target.files);
-            setFiles(prev => [...prev, ...newFiles]);
-        }
-    };
-
-    const removeFile = (index: number) => {
-        setFiles(prev => prev.filter((_, i) => i !== index));
-    };
 
     const handleSubmit = async (formData: any) => {
         if (!selectedTemplate || !currentUser) return;
@@ -143,74 +113,21 @@ export const RequestPage = () => {
                     )}
                 </div>
 
-                <div className="space-y-6 sticky top-6">
-                    {/* Approver Selection */}
-                    <Card className="p-6 shadow-lg bg-card/50 backdrop-blur-sm border-primary/5">
-                        <h3 className="font-bold mb-4 flex items-center gap-2">
-                            <Shield className="w-4 h-4 text-primary" />
-                            إعدادات الطلب
-                        </h3>
-                        <UserPicker
-                            onUserSelect={setApproverId}
-                            className="!grid-cols-1"
-                            label="مستلم الطلب (المرسل إليه) "
-                        />
-                    </Card>
-
-                    {/* File Upload */}
-                    {selectedTemplate && (
-                        <Card className="p-6 shadow-lg bg-card/50 backdrop-blur-sm border-primary/5">
-                            <h3 className="font-bold mb-4 flex items-center gap-2">
-                                <ImagePlus className="w-4 h-4 text-primary" />
-                                المرفقات
-                            </h3>
-                            <div className="space-y-4">
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-12 gap-2 border-dashed border-primary/20 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all rounded-xl"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <ImagePlus className="w-5 h-5" />
-                                    <span>إرفاق ملفات ({files.length})</span>
-                                </Button>
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*,.pdf,.doc,.docx"
-                                    className="hidden"
-                                    ref={fileInputRef}
-                                    onChange={handleFileChange}
-                                />
-
-                                {files.length > 0 && (
-                                    <div className="space-y-2 mt-4">
-                                        {files.map((file, idx) => (
-                                            <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-muted/50 border text-xs">
-                                                <div className="flex items-center gap-2 truncate">
-                                                    {file.type.startsWith('image/') ? <ImagePlus className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
-                                                    <span className="truncate">{file.name}</span>
-                                                </div>
-                                                <button
-                                                    onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
-                                                    className="text-muted-foreground hover:text-destructive transition-colors"
-                                                >
-                                                    <X className="w-3 h-3" />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
-                    )}
-                </div>
+                <RequestSubmissionSidebar
+                    approverId={approverId}
+                    onApproverSelect={setApproverId}
+                    files={files}
+                    onFilesChange={setFiles}
+                    showFiles={!!selectedTemplate}
+                    approverLabel="مستلم الطلب (المرسل إليه)"
+                />
             </div>
 
-            {/* Bottom Section: File Previews (Legacy UI, kept if needed but redundant with sidebar list) */}
+            {/* Bottom Section: File Previews */}
             {selectedTemplate && files.length > 0 && (
-                <Card className="p-6 bg-muted/30 border-dashed animate-in slide-in-from-bottom-6">
+                <Card className="p-6 bg-muted/30 border-dashed animate-in slide-in-from-bottom-6 mt-8">
                     <h3 className="font-bold mb-4 flex items-center gap-2 text-muted-foreground">
-                        <ImagePlus className="w-4 h-4" />
+                        <FileText className="w-4 h-4" />
                         معاينة الصور المرفقة
                     </h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">

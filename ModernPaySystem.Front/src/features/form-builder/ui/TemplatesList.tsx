@@ -24,7 +24,7 @@ export const TemplatesList = () => {
                 </div>
                 <Button onClick={() => navigate('/form-builder/templates/new')} className="gap-2 rounded-xl h-11">
                     <PlusCircle className="h-4 w-4" />
-                    إنشاء نموذج جديد
+                    إنشاء خدمة جديدة
                 </Button>
             </div>
 
@@ -34,7 +34,7 @@ export const TemplatesList = () => {
                         <FileText className="h-16 w-16 mb-4 text-primary/20" />
                         <h3 className="text-xl font-bold text-foreground">لا توجد نماذج حالياً</h3>
                         <p className="text-sm mb-8 text-muted-foreground">ابدأ بإنشاء نموذجك الأول للعمليات</p>
-                        <Button onClick={() => navigate('/form-builder/templates/new')} className="rounded-xl px-8">إنشاء نموذج جديد</Button>
+                        <Button onClick={() => navigate('/form-builder/templates/new')} className="rounded-xl px-8">إنشاء خدمة جديدة</Button>
                     </div>
                 ) : (
                     forms.map(form => (

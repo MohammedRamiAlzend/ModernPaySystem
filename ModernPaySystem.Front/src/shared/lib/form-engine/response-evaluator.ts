@@ -69,6 +69,10 @@ export const getVisibleFields = (response: FormResponse): EvaluatedField[] => {
  * Formats a field value for display based on field type.
  */
 const getDisplayValue = (field: FormField, value: any): string => {
+    if (field.type === 'label') {
+        return field.placeholder || '';
+    }
+
     if (value === undefined || value === null || value === '') {
         return '-';
     }
@@ -115,6 +119,7 @@ export const prepareFieldsForPrint = (response: FormResponse): Array<{
     label: string;
     value: string;
     colSpan: number;
+    type: string;
 }> => {
     const visibleFields = getVisibleFields(response);
 
@@ -122,5 +127,6 @@ export const prepareFieldsForPrint = (response: FormResponse): Array<{
         label: field.label,
         value: displayValue,
         colSpan: field.layout?.colSpan || 12,
+        type: field.type,
     }));
 };

@@ -13,7 +13,7 @@ export const useMyRequestsLogic = () => {
     const totalItems = pagedRequests?.totalItems || 0;
     const totalPages = pagedRequests?.totalPages || 0;
 
-    const { data: templates = [] } = useForms();
+    const { data: templates = [] } = useForms(true);
 
     const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest } = useRequestDetails(templates);
 

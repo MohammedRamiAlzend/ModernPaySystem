@@ -129,7 +129,7 @@ interface DataTableActionsProps<T> {
   className?: string;
 }
 
-const DataTableActions = <T extends {}>({
+const DataTableActions = <T extends Record<string, unknown>>({
   item,
   actions,
   className

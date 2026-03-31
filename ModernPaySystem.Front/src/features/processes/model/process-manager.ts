@@ -32,11 +32,6 @@ export const useProcessManager = () => {
     const clientInputRef = useRef<HTMLInputElement>(null);
     const client2InputRef = useRef<HTMLInputElement>(null);
 
-    // Initial Data Loading
-    useEffect(() => {
-        loadInitialData();
-    }, []);
-
     const loadInitialData = async () => {
         try {
             const mockClients: Client[] = [
@@ -87,6 +82,11 @@ export const useProcessManager = () => {
         }
     };
 
+    // Initial Data Loading
+    useEffect(() => {
+        loadInitialData();
+    }, []);
+
     // Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -123,8 +123,10 @@ export const useProcessManager = () => {
             return;
         }
 
+        // eslint-disable-next-line react-hooks/purity
+        const timestamp = Math.floor(Date.now() / 1000);
         const newOperation: Operation = {
-            CODE: formData.CODE || Date.now(),
+            CODE: formData.CODE || timestamp,
             CODE_CLIENT: formData.CODE_CLIENT,
             CODE_CLIENT2: formData.CODE_CLIENT2,
             CODE_KINSHIP: formData.CODE_KINSHIP,

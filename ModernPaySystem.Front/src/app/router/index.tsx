@@ -23,6 +23,7 @@ const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/respons
 const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/actioned-requests-page'));
 const MyResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/my-responses-page'));
 const MyRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/my-requests-page'));
+const DelphiTransactionPage = lazyWithPreload(() => import('@/pages/delphi-transaction/delphi-transaction-page').then(module => ({ default: module.DelphiTransactionPage })));
 
 const RoutePermissions = {
   PUBLIC: 'PUBLIC',
@@ -247,6 +248,19 @@ const routesConfig: RouteObject[] = [
               crumb: () => 'الردود الواردة',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => MyResponsesPage.preload(),
+            },
+          },
+          {
+            path: 'delphi-transaction',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <DelphiTransactionPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'معاملات دلفي',
+              permission: RoutePermissions.AUTHENTICATED,
+              preload: () => DelphiTransactionPage.preload(),
             },
           },
         ]

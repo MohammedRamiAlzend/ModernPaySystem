@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import React, { useState, useEffect, useRef } from 'react';
 import { Save, X, ArrowRight, Printer, Check } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useContractManager } from '@/features/contracts/model/contract-manager';
@@ -24,6 +25,7 @@ export const ContractFormWidget = () => {
 
     const [activeStep, setActiveStep] = useState(0);
     const [editing, setEditing] = useState(!id);
+    const hasLoadedRef = useRef(false);
     const [formData, setFormData] = useState({
         contractNo: '',
         contractDate: new Date().toISOString().split('T')[0],
@@ -64,7 +66,7 @@ export const ContractFormWidget = () => {
     });
 
     useEffect(() => {
-        if (id) {
+        if (id && !hasLoadedRef.current) {
             const contract = getContract(parseInt(id));
             if (contract) {
                 setFormData(prev => ({
@@ -74,6 +76,7 @@ export const ContractFormWidget = () => {
                     lessorId: contract.lessorId.toString(),
                     tenantId: contract.tenantId.toString(),
                 }));
+                hasLoadedRef.current = true;
             }
         }
     }, [id, getContract]);

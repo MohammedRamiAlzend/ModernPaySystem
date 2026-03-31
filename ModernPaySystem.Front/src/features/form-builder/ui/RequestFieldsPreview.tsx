@@ -1,3 +1,4 @@
+import React from 'react';
 import type { FormField } from '@/entities/form/model/types';
 
 interface RequestFieldsPreviewProps {
@@ -24,43 +25,54 @@ export const RequestFieldsPreview = ({
     variant = 'card',
     className
 }: RequestFieldsPreviewProps) => {
-    try {
-        const data = JSON.parse(content) as Record<string, unknown>;
+    const data = React.useMemo(() => {
+        try {
+            return JSON.parse(content) as Record<string, unknown>;
+        } catch {
+            return null;
+        }
+    }, [content]);
 
-        const displayFields = fields
+    const displayFields = React.useMemo(() => {
+        if (!data) return [];
+        return fields
             .filter(field => data[field.name] !== undefined && data[field.name] !== null && data[field.name] !== '')
             .slice(0, maxFields);
+    }, [data, fields, maxFields]);
 
-        if (displayFields.length === 0) {
-            return (
-                <div className={`text-xs text-muted-foreground ${variant === 'card' ? 'bg-muted/20 p-2 rounded-md' : 'italic'}`}>
-                    لا توجد بيانات لعرضها
-                </div>
-            );
-        }
-
-        return (
-            <div className={className || (variant === 'card' ? 'space-y-2' : 'space-y-1.5')}>
-                {displayFields.map((field, idx) => (
-                    <div
-                        key={idx}
-                        className={`flex items-start gap-2 text-xs ${variant === 'card' ? 'bg-muted/20 p-2 rounded-md' : ''}`}
-                    >
-                        <span className={`${variant === 'card' ? 'font-bold' : 'font-semibold'} text-muted-foreground ${variant === 'inline' ? 'whitespace-nowrap' : 'min-w-[80px]'}`}>
-                            {field.label}:
-                        </span>
-                        <span className="text-foreground font-medium truncate">
-                            {String(data[field.name])}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        );
-    } catch {
+    // Error state
+    if (data === null) {
         return (
             <div className={`text-xs text-muted-foreground ${variant === 'card' ? 'bg-muted/20 p-2 rounded-md font-mono truncate' : 'italic'}`}>
                 {variant === 'card' ? content : 'خطأ في البيانات'}
             </div>
         );
     }
+
+    // Empty state
+    if (displayFields.length === 0) {
+        return (
+            <div className={`text-xs text-muted-foreground ${variant === 'card' ? 'bg-muted/20 p-2 rounded-md' : 'italic'}`}>
+                لا توجد بيانات لعرضها
+            </div>
+        );
+    }
+
+    return (
+        <div className={className || (variant === 'card' ? 'space-y-2' : 'space-y-1.5')}>
+            {displayFields.map((field, idx) => (
+                <div
+                    key={idx}
+                    className={`flex items-start gap-2 text-xs ${variant === 'card' ? 'bg-muted/20 p-2 rounded-md' : ''}`}
+                >
+                    <span className={`${variant === 'card' ? 'font-bold' : 'font-semibold'} text-muted-foreground ${variant === 'inline' ? 'whitespace-nowrap' : 'min-w-[80px]'}`}>
+                        {field.label}:
+                    </span>
+                    <span className="text-foreground font-medium truncate">
+                        {String(data[field.name])}
+                    </span>
+                </div>
+            ))}
+        </div>
+    );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useQueryState, parseAsInteger } from 'nuqs';
 import { formEndpoints, useRequests } from '../api/formEndpoints';
@@ -15,19 +15,23 @@ export const useResponsePageLogic = () => {
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
-    const [seenIds, setSeenIds] = useState<string[]>([]);
-
+    
     // Load seen IDs from localStorage
-    useEffect(() => {
+    const [seenIds, setSeenIds] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return [];
         const saved = localStorage.getItem(SEEN_REQUESTS_KEY);
         if (saved) {
             try {
-                setSeenIds(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to parse seen requests", e);
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                    return parsed;
+                }
+            } catch {
+                console.error("Failed to parse seen requests");
             }
         }
-    }, []);
+        return [];
+    });
 
     const currentUser = useAuthStore((state) => state.user);
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
@@ -39,7 +43,7 @@ export const useResponsePageLogic = () => {
         isNew: !seenIds.includes(r.id)
     }));
 
-    const { data: templates = [] } = useForms();
+    const { data: templates = [] } = useForms(true);
 
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
@@ -94,6 +98,10 @@ export const useResponsePageLogic = () => {
         }
     };
 
+    const handleFilesAdd = (newFiles: File[]) => {
+        setFiles(prev => [...prev, ...newFiles]);
+    };
+
     const removeFile = (index: number) => {
         setFiles(prev => prev.filter((_, i) => i !== index));
     };
@@ -102,6 +110,8 @@ export const useResponsePageLogic = () => {
         markAsSeen(id);
         setRequestId(id);
     };
+
+    const selectedRequest = requests.find(r => r.id === requestId);
 
     return {
         requestId,
@@ -112,6 +122,7 @@ export const useResponsePageLogic = () => {
         viewingResponse,
         currentUser,
         requests,
+        selectedRequest,
         isLoading,
         templates,
         totalItems: pagedRequests?.totalItems || 0,
@@ -120,8 +131,10 @@ export const useResponsePageLogic = () => {
         setPage,
         isPending: responseMutation.isPending,
         setComment,
+        setRequestId,
         handleSubmit,
         handleFileChange,
+        handleFilesAdd,
         removeFile,
         handleSelectRequest,
         handleViewRequest

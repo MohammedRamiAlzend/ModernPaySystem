@@ -156,18 +156,20 @@ export const useRequests = (hasResponse: boolean = false, page: number = 1, page
     });
 };
 
-export const useTemplates = () => {
+export const useTemplates = (showExternal: boolean = false) => {
     return useQuery({
-        queryKey: ['templates'],
+        queryKey: ['templates', showExternal],
         queryFn: async (): Promise<Template[]> => {
             const res = await formEndpoints.getTemplates();
+            const filterFn = (t: Template) => showExternal || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"));
+            
+            if (Array.isArray(res)) return res.filter(filterFn);
+            
             // Handle if data is wrapped in { data: [] }
             if (res && !Array.isArray(res) && 'data' in res && Array.isArray(res.data)) {
-                return res.data;
+                return (res.data as Template[]).filter(filterFn);
             }
 
-            if (Array.isArray(res)) return res;
-            // Shouldn't normally reach here, but handle gracefully
             return [];
         },
         ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
@@ -215,11 +217,16 @@ export const useRequestResponses = (requestId: string | null) => {
         queryFn: async () => {
             if (!requestId) return [];
             const res = await formEndpoints.getResponsesByRequestId(requestId);
-            // Handle API wrapping: { data: [...] } vs direct array
-            if ('data' in res && Array.isArray(res.data)) {
-                return res.data;
+            
+            // Handle PagedResult wrapping: { data: { items: [...] } }
+            if (res && typeof res === 'object' && 'data' in res) {
+                const inner = res.data as any;
+                if (Array.isArray(inner)) return inner;
+                if (inner && Array.isArray(inner.items)) return inner.items;
             }
+            
             if (Array.isArray(res)) return res as TemplateResponse[];
+            
             return [] as TemplateResponse[];
         },
         enabled: !!requestId,

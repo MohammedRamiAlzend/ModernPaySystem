@@ -42,7 +42,9 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             maxWidth="sm"
-            title={null} // We render custom title in children for better design
+            title={title}
+            description={message}
+            hideHeaderVisually={true}
         >
             <div className="flex flex-col items-center text-center p-4 gap-4">
                 <div className={cn("p-4 rounded-full", colors[type])}>
