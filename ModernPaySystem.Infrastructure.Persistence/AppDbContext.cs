@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ModernPaySystem.Domain.Entities.PaySystemEntities.FastOperations;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -24,6 +25,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 // Lookup Field Entities
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
+
+    // Pay System Entities - Fast Operations
+    public DbSet<Client> Clients { get; set; }
+    public DbSet<Gender> Genders { get; set; }
+    public DbSet<National> Nationals { get; set; }
+    public DbSet<Gov> Govs { get; set; }
+    public DbSet<KindShip> KindShips { get; set; }
+    public DbSet<OperationStatus> OperationStatuses { get; set; }
+    public DbSet<OperationServiceType> OperationServiceTypes { get; set; }
+    public DbSet<Operation> Operations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,5 +124,54 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(lf => lf.LookUpFiledValues)
             .HasForeignKey(lfv => lfv.LookUpFiledId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Pay System Entities - Fast Operations Relationships
+        modelBuilder.Entity<Client>()
+            .HasOne(c => c.Gender)
+            .WithMany()
+            .HasForeignKey(c => c.GenderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Client>()
+            .HasOne(c => c.National)
+            .WithMany()
+            .HasForeignKey(c => c.NationalId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Client>()
+            .HasOne(c => c.Gov)
+            .WithMany()
+            .HasForeignKey(c => c.GovId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Operation>()
+            .HasOne(o => o.ApplicantClient)
+            .WithMany()
+            .HasForeignKey(o => o.ApplicantClientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Operation>()
+            .HasOne(o => o.RecipientClient)
+            .WithMany()
+            .HasForeignKey(o => o.RecipientClientId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Operation>()
+            .HasOne(o => o.KindShip)
+            .WithMany()
+            .HasForeignKey(o => o.KindShipId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Operation>()
+            .HasOne(o => o.Status)
+            .WithMany()
+            .HasForeignKey(o => o.OperationStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Operation>()
+            .HasOne(o => o.OperationServiceType)
+            .WithMany()
+            .HasForeignKey(o => o.OperationServiceTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
