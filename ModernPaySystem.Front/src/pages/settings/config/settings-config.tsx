@@ -1,5 +1,6 @@
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { AppearanceSettings } from '../ui/AppearanceSettings';
+import { ToolsSettings } from '../ui/ToolsSettings';
 import { ReactNode } from 'react';
 
 // Lazy load feature components to enable preloading
@@ -42,5 +43,11 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'المظهر والتفضيلات',
         description: 'تحكم في كيفية ظهور التطبيق والخيارات الشخصية',
         component: <AppearanceSettings />
+    },
+    {
+        id: 'tools',
+        label: 'أدوات الدعم و التشغيل',
+        description: 'تحميل الأدوات المساعدة وبرامج التشغيل للنظام',
+        component: <ToolsSettings />
     }
 ];
