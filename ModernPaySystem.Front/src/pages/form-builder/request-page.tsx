@@ -9,8 +9,9 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import type { CreateRequestDto } from '@/entities/form/model/types';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
-import { FileText } from 'lucide-react';
+import { FileText, Printer, Download } from 'lucide-react';
 import { RequestSubmissionSidebar } from '@/features/form-builder/ui/RequestSubmissionSidebar';
+import { printImage, downloadImage } from '@/shared/utils/image-actions';
 
 /**
  * RequestPage: Handles the submission of a new form request.
@@ -139,6 +140,22 @@ export const RequestPage = () => {
                                         alt={file.name}
                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                                     />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button 
+                                            onClick={() => printImage(URL.createObjectURL(file))}
+                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                            title="طباعة"
+                                        >
+                                            <Printer className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => downloadImage(URL.createObjectURL(file), file.name)}
+                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                            title="تنزيل"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="text-[10px] font-mono truncate flex-1">{file.name}</span>

@@ -7,11 +7,12 @@ import { ResponseDetailsData } from '@/widgets/form-editor/ui/response-details/R
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage } from '@/shared/utils/zip-handler';
-import { Printer, Download, FileDown } from 'lucide-react';
+import { Printer, Download, FileDown, ExternalLink } from 'lucide-react';
 import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
 import { Button } from '@/shared/ui/button';
 import { useUIStore } from '@/app/store/uiStore';
+import { printImage, downloadImage } from '@/shared/utils/image-actions';
 
 interface SelectedRequestPreviewProps {
     request: TemplateRequest | null;
@@ -203,14 +204,35 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                                            alt={img.name} 
                                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
                                        />
-                                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    printImage(img.url);
+                                                }}
+                                                className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                title="طباعة"
+                                            >
+                                                <Printer className="w-5 h-5" />
+                                            </button>
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    downloadImage(img.url, img.name);
+                                                }}
+                                                className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                title="تنزيل"
+                                            >
+                                                <Download className="w-5 h-5" />
+                                            </button>
                                             <a 
                                                 href={img.url} 
                                                 target="_blank" 
                                                 rel="noreferrer" 
-                                                className="p-2 bg-white/20 backdrop-blur-md rounded-lg text-white text-xs font-bold hover:bg-white/40 transition-colors"
+                                                className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                title="عرض الحجم الكامل"
                                             >
-                                                عرض الحجم الكامل
+                                                <ExternalLink className="w-5 h-5" />
                                             </a>
                                        </div>
                                        <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">

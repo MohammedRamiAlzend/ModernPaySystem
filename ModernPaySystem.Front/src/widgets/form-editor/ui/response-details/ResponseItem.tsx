@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/button';
-import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, FileDown } from 'lucide-react';
+import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, FileDown, Printer } from 'lucide-react';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
+import { printImage, downloadImage } from '@/shared/utils/image-actions';
 import type { TemplateResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { useUIStore } from '@/app/store/uiStore';
@@ -171,8 +172,34 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                                                         alt={img.name}
                                                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                                                     />
-                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                        <Maximize2 className="text-white w-4 h-4" />
+                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        <button 
+                                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                printImage(img.url);
+                                                            }}
+                                                            title="طباعة"
+                                                        >
+                                                            <Printer className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button 
+                                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                downloadImage(img.url, img.name);
+                                                            }}
+                                                            title="تنزيل"
+                                                        >
+                                                            <Download className="w-3.5 h-3.5" />
+                                                        </button>
+                                                        <button 
+                                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                            onClick={() => onViewImage(img)}
+                                                            title="تكبير"
+                                                        >
+                                                            <Maximize2 className="w-3.5 h-3.5" />
+                                                        </button>
                                                     </div>
                                                 </div>
                                             ))}
