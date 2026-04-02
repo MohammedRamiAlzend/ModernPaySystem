@@ -15,7 +15,7 @@ import type { SidebarModeConfig, SidebarMode } from '../model/sidebar-mode.types
 export const SIDEBAR_MODE_REGISTRY: SidebarModeConfig[] = [
     {
         mode: 'settings',
-        routePatterns: ['/settings'],
+        routePatterns: ['/settings', '/form-builder/templates'],
         priority: 10,
     },
     // Default mode — matches everything as fallback
