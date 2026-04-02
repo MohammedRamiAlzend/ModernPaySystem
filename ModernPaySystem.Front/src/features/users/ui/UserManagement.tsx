@@ -42,7 +42,7 @@ export const UserManagement = () => {
     // Form State
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [userSubSystem, setUserSubSystem] = useState<string>('0');
+    const [userSubSystem, setUserSubSystem] = useState<string>('1');
 
     const { data: users = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
@@ -53,7 +53,7 @@ export const UserManagement = () => {
         setUserName('');
         setPassword('');
         // إذا كان المستخدم الحالي لديه نظام فرعي محدد، يتم تعيينه تلقائياً وإجباري
-        setUserSubSystem(currentUserSubsystem || '0');
+        setUserSubSystem(currentUserSubsystem || '1');
         setIsUserDialogOpen(true);
     };
 
@@ -61,7 +61,7 @@ export const UserManagement = () => {
         setEditingUser(user);
         setUserName(user.userName);
         setPassword('');
-        setUserSubSystem(user.subSystem?.toString() || '0');
+        setUserSubSystem(user.subSystem?.toString() || '1');
         setIsUserDialogOpen(true);
     };
 
