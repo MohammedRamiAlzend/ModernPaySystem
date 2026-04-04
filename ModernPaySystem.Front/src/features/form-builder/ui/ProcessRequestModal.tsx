@@ -50,14 +50,14 @@ export const ProcessRequestModal = ({
                 </div>
             }
         >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[70vh] overflow-hidden" dir="rtl">
+            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:h-[75vh]" dir="rtl">
                 {/* Details Section (60%) */}
-                <div className="lg:col-span-7 h-full overflow-hidden flex flex-col">
+                <div className="lg:col-span-7 h-[600px] lg:h-full">
                     <SelectedRequestPreview request={request} template={template} />
                 </div>
 
                 {/* Response Form Section (40%) */}
-                <div className="lg:col-span-5 h-full overflow-hidden flex flex-col">
+                <div className="lg:col-span-5 h-[500px] lg:h-full pt-4 lg:pt-0 border-t lg:border-t-0">
                     <ResponseForm
                         requestId={request.id}
                         comment={comment}
