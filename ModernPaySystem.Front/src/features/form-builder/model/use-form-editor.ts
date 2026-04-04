@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import type { FormSchema, FormField } from '@/entities/form/model/types';
 import { useSaveForm, useUpdateForm } from './useForms';
+import { v4 } from '@/shared/utils/uuid';
 
 export const useFormEditor = (initialForm?: FormSchema) => {
     const [form, setForm] = useState<FormSchema>(initialForm || {
-        id: crypto.randomUUID(),
+        id: v4(),
         title: 'New Form',
         fields: [],
         logic: []
@@ -16,7 +17,7 @@ export const useFormEditor = (initialForm?: FormSchema) => {
 
     const addField = (type: FormField['type'], lookUpFieldId?: string, customLabel?: string) => {
         const newField: FormField = {
-            id: crypto.randomUUID(),
+            id: v4(),
             name: `field_${Date.now()}`,
             type,
             label: customLabel || (lookUpFieldId ? 'حقل من الإعدادات' : type === 'date' ? 'حقل تاريخ جديد' : type === 'label' ? 'نص توضيحي جديد' : `New ${type} Field`),
