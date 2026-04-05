@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -25,7 +24,7 @@ public class Request : Entity<Guid>, IAuditableEntity
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public bool CanEdit(string userId)
+    public override bool CanEdit(string userId)
     {
         if (string.IsNullOrEmpty(userId)) return false;
 
@@ -37,7 +36,8 @@ public class Request : Entity<Guid>, IAuditableEntity
 
         return false;
     }
-    public bool CanView(string userId)
+
+    public override bool CanView(string userId)
     {
         if (string.IsNullOrEmpty(userId)) return false;
 

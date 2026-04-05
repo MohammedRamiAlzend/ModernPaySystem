@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System.Linq;
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public class Response : Entity<Guid>, IAuditableEntity
@@ -14,6 +13,33 @@ public class Response : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    public override bool CanView(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) return false;
+
+        if (userId == this.CreatedByUserId) return true;
+
+        if (userId == this.RespondedByUserId.ToString()) return true;
+
+        if (Request != null && Request.CanView(userId)) return true;
+
+        if (Request != null && userId == Request.ApproverId.ToString()) return true;
+
+        return false;
+    }
+
+    public override bool CanEdit(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) return false;
+
+        if (userId == this.CreatedByUserId) return true;
+
+        if (userId == this.RespondedByUserId.ToString())
+            return true;
+
+        return false;
+    }
 
     public ResponseDto ToDto()
     {

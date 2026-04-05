@@ -1,21 +1,25 @@
 ﻿using System.Linq.Expressions;
 using System.Text.RegularExpressions;
+using ExpressionBuilderLib.src.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Repos;
+using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.Abstraction;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Repos;
 
-public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<RepositoryBase<TEntity, TKey>> logger) : IRepositoryBase<TEntity, TKey>
+public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
+    ILogger<RepositoryBase<TEntity, TKey>> logger,
+    IHttpContextServiceManager httpContextServiceManager) : IRepositoryBase<TEntity, TKey>
     where TEntity : Entity<TKey>
 {
     public async Task<Result<Success>> AddAsync(TEntity entity)
     {
         if (entity == null)
             return new Error("00", "Entity cannot be null.", ErrorKind.Failure);
-
         try
         {
             await dbcontext.AddAsync(entity);
@@ -48,9 +52,13 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
+
         try
         {
-            if (filter != null) query = query.Where(filter);
+            Expression<Func<TEntity, bool>>? auth = x =>
+            x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+
+            if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
             if (transform != null) query = transform(query);
 
             // If no specific ordering is provided, order by Id descending (newest first, assuming auto-incrementing IDs)
@@ -89,7 +97,11 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
 
         try
         {
-            if (filter != null) query = query.Where(filter);
+            Expression<Func<TEntity, bool>>? auth = x =>
+                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+
+            if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            else query = query.Where(auth);
             if (transform != null) query = transform(query);
 
             int totalItems = await query.CountAsync();
@@ -125,7 +137,11 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
 
         try
         {
-            if (filter != null) query = query.Where(filter);
+            Expression<Func<TEntity, bool>>? auth = x =>
+                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+
+            if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            else query = query.Where(auth);
             if (include != null) query = include(query);
 
             var result = await query.FirstOrDefaultAsync();
@@ -152,7 +168,11 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
 
         try
         {
-            var getEntity = await GetAsync(filter);
+            Expression<Func<TEntity, bool>>? auth = x =>
+                x.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString());
+
+            var combinedFilter = ExpressionCombiner.AndAll(filter, auth);
+            var getEntity = await GetAsync(combinedFilter);
             if (getEntity.IsError) return getEntity.Errors;
             var entity = getEntity.Value;
             if (entity == null) return new Error("00", "Entity not found.", ErrorKind.Failure);
@@ -190,6 +210,9 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         if (entity == null) return new Error("00", "Entity cannot be null.", ErrorKind.Failure);
         try
         {
+            if (!entity.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString()))
+                return new Error("403", "You do not have permission to edit this entity.", ErrorKind.Failure);
+
             dbcontext.Attach(entity);
             dbcontext.Set<TEntity>().Entry(entity).State = EntityState.Modified;
             int saveResult = await dbcontext.SaveChangesAsync();
@@ -209,7 +232,12 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
     {
         try
         {
-            return await dbcontext.Set<TEntity>().FindAsync(id);
+            var entity = await dbcontext.Set<TEntity>().FindAsync(id);
+            
+            if (entity != null && !entity.CanView(httpContextServiceManager.GetCurrentUserId().ToString()))
+                return new Error("403", "You do not have permission to view this entity.", ErrorKind.Failure);
+            
+            return entity;
         }
         catch (Exception e)
         {
@@ -230,7 +258,10 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
 
         try
         {
-            query = query.Where(filter);
+            Expression<Func<TEntity, bool>>? auth = x =>
+                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+
+            query = query.Where(ExpressionCombiner.AndAll(filter, auth));
             if (transform != null) query = transform(query);
 
             if (orderBy == null)
