@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
@@ -41,12 +42,12 @@ public class RequestService(
         {
             logger.LogInformation("Fetching all requests");
             var requests = await unitOfWork.Requests.GetAllAsync(
-                x => x.ResponseId.HasValue == hasResponse,
-                x => x.Include(x => x.Template)
+                transform: x => x.Include(x => x.Template)
                       .Include(x => x.Response)
                      .Include(x => x.Approver)
                      .Include(x => x.Requester)
-                     .Include(x => x.RequestAttachments));
+                     .Include(x => x.RequestAttachments),
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.HasResponse(hasResponse) });
 
             if (requests.IsError)
                 return requests.Errors;
@@ -90,13 +91,22 @@ public class RequestService(
         try
         {
             logger.LogInformation("Fetching request by id: {RequestId}", id);
-            var request = await unitOfWork.Requests.GetByIdAsync(id);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var request = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == id,
+                transform: x => x.Include(x => x.Template)
+                                 .Include(x => x.Approver)
+                                 .Include(x => x.Requester)
+                                 .Include(x => x.RequestAttachments),
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(currentUserId) });
 
             if (request.IsError)
                 return request.Errors;
 
             if (request.Value == null)
-                return ApplicationErrors.RequestNotFound;
+                return ApplicationErrors.UnauthorizedRequestAccess;
 
             return request.Value.ToDto();
         }
@@ -118,14 +128,11 @@ public class RequestService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var requesterFilter = new ExpressionBuilder<Request>();
-            requesterFilter.And(r => r.RequesterId == requesterId);
-
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                requesterFilter.Build(),
-                i => i.Include(r => r.RequestAttachments));
+                transform: i => i.Include(r => r.RequestAttachments),
+                additionalFilters: RequestExpressions.ByRequesterIdWithIncludes(requesterId));
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -151,14 +158,11 @@ public class RequestService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var approverFilter = new ExpressionBuilder<Request>();
-            approverFilter.And(r => r.ApproverId == approverId);
-
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                approverFilter.Build(),
-                i => i.Include(r => r.RequestAttachments));
+                transform: i => i.Include(r => r.RequestAttachments),
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.ByApproverId(approverId) });
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -184,14 +188,11 @@ public class RequestService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var templateFilter = new ExpressionBuilder<Request>();
-            templateFilter.And(r => r.TemplateId == templateId);
-
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                templateFilter.Build(),
-                i => i.Include(r => r.RequestAttachments));
+                transform: i => i.Include(r => r.RequestAttachments),
+                additionalFilters: RequestExpressions.ByTemplateIdWithIncludes(templateId));
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -260,12 +261,17 @@ public class RequestService(
             if (id == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            var request = await unitOfWork.Requests.GetByIdAsync(id);
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var request = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == id,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanMakeUpdateByUserId(currentUserId) });
+
             if (request.IsError)
                 return request.Errors;
 
             if (request.Value == null)
-                return ApplicationErrors.RequestNotFound;
+                return ApplicationErrors.UnauthorizedRequestAccess;
 
             logger.LogInformation("Deleting request: {RequestId}", id);
 
@@ -291,12 +297,18 @@ public class RequestService(
             if (requestId == Guid.Empty || files == null || !files.Any())
                 return ApplicationErrors.InvalidInput;
 
-            var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var request = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == requestId,
+                transform: x => x.Include(x => x.RequestAttachments),
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanMakeUpdateByUserId(currentUserId) });
+
             if (request.IsError)
                 return request.Errors;
 
             if (request.Value == null)
-                return ApplicationErrors.RequestNotFound;
+                return ApplicationErrors.UnauthorizedRequestAccess;
 
             logger.LogInformation("Adding {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
@@ -312,7 +324,13 @@ public class RequestService(
 
             logger.LogInformation("Successfully added {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
-            var updatedRequest = await unitOfWork.Requests.GetByIdAsync(requestId);
+            var updatedRequest = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == requestId,
+                transform: x => x.Include(x => x.Template)
+                                 .Include(x => x.Approver)
+                                 .Include(x => x.Requester)
+                                 .Include(x => x.RequestAttachments));
+
             if (updatedRequest.IsError)
                 return updatedRequest.Errors;
 
@@ -335,18 +353,11 @@ public class RequestService(
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
 
-            var requestBuilder = new ExpressionBuilder<Request>();
-
-            requestBuilder.And(r => r.ApproverId == httpContextServiceManager.GetCurrentUserId());
-            requestBuilder.And(r => r.ResponseId.HasValue == hasResponse);
-
-            var expression = requestBuilder.Build();
-
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                expression,
-                i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);
+                transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!,
+                additionalFilters: RequestExpressions.ByApproverIdAndResponse(httpContextServiceManager.GetCurrentUserId(), hasResponse));
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
