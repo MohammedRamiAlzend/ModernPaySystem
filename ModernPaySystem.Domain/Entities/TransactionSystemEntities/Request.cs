@@ -18,13 +18,36 @@ public class Request : Entity<Guid>, IAuditableEntity
     public Response? Response { get; set; }
     public required string ContentAsJson { get; set; }
 
-    // Navigation property for attachments
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = [];
-
+    public required ICollection<User>? ReadOnlyUsers { get; set; } = [];
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    public bool CanEdit(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) return false;
+
+        if (userId == this.RequesterId.ToString()) return true;
+
+        if (userId == this.ApproverId.ToString()) return false;
+
+        if (ReadOnlyUsers?.Any(u => u.Id.ToString() == userId) == true) return false;
+
+        return false;
+    }
+    public bool CanView(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) return false;
+
+        if (userId == this.RequesterId.ToString()) return true;
+        if (userId == this.ApproverId.ToString()) return true;
+        if (ReadOnlyUsers?.Any(u => u.Id.ToString() == userId) == true) return true;
+
+        return false;
+    }
+
     public RequestDto ToDto()
     {
         return new RequestDto
@@ -42,7 +65,8 @@ public class Request : Entity<Guid>, IAuditableEntity
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
             UpdatedAt = this.UpdatedAt,
-            ResponseId = this.ResponseId
+            ResponseId = this.ResponseId,
+            ReadOnlyUsers = [.. this.ReadOnlyUsers.Select(u => u.Id)]
         };
     }
 }
@@ -64,13 +88,14 @@ public class RequestDto
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public int AttachmentCount => RequestAttachmentDtos?.Count ?? 0;
-
+    public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
 }
 
 public class CreateRequestDto
 {
-    public Guid TemplateId { get; set; }
-    public Guid ApproverId { get; set; }
+    public required Guid TemplateId { get; set; }
+    public required Guid ApproverId { get; set; }
+    public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
     public required string Content { get; set; }
     public List<IFormFile>? Files { get; set; } = [];
 }

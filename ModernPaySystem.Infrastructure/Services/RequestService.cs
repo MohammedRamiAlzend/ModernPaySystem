@@ -8,7 +8,8 @@ namespace ModernPaySystem.Infrastructure.Services;
 public class RequestService(
     IUnitOfWork unitOfWork, ILogger<RequestService> logger,
     IWebAttachmentService webAttachmentService,
-    IHttpContextServiceManager httpContextServiceManager) : IRequestService
+    IHttpContextServiceManager httpContextServiceManager,
+    IAuthorizationService authorizationService) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {
@@ -214,6 +215,9 @@ public class RequestService(
 
             if (request.TemplateId == Guid.Empty || request.ApproverId == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
+            var usersResult = await unitOfWork.Users.GetAllAsync(x => request.ReadOnlyUsers.Contains(x.Id));
+            if (usersResult.IsError)
+                return usersResult.Errors;
 
             logger.LogInformation("Creating new request for requester: {RequesterId}", httpContextServiceManager.GetCurrentUserId());
             var requestEntity = new Request
@@ -221,7 +225,8 @@ public class RequestService(
                 TemplateId = request.TemplateId,
                 RequesterId = httpContextServiceManager.GetCurrentUserId(),
                 ApproverId = request.ApproverId,
-                ContentAsJson = request.Content
+                ContentAsJson = request.Content,
+                ReadOnlyUsers = usersResult.Value
             };
 
             var addResult = await unitOfWork.Requests.AddAsync(requestEntity);
