@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Commons;
@@ -198,7 +199,8 @@ public class LookUpFiledValuesService : ILookUpFiledValuesService
         try
         {
             _logger.LogInformation("Fetching lookup field values by lookup field ID: {LookUpFieldId}", lookUpFieldId);
-            var lookUpFiledValues = await _unitOfWork.LookUpFiledValues.GetAllAsync(x => x.LookUpFiledId == lookUpFieldId);
+            var lookUpFiledValues = await _unitOfWork.LookUpFiledValues.GetAllAsync(
+                additionalFilters: new List<Expression<Func<LookUpFiledValues, bool>>> { LookUpFiledValuesExpressions.ByLookUpFieldId(lookUpFieldId) });
             if (lookUpFiledValues.IsError)
                 return lookUpFiledValues.Errors;
 

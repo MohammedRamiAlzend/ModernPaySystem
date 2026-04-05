@@ -1,5 +1,7 @@
+using System.Linq.Expressions;
 using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Domain.Commons;
 using System.IO.Compression;
@@ -157,8 +159,7 @@ public class AttachmentService(
 
         // Check if the attachment is associated with this request
         var requestAttachment = await unitOfWork.RequestAttachments.GetAsync(
-            x => x.RequestId == requestId &&
-                 x.AttachmentId == attachmentId,
+            AttachmentExpressions.RequestAttachmentByRequestIdAndAttachmentId(requestId, attachmentId),
             i => i.Include(x => x.Attachment).Include(x => x.Request));
         if (requestAttachment == null)
         {
@@ -190,7 +191,7 @@ public class AttachmentService(
 
         // Check if the attachment is associated with this response
         var responseAttachment = await unitOfWork.ResponseAttachments.GetAsync(
-            x => x.ResponseId == responseId && x.AttachmentId == attachmentId,
+            AttachmentExpressions.ResponseAttachmentByResponseIdAndAttachmentId(responseId, attachmentId),
             x => x.Include(x => x.Attachment).Include(x => x.Response));
 
         if (responseAttachment.IsError)
@@ -223,7 +224,7 @@ public class AttachmentService(
 
         // Check if the attachment is associated with this request
         var requestAttachment = await unitOfWork.RequestAttachments.GetAsync(
-            x => x.RequestId == requestId && x.AttachmentId == attachmentId,
+            AttachmentExpressions.RequestAttachmentByRequestIdAndAttachmentId(requestId, attachmentId),
             x => x.Include(x => x.Attachment).Include(x => x.Request));
         if (requestAttachment.IsError)
         {
@@ -281,7 +282,7 @@ public class AttachmentService(
 
         // Check if the attachment is associated with this response
         var responseAttachment = await unitOfWork.ResponseAttachments.GetAsync(
-            x => x.ResponseId == responseId && x.AttachmentId == attachmentId,
+            AttachmentExpressions.ResponseAttachmentByResponseIdAndAttachmentId(responseId, attachmentId),
             x => x.Include(x => x.Attachment).Include(x => x.Response));
         if (responseAttachment == null)
         {
@@ -337,7 +338,7 @@ public class AttachmentService(
         }
 
         // Get all RequestAttachment associations for this request
-        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.RequestId == requestId);
+        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(AttachmentExpressions.RequestAttachmentByRequestId(requestId));
         if (requestAttachments.IsError)
             return requestAttachments.Errors;
 
@@ -369,7 +370,7 @@ public class AttachmentService(
         }
 
         // Get all ResponseAttachment associations for this response
-        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.ResponseId == responseId);
+        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(AttachmentExpressions.ResponseAttachmentByResponseId(responseId));
         if (responseAttachments.IsError)
         {
             return responseAttachments.Errors;
@@ -404,7 +405,7 @@ public class AttachmentService(
         }
 
         // Get all attachments associated with this request
-        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.RequestId == requestId);
+        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(AttachmentExpressions.RequestAttachmentByRequestId(requestId));
         if (requestAttachments.IsError)
         {
             return requestAttachments.Errors;
@@ -459,7 +460,7 @@ public class AttachmentService(
         }
 
         // Get all attachments associated with this response
-        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.ResponseId == responseId);
+        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(AttachmentExpressions.ResponseAttachmentByResponseId(responseId));
         if (responseAttachments.IsError)
         {
             return responseAttachments.Errors;
@@ -507,7 +508,7 @@ public class AttachmentService(
     private async Task<bool> IsAttachmentUsedElsewhere(Guid attachmentId)
     {
         // Check if the attachment is associated with any other requests
-        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(x => x.AttachmentId == attachmentId);
+        var requestAttachments = await unitOfWork.RequestAttachments.GetAllAsync(AttachmentExpressions.RequestAttachmentByAttachmentId(attachmentId));
         if (requestAttachments.IsError)
         {
             throw new Exception("Error checking attachmentDto associations: " + string.Join(", ", requestAttachments.Errors.Select(e => e.Description)));
@@ -519,7 +520,7 @@ public class AttachmentService(
         }
 
         // Check if the attachment is associated with any other responses
-        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(x => x.AttachmentId == attachmentId);
+        var responseAttachments = await unitOfWork.ResponseAttachments.GetAllAsync(AttachmentExpressions.ResponseAttachmentByAttachmentId(attachmentId));
         if (responseAttachments.IsError)
         {
             throw new Exception("Error checking attachmentDto associations: " + string.Join(", ", responseAttachments.Errors.Select(e => e.Description)));
