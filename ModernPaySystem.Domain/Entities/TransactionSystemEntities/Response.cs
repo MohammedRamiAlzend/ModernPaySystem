@@ -2,6 +2,13 @@
 using System.Linq;
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
+public enum ResponseStatus
+{
+    Delivered = 0,
+    Pending = 1,
+
+}
+
 public class Response : Entity<Guid>, IAuditableEntity
 {
     public required Guid RequestId { get; set; }
@@ -15,28 +22,21 @@ public class Response : Entity<Guid>, IAuditableEntity
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public override bool CanView(string userId)
+    public override bool CanView(Guid userId)
     {
-        if (string.IsNullOrEmpty(userId)) return false;
 
-        if (userId == this.CreatedByUserId) return true;
-
-        if (userId == this.RespondedByUserId.ToString()) return true;
+        if (userId == this.RespondedByUserId) return true;
 
         if (Request != null && Request.CanView(userId)) return true;
 
-        if (Request != null && userId == Request.ApproverId.ToString()) return true;
+        if (Request != null && userId == Request.ApproverId) return true;
 
         return false;
     }
 
-    public override bool CanEdit(string userId)
+    public override bool CanEdit(Guid userId)
     {
-        if (string.IsNullOrEmpty(userId)) return false;
-
-        if (userId == this.CreatedByUserId) return true;
-
-        if (userId == this.RespondedByUserId.ToString())
+        if (userId == this.RespondedByUserId)
             return true;
 
         return false;

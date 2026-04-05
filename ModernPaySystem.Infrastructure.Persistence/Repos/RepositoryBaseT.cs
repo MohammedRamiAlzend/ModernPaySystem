@@ -8,6 +8,7 @@ using ModernPaySystem.Application.Repos;
 using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.Abstraction;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Repos;
 
@@ -56,18 +57,21 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
         try
         {
-            if (!bypassAuth)
-            {
-                Expression<Func<TEntity, bool>>? auth = x =>
-                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            //if (!bypassAuth)
+            //{
+            //    var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
 
-                if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            }
-            else if (filter != null)
+            //    Expression<Func<TEntity, bool>>? auth = x =>
+            //    x.CanView(getCurrentUserId);
+
+            //    if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            //}
+            //else
+            if (filter != null)
             {
                 query = query.Where(filter);
             }
-            
+
             if (transform != null) query = transform(query);
 
             if (orderBy == null)
@@ -108,17 +112,22 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         {
             if (!bypassAuth)
             {
-                Expression<Func<TEntity, bool>>? auth = x =>
-                    x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+                //var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+                //Expression<Func<TEntity, bool>>? auth = x =>
+                //    x.CanView(getCurrentUserId);
 
-                if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-                else query = query.Where(auth);
+                //if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+                //else query = query.Where(auth);
+                if (filter != null)
+                {
+                    query = query.Where(filter);
+                }
             }
             else if (filter != null)
             {
                 query = query.Where(filter);
             }
-            
+
             if (transform != null) query = transform(query);
 
             int totalItems = await query.CountAsync();
@@ -155,19 +164,25 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
         try
         {
-            if (!bypassAuth)
-            {
-                Expression<Func<TEntity, bool>>? auth = x =>
-                    x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            //if (!bypassAuth)
+            //{
+            //    var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
 
-                if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-                else query = query.Where(auth);
-            }
-            else if (filter != null)
+            //    Expression<Func<TEntity, bool>>? auth = x =>
+            //        x.CanView(getCurrentUserId);
+
+            //    if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            //    else query = query.Where(auth);
+            //}
+            //else if (filter != null)
+            //{
+            //    query = query.Where(filter);
+            //}
+            if (filter != null)
             {
                 query = query.Where(filter);
             }
-            
+
             if (include != null) query = include(query);
 
             var result = await query.FirstOrDefaultAsync();
@@ -194,20 +209,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
         try
         {
-            Expression<Func<TEntity, bool>> combinedFilter;
-            
-            if (!bypassAuth)
-            {
-                Expression<Func<TEntity, bool>>? auth = x =>
-                    x.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString());
-                combinedFilter = ExpressionCombiner.AndAll(filter, auth);
-            }
-            else
-            {
-                combinedFilter = filter;
-            }
-            
-            var getEntity = await GetAsync(combinedFilter, bypassAuth: true);
+            var getEntity = await GetAsync(filter, bypassAuth: true);
             if (getEntity.IsError) return getEntity.Errors;
             var entity = getEntity.Value;
             if (entity == null) return new Error("00", "Entity not found.", ErrorKind.Failure);
@@ -245,8 +247,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         if (entity == null) return new Error("00", "Entity cannot be null.", ErrorKind.Failure);
         try
         {
-            if (!bypassAuth && !entity.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString()))
-                return new Error("403", "You do not have permission to edit this entity.", ErrorKind.Failure);
+            //if (!bypassAuth && !entity.CanEdit(httpContextServiceManager.GetCurrentUserId()))
+            //    return new Error("403", "You do not have permission to edit this entity.", ErrorKind.Failure);
 
             dbcontext.Attach(entity);
             dbcontext.Set<TEntity>().Entry(entity).State = EntityState.Modified;
@@ -269,8 +271,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         {
             var entity = await dbcontext.Set<TEntity>().FindAsync(id);
 
-            if (entity != null && !bypassAuth && !entity.CanView(httpContextServiceManager.GetCurrentUserId().ToString()))
-                return new Error("403", "You do not have permission to view this entity.", ErrorKind.Failure);
+            //if (entity != null && !bypassAuth && !entity.CanView(httpContextServiceManager.GetCurrentUserId()))
+            //    return new Error("403", "You do not have permission to view this entity.", ErrorKind.Failure);
 
             return entity;
         }
@@ -294,18 +296,21 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
         try
         {
-            if (!bypassAuth)
-            {
-                Expression<Func<TEntity, bool>>? auth = x =>
-                    x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            //if (!bypassAuth)
+            //{
+            //    var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
 
-                query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            }
-            else
-            {
-                query = query.Where(filter);
-            }
-            
+            //    Expression<Func<TEntity, bool>>? auth = x =>
+            //        x.CanView(getCurrentUserId);
+
+            //    query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            //}
+            //else
+            //{
+            //    query = query.Where(filter);
+            //}
+            query = query.Where(filter);
+
             if (transform != null) query = transform(query);
 
             if (orderBy == null)

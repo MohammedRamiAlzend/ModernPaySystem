@@ -25,26 +25,24 @@ public class Request : Entity<Guid>, IAuditableEntity
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public override bool CanEdit(string userId)
+    public override bool CanEdit(Guid userId)
     {
-        if (string.IsNullOrEmpty(userId)) return false;
 
-        if (userId == this.RequesterId.ToString()) return true;
+        if (userId == this.RequesterId) return true;
 
-        if (userId == this.ApproverId.ToString()) return false;
+        if (userId == this.ApproverId) return false;
 
-        if (ReadOnlyUsers?.Any(u => u.Id.ToString() == userId) == true) return false;
+        if (ReadOnlyUsers?.Any(u => u.Id == userId) == true) return false;
 
         return false;
     }
 
-    public override bool CanView(string userId)
+    public override bool CanView(Guid userId)
     {
-        if (string.IsNullOrEmpty(userId)) return false;
 
-        if (userId == this.RequesterId.ToString()) return true;
-        if (userId == this.ApproverId.ToString()) return true;
-        if (ReadOnlyUsers?.Any(u => u.Id.ToString() == userId) == true) return true;
+        if (userId == this.RequesterId) return true;
+        if (userId == this.ApproverId) return true;
+        if (ReadOnlyUsers?.Any(u => u.Id == userId) == true) return true;
 
         return false;
     }
