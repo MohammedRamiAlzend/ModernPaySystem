@@ -61,7 +61,6 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
             if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
             if (transform != null) query = transform(query);
 
-            // If no specific ordering is provided, order by Id descending (newest first, assuming auto-incrementing IDs)
             if (orderBy == null)
             {
                 query = query.OrderByDescending(e => e.Id);
