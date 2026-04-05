@@ -97,6 +97,7 @@ export interface CreateRequestDto {
     TemplateId: string;
     RequesterId: string; // UUID
     ApproverId?: string; // UUID
+    ReadOnlyUsers?: string[]; // List of user IDs for CC/Read-only
     Content: string; // JSON content
     files?: File[]; // For multi-part file upload
 }

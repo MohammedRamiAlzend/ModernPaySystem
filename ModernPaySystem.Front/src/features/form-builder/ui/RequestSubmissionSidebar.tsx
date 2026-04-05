@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
-import { Shield, ImagePlus, FileText, X, Scan } from 'lucide-react';
+import { Shield, ImagePlus, FileText, X, Scan, Eye } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserPicker } from '@/features/users/ui/UserPicker';
+import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
 import { SidebarSection } from '@/shared/ui/sidebar-section';
 import { cn } from '@/shared/lib/utils';
 import { ScannerModal } from '@/features/document-scanner';
@@ -10,6 +11,8 @@ import type { ImageMeta } from '@/features/document-scanner';
 interface RequestSubmissionSidebarProps {
     approverId: string;
     onApproverSelect: (id: string) => void;
+    readOnlyUsers: string[];
+    onReadOnlyUsersChange: (ids: string[]) => void;
     files: File[];
     onFilesChange: (files: File[]) => void;
     showFiles?: boolean;
@@ -20,6 +23,8 @@ interface RequestSubmissionSidebarProps {
 export const RequestSubmissionSidebar = ({
     approverId,
     onApproverSelect,
+    readOnlyUsers,
+    onReadOnlyUsersChange,
     files,
     onFilesChange,
     showFiles = true,
@@ -58,6 +63,16 @@ export const RequestSubmissionSidebar = ({
                     label={approverLabel}
                     defaultValue={approverId}
                     showCurrentUser={false}
+                />
+            </SidebarSection>
+
+            {/* ReadOnly (CC) Users Selection */}
+            <SidebarSection title="للاطلاع فقط" icon={Eye}>
+                <MultiUserPicker
+                    selectedUserIds={readOnlyUsers}
+                    onUsersChange={onReadOnlyUsersChange}
+                    label="المراقبين (CC)"
+                    placeholder="اختر للاطلاع..."
                 />
             </SidebarSection>
 
