@@ -47,7 +47,7 @@ public class PermissionSeederService(
             }
         }
 
-        var existingPermissionsResult = await unitOfWork.Permissions.GetAllAsync();
+        var existingPermissionsResult = await unitOfWork.Permissions.GetAllAsync(bypassAuth: true);
         if (existingPermissionsResult.IsError)
         {
             throw new Exception($"Failed to retrieve existing permissions: {string.Join(", ", existingPermissionsResult.Errors.Select(e => e.Description))}");
@@ -86,7 +86,8 @@ public class PermissionSeederService(
         var existingSuperAdminResult = await unitOfWork.Roles.GetAsync(
             x => x.Name == "SuperAdmin",
             x => x.Include(x => x.Permissions)
-            .Include(x => x.Users));
+            .Include(x => x.Users),
+            bypassAuth: true);
 
         if (existingSuperAdminResult.IsError)
         {
@@ -104,7 +105,7 @@ public class PermissionSeederService(
             Name = "SuperAdmin",
             Description = "Role with all permissions"
         };
-        var result = await unitOfWork.Roles.AddAsync(superAdminRole);
+        var result = await unitOfWork.Roles.AddAsync(superAdminRole, bypassAuth: true);
 
         if (result.IsError)
         {
@@ -116,19 +117,19 @@ public class PermissionSeederService(
 
     private async Task<Result<Success>> AssignPermissionsToSuperAdminRoleAsync(List<PermissionEntity> permissions, CancellationToken cancellationToken)
     {
-        var getSuperAdminRoleResult = await unitOfWork.Roles.GetAsync(r => r.Name == "SuperAdmin");
+        var getSuperAdminRoleResult = await unitOfWork.Roles.GetAsync(r => r.Name == "SuperAdmin", bypassAuth: true);
         if (getSuperAdminRoleResult.IsError)
             return getSuperAdminRoleResult.Errors;
         foreach (var permission in permissions)
         {
 
-            var dbPermissionResult = await unitOfWork.Permissions.GetAsync(p => p.Key == permission.Key);
+            var dbPermissionResult = await unitOfWork.Permissions.GetAsync(p => p.Key == permission.Key, bypassAuth: true);
             if (dbPermissionResult.IsError)
                 return dbPermissionResult.Errors;
 
             var dbPermission = dbPermissionResult.Value;
             dbPermission.Roles.Add(getSuperAdminRoleResult.Value!);
-            var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission);
+            var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission, bypassAuth: true);
             if (updateResult.IsError)
                 return updateResult.Errors;
         }
@@ -143,7 +144,8 @@ public class PermissionSeederService(
     {
         var superAdminRoleResult = await unitOfWork.Roles.GetAsync(
             r => r.Name == "SuperAdmin",
-            query => query.Include(r => r.Permissions));
+            query => query.Include(r => r.Permissions),
+            bypassAuth: true);
 
         if (superAdminRoleResult.IsError)
         {
@@ -156,7 +158,7 @@ public class PermissionSeederService(
             return new Error();
         }
 
-        var allPermissionsResult = await unitOfWork.Permissions.GetAllAsync();
+        var allPermissionsResult = await unitOfWork.Permissions.GetAllAsync(bypassAuth: true);
         if (allPermissionsResult.IsError)
         {
             return allPermissionsResult.Errors;
@@ -171,13 +173,13 @@ public class PermissionSeederService(
 
         foreach (var permission in unassignedPermissions)
         {
-            var dbPermissionResult = await unitOfWork.Permissions.GetAsync(p => p.Key == permission.Key);
+            var dbPermissionResult = await unitOfWork.Permissions.GetAsync(p => p.Key == permission.Key, bypassAuth: true);
             if (dbPermissionResult.IsError)
                 return dbPermissionResult.Errors;
 
             var dbPermission = dbPermissionResult.Value;
             dbPermission.Roles.Add(superAdminRole);
-            var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission);
+            var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission, bypassAuth: true);
             if (updateResult.IsError)
                 return updateResult.Errors;
         }
@@ -191,7 +193,7 @@ public class PermissionSeederService(
         const string defaultHashedPassword =
             "a4ayc/80/OGda4BO/1o/V0etpOqiLx1JwB5S3beHW0s=";
 
-        var getSuperAdminRoleResult = await unitOfWork.Roles.GetAsync(r => r.Name == "SuperAdmin");
+        var getSuperAdminRoleResult = await unitOfWork.Roles.GetAsync(r => r.Name == "SuperAdmin", bypassAuth: true);
         if (getSuperAdminRoleResult.IsError)
         {
             return getSuperAdminRoleResult.Errors;
@@ -202,7 +204,8 @@ public class PermissionSeederService(
 
         var userResult = await unitOfWork.Users.GetAsync(
           u => u.Id == Constants.DefaultUserId,
-          query => query.Include(u => u.Roles));
+          query => query.Include(u => u.Roles),
+          bypassAuth: true);
 
         if (userResult.IsError && userResult.Errors.Select(x => x.Code).Any(x => x == "404"))
         {
@@ -226,7 +229,7 @@ public class PermissionSeederService(
         if (user.HashedPassword != defaultHashedPassword)
         {
             user.HashedPassword = defaultHashedPassword;
-            var updateResult = await unitOfWork.Users.UpdateAsync(user);
+            var updateResult = await unitOfWork.Users.UpdateAsync(user, bypassAuth: true);
             if (updateResult.IsError)
             {
                 return updateResult.Errors;
@@ -254,7 +257,7 @@ public class PermissionSeederService(
         }
 
         user.Roles.Add(role);
-        var updateUserResult = await unitOfWork.Users.UpdateAsync(user);
+        var updateUserResult = await unitOfWork.Users.UpdateAsync(user, bypassAuth: true);
         if (passwordUpdated)
         {
             int saveResult = await unitOfWork.SaveChangesAsync();

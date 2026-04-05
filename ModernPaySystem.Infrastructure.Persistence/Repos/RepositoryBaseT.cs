@@ -16,7 +16,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
     IHttpContextServiceManager httpContextServiceManager) : IRepositoryBase<TEntity, TKey>
     where TEntity : Entity<TKey>
 {
-    public async Task<Result<Success>> AddAsync(TEntity entity)
+    public async Task<Result<Success>> AddAsync(TEntity entity, bool bypassAuth = false)
     {
         if (entity == null)
             return new Error("00", "Entity cannot be null.", ErrorKind.Failure);
@@ -48,17 +48,26 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
     public async Task<Result<List<TEntity>>> GetAllAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        bool bypassAuth = false)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
 
         try
         {
-            Expression<Func<TEntity, bool>>? auth = x =>
-            x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            if (!bypassAuth)
+            {
+                Expression<Func<TEntity, bool>>? auth = x =>
+                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
 
-            if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+                if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            }
+            else if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            
             if (transform != null) query = transform(query);
 
             if (orderBy == null)
@@ -87,7 +96,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         int pageSize,
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        bool bypassAuth = false)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
@@ -96,11 +106,19 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
         try
         {
-            Expression<Func<TEntity, bool>>? auth = x =>
-                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            if (!bypassAuth)
+            {
+                Expression<Func<TEntity, bool>>? auth = x =>
+                    x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
 
-            if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            else query = query.Where(auth);
+                if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+                else query = query.Where(auth);
+            }
+            else if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            
             if (transform != null) query = transform(query);
 
             int totalItems = await query.CountAsync();
@@ -130,17 +148,26 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
     public async Task<Result<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,
-        Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null,
+        bool bypassAuth = false)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
         try
         {
-            Expression<Func<TEntity, bool>>? auth = x =>
-                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            if (!bypassAuth)
+            {
+                Expression<Func<TEntity, bool>>? auth = x =>
+                    x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
 
-            if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            else query = query.Where(auth);
+                if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+                else query = query.Where(auth);
+            }
+            else if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+            
             if (include != null) query = include(query);
 
             var result = await query.FirstOrDefaultAsync();
@@ -161,17 +188,26 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         }
     }
 
-    public async Task<Result<Deleted>> RemoveAsync(Expression<Func<TEntity, bool>> filter)
+    public async Task<Result<Deleted>> RemoveAsync(Expression<Func<TEntity, bool>> filter, bool bypassAuth = false)
     {
         if (filter == null) return new Error("00", "Filter cannot be null.", ErrorKind.Failure);
 
         try
         {
-            Expression<Func<TEntity, bool>>? auth = x =>
-                x.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString());
-
-            var combinedFilter = ExpressionCombiner.AndAll(filter, auth);
-            var getEntity = await GetAsync(combinedFilter);
+            Expression<Func<TEntity, bool>> combinedFilter;
+            
+            if (!bypassAuth)
+            {
+                Expression<Func<TEntity, bool>>? auth = x =>
+                    x.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString());
+                combinedFilter = ExpressionCombiner.AndAll(filter, auth);
+            }
+            else
+            {
+                combinedFilter = filter;
+            }
+            
+            var getEntity = await GetAsync(combinedFilter, bypassAuth: true);
             if (getEntity.IsError) return getEntity.Errors;
             var entity = getEntity.Value;
             if (entity == null) return new Error("00", "Entity not found.", ErrorKind.Failure);
@@ -204,12 +240,12 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         }
     }
 
-    public async Task<Result<Updated>> UpdateAsync(TEntity entity)
+    public async Task<Result<Updated>> UpdateAsync(TEntity entity, bool bypassAuth = false)
     {
         if (entity == null) return new Error("00", "Entity cannot be null.", ErrorKind.Failure);
         try
         {
-            if (!entity.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString()))
+            if (!bypassAuth && !entity.CanEdit(httpContextServiceManager.GetCurrentUserId().ToString()))
                 return new Error("403", "You do not have permission to edit this entity.", ErrorKind.Failure);
 
             dbcontext.Attach(entity);
@@ -227,15 +263,15 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         }
     }
 
-    public async Task<Result<TEntity?>> GetByIdAsync(TKey id)
+    public async Task<Result<TEntity?>> GetByIdAsync(TKey id, bool bypassAuth = false)
     {
         try
         {
             var entity = await dbcontext.Set<TEntity>().FindAsync(id);
-            
-            if (entity != null && !entity.CanView(httpContextServiceManager.GetCurrentUserId().ToString()))
+
+            if (entity != null && !bypassAuth && !entity.CanView(httpContextServiceManager.GetCurrentUserId().ToString()))
                 return new Error("403", "You do not have permission to view this entity.", ErrorKind.Failure);
-            
+
             return entity;
         }
         catch (Exception e)
@@ -251,16 +287,25 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
     public async Task<Result<List<TEntity>>> FindAsync(
         Expression<Func<TEntity, bool>> filter,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
-        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null)
+        Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        bool bypassAuth = false)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
         try
         {
-            Expression<Func<TEntity, bool>>? auth = x =>
-                x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
+            if (!bypassAuth)
+            {
+                Expression<Func<TEntity, bool>>? auth = x =>
+                    x.CanView(httpContextServiceManager.GetCurrentUserId().ToString());
 
-            query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+                query = query.Where(ExpressionCombiner.AndAll(filter, auth));
+            }
+            else
+            {
+                query = query.Where(filter);
+            }
+            
             if (transform != null) query = transform(query);
 
             if (orderBy == null)
