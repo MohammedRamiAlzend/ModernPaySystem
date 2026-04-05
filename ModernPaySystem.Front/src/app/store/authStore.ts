@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { jwtDecode } from 'jwt-decode';
+import { queryClient } from '@/shared/lib/query-client';
 
 export interface User {
   id: string;
@@ -15,6 +17,7 @@ interface AuthState {
   loginSuccess: (user: User, token: string) => void;
   logout: () => void;
   updateUserProfile: (user: Partial<User>) => void;
+  checkTokenExpiration: () => void;
 }
 
 const savedToken = sessionStorage.getItem('token');
@@ -28,12 +31,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   loginSuccess: (user, token) => {
     sessionStorage.setItem('token', token);
     sessionStorage.setItem('user', JSON.stringify(user));
+    queryClient.clear(); // مسح الكاش عند تسجيل دخول جديد
     set({ isAuthenticated: true, user, token });
   },
 
   logout: () => {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('user');
+    queryClient.clear(); // مسح الكاش تماماً عند تسجيل الخروج
     set({ user: null, token: null, isAuthenticated: false });
   },
 
@@ -46,5 +51,26 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
       return state;
     });
+  },
+
+  checkTokenExpiration: () => {
+    const { token, logout } = useAuthStore.getState();
+    if (!token) return;
+
+    try {
+      const decoded = jwtDecode<{ exp: number }>(token);
+      const currentTime = Date.now() / 1000;
+      
+      if (decoded.exp < currentTime) {
+        console.warn('Session expired based on token payload');
+        logout();
+        if (window.location.pathname !== '/auth/login') {
+          window.location.href = '/auth/login?reason=expired';
+        }
+      }
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      logout();
+    }
   },
 }));
