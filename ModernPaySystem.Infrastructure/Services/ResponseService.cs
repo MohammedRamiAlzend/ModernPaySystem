@@ -11,13 +11,6 @@ public class ResponseService(
     IHttpContextServiceManager httpContextServiceManager,
     ILogger<ResponseService> logger) : IResponseService
 {
-    public Expression<Func<Response, bool>> UserFilter()
-    {
-        var currentUserId = httpContextServiceManager.GetCurrentUserId();
-        var responseBuilder = new ExpressionBuilder<Response>();
-        responseBuilder.And(r => r.RespondedByUserId == currentUserId);
-        return responseBuilder.Build();
-    }
     public async Task<Result<PagedList<ResponseDto>>> GetPagedAsync(int page, int pageSize)
     {
         try
@@ -29,7 +22,12 @@ public class ResponseService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(page, pageSize, UserFilter());
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
+                page,
+                pageSize,
+                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.ByRespondedByUserId(currentUserId) });
+
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
 
@@ -48,7 +46,15 @@ public class ResponseService(
         try
         {
             logger.LogInformation("Fetching response by id: {ResponseId}", id);
-            var response = await unitOfWork.Responses.GetByIdAsync(id);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var response = await unitOfWork.Responses.GetAsync(
+                filter: r => r.Id == id,
+                transform: x => x.Include(x => x.Request)
+                                 .ThenInclude(r => r.RequestAttachments)
+                                 .Include(x => x.ResponseAttachments),
+                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanReadByUserId(currentUserId) });
 
             if (response.IsError)
                 return response.Errors;
@@ -76,14 +82,11 @@ public class ResponseService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var requestFilter = new ExpressionBuilder<Response>();
-            requestFilter.And(r => r.RequestId == requestId);
-
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                requestFilter.Build(),
-                i => i.Include(r => r.ResponseAttachments));
+                transform: i => i.Include(r => r.ResponseAttachments),
+                additionalFilters: ResponseExpressions.ByRequestIdWithIncludes(requestId));
 
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
@@ -109,14 +112,11 @@ public class ResponseService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var responderFilter = new ExpressionBuilder<Response>();
-            responderFilter.And(r => r.RespondedByUserId == responderId);
-
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                responderFilter.Build(),
-                i => i.Include(r => r.ResponseAttachments));
+                transform: i => i.Include(r => r.ResponseAttachments),
+                additionalFilters: ResponseExpressions.ByRespondedByUserIdWithIncludes(responderId));
 
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
@@ -141,14 +141,11 @@ public class ResponseService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var requesterFilter = new ExpressionBuilder<Response>();
-            requesterFilter.And(r => r.Request.RequesterId == requesterId);
-
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                requesterFilter.Build(),
-                i => i.Include(r => r.Request).ThenInclude(r => r.RequestAttachments));
+                transform: i => i.Include(r => r.Request).ThenInclude(r => r.RequestAttachments),
+                additionalFilters: ResponseExpressions.ByRequesterIdWithIncludes(requesterId));
 
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
@@ -243,7 +240,13 @@ public class ResponseService(
             if (id == Guid.Empty || response == null)
                 return ApplicationErrors.InvalidInput;
 
-            var existingResponse = await unitOfWork.Responses.GetByIdAsync(id);
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var existingResponse = await unitOfWork.Responses.GetAsync(
+                filter: r => r.Id == id,
+                transform: x => x.Include(x => x.ResponseAttachments),
+                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanMakeUpdateByUserId(currentUserId) });
+
             if (existingResponse.IsError)
                 return existingResponse.Errors;
 
@@ -278,7 +281,12 @@ public class ResponseService(
             if (id == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            var response = await unitOfWork.Responses.GetByIdAsync(id);
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var response = await unitOfWork.Responses.GetAsync(
+                filter: r => r.Id == id,
+                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanMakeUpdateByUserId(currentUserId) });
+
             if (response.IsError)
                 return response.Errors;
 
@@ -309,7 +317,13 @@ public class ResponseService(
             if (responseId == Guid.Empty || files == null || !files.Any())
                 return ApplicationErrors.InvalidInput;
 
-            var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var response = await unitOfWork.Responses.GetAsync(
+                filter: r => r.Id == responseId,
+                transform: x => x.Include(x => x.ResponseAttachments),
+                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanMakeUpdateByUserId(currentUserId) });
+
             if (response.IsError)
                 return response.Errors;
 
@@ -330,7 +344,11 @@ public class ResponseService(
 
             logger.LogInformation("Successfully added {FileCount} Files to response: {ResponseId}", files.Count, responseId);
 
-            var updatedResponse = await unitOfWork.Responses.GetByIdAsync(responseId);
+            var updatedResponse = await unitOfWork.Responses.GetAsync(
+                filter: r => r.Id == responseId,
+                transform: x => x.Include(x => x.Request)
+                                 .Include(x => x.ResponseAttachments));
+
             if (updatedResponse.IsError)
                 return updatedResponse.Errors;
 

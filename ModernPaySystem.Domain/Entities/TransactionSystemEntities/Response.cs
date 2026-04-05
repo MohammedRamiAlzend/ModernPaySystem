@@ -22,26 +22,6 @@ public class Response : Entity<Guid>, IAuditableEntity
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    //public bool CanView(Guid userId)
-    //{
-
-    //    if (userId == this.RespondedByUserId) return true;
-
-    //    if (Request != null && Request.CanView(userId)) return true;
-
-    //    if (Request != null && userId == Request.ApproverId) return true;
-
-    //    return false;
-    //}
-
-    //public bool CanEdit(Guid userId)
-    //{
-    //    if (userId == this.RespondedByUserId)
-    //        return true;
-
-    //    return false;
-    //}
-
     public ResponseDto ToDto()
     {
         return new ResponseDto
