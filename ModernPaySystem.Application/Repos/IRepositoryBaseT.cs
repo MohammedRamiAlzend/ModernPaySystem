@@ -11,13 +11,15 @@ public interface IRepositoryBase<TEntity, TKey>
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool bypassAuth = false);
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null);
 
     Task<Result<List<TEntity>>> FindAsync(
         Expression<Func<TEntity, bool>> filter,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool bypassAuth = false);
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null);
 
     Task<Result<PagedList<TEntity>>> GetPagedAsync(
         int page,
@@ -25,18 +27,21 @@ public interface IRepositoryBase<TEntity, TKey>
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool bypassAuth = false);
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null);
 
     Task<Result<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
-        bool bypassAuth = false);
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null);
 
     Task<Result<Deleted>> RemoveAsync(Expression<Func<TEntity, bool>> filter, bool bypassAuth = false);
 
     Task<bool> AnyAsync(
         Expression<Func<TEntity, bool>> filter,
-        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null);
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null);
 
     Task<Result<Updated>> UpdateAsync(TEntity entity, bool bypassAuth = false);
 

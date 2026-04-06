@@ -25,7 +25,7 @@ public class Request : Entity<Guid>, IAuditableEntity
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public override bool CanEdit(Guid userId)
+    public bool CanEdit(Guid userId)
     {
 
         if (userId == this.RequesterId) return true;
@@ -36,8 +36,7 @@ public class Request : Entity<Guid>, IAuditableEntity
 
         return false;
     }
-
-    public override bool CanView(Guid userId)
+    public bool CanView(Guid userId)
     {
 
         if (userId == this.RequesterId) return true;

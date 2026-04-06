@@ -50,26 +50,24 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool bypassAuth = false)
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
 
         try
         {
-            //if (!bypassAuth)
-            //{
-            //    var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+            // Combine main filter with additional filters
+            var allFilters = new List<Expression<Func<TEntity, bool>>>();
+            if (filter != null) allFilters.Add(filter);
+            if (additionalFilters != null && additionalFilters.Count > 0)
+                allFilters.AddRange(additionalFilters);
 
-            //    Expression<Func<TEntity, bool>>? auth = x =>
-            //    x.CanView(getCurrentUserId);
-
-            //    if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            //}
-            //else
-            if (filter != null)
+            if (allFilters.Count > 0)
             {
-                query = query.Where(filter);
+                var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+                query = query.Where(combinedFilter);
             }
 
             if (transform != null) query = transform(query);
@@ -101,7 +99,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool bypassAuth = false)
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
@@ -110,22 +109,16 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
         try
         {
-            if (!bypassAuth)
-            {
-                //var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
-                //Expression<Func<TEntity, bool>>? auth = x =>
-                //    x.CanView(getCurrentUserId);
+            // Combine main filter with additional filters
+            var allFilters = new List<Expression<Func<TEntity, bool>>>();
+            if (filter != null) allFilters.Add(filter);
+            if (additionalFilters != null && additionalFilters.Count > 0)
+                allFilters.AddRange(additionalFilters);
 
-                //if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-                //else query = query.Where(auth);
-                if (filter != null)
-                {
-                    query = query.Where(filter);
-                }
-            }
-            else if (filter != null)
+            if (allFilters.Count > 0)
             {
-                query = query.Where(filter);
+                var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+                query = query.Where(combinedFilter);
             }
 
             if (transform != null) query = transform(query);
@@ -158,29 +151,23 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
     public async Task<Result<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null,
-        bool bypassAuth = false)
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
         try
         {
-            //if (!bypassAuth)
-            //{
-            //    var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+            // Combine main filter with additional filters
+            var allFilters = new List<Expression<Func<TEntity, bool>>>();
+            if (filter != null) allFilters.Add(filter);
+            if (additionalFilters != null && additionalFilters.Count > 0)
+                allFilters.AddRange(additionalFilters);
 
-            //    Expression<Func<TEntity, bool>>? auth = x =>
-            //        x.CanView(getCurrentUserId);
-
-            //    if (filter != null) query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            //    else query = query.Where(auth);
-            //}
-            //else if (filter != null)
-            //{
-            //    query = query.Where(filter);
-            //}
-            if (filter != null)
+            if (allFilters.Count > 0)
             {
-                query = query.Where(filter);
+                var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+                query = query.Where(combinedFilter);
             }
 
             if (include != null) query = include(query);
@@ -227,13 +214,23 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         }
     }
 
-    public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> filter, Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null)
+    public async Task<bool> AnyAsync(
+        Expression<Func<TEntity, bool>> filter,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
     {
         try
         {
             IQueryable<TEntity> query = dbcontext.Set<TEntity>();
             if (transform != null) query = transform(query);
-            return await query.AnyAsync(filter);
+
+            // Combine main filter with additional filters
+            var allFilters = new List<Expression<Func<TEntity, bool>>> { filter };
+            if (additionalFilters != null && additionalFilters.Count > 0)
+                allFilters.AddRange(additionalFilters);
+
+            var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+            return await query.AnyAsync(combinedFilter);
         }
         catch (Exception e)
         {
@@ -290,26 +287,20 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         Expression<Func<TEntity, bool>> filter,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
-        bool bypassAuth = false)
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
 
         try
         {
-            //if (!bypassAuth)
-            //{
-            //    var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+            // Combine main filter with additional filters
+            var allFilters = new List<Expression<Func<TEntity, bool>>> { filter };
+            if (additionalFilters != null && additionalFilters.Count > 0)
+                allFilters.AddRange(additionalFilters);
 
-            //    Expression<Func<TEntity, bool>>? auth = x =>
-            //        x.CanView(getCurrentUserId);
-
-            //    query = query.Where(ExpressionCombiner.AndAll(filter, auth));
-            //}
-            //else
-            //{
-            //    query = query.Where(filter);
-            //}
-            query = query.Where(filter);
+            var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+            query = query.Where(combinedFilter);
 
             if (transform != null) query = transform(query);
 
