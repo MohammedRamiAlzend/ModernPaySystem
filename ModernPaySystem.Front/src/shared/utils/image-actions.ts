@@ -18,7 +18,8 @@ export const printImage = (url: string, title: string = 'طباعة صورة') =
                         body { margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: white; }
                         img { max-width: 100%; max-height: 100%; object-fit: contain; }
                         @media print {
-                            body { background: white; }
+                            @page { margin: 0; size: auto; }
+                            body { margin: 1cm; background: white; }
                         }
                     </style>
                 </head>

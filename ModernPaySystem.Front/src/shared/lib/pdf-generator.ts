@@ -297,13 +297,17 @@ export const printFormResponse = (
         
         @media print {
             @page {
-                size: A4;
-                margin: 10mm;
+                size: auto;
+                margin: 0;
             }
             body {
-                padding: 0;
+                padding: 15mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            .document {
+                max-width: 100%;
+                margin: 0;
             }
         }
     </style>

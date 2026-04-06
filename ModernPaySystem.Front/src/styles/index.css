@@ -78,6 +78,33 @@
   }
 }
 
+@media print {
+  @page {
+    size: auto;
+    margin: 0mm;
+  }
+  
+  body {
+    margin: 0;
+    padding: 15mm !important;
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  /* Hide interactive elements that shouldn't be printed */
+  nav, aside, footer, header:not(.print-header), .sidebar, .no-print, button, .buttons-container {
+    display: none !important;
+  }
+  
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
