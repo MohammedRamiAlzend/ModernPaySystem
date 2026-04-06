@@ -228,14 +228,16 @@ public class RequestService(
             if (addResult.IsError)
                 return addResult.Errors;
 
-            int result = await unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
-            foreach (var file in files)
+            await unitOfWork.SaveChangesAsync();
+
+            if (files != null && files.Any())
             {
-                var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, requestEntity.Id);
-                if (uploadResult.IsError)
-                    return uploadResult.Errors;
+                foreach (var file in files)
+                {
+                    var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, requestEntity.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
             }
 
             logger.LogInformation("Successfully created request: {RequestId}", requestEntity.Id);
@@ -265,9 +267,7 @@ public class RequestService(
             logger.LogInformation("Deleting request: {RequestId}", id);
 
             await unitOfWork.Requests.RemoveAsync(x => x.Id == request.Value.Id);
-            int result = await unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Successfully deleted request: {RequestId}", id);
             return true;

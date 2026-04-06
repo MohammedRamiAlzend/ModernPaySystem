@@ -21,7 +21,7 @@ public class AttachmentService(
     {
         // Verify the request exists
         var request = await unitOfWork.Requests.GetByIdAsync(requestId);
-        if (request == null)
+        if (request.IsError || request.Value == null)
         {
             return ApplicationErrors.RequestNotFound;
         }
@@ -53,13 +53,6 @@ public class AttachmentService(
             return attachmentResult.Errors;
         }
 
-        // Associate the attachment with the request
-        var requestAttachment = new RequestAttachment
-        {
-            RequestId = requestId,
-            AttachmentId = attachment.Id
-        };
-
         var associationResult = await unitOfWork.RequestAttachments.AddAsync(
             new RequestAttachment
             {
@@ -74,9 +67,7 @@ public class AttachmentService(
             return associationResult.Errors;
         }
 
-        int result = await unitOfWork.SaveChangesAsync();
-        if (result <= 0)
-            return ApplicationErrors.DatabaseError;
+        await unitOfWork.SaveChangesAsync();
 
         return attachment;
     }
@@ -88,7 +79,7 @@ public class AttachmentService(
     {
         // Verify the response exists
         var response = await unitOfWork.Responses.GetByIdAsync(responseId);
-        if (response.IsError)
+        if (response.IsError || response.Value == null)
         {
             return ApplicationErrors.ResponseNotFound;
         }
@@ -136,9 +127,7 @@ public class AttachmentService(
             return associationResult.Errors;
         }
 
-        int result = await unitOfWork.SaveChangesAsync();
-        if (result <= 0)
-            return ApplicationErrors.DatabaseError;
+        await unitOfWork.SaveChangesAsync();
 
         return attachment;
     }
