@@ -2,7 +2,6 @@ import { useRef, useState } from 'react';
 import { Shield, ImagePlus, FileText, X, Scan, Eye } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserPicker } from '@/features/users/ui/UserPicker';
-import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
 import { SidebarSection } from '@/shared/ui/sidebar-section';
 import { cn } from '@/shared/lib/utils';
 import { ScannerModal } from '@/features/document-scanner';
@@ -55,7 +54,7 @@ export const RequestSubmissionSidebar = ({
 
     return (
         <div className={cn("space-y-6 sticky top-8", className)}>
-            {/* Approver Selection */}
+            {/* Approver Selection (single) */}
             <SidebarSection title={approverLabel} icon={Shield}>
                 <UserPicker
                     onUserSelect={onApproverSelect}
@@ -66,13 +65,16 @@ export const RequestSubmissionSidebar = ({
                 />
             </SidebarSection>
 
-            {/* ReadOnly (CC) Users Selection */}
+            {/* ReadOnly (CC) Users Selection (multi) */}
             <SidebarSection title="للاطلاع فقط" icon={Eye}>
-                <MultiUserPicker
+                <UserPicker
+                    multiple
                     selectedUserIds={readOnlyUsers}
                     onUsersChange={onReadOnlyUsersChange}
+                    className="!grid-cols-1"
                     label="المراقبين (CC)"
                     placeholder="اختر للاطلاع..."
+                    showCurrentUser={false}
                 />
             </SidebarSection>
 
