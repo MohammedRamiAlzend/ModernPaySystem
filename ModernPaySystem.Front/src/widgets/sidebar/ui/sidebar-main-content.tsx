@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { PrefetchNavLink } from '@/shared/navigation/prefetch-nav-link';
 import { NAVIGATION_ITEMS } from '@/shared/config/navigation';
@@ -74,38 +74,41 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
         });
     }, [templates]);
 
-    // AUTO-EXPAND Logic: Detect active item and expand its ancestors
-    useEffect(() => {
-        const fullPath = location.pathname + location.search;
+    // AUTO-EXPAND Logic: Synchronize state with URL during render
+    const fullPath = location.pathname + location.search;
+    const [prevPath, setPrevPath] = useState(fullPath);
 
-        setExpandedItems(prev => {
-            const newExpanded = { ...prev };
-            let hasChanges = false;
+    if (prevPath !== fullPath) {
+        setPrevPath(fullPath);
+        
+        let hasChanges = false;
+        const newExpanded = { ...expandedItems };
 
-            navItems.forEach(item => {
-                if (!item.children) return;
+        navItems.forEach(item => {
+            if (!item.children) return;
 
-                const isItemParentOfActive = item.children.some(child => {
-                    if (child.path === fullPath || (child.path !== "#" && fullPath.startsWith(child.path))) return true;
-                    if (child.children?.some(grand => grand.path === fullPath)) {
-                        if (!newExpanded[child.path]) {
-                            newExpanded[child.path] = true;
-                            hasChanges = true;
-                        }
-                        return true;
+            const isItemParentOfActive = item.children.some(child => {
+                if (child.path === fullPath || (child.path !== "#" && fullPath.startsWith(child.path))) return true;
+                if (child.children?.some(grand => grand.path === fullPath)) {
+                    if (!newExpanded[child.path]) {
+                        newExpanded[child.path] = true;
+                        hasChanges = true;
                     }
-                    return false;
-                });
-
-                if (isItemParentOfActive && !newExpanded[item.path]) {
-                    newExpanded[item.path] = true;
-                    hasChanges = true;
+                    return true;
                 }
+                return false;
             });
 
-            return hasChanges ? newExpanded : prev;
+            if (isItemParentOfActive && !newExpanded[item.path]) {
+                newExpanded[item.path] = true;
+                hasChanges = true;
+            }
         });
-    }, [location.pathname, location.search, navItems]);
+
+        if (hasChanges) {
+            setExpandedItems(newExpanded);
+        }
+    }
 
     const toggleExpand = (path: string, e: React.MouseEvent) => {
         e.preventDefault();

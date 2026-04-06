@@ -10,9 +10,7 @@ import {
 } from '@/shared/ui/popover';
 import {
     Command,
-    CommandEmpty,
     CommandGroup,
-    CommandInput,
     CommandItem,
     CommandList,
 } from '@/shared/ui/command';
@@ -113,9 +111,10 @@ export const SearchableSelect = (props: SearchableSelectProps) => {
 
     // Derive selected set for quick lookups
     const selectedSet = useMemo(() => {
-        if (isMulti) return new Set(props.values);
-        return new Set(props.value ? [props.value] : []);
-    }, [isMulti, isMulti ? props.values : props.value]);
+        if (isMulti && props.values) return new Set(props.values);
+        if (!isMulti && props.value) return new Set([props.value]);
+        return new Set<string>();
+    }, [isMulti, props.values, props.value]);
 
     // Filter options based on search
     const filteredOptions = useMemo(
@@ -131,15 +130,15 @@ export const SearchableSelect = (props: SearchableSelectProps) => {
         }
         if (!props.value) return null;
         return options.find((o) => o.value === props.value)?.label;
-    }, [isMulti, options, isMulti ? props.values : props.value]);
+    }, [isMulti, options, props.values, props.value]);
 
     // Resolve labels for selected items (multi)
     const selectedItems = useMemo(() => {
-        if (!isMulti) return [];
+        if (!isMulti || !props.values) return [];
         return props.values
             .map((v) => options.find((o) => o.value === v))
             .filter(Boolean) as SearchableSelectOption[];
-    }, [isMulti, isMulti ? props.values : undefined, options]);
+    }, [isMulti, props.values, options]);
 
     // ── Handlers ──
 
