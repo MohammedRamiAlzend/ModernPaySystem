@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using ModernPaySystem.Domain.Entities.SharedEntities;
-
+using System.Linq;
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public static class UserExpressions
