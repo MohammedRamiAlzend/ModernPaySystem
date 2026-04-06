@@ -142,13 +142,8 @@ public class LookUpFieldService : ILookUpFieldService
 
             existingLookUpField.Value.FiledName = lookUpField.FiledName;
 
-            var updateResult = await _unitOfWork.LookUpFields.UpdateAsync(existingLookUpField.Value);
-            if (updateResult.IsError)
-                return updateResult.Errors;
-
-            int result = await _unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await _unitOfWork.LookUpFields.UpdateAsync(existingLookUpField.Value);
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated lookup field: {LookUpFieldId}", id);
             return existingLookUpField.Value.ToDto();

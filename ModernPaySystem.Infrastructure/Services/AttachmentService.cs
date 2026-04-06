@@ -640,11 +640,8 @@ public class AttachmentService(
         existingAttachment.Value.Extension = attachment.Extension;
         existingAttachment.Value.Path = attachment.Path;
 
-        var result = await unitOfWork.Attachments.UpdateAsync(existingAttachment.Value);
-        if (result.IsError)
-        {
-            return result.Errors;
-        }
+        await unitOfWork.Attachments.UpdateAsync(existingAttachment.Value);
+        await unitOfWork.SaveChangesAsync();
 
         return existingAttachment.Value.ToDto();
     }
@@ -652,12 +649,12 @@ public class AttachmentService(
     public async Task<Result<bool>> DeleteAsync(Guid id)
     {
         var result = await unitOfWork.Attachments.RemoveAsync(x => x.Id == id);
-
         if (result.IsError)
         {
             return result.Errors;
         }
 
+        await unitOfWork.SaveChangesAsync();
         return true;
     }
 }

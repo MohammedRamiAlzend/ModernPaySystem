@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -191,9 +191,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext, ILogger<Repos
         try
         {
             dbcontext.Attach(entity);
-            dbcontext.Set<TEntity>().Entry(entity).State = EntityState.Modified;
-            int saveResult = await dbcontext.SaveChangesAsync();
-            return saveResult > 0 ? Result.Updated : new Error("00", "Failed to update entity.", ErrorKind.Failure);
+            dbcontext.Entry(entity).State = EntityState.Modified;
+            return Result.Updated;
         }
         catch (Exception e)
         {

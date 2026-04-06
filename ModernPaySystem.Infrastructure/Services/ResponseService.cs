@@ -226,6 +226,7 @@ public class ResponseService(
                 return updateResult.Errors;
             }
 
+            await unitOfWork.SaveChangesAsync();
             logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
             return responseEntity.ToDto();
         }
@@ -257,9 +258,7 @@ public class ResponseService(
             existingResponse.Value.Comment = response.Comment;
 
             await unitOfWork.Responses.UpdateAsync(existingResponse.Value);
-            int result = await unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Successfully updated response: {ResponseId}", id);
             return existingResponse.Value.ToDto();

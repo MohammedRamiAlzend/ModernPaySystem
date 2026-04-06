@@ -176,9 +176,7 @@ public class RoleService : IRoleService
             if (updateResult.IsError)
                 return updateResult.Errors;
 
-            int result = await _unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated role: {RoleId}", id);
             return existingRole.Value.ToDto();
@@ -207,9 +205,7 @@ public class RoleService : IRoleService
             _logger.LogInformation("Deleting role: {RoleId}", id);
 
             await _unitOfWork.Roles.RemoveAsync(x => x.Id == role.Value.Id);
-            int result = await _unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully deleted role: {RoleId}", id);
             return true;

@@ -56,6 +56,7 @@ public class TemplatesController : ControllerBase
         return result.ToActionResult();
     }
 
+
     [HttpPut("{id}")]
     [EndpointPermission("templates.update", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTemplateDto template)
