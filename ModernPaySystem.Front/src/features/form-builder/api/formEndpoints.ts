@@ -40,6 +40,12 @@ export const formEndpoints = {
         formData.append('RequesterId', data.RequesterId);
         if (data.ApproverId) formData.append('ApproverId', data.ApproverId);
         formData.append('Content', data.Content);
+        
+        if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
+            data.ReadOnlyUsers.forEach((userId) => {
+                formData.append('ReadOnlyUsers', userId);
+            });
+        }
 
         if (data.files && data.files.length > 0) {
             data.files.forEach((file) => {

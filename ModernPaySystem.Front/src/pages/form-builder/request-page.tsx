@@ -26,6 +26,7 @@ export const RequestPage = () => {
     // Get templateId directly from URL (Single source of truth to avoid infinite loops)
     const selectedTemplateId = searchParams.get('templateId') || '';
     const [approverId, setApproverId] = useState<string>('');
+    const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
     
     const currentUser = useAuthStore((state) => state.user);
@@ -46,6 +47,7 @@ export const RequestPage = () => {
             // Reset form by changing key
             setFormKey(prev => prev + 1);
             setFiles([]);
+            setReadOnlyUsers([]);
         },
         onError: () => {
             showStatus({
@@ -72,6 +74,7 @@ export const RequestPage = () => {
             TemplateId: selectedTemplate.id,
             RequesterId: currentUser.id,
             ApproverId: approverId,
+            ReadOnlyUsers: readOnlyUsers,
             Content: JSON.stringify(formData),
             files: files
         };
@@ -117,6 +120,8 @@ export const RequestPage = () => {
                 <RequestSubmissionSidebar
                     approverId={approverId}
                     onApproverSelect={setApproverId}
+                    readOnlyUsers={readOnlyUsers}
+                    onReadOnlyUsersChange={setReadOnlyUsers}
                     files={files}
                     onFilesChange={setFiles}
                     showFiles={!!selectedTemplate}
