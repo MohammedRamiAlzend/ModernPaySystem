@@ -16,7 +16,6 @@ import {
     TooltipTrigger,
 } from '@/shared/ui/tooltip';
 import { useAuthStore } from '@/app/store/authStore';
-import { useNavigate } from 'react-router-dom';
 
 import { useSidebarMode } from '../model/use-sidebar-mode';
 import type { SidebarMode } from '../model/sidebar-mode.types';
@@ -62,17 +61,10 @@ const SIDEBAR_HEADERS: Record<SidebarMode, {
  */
 export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const logoutAction = useAuthStore((state) => state.logout);
-    const navigate = useNavigate();
+    const logout = useAuthStore((state) => state.logout);
     const activeMode = useSidebarMode();
 
     const headerConfig = SIDEBAR_HEADERS[activeMode];
-
-    const handleLogout = () => {
-        logoutAction();
-        navigate('/auth/login');
-        if (onItemClick) onItemClick();
-    };
 
     /**
      * Renders the content component for the active mode.
@@ -143,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
             <div className="p-1 border-t space-y-1">
                 <Button
                     variant="ghost"
-                    onClick={handleLogout}
+                    onClick={logout}
                     className={cn(
                         "w-full rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30",
                         isCollapsed ? "px-0 justify-center" : "justify-start px-3 gap-4"
