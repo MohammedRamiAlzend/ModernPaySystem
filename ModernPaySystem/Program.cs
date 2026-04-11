@@ -39,18 +39,18 @@ builder.Services.AddOpenApi("v1", options =>
 
 var app = builder.Build();
 
-if (builder.Configuration.GetValue<bool>("Seeding:Enabled"))
-{
-    using var scope = app.Services.CreateScope();
-    var orchestrator = scope.ServiceProvider.GetRequiredService<ISeederOrchestrator>();
-    await orchestrator.SeedDatabaseAsync();
-}
+//if (builder.Configuration.GetValue<bool>("Seeding:Enabled"))
+//{
+//    using var scope = app.Services.CreateScope();
+//    var orchestrator = scope.ServiceProvider.GetRequiredService<ISeederOrchestrator>();
+//    await orchestrator.SeedDatabaseAsync();
+//}
 
-using (var scope = app.Services.CreateScope())
-{
-    var permissionSeederService = scope.ServiceProvider.GetRequiredService<IPermissionSeederService>();
-    await permissionSeederService.SeedPermissionsAsync();
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var permissionSeederService = scope.ServiceProvider.GetRequiredService<IPermissionSeederService>();
+//    await permissionSeederService.SeedPermissionsAsync();
+//}
 
 if (app.Environment.IsDevelopment())
 {
