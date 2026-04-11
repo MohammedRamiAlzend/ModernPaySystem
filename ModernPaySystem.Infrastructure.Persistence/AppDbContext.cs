@@ -7,26 +7,24 @@ namespace ModernPaySystem.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    // Shared Entities
     public DbSet<User> Users { get; set; }
     public DbSet<SubSystemUser> SubSystemUsers { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<PermissionEntity> Permissions { get; set; }
 
-    // Transaction System Entities
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
     public DbSet<RequestAttachment> RequestAttachments { get; set; }
     public DbSet<Response> Responses { get; set; }
     public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
     public DbSet<TemplateOwnership> TemplateOwnerships { get; set; }
+    public DbSet<ResponseTransaction> ResponseTransactions { get; set; }
+    public DbSet<ResponseTransactionAttachment> ResponseTransactionAttachments { get; set; }
 
-// Lookup Field Entities
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
 
-    // Pay System Entities - Fast Operations
     public DbSet<Client> Clients { get; set; }
     public DbSet<Gender> Genders { get; set; }
     public DbSet<National> Nationals { get; set; }
@@ -125,7 +123,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(lfv => lfv.LookUpFiledId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Pay System Entities - Fast Operations Relationships
         modelBuilder.Entity<Client>()
             .HasOne(c => c.Gender)
             .WithMany()

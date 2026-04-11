@@ -36,6 +36,7 @@ public class Request : Entity<Guid>, IAuditableEntity
 
         return false;
     }
+
     public bool CanView(Guid userId)
     {
 
