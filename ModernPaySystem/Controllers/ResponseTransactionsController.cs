@@ -121,12 +121,21 @@ public class ResponseTransactionsController(IResponseTransactionService response
     //    return result.ToActionResult();
     //}
 
-    //[HttpGet]
-    //[EndpointPermission("response-transactions.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
-    //public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    //{
-    //    logger.LogInformation("Getting paged response transactions, page: {Page}, size: {PageSize}", page, pageSize);
-    //    var result = await responseTransactionService.GetPagedAsync(page, pageSize);
-    //    return result.ToActionResult();
-    //}
+    [HttpGet]
+    [EndpointPermission("response-transactions.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] TransactionStatus? status = null)
+    {
+        logger.LogInformation("Getting paged response transactions, page: {Page}, size: {PageSize}, status: {Status}", page, pageSize, status);
+        var result = await responseTransactionService.GetPagedAsync(page, pageSize, status);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{responseId}/mark-as-managed")]
+    [EndpointPermission("response-transactions.mark-as-managed", SubSystem.TransactionSystem, PermissionType.Update)]
+    public async Task<IActionResult> MarkAsManaged(Guid responseId)
+    {
+        logger.LogInformation("Marking response as managed: {ResponseId}", responseId);
+        var result = await responseTransactionService.MarkAsManagedAsync(responseId);
+        return result.ToActionResult();
+    }
 }

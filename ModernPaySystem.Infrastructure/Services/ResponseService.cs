@@ -62,6 +62,14 @@ public class ResponseService(
             if (response.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
+            // Change status to Delivered when queried
+            if (response.Value.Status == ResponseStatus.Pending)
+            {
+                response.Value.Status = ResponseStatus.Delivered;
+                await unitOfWork.Responses.UpdateAsync(response.Value);
+                await unitOfWork.SaveChangesAsync();
+            }
+
             return response.Value.ToDto();
         }
         catch (Exception ex)

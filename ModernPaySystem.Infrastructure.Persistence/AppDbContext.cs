@@ -190,6 +190,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(rt => rt.CurrentUserHolderId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Response to ResponseTransaction relationships
+        modelBuilder.Entity<Response>()
+            .HasOne(r => r.FirstTransaction)
+            .WithMany()
+            .HasForeignKey(r => r.FirstTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Response>()
+            .HasOne(r => r.CurrentTransaction)
+            .WithMany()
+            .HasForeignKey(r => r.CurrentTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<ResponseTransactionAttachment>()
             .HasOne(rta => rta.ResponseTransaction)
             .WithMany(rt => rt.ResponseTransactionAttachments)

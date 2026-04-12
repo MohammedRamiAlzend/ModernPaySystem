@@ -2,10 +2,19 @@
 using System.Linq;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+
+public enum TransactionStatus
+{
+    PendingAction = 0,
+    Transferred = 1,
+}
+
 public class ResponseTransaction : Entity<Guid>, IAuditableEntity
 {
     public Guid ResponseId { get; set; }
     public Response Response { get; set; } = null!;
+
+    public TransactionStatus Status { get; set; } = TransactionStatus.PendingAction;
 
     public string Notes { get; set; } = string.Empty;
     public int Level { get; set; }
@@ -16,7 +25,6 @@ public class ResponseTransaction : Entity<Guid>, IAuditableEntity
 
     public Guid CurrentUserHolderId { get; set; }
     public User CurrentUserHolder { get; set; } = null!;
-
 
     public ICollection<ResponseTransaction> ChildTransactions { get; set; } = [];
     public ICollection<ResponseTransactionAttachment> ResponseTransactionAttachments { get; set; } = [];
@@ -32,6 +40,7 @@ public class ResponseTransaction : Entity<Guid>, IAuditableEntity
         {
             Id = this.Id,
             ResponseId = this.ResponseId,
+            Status = this.Status,
             Notes = this.Notes,
             Level = this.Level,
             Path = this.Path,
@@ -52,6 +61,7 @@ public class ResponseTransactionDto
 {
     public Guid Id { get; set; }
     public Guid ResponseId { get; set; }
+    public TransactionStatus Status { get; set; }
     public string Notes { get; set; } = string.Empty;
     public int Level { get; set; }
     public string Path { get; set; } = string.Empty;

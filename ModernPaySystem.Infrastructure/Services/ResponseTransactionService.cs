@@ -10,11 +10,11 @@ public class ResponseTransactionService(
     IHttpContextServiceManager httpContextServiceManager,
     ILogger<ResponseTransactionService> logger) : IResponseTransactionService
 {
-    public async Task<Result<PagedList<ResponseTransactionDto>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<ResponseTransactionDto>>> GetPagedAsync(int page, int pageSize, TransactionStatus? status = null)
     {
         try
         {
-            logger.LogInformation("Fetching paged response transactions, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogInformation("Fetching paged response transactions, page: {Page}, size: {PageSize}, status: {Status}", page, pageSize, status);
 
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
@@ -22,13 +22,21 @@ public class ResponseTransactionService(
                 return ApplicationErrors.InvalidInput;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            
+            var filters = new List<Expression<Func<ResponseTransaction, bool>>> { ResponseTransactionExpressions.CanReadByUserId(currentUserId) };
+            
+            if (status.HasValue)
+            {
+                filters.Add(rt => rt.Status == status.Value);
+            }
+
             var pagedTransactions = await unitOfWork.ResponseTransactions.GetPagedAsync(
                 page,
                 pageSize,
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.ResponseTransactionAttachments)
                                  .ThenInclude(a => a.Attachment),
-                additionalFilters: new List<Expression<Func<ResponseTransaction, bool>>> { ResponseTransactionExpressions.CanReadByUserId(currentUserId) });
+                additionalFilters: filters);
 
             if (pagedTransactions.IsError)
                 return pagedTransactions.Errors;
@@ -241,6 +249,36 @@ public class ResponseTransactionService(
             var addResult = await unitOfWork.ResponseTransactions.AddAsync(transactionEntity);
             if (addResult.IsError)
                 return addResult.Errors;
+
+            // If this is the first transaction (no parent), update Response status and set FirstTransactionId
+            if (!dto.ParentTransactionId.HasValue)
+            {
+                var response = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId);
+                if (!response.IsError && response.Value != null)
+                {
+                    response.Value.FirstTransactionId = transactionEntity.Id;
+                    response.Value.CurrentTransactionId = transactionEntity.Id;
+                    
+                    // Change status to InProcess when first transaction is created
+                    if (response.Value.Status == ResponseStatus.Delivered || response.Value.Status == ResponseStatus.Pending)
+                    {
+                        response.Value.Status = ResponseStatus.InProcess;
+                        await unitOfWork.Responses.UpdateAsync(response.Value);
+                    }
+                }
+            }
+            else
+            {
+                // Update CurrentTransactionId for child transactions
+                var response = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId);
+                if (!response.IsError && response.Value != null)
+                {
+                    response.Value.CurrentTransactionId = transactionEntity.Id;
+                    await unitOfWork.Responses.UpdateAsync(response.Value);
+                }
+            }
+
+            await unitOfWork.SaveChangesAsync();
 
             if (dto.Files?.Any() == true)
             {
@@ -517,6 +555,37 @@ public class ResponseTransactionService(
         {
             logger.LogError(ex, "Error removing child transaction: {ChildTransactionId} from parent: {ParentTransactionId}",
                 childTransactionId, parentTransactionId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<ResponseDto>> MarkAsManagedAsync(Guid responseId)
+    {
+        try
+        {
+            if (responseId == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            logger.LogInformation("Marking response as managed: {ResponseId}", responseId);
+
+            var response = await unitOfWork.Responses.GetAsync(r => r.Id == responseId);
+            if (response.IsError)
+                return response.Errors;
+
+            if (response.Value == null)
+                return ApplicationErrors.ResponseNotFound;
+
+            // Change status to Managed when sent to requester
+            response.Value.Status = ResponseStatus.Managed;
+            await unitOfWork.Responses.UpdateAsync(response.Value);
+            await unitOfWork.SaveChangesAsync();
+
+            logger.LogInformation("Successfully marked response as managed: {ResponseId}", responseId);
+            return response.Value.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error marking response as managed: {ResponseId}", responseId);
             return ApplicationErrors.InternalServerError;
         }
     }
