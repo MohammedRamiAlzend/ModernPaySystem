@@ -10,6 +10,7 @@ using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.Abstraction;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using System.Linq;
+using ExpressionBuilderLib.src.Core.Enums;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Repos;
 
@@ -101,7 +102,8 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         bool bypassAuth = false,
-        List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null,
+        LogicalOperator logicalOperator = LogicalOperator.And)
     {
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
@@ -118,8 +120,16 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
             if (allFilters.Count > 0)
             {
-                var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
-                query = query.Where(combinedFilter);
+                if (logicalOperator == LogicalOperator.Or)
+                {
+                    var combinedFilter = ExpressionCombiner.OrAll(allFilters.ToArray());
+                    query = query.Where(combinedFilter);
+                }
+                else
+                {
+                    var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+                    query = query.Where(combinedFilter);
+                }
             }
 
             if (transform != null) query = transform(query);

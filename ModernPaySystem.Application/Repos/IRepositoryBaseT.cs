@@ -1,4 +1,5 @@
 ﻿global using System.Linq;
+using ExpressionBuilderLib.src.Core.Enums;
 
 namespace ModernPaySystem.Application.Repos;
 
@@ -28,7 +29,8 @@ public interface IRepositoryBase<TEntity, TKey>
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
         bool bypassAuth = false,
-        List<Expression<Func<TEntity, bool>>>? additionalFilters = null);
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null,
+        LogicalOperator logicalOperator = LogicalOperator.And);
 
     Task<Result<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,

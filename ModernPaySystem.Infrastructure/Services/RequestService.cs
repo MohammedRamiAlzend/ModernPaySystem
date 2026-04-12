@@ -357,7 +357,8 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!,
-                additionalFilters: RequestExpressions.ByApproverIdAndResponse(httpContextServiceManager.GetCurrentUserId(), hasResponse));
+                additionalFilters: RequestExpressions.ByApproverIdAndResponse(httpContextServiceManager.GetCurrentUserId(), hasResponse),
+                logicalOperator: ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or);
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
