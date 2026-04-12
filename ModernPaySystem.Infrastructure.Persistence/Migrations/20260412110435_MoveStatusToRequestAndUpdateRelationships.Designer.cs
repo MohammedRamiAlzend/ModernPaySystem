@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260412090856_AddTransactionStatusToResponseTransaction")]
-    partial class AddTransactionStatusToResponseTransaction
+    [Migration("20260412110435_MoveStatusToRequestAndUpdateRelationships")]
+    partial class MoveStatusToRequestAndUpdateRelationships
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -436,11 +436,20 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedByUserId")
                         .HasColumnType("text");
 
+                    b.Property<Guid?>("CurrentTransactionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("FirstTransactionId")
+                        .HasColumnType("uuid");
+
                     b.Property<Guid>("RequesterId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("ResponseId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("TemplateId")
                         .HasColumnType("uuid");
@@ -454,6 +463,10 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApproverId");
+
+                    b.HasIndex("CurrentTransactionId");
+
+                    b.HasIndex("FirstTransactionId");
 
                     b.HasIndex("RequesterId");
 
@@ -495,6 +508,91 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.ToTable("RequestAttachments");
                 });
 
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CurrentUserHolderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ParentTransactionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrentUserHolderId");
+
+                    b.HasIndex("ParentTransactionId");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("RequestTransactions");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransactionAttachment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AttachmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequestTransactionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttachmentId");
+
+                    b.HasIndex("RequestTransactionId");
+
+                    b.ToTable("RequestTransactionAttachments");
+                });
+
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", b =>
                 {
                     b.Property<Guid>("Id")
@@ -510,20 +608,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<string>("CreatedByUserId")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("CurrentTransactionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("FirstTransactionId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("RespondedByUserId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -532,10 +621,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CurrentTransactionId");
-
-                    b.HasIndex("FirstTransactionId");
 
                     b.ToTable("Responses");
                 });
@@ -571,91 +656,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("ResponseId");
 
                     b.ToTable("ResponseAttachments");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CurrentUserHolderId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("ParentTransactionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Path")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ResponseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedByUserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CurrentUserHolderId");
-
-                    b.HasIndex("ParentTransactionId");
-
-                    b.HasIndex("ResponseId");
-
-                    b.ToTable("ResponseTransactions");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransactionAttachment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AttachmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("ResponseTransactionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedByUserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttachmentId");
-
-                    b.HasIndex("ResponseTransactionId");
-
-                    b.ToTable("ResponseTransactionAttachments");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Template", b =>
@@ -865,6 +865,16 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", "CurrentTransaction")
+                        .WithMany()
+                        .HasForeignKey("CurrentTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", "FirstTransaction")
+                        .WithMany()
+                        .HasForeignKey("FirstTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "Requester")
                         .WithMany("RequestsAsRequester")
                         .HasForeignKey("RequesterId")
@@ -883,6 +893,10 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Approver");
+
+                    b.Navigation("CurrentTransaction");
+
+                    b.Navigation("FirstTransaction");
 
                     b.Navigation("Requester");
 
@@ -910,21 +924,49 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Request");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", b =>
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", b =>
                 {
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", "CurrentTransaction")
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "CurrentUserHolder")
                         .WithMany()
-                        .HasForeignKey("CurrentTransactionId")
+                        .HasForeignKey("CurrentUserHolderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", "ParentTransaction")
+                        .WithMany("ChildTransactions")
+                        .HasForeignKey("ParentTransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", "FirstTransaction")
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", "Request")
                         .WithMany()
-                        .HasForeignKey("FirstTransactionId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("CurrentTransaction");
+                    b.Navigation("CurrentUserHolder");
 
-                    b.Navigation("FirstTransaction");
+                    b.Navigation("ParentTransaction");
+
+                    b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransactionAttachment", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Attachment", "Attachment")
+                        .WithMany()
+                        .HasForeignKey("AttachmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", "RequestTransaction")
+                        .WithMany("RequestTransactionAttachments")
+                        .HasForeignKey("RequestTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Attachment");
+
+                    b.Navigation("RequestTransaction");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseAttachment", b =>
@@ -944,51 +986,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Attachment");
 
                     b.Navigation("Response");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", b =>
-                {
-                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "CurrentUserHolder")
-                        .WithMany()
-                        .HasForeignKey("CurrentUserHolderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", "ParentTransaction")
-                        .WithMany("ChildTransactions")
-                        .HasForeignKey("ParentTransactionId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", "Response")
-                        .WithMany()
-                        .HasForeignKey("ResponseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CurrentUserHolder");
-
-                    b.Navigation("ParentTransaction");
-
-                    b.Navigation("Response");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransactionAttachment", b =>
-                {
-                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Attachment", "Attachment")
-                        .WithMany()
-                        .HasForeignKey("AttachmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", "ResponseTransaction")
-                        .WithMany("ResponseTransactionAttachments")
-                        .HasForeignKey("ResponseTransactionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Attachment");
-
-                    b.Navigation("ResponseTransaction");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.TemplateOwnership", b =>
@@ -1083,18 +1080,18 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("RequestAttachments");
                 });
 
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTransaction", b =>
+                {
+                    b.Navigation("ChildTransactions");
+
+                    b.Navigation("RequestTransactionAttachments");
+                });
+
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Response", b =>
                 {
                     b.Navigation("Request");
 
                     b.Navigation("ResponseAttachments");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.ResponseTransaction", b =>
-                {
-                    b.Navigation("ChildTransactions");
-
-                    b.Navigation("ResponseTransactionAttachments");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Template", b =>

@@ -2,29 +2,12 @@
 using System.Linq;
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
-
-public enum ResponseStatus
-{
-    Pending = 0,
-    Delivered = 1,
-    InProcess = 2,
-    Managed = 3,
-}
-
 public class Response : Entity<Guid>, IAuditableEntity
 {
     public required Guid RequestId { get; set; }
     public Request? Request { get; set; }
     public required Guid RespondedByUserId { get; set; }
     public string? Comment { get; set; }
-
-    public ResponseStatus Status { get; set; } = ResponseStatus.Pending;
-
-    public Guid? FirstTransactionId { get; set; }
-    public ResponseTransaction? FirstTransaction { get; set; }
-
-    public Guid? CurrentTransactionId { get; set; }
-    public ResponseTransaction? CurrentTransaction { get; set; }
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -39,7 +22,6 @@ public class Response : Entity<Guid>, IAuditableEntity
             RequestId = this.RequestId,
             RespondedByUserId = this.RespondedByUserId,
             Comment = this.Comment,
-            Status = this.Status,
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
@@ -58,7 +40,6 @@ public class ResponseDto
     public Guid RequestId { get; set; }
     public Guid RespondedByUserId { get; set; }
     public string? Comment { get; set; }
-    public ResponseStatus Status { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }

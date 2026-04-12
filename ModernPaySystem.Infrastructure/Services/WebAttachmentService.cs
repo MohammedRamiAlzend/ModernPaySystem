@@ -146,26 +146,26 @@ public class WebAttachmentService(
         return attachment;
     }
 
-    public async Task<Result<Attachment>> UploadFileToResponseTransactionAsync(IFormFile file, Guid responseTransactionId, string? subDirectory = null)
+    public async Task<Result<Attachment>> UploadFileToRequestTransactionAsync(IFormFile file, Guid requestTransactionId, string? subDirectory = null)
     {
-        // Verify the response transaction exists
-        var responseTransaction = await unitOfWork.ResponseTransactions.GetByIdAsync(responseTransactionId);
-        if (responseTransaction.IsError)
+        // Verify the request transaction exists
+        var requestTransaction = await unitOfWork.RequestTransactions.GetByIdAsync(requestTransactionId);
+        if (requestTransaction.IsError)
         {
-            return ApplicationErrors.ResponseTransactionNotFound;
+            return ApplicationErrors.RequestTransactionNotFound;
         }
 
-        // Create a custom subdirectory for this response transaction
-        string responseTransactionSubDirectory = Path.Combine("TransactionSystem", "ResponseTransactions", responseTransactionId.ToString());
+        // Create a custom subdirectory for this request transaction
+        string requestTransactionSubDirectory = Path.Combine("TransactionSystem", "RequestTransactions", requestTransactionId.ToString());
 
-        // If a subdirectory was provided, append it to the response transaction directory
+        // If a subdirectory was provided, append it to the request transaction directory
         if (!string.IsNullOrEmpty(subDirectory))
         {
-            responseTransactionSubDirectory = Path.Combine(responseTransactionSubDirectory, subDirectory);
+            requestTransactionSubDirectory = Path.Combine(requestTransactionSubDirectory, subDirectory);
         }
 
         // Save the file using the file manager
-        var fileResult = await fileManager.SaveFileAsync(file, responseTransactionSubDirectory);
+        var fileResult = await fileManager.SaveFileAsync(file, requestTransactionSubDirectory);
         if (fileResult.IsError)
         {
             return fileResult.Errors;
@@ -191,14 +191,14 @@ public class WebAttachmentService(
             return attachmentResult.Errors;
         }
 
-        // Associate the attachment with the response transaction
-        var responseTransactionAttachment = new ResponseTransactionAttachment
+        // Associate the attachment with the request transaction
+        var requestTransactionAttachment = new RequestTransactionAttachment
         {
-            ResponseTransactionId = responseTransactionId,
+            RequestTransactionId = requestTransactionId,
             AttachmentId = attachment.Id
         };
 
-        var associationResult = await unitOfWork.ResponseTransactionAttachments.AddAsync(responseTransactionAttachment);
+        var associationResult = await unitOfWork.RequestTransactionAttachments.AddAsync(requestTransactionAttachment);
         if (associationResult.IsError)
         {
             // Clean up: remove the attachment from DB and file system if association fails

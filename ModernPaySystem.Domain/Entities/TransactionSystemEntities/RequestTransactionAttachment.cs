@@ -1,9 +1,9 @@
-﻿namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
-public class ResponseTransactionAttachment : Entity<Guid>, IAuditableEntity
+public class RequestTransactionAttachment : Entity<Guid>, IAuditableEntity
 {
-    public required Guid ResponseTransactionId { get; set; }
-    public ResponseTransaction? ResponseTransaction { get; set; }
+    public required Guid RequestTransactionId { get; set; }
+    public RequestTransaction? RequestTransaction { get; set; }
     public required Guid AttachmentId { get; set; }
     public Attachment? Attachment { get; set; }
     public string? CreatedByUserId { get; set; }
@@ -11,22 +11,22 @@ public class ResponseTransactionAttachment : Entity<Guid>, IAuditableEntity
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public ResponseTransactionAttachmentDto ToDto()
+    public RequestTransactionAttachmentDto ToDto()
     {
-        return new ResponseTransactionAttachmentDto
+        return new RequestTransactionAttachmentDto
         {
             Id = this.Id,
-            ResponseTransactionId = this.ResponseTransactionId,
+            RequestTransactionId = this.RequestTransactionId,
             AttachmentId = this.AttachmentId,
             AttachmentDto = this.Attachment?.ToDto()
         };
     }
 }
 
-public class ResponseTransactionAttachmentDto
+public class RequestTransactionAttachmentDto
 {
     public Guid Id { get; set; }
-    public Guid ResponseTransactionId { get; set; }
+    public Guid RequestTransactionId { get; set; }
     public Guid AttachmentId { get; set; }
     public AttachmentDto? AttachmentDto { get; set; }
 }

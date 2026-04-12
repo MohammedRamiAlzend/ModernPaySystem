@@ -37,8 +37,8 @@ public class UnitOfWork(
     private IRepositoryBase<RequestAttachment, Guid>? _requestAttachments;
     private IRepositoryBase<LookUpField, Guid>? _lookUpFields;
     private IRepositoryBase<LookUpFiledValues, Guid>? _lookUpFiledValues;
-    private IRepositoryBase<ResponseTransaction, Guid>? _responseTransactions;
-    private IRepositoryBase<ResponseTransactionAttachment, Guid>? _responseTransactionAttachments;
+    private IRepositoryBase<RequestTransaction, Guid>? _requestTransactions;
+    private IRepositoryBase<RequestTransactionAttachment, Guid>? _requestTransactionAttachments;
 
     public IRepositoryBase<User, Guid> Users =>
         _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>(), _httpContextServiceManager);
@@ -79,11 +79,11 @@ public class UnitOfWork(
     public IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues =>
         _lookUpFiledValues ??= new RepositoryBase<LookUpFiledValues, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<LookUpFiledValues, Guid>>(), _httpContextServiceManager);
 
-    public IRepositoryBase<ResponseTransaction, Guid> ResponseTransactions =>
-        _responseTransactions ??= new RepositoryBase<ResponseTransaction, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ResponseTransaction, Guid>>(), _httpContextServiceManager);
+    public IRepositoryBase<RequestTransaction, Guid> RequestTransactions =>
+        _requestTransactions ??= new RepositoryBase<RequestTransaction, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<RequestTransaction, Guid>>(), _httpContextServiceManager);
 
-    public IRepositoryBase<ResponseTransactionAttachment, Guid> ResponseTransactionAttachments =>
-        _responseTransactionAttachments ??= new RepositoryBase<ResponseTransactionAttachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ResponseTransactionAttachment, Guid>>(), _httpContextServiceManager);
+    public IRepositoryBase<RequestTransactionAttachment, Guid> RequestTransactionAttachments =>
+        _requestTransactionAttachments ??= new RepositoryBase<RequestTransactionAttachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<RequestTransactionAttachment, Guid>>(), _httpContextServiceManager);
 
     public async Task<int> SaveChangesAsync()
     {

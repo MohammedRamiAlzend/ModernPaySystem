@@ -19,8 +19,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Response> Responses { get; set; }
     public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
     public DbSet<TemplateOwnership> TemplateOwnerships { get; set; }
-    public DbSet<ResponseTransaction> ResponseTransactions { get; set; }
-    public DbSet<ResponseTransactionAttachment> ResponseTransactionAttachments { get; set; }
+    public DbSet<RequestTransaction> RequestTransactions { get; set; }
+    public DbSet<RequestTransactionAttachment> RequestTransactionAttachments { get; set; }
 
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
@@ -171,45 +171,45 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(o => o.OperationServiceTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // ResponseTransaction self-referencing relationship
-        modelBuilder.Entity<ResponseTransaction>()
+        // RequestTransaction self-referencing relationship
+        modelBuilder.Entity<RequestTransaction>()
             .HasOne(rt => rt.ParentTransaction)
             .WithMany(rt => rt.ChildTransactions)
             .HasForeignKey(rt => rt.ParentTransactionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<ResponseTransaction>()
-            .HasOne(rt => rt.Response)
+        modelBuilder.Entity<RequestTransaction>()
+            .HasOne(rt => rt.Request)
             .WithMany()
-            .HasForeignKey(rt => rt.ResponseId)
+            .HasForeignKey(rt => rt.RequestId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<ResponseTransaction>()
+        modelBuilder.Entity<RequestTransaction>()
             .HasOne(rt => rt.CurrentUserHolder)
             .WithMany()
             .HasForeignKey(rt => rt.CurrentUserHolderId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Response to ResponseTransaction relationships
-        modelBuilder.Entity<Response>()
+        // Request to RequestTransaction relationships
+        modelBuilder.Entity<Request>()
             .HasOne(r => r.FirstTransaction)
             .WithMany()
             .HasForeignKey(r => r.FirstTransactionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Response>()
+        modelBuilder.Entity<Request>()
             .HasOne(r => r.CurrentTransaction)
             .WithMany()
             .HasForeignKey(r => r.CurrentTransactionId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<ResponseTransactionAttachment>()
-            .HasOne(rta => rta.ResponseTransaction)
-            .WithMany(rt => rt.ResponseTransactionAttachments)
-            .HasForeignKey(rta => rta.ResponseTransactionId)
+        modelBuilder.Entity<RequestTransactionAttachment>()
+            .HasOne(rta => rta.RequestTransaction)
+            .WithMany(rt => rt.RequestTransactionAttachments)
+            .HasForeignKey(rta => rta.RequestTransactionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<ResponseTransactionAttachment>()
+        modelBuilder.Entity<RequestTransactionAttachment>()
             .HasOne(rta => rta.Attachment)
             .WithMany()
             .HasForeignKey(rta => rta.AttachmentId)

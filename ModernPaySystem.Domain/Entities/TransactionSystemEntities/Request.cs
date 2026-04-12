@@ -3,6 +3,14 @@ using System.Linq;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
+public enum RequestStatus
+{
+    Pending = 0,
+    Delivered = 1,
+    InProcess = 2,
+    Managed = 3,
+}
+
 public class Request : Entity<Guid>, IAuditableEntity
 {
     public required Guid TemplateId { get; set; }
@@ -16,6 +24,15 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public Guid? ResponseId { get; set; }
     public Response? Response { get; set; }
+
+    public RequestStatus Status { get; set; } = RequestStatus.Pending;
+
+    public Guid? FirstTransactionId { get; set; }
+    public RequestTransaction? FirstTransaction { get; set; }
+
+    public Guid? CurrentTransactionId { get; set; }
+    public RequestTransaction? CurrentTransaction { get; set; }
+    
     public required string ContentAsJson { get; set; }
 
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = [];
@@ -56,6 +73,7 @@ public class Request : Entity<Guid>, IAuditableEntity
             RequesterId = this.RequesterId,
             ApproverId = this.ApproverId,
             Content = this.ContentAsJson,
+            Status = this.Status,
             RequestAttachmentDtos = [.. this.RequestAttachments.Select(ra => ra.ToDto())],
             Template = this.Template?.ToDto(),
             Requester = this.Requester?.ToDto(),
@@ -77,6 +95,7 @@ public class RequestDto
     public Guid RequesterId { get; set; }
     public Guid ApproverId { get; set; }
     public Guid? ResponseId { get; set; }
+    public RequestStatus Status { get; set; }
     public required string Content { get; set; }
     public List<RequestAttachmentDto> RequestAttachmentDtos { get; set; } = [];
     public TemplateDto? Template { get; set; }

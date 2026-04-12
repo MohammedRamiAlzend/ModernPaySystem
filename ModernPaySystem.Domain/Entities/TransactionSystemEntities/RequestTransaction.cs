@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System.Linq;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
@@ -9,10 +9,10 @@ public enum TransactionStatus
     Transferred = 1,
 }
 
-public class ResponseTransaction : Entity<Guid>, IAuditableEntity
+public class RequestTransaction : Entity<Guid>, IAuditableEntity
 {
-    public Guid ResponseId { get; set; }
-    public Response Response { get; set; } = null!;
+    public Guid RequestId { get; set; }
+    public Request Request { get; set; } = null!;
 
     public TransactionStatus Status { get; set; } = TransactionStatus.PendingAction;
 
@@ -21,25 +21,25 @@ public class ResponseTransaction : Entity<Guid>, IAuditableEntity
     public string Path { get; set; } = string.Empty;
 
     public Guid? ParentTransactionId { get; set; }
-    public ResponseTransaction? ParentTransaction { get; set; }
+    public RequestTransaction? ParentTransaction { get; set; }
 
     public Guid CurrentUserHolderId { get; set; }
     public User CurrentUserHolder { get; set; } = null!;
 
-    public ICollection<ResponseTransaction> ChildTransactions { get; set; } = [];
-    public ICollection<ResponseTransactionAttachment> ResponseTransactionAttachments { get; set; } = [];
+    public ICollection<RequestTransaction> ChildTransactions { get; set; } = [];
+    public ICollection<RequestTransactionAttachment> RequestTransactionAttachments { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public ResponseTransactionDto ToDto()
+    public RequestTransactionDto ToDto()
     {
-        return new ResponseTransactionDto
+        return new RequestTransactionDto
         {
             Id = this.Id,
-            ResponseId = this.ResponseId,
+            RequestId = this.RequestId,
             Status = this.Status,
             Notes = this.Notes,
             Level = this.Level,
@@ -52,15 +52,15 @@ public class ResponseTransaction : Entity<Guid>, IAuditableEntity
             UpdatedByUserId = this.UpdatedByUserId,
             ParentTransaction = this.ParentTransaction?.ToDto(),
             ChildTransactions = this.ChildTransactions?.Select(c => c.ToDto()).ToList() ?? [],
-            ResponseTransactionAttachments = this.ResponseTransactionAttachments?.Select(a => a.ToDto()).ToList() ?? []
+            RequestTransactionAttachments = this.RequestTransactionAttachments?.Select(a => a.ToDto()).ToList() ?? []
         };
     }
 }
 
-public class ResponseTransactionDto
+public class RequestTransactionDto
 {
     public Guid Id { get; set; }
-    public Guid ResponseId { get; set; }
+    public Guid RequestId { get; set; }
     public TransactionStatus Status { get; set; }
     public string Notes { get; set; } = string.Empty;
     public int Level { get; set; }
@@ -72,25 +72,25 @@ public class ResponseTransactionDto
     public DateTime? UpdatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
 
-    public ResponseTransactionDto? ParentTransaction { get; set; }
-    public List<ResponseTransactionDto> ChildTransactions { get; set; } = [];
-    public List<ResponseTransactionAttachmentDto> ResponseTransactionAttachments { get; set; } = [];
-    public int AttachmentCount => ResponseTransactionAttachments.Count;
+    public RequestTransactionDto? ParentTransaction { get; set; }
+    public List<RequestTransactionDto> ChildTransactions { get; set; } = [];
+    public List<RequestTransactionAttachmentDto> RequestTransactionAttachments { get; set; } = [];
+    public int AttachmentCount => RequestTransactionAttachments.Count;
     public int ChildCount => ChildTransactions.Count;
 }
 
-public class CreateResponseTransactionDto
+public class CreateRequestTransactionDto
 {
-    public Guid ResponseId { get; set; }
+    public Guid RequestId { get; set; }
     public string Notes { get; set; } = string.Empty;
     public Guid? ParentTransactionId { get; set; }
     public Guid CurrentUserHolderId { get; set; }
     public IFormFileCollection? Files { get; set; }
 }
 
-public class AddInitialResponseTransactionDto
+public class AddInitialRequestTransactionDto
 {
-    public Guid ResponseId { get; set; }
+    public Guid RequestId { get; set; }
     public string Notes { get; set; } = string.Empty;
     public Guid CurrentUserHolderId { get; set; }
     public IFormFileCollection? Files { get; set; }
