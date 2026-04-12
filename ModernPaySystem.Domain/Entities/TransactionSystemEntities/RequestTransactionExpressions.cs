@@ -24,9 +24,7 @@ public static class RequestTransactionExpressions
         rt => !rt.ParentTransactionId.HasValue;
 
     public static Expression<Func<RequestTransaction, bool>> CanReadByUserId(Guid userId) =>
-        rt => rt.CurrentUserHolderId == userId
-             || rt.Request.RequesterId == userId
-             || rt.Request.ApproverId == userId;
+        rt => rt.CurrentUserHolderId == userId;
 
     public static Expression<Func<RequestTransaction, bool>> CanMakeUpdateByUserId(Guid userId) =>
         rt => rt.CurrentUserHolderId == userId;
