@@ -1,6 +1,7 @@
+using System.Linq;
 using System.Linq.Expressions;
 using ExpressionBuilderLib.src.Core;
-using System.Linq;
+using ExpressionBuilderLib.src.Core.Enums;
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public static class RequestExpressions
@@ -28,12 +29,15 @@ public static class RequestExpressions
     public static Expression<Func<Request, bool>> IsCompleted() =>
         r => r.ResponseId.HasValue;
 
-    public static List<Expression<Func<Request, bool>>> ByApproverIdAndResponse(Guid approverId, bool hasResponse) =>
-    [
-        ByApproverId(approverId),
-        HasResponse(hasResponse),
-        HasTransaction()
-    ];
+    public static List<Expression<Func<Request, bool>>> ByApproverIdAndResponse(Guid approverId, bool hasResponse)
+    {
+        var combinedExpression1 = ExpressionCombiner.Combine(ByApproverId(approverId), HasResponse(hasResponse), LogicalOperator.And);
+        var combinedExpression2 = ExpressionCombiner.Combine(combinedExpression1, HasTransaction(), LogicalOperator.Or);
+
+        return [
+            combinedExpression2
+        ];
+    }
 
     public static List<Expression<Func<Request, bool>>> ByRequesterIdWithIncludes(Guid requesterId) =>
     [
