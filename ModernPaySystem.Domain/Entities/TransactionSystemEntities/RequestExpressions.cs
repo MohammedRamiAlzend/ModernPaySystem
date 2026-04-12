@@ -16,6 +16,8 @@ public static class RequestExpressions
 
     public static Expression<Func<Request, bool>> HasResponse(bool hasResponse) =>
         r => r.ResponseId.HasValue == hasResponse;
+    public static Expression<Func<Request, bool>> HasTransaction() =>
+       r => r.CurrentTransactionId.HasValue || r.FirstTransactionId.HasValue;
 
     public static Expression<Func<Request, bool>> ByUserId(Guid userId) =>
         r => r.RequesterId == userId || r.ApproverId == userId || r.ReadOnlyUsers.Any(u => u.Id == userId);
@@ -29,7 +31,8 @@ public static class RequestExpressions
     public static List<Expression<Func<Request, bool>>> ByApproverIdAndResponse(Guid approverId, bool hasResponse) =>
     [
         ByApproverId(approverId),
-        HasResponse(hasResponse)
+        HasResponse(hasResponse),
+        HasTransaction()
     ];
 
     public static List<Expression<Func<Request, bool>>> ByRequesterIdWithIncludes(Guid requesterId) =>
