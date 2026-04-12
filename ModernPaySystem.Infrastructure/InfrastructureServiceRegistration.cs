@@ -40,6 +40,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IResponseService, ResponseService>();
+        services.AddScoped<IResponseTransactionService, ResponseTransactionService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();

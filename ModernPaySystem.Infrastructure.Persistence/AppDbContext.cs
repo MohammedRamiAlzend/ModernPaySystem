@@ -170,5 +170,36 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(o => o.OperationServiceTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // ResponseTransaction self-referencing relationship
+        modelBuilder.Entity<ResponseTransaction>()
+            .HasOne(rt => rt.ParentTransaction)
+            .WithMany(rt => rt.ChildTransactions)
+            .HasForeignKey(rt => rt.ParentTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ResponseTransaction>()
+            .HasOne(rt => rt.Response)
+            .WithMany()
+            .HasForeignKey(rt => rt.ResponseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ResponseTransaction>()
+            .HasOne(rt => rt.CurrentUserHolder)
+            .WithMany()
+            .HasForeignKey(rt => rt.CurrentUserHolderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ResponseTransactionAttachment>()
+            .HasOne(rta => rta.ResponseTransaction)
+            .WithMany(rt => rt.ResponseTransactionAttachments)
+            .HasForeignKey(rta => rta.ResponseTransactionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ResponseTransactionAttachment>()
+            .HasOne(rta => rta.Attachment)
+            .WithMany()
+            .HasForeignKey(rta => rta.AttachmentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

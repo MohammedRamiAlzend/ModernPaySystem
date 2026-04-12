@@ -6,6 +6,7 @@ global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using ModernPaySystem.Domain.Entities.SharedEntities;
+global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 global using ModernPaySystem.Application.Interfaces;
 global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;

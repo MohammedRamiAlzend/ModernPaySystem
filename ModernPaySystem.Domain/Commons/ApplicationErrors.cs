@@ -75,6 +75,7 @@ public static class ApplicationErrors
     public static readonly Error InsufficientFunds = new("902", "Insufficient funds for this transaction.", ErrorKind.Validation, "رصيد غير كافي لهذه المعاملة.");
     public static readonly Error TransactionAlreadyProcessed = new("903", "The transaction has already been processed.", ErrorKind.Conflict, "تم معالجة المعاملة بالفعل.");
     public static readonly Error DuplicateTransaction = new("904", "A duplicate transaction was detected.", ErrorKind.Conflict, "تم كشف معاملة مكررة.");
+    public static readonly Error ResponseTransactionNotFound = new("905", "The specified response transaction was not found.", ErrorKind.NotFound, "لم يتم العثور على معاملة الرد المحددة.");
 
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");
