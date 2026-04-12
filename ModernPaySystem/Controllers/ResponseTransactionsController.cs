@@ -55,71 +55,24 @@ public class ResponseTransactionsController(IResponseTransactionService response
     [HttpPost]
     [Consumes("multipart/form-data")]
     [EndpointPermission("response-transactions.create", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> Create([FromForm] CreateResponseTransactionDto dto)
+    public async Task<IActionResult> Create([FromForm] AddInitialResponseTransactionDto dto)
     {
         logger.LogInformation("Creating new response transaction for response: {ResponseId}", dto?.ResponseId);
         ArgumentNullException.ThrowIfNull(dto);
-        var result = await responseTransactionService.CreateAsync(dto);
+        var result = await responseTransactionService.AddInitialResponseTransaction(dto);
         return result.ToActionResult();
     }
 
-    //[HttpPut("{id}")]
-    //[EndpointPermission("response-transactions.update", SubSystem.TransactionSystem, PermissionType.Update)]
-    //public async Task<IActionResult> Update(Guid id, [FromBody] UpdateResponseTransactionDto dto)
-    //{
-    //    logger.LogInformation("Updating response transaction: {TransactionId}", id);
-    //    var result = await responseTransactionService.UpdateAsync(id, dto);
-    //    return result.ToActionResult();
-    //}
-
-    //[HttpDelete("{id}")]
-    //[EndpointPermission("response-transactions.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
-    //public async Task<IActionResult> Delete(Guid id)
-    //{
-    //    logger.LogInformation("Deleting response transaction: {TransactionId}", id);
-    //    var result = await responseTransactionService.DeleteAsync(id);
-    //    return result.ToActionResult();
-    //}
-
-    //[HttpPost("{transactionId}/files")]
-    //[Consumes("multipart/form-data")]
-    //[EndpointPermission("response-transactions.add-files", SubSystem.TransactionSystem, PermissionType.Insert)]
-    //public async Task<IActionResult> AddFiles(Guid transactionId, [FromForm] List<IFormFile> files)
-    //{
-    //    logger.LogInformation("Adding {FileCount} files to transaction: {TransactionId}", files?.Count, transactionId);
-    //    ArgumentNullException.ThrowIfNull(files);
-    //    var result = await responseTransactionService.AddFilesAsync(transactionId, files);
-    //    return result.ToActionResult();
-    //}
-
-    //[HttpDelete("{transactionId}/attachments/{attachmentId}")]
-    //[EndpointPermission("response-transactions.remove-attachment", SubSystem.TransactionSystem, PermissionType.Delete)]
-    //public async Task<IActionResult> RemoveAttachment(Guid transactionId, Guid attachmentId)
-    //{
-    //    logger.LogInformation("Removing attachment: {AttachmentId} from transaction: {TransactionId}", attachmentId, transactionId);
-    //    var result = await responseTransactionService.RemoveAttachmentAsync(transactionId, attachmentId);
-    //    return result.ToActionResult();
-    //}
-
-    [HttpPost("{parentTransactionId}/children")]
+    [HttpPost("AddTransactionChildren")]
     [Consumes("multipart/form-data")]
     [EndpointPermission("response-transactions.add-child", SubSystem.TransactionSystem, PermissionType.Insert)]
-    public async Task<IActionResult> AddChildTransaction(Guid parentTransactionId, [FromForm] CreateResponseTransactionDto dto)
+    public async Task<IActionResult> AddChildTransaction([FromForm] CreateResponseTransactionDto dto)
     {
-        logger.LogInformation("Adding child transaction to parent: {ParentTransactionId}", parentTransactionId);
+        logger.LogInformation("Adding child transaction to parent: {ParentTransactionId}", dto.ParentTransactionId);
         ArgumentNullException.ThrowIfNull(dto);
-        var result = await responseTransactionService.AddChildTransactionAsync(parentTransactionId, dto);
+        var result = await responseTransactionService.AddChildTransactionAsync(dto);
         return result.ToActionResult();
     }
-
-    //[HttpDelete("{parentTransactionId}/children/{childTransactionId}")]
-    //[EndpointPermission("response-transactions.remove-child", SubSystem.TransactionSystem, PermissionType.Delete)]
-    //public async Task<IActionResult> RemoveChildTransaction(Guid parentTransactionId, Guid childTransactionId)
-    //{
-    //    logger.LogInformation("Removing child transaction: {ChildTransactionId} from parent: {ParentTransactionId}", childTransactionId, parentTransactionId);
-    //    var result = await responseTransactionService.RemoveChildTransactionAsync(parentTransactionId, childTransactionId);
-    //    return result.ToActionResult();
-    //}
 
     [HttpGet]
     [EndpointPermission("response-transactions.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]

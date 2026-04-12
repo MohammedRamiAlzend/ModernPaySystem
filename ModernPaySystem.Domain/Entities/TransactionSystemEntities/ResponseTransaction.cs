@@ -88,8 +88,10 @@ public class CreateResponseTransactionDto
     public IFormFileCollection? Files { get; set; }
 }
 
-public class UpdateResponseTransactionDto
+public class AddInitialResponseTransactionDto
 {
+    public Guid ResponseId { get; set; }
     public string Notes { get; set; } = string.Empty;
-    public Guid? ParentTransactionId { get; set; }
+    public Guid CurrentUserHolderId { get; set; }
+    public IFormFileCollection? Files { get; set; }
 }

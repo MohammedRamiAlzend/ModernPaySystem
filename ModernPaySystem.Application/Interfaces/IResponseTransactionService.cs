@@ -10,7 +10,8 @@ public interface IResponseTransactionService
     Task<Result<List<ResponseTransactionDto>>> GetChildTransactionsAsync(Guid parentTransactionId);
     Task<Result<ResponseTransactionDto>> GetRootTransactionAsync(Guid responseId);
     Task<Result<List<ResponseTransactionDto>>> GetTransactionTreeAsync(Guid transactionId);
-    Task<Result<ResponseTransactionDto>> CreateAsync(CreateResponseTransactionDto dto);
-    Task<Result<ResponseTransactionDto>> AddChildTransactionAsync(Guid parentTransactionId, CreateResponseTransactionDto dto);
-    Task<Result<ResponseDto>> MarkAsManagedAsync(Guid responseId);
+
+    Task<Result<Success>> AddInitialResponseTransaction(AddInitialResponseTransactionDto dto);
+    Task<Result<Success>> AddChildTransactionAsync(CreateResponseTransactionDto dto);
+    Task<Result<Success>> MarkAsManagedAsync(Guid responseId);
 }

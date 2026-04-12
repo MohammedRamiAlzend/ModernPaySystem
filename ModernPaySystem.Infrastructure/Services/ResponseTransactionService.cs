@@ -24,7 +24,7 @@ public class ResponseTransactionService(
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
             var filters = new List<Expression<Func<ResponseTransaction, bool>>> { ResponseTransactionExpressions.CanReadByUserId(currentUserId) };
-            
+
             if (status.HasValue)
             {
                 filters.Add(rt => rt.Status == status.Value);
@@ -201,7 +201,7 @@ public class ResponseTransactionService(
         }
     }
 
-    public async Task<Result<ResponseTransactionDto>> CreateAsync(CreateResponseTransactionDto dto)
+    public async Task<Result<Success>> AddInitialResponseTransaction(AddInitialResponseTransactionDto dto)
     {
         try
         {
@@ -213,28 +213,17 @@ public class ResponseTransactionService(
 
             logger.LogInformation("Creating new response transaction for response: {ResponseId}", dto.ResponseId);
 
-            var path = string.Empty;
             var level = 0;
+            var newId = Guid.NewGuid();
+            var path = $"{newId}";
+            var getResponseResult = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId, transform:
+                x => x.Include(i => i.CurrentTransaction).Include(i => i.FirstTransaction).Include(i => i.Request));
 
-            if (dto.ParentTransactionId.HasValue)
-            {
-                var parentTransaction = await unitOfWork.ResponseTransactions.GetAsync(
-                    filter: rt => rt.Id == dto.ParentTransactionId.Value,
-                    transform: x => x.Include(x => x.ParentTransaction));
+            if (getResponseResult.IsError)
+                return getResponseResult.Errors;
 
-                if (parentTransaction.IsError)
-                    return parentTransaction.Errors;
-
-                if (parentTransaction.Value == null)
-                    return ApplicationErrors.ResponseTransactionNotFound;
-
-                level = parentTransaction.Value.Level + 1;
-                path = $"{parentTransaction.Value.Path}/{dto.ParentTransactionId.Value}";
-            }
-            else
-            {
-                path = $"/{Guid.NewGuid()}";
-            }
+            if (getResponseResult.Value.FirstTransaction != null || getResponseResult.Value.CurrentTransaction != null)
+                return ApplicationErrors.ResponseAlreadyHasTransaction;
 
             var transactionEntity = new ResponseTransaction
             {
@@ -242,7 +231,7 @@ public class ResponseTransactionService(
                 Notes = dto.Notes,
                 Level = level,
                 Path = path,
-                ParentTransactionId = dto.ParentTransactionId,
+                ParentTransactionId = null,
                 CurrentUserHolderId = dto.CurrentUserHolderId
             };
 
@@ -250,30 +239,10 @@ public class ResponseTransactionService(
             if (addResult.IsError)
                 return addResult.Errors;
 
-            if (!dto.ParentTransactionId.HasValue)
-            {
-                var response = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId);
-                if (!response.IsError && response.Value != null)
-                {
-                    response.Value.FirstTransactionId = transactionEntity.Id;
-                    response.Value.CurrentTransactionId = transactionEntity.Id;
-                    
-                    if (response.Value.Status == ResponseStatus.Delivered || response.Value.Status == ResponseStatus.Pending)
-                    {
-                        response.Value.Status = ResponseStatus.InProcess;
-                        await unitOfWork.Responses.UpdateAsync(response.Value);
-                    }
-                }
-            }
-            else
-            {
-                var response = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId);
-                if (!response.IsError && response.Value != null)
-                {
-                    response.Value.CurrentTransactionId = transactionEntity.Id;
-                    await unitOfWork.Responses.UpdateAsync(response.Value);
-                }
-            }
+            getResponseResult.Value.CurrentTransactionId = transactionEntity.Id;
+            getResponseResult.Value.FirstTransactionId = transactionEntity.Id;
+            getResponseResult.Value.Status = ResponseStatus.InProcess;
+            await unitOfWork.Responses.UpdateAsync(getResponseResult.Value);
 
             await unitOfWork.SaveChangesAsync();
 
@@ -289,7 +258,7 @@ public class ResponseTransactionService(
             }
 
             logger.LogInformation("Successfully created response transaction: {TransactionId}", transactionEntity.Id);
-            return transactionEntity.ToDto();
+            return Result.Success;
         }
         catch (Exception ex)
         {
@@ -298,42 +267,56 @@ public class ResponseTransactionService(
         }
     }
 
-    public async Task<Result<ResponseTransactionDto>> AddChildTransactionAsync(Guid parentTransactionId, CreateResponseTransactionDto dto)
+    public async Task<Result<Success>> AddChildTransactionAsync(CreateResponseTransactionDto dto)
     {
         try
         {
-            if (parentTransactionId == Guid.Empty || dto == null)
+            if (dto.ParentTransactionId == Guid.Empty || dto == null)
                 return ApplicationErrors.InvalidInput;
 
             var parentTransaction = await unitOfWork.ResponseTransactions.GetAsync(
-                filter: rt => rt.Id == parentTransactionId,
-                transform: x => x.Include(x => x.ParentTransaction));
-
+                filter: rt => rt.Id == dto.ParentTransactionId,
+                transform: x =>
+                x
+                .Include(x => x.ParentTransaction).ThenInclude(i => i.Response).ThenInclude(i => i.CurrentTransaction)
+                .Include(x => x.ParentTransaction).ThenInclude(i => i.Response).ThenInclude(i => i.FirstTransaction)
+                .Include(x => x.ParentTransaction).ThenInclude(i => i.Response).ThenInclude(i => i.Request));
+            
             if (parentTransaction.IsError)
                 return parentTransaction.Errors;
 
-            if (parentTransaction.Value == null)
-                return ApplicationErrors.ResponseTransactionNotFound;
-
-            var childDto = new CreateResponseTransactionDto
+            var response = parentTransaction.Value?.Response;
+            var newId = Guid.NewGuid();
+            var childTransaction = new ResponseTransaction
             {
+                Id = newId,
                 ResponseId = dto.ResponseId,
                 Notes = dto.Notes,
-                ParentTransactionId = parentTransactionId,
+                ParentTransactionId = dto.ParentTransactionId,
                 CurrentUserHolderId = dto.CurrentUserHolderId,
-                Files = dto.Files
+                Level = parentTransaction.Value.Level + 1,
+                Path = $"{parentTransaction.Value.Path}/{newId}"
             };
+            var addResult = await unitOfWork.ResponseTransactions.AddAsync(childTransaction);
+            if (addResult.IsError)
+                return addResult.Errors;
 
-            return await CreateAsync(childDto);
+            response.Status = ResponseStatus.InProcess;
+            response.CurrentTransactionId = childTransaction.Id;
+
+            await unitOfWork.Responses.UpdateAsync(response);
+            await unitOfWork.SaveChangesAsync();
+
+            return Result.Success;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error adding child transaction to parent: {ParentTransactionId}", parentTransactionId);
+            logger.LogError(ex, "Error adding child transaction to parent: {ParentTransactionId}", dto.ParentTransactionId);
             return ApplicationErrors.InternalServerError;
         }
     }
 
-    public async Task<Result<ResponseDto>> MarkAsManagedAsync(Guid responseId)
+    public async Task<Result<Success>> MarkAsManagedAsync(Guid responseId)
     {
         try
         {
@@ -354,7 +337,7 @@ public class ResponseTransactionService(
             await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Successfully marked response as managed: {ResponseId}", responseId);
-            return response.Value.ToDto();
+            return Result.Success;
         }
         catch (Exception ex)
         {
@@ -363,7 +346,7 @@ public class ResponseTransactionService(
         }
     }
 
-    private async Task BuildTransactionTreeRecursive(ResponseTransaction transaction, List<ResponseTransactionDto> tree, Guid currentUserId, int depth)
+    private static async Task BuildTransactionTreeRecursive(ResponseTransaction transaction, List<ResponseTransactionDto> tree, Guid currentUserId, int depth)
     {
         if (depth > 10)
             return;
