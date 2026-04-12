@@ -9,6 +9,7 @@ using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.Abstraction;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using System.Linq;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Repos;
 
