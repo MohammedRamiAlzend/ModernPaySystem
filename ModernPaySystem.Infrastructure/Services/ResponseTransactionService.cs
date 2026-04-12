@@ -22,7 +22,7 @@ public class ResponseTransactionService(
                 return ApplicationErrors.InvalidInput;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-            
+
             var filters = new List<Expression<Func<ResponseTransaction, bool>>> { ResponseTransactionExpressions.CanReadByUserId(currentUserId) };
             
             if (status.HasValue)
@@ -250,7 +250,6 @@ public class ResponseTransactionService(
             if (addResult.IsError)
                 return addResult.Errors;
 
-            // If this is the first transaction (no parent), update Response status and set FirstTransactionId
             if (!dto.ParentTransactionId.HasValue)
             {
                 var response = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId);
@@ -259,7 +258,6 @@ public class ResponseTransactionService(
                     response.Value.FirstTransactionId = transactionEntity.Id;
                     response.Value.CurrentTransactionId = transactionEntity.Id;
                     
-                    // Change status to InProcess when first transaction is created
                     if (response.Value.Status == ResponseStatus.Delivered || response.Value.Status == ResponseStatus.Pending)
                     {
                         response.Value.Status = ResponseStatus.InProcess;
@@ -269,7 +267,6 @@ public class ResponseTransactionService(
             }
             else
             {
-                // Update CurrentTransactionId for child transactions
                 var response = await unitOfWork.Responses.GetAsync(r => r.Id == dto.ResponseId);
                 if (!response.IsError && response.Value != null)
                 {
@@ -352,7 +349,6 @@ public class ResponseTransactionService(
             if (response.Value == null)
                 return ApplicationErrors.ResponseNotFound;
 
-            // Change status to Managed when sent to requester
             response.Value.Status = ResponseStatus.Managed;
             await unitOfWork.Responses.UpdateAsync(response.Value);
             await unitOfWork.SaveChangesAsync();
