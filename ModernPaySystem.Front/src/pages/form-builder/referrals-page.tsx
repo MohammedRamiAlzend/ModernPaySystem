@@ -18,7 +18,8 @@ import { Pagination } from '@/shared/ui/common/pagination';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
 import { ProcessRequestModal } from '@/features/form-builder/ui/ProcessRequestModal';
-import { useRequestTransactions, useTemplates, formEndpoints } from '@/features/form-builder/api/formEndpoints';
+import { useRequestTransactions, formEndpoints } from '@/features/form-builder/api/formEndpoints';
+import { useForms } from '@/features/form-builder/model/useForms';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
 import type { TemplateRequest, RequestTransactionDto } from '@/entities/form/model/types';
@@ -33,7 +34,7 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
     const pageSize = 10;
 
     const { data: pagedData, isLoading: isLoadingData } = useRequestTransactions(status, page, pageSize);
-    const { data: templates = [], isLoading: isLoadingTemplates } = useTemplates();
+    const { data: templates = [], isLoading: isLoadingTemplates } = useForms(true);
     
     const currentUser = useAuthStore((state) => state.user);
     const { showStatus } = useUIStore();

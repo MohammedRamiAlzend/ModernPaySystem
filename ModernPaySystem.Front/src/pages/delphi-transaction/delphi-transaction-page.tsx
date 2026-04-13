@@ -19,6 +19,7 @@ export const DelphiTransactionPage = () => {
     const { user } = useAuthStore();
     const [rawInput, setRawInput] = useState("");
     const [approverId, setApproverId] = useState<string>("");
+    const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
 
     const { mutateAsync: createRequest, isPending: isSubmitting } = useCreateRequest();
@@ -63,6 +64,7 @@ export const DelphiTransactionPage = () => {
                 TemplateId: template.id,
                 RequesterId: user.id,
                 ApproverId: approverId,
+                ReadOnlyUsers: readOnlyUsers,
                 Content: JSON.stringify(formData),
                 files: files
             };
@@ -77,6 +79,7 @@ export const DelphiTransactionPage = () => {
 
             setRawInput(""); // Clear for next one
             setFiles([]);    // Clear files
+            setReadOnlyUsers([]); // Clear read only users
         } catch {
             showStatus({
                 type: 'error',
@@ -130,6 +133,8 @@ export const DelphiTransactionPage = () => {
                 <RequestSubmissionSidebar
                     approverId={approverId}
                     onApproverSelect={setApproverId}
+                    readOnlyUsers={readOnlyUsers}
+                    onReadOnlyUsersChange={setReadOnlyUsers}
                     files={files}
                     onFilesChange={setFiles}
                     className="lg:col-span-3 h-full"

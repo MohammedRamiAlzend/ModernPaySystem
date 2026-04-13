@@ -52,7 +52,8 @@ export const QUERY_STRATEGIES: Record<UpdateStrategy, QueryConfigOptions> = {
     },
     [UpdateStrategy.LIVE]: {
         staleTime: 0,
-        gcTime: 1000 * 60 * 5,
+        gcTime: 1000 * 60 * 1200,
+        // gcTime: 1000 * 60 * 5,
         retry: 1,
         refetchOnWindowFocus: true,     // تحديث عند العودة
         refetchInterval: 5000,          // جلب تلقائي كل 5 ثوانٍ

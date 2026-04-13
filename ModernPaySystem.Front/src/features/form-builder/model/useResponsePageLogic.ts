@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useQueryState, parseAsInteger, parseAsStringEnum } from 'nuqs';
+import { useQueryState, parseAsInteger } from 'nuqs';
 import { formEndpoints, useRequests, useCreateReferral } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useAuthStore } from '@/app/store/authStore';
@@ -17,7 +17,7 @@ export const useResponsePageLogic = () => {
     const [files, setFiles] = useState<File[]>([]);
     const [submissionMode, setSubmissionMode] = useState<'submit' | 'referral'>('submit');
     const [targetUserId, setTargetUserId] = useState('');
-    
+
     // Load seen IDs from localStorage
     const [seenIds, setSeenIds] = useState<string[]>(() => {
         if (typeof window === 'undefined') return [];
@@ -38,7 +38,7 @@ export const useResponsePageLogic = () => {
     const currentUser = useAuthStore((state) => state.user);
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
     const { data: pagedRequests, isLoading } = useRequests(false, page, 15);
-    
+
     // Map requests to include isNew status
     const requests = (pagedRequests?.items || []).map(r => ({
         ...r,
@@ -68,7 +68,7 @@ export const useResponsePageLogic = () => {
             });
         }
     });
-    
+
     const referralMutation = useCreateReferral();
 
     const handleReferralSuccess = () => {
@@ -110,7 +110,7 @@ export const useResponsePageLogic = () => {
 
     const handleSubmit = async () => {
         if (!requestId || !currentUser) return;
-        
+
         if (submissionMode === 'submit') {
             responseMutation.mutate({
                 requestId,
@@ -127,9 +127,9 @@ export const useResponsePageLogic = () => {
                 });
                 return;
             }
-            
+
             referralMutation.mutate({
-                requestId: requestId, 
+                requestId: requestId,
                 notes: comment,
                 parentTransactionId: selectedRequest?.currentTransactionId,
                 targetUserId: targetUserId,
