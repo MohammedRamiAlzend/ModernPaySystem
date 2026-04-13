@@ -36,30 +36,30 @@ public class RequestService(
         }
     }
 
-    public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse)
-    {
-        try
-        {
-            logger.LogInformation("Fetching all requests");
-            var requests = await unitOfWork.Requests.GetAllAsync(
-                transform: x => x.Include(x => x.Template)
-                      .Include(x => x.Response)
-                     .Include(x => x.Approver)
-                     .Include(x => x.Requester)
-                     .Include(x => x.RequestAttachments),
-                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.HasResponse(hasResponse) });
+    //public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse)
+    //{
+    //    try
+    //    {
+    //        logger.LogInformation("Fetching all requests");
+    //        var requests = await unitOfWork.Requests.GetAllAsync(
+    //            transform: x => x.Include(x => x.Template)
+    //                  .Include(x => x.Response)
+    //                 .Include(x => x.Approver)
+    //                 .Include(x => x.Requester)
+    //                 .Include(x => x.RequestAttachments),
+    //            additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.HasResponse(hasResponse) });
 
-            if (requests.IsError)
-                return requests.Errors;
+    //        if (requests.IsError)
+    //            return requests.Errors;
 
-            return requests.Value!.ConvertAll(r => r.ToDto());
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching all requests");
-            return ApplicationErrors.InternalServerError;
-        }
-    }
+    //        return requests.Value!.ConvertAll(r => r.ToDto());
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        logger.LogError(ex, "Error fetching all requests");
+    //        return ApplicationErrors.InternalServerError;
+    //    }
+    //}
 
     public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize)
     {
@@ -357,7 +357,7 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!,
-                additionalFilters: RequestExpressions.ByApproverIdAndResponse(httpContextServiceManager.GetCurrentUserId(), hasResponse),
+                additionalFilters: RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId()),
                 logicalOperator: ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or);
 
             if (pagedRequests.IsError)
