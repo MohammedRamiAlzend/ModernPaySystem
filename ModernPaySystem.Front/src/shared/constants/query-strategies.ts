@@ -55,7 +55,9 @@ export const QUERY_STRATEGIES: Record<UpdateStrategy, QueryConfigOptions> = {
         gcTime: 1000 * 60 * 5,
         retry: 1,
         refetchOnWindowFocus: true,     // تحديث عند العودة
-        // refetchInterval: 5000,          // جلب تلقائي كل 5 ثوانٍ
-        refetchInterval: 500000000,          // جلب تلقائي كل 5 ثوانٍ
+        refetchInterval: import.meta.env.VITE_LIVE_REFETCH_INTERVAL
+            ? parseInt(import.meta.env.VITE_LIVE_REFETCH_INTERVAL as string, 10)
+            : 5000, // قابل للتبديل من خلال متغير البيئة
     },
+
 };
