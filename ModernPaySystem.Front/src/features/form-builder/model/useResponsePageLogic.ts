@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useQueryState, parseAsInteger } from 'nuqs';
-import { formEndpoints, useRequests } from '../api/formEndpoints';
+import { useQueryState, parseAsInteger, parseAsStringEnum } from 'nuqs';
+import { formEndpoints, useRequests, useCreateReferral } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
@@ -15,6 +15,8 @@ export const useResponsePageLogic = () => {
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
+    const [submissionMode, setSubmissionMode] = useState<'submit' | 'referral'>('submit');
+    const [targetUserId, setTargetUserId] = useState('');
     
     // Load seen IDs from localStorage
     const [seenIds, setSeenIds] = useState<string[]>(() => {
@@ -66,6 +68,30 @@ export const useResponsePageLogic = () => {
             });
         }
     });
+    
+    const referralMutation = useCreateReferral();
+
+    const handleReferralSuccess = () => {
+        showStatus({
+            type: 'success',
+            title: 'تمت الإحالة',
+            message: 'تمت إحالة الطلب بنجاح'
+        });
+        queryClient.invalidateQueries({ queryKey: ['requests'] });
+        setComment('');
+        setRequestId('');
+        setFiles([]);
+        setTargetUserId('');
+        setSubmissionMode('submit');
+    };
+
+    const handleMutationError = (title: string, message: string) => {
+        showStatus({
+            type: 'error',
+            title,
+            message
+        });
+    };
 
     const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails(templates);
 
@@ -82,14 +108,37 @@ export const useResponsePageLogic = () => {
         originalHandleViewRequest(request);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!requestId || !currentUser) return;
-        responseMutation.mutate({
-            requestId,
-            comment,
-            respondedByUserId: currentUser.id,
-            files: files.length > 0 ? files : undefined
-        });
+        
+        if (submissionMode === 'submit') {
+            responseMutation.mutate({
+                requestId,
+                comment,
+                respondedByUserId: currentUser.id,
+                files: files.length > 0 ? files : undefined
+            });
+        } else {
+            if (!targetUserId) {
+                showStatus({
+                    type: 'warning',
+                    title: 'تنبيه',
+                    message: 'يرجى اختيار المستخدم المحال إليه'
+                });
+                return;
+            }
+            
+            referralMutation.mutate({
+                requestId: requestId, 
+                notes: comment,
+                parentTransactionId: selectedRequest?.currentTransactionId,
+                targetUserId: targetUserId,
+                files: files.length > 0 ? files : undefined
+            }, {
+                onSuccess: handleReferralSuccess,
+                onError: () => handleMutationError('خطأ', 'فشل إحالة الطلب')
+            });
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,7 +178,11 @@ export const useResponsePageLogic = () => {
         totalPages: pagedRequests?.totalPages || 0,
         page,
         setPage,
-        isPending: responseMutation.isPending,
+        isPending: responseMutation.isPending || referralMutation.isPending,
+        submissionMode,
+        setSubmissionMode,
+        targetUserId,
+        setTargetUserId,
         setComment,
         setRequestId,
         handleSubmit,

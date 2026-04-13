@@ -18,6 +18,10 @@ interface ProcessRequestModalProps {
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onFilesAdd: (files: File[]) => void;
     onRemoveFile: (index: number) => void;
+    submissionMode: 'submit' | 'referral';
+    onSubmissionModeChange: (mode: 'submit' | 'referral') => void;
+    targetUserId: string;
+    onTargetUserChange: (userId: string) => void;
     onSubmit: () => void;
 }
 
@@ -33,6 +37,10 @@ export const ProcessRequestModal = ({
     onFileChange,
     onFilesAdd,
     onRemoveFile,
+    submissionMode,
+    onSubmissionModeChange,
+    targetUserId,
+    onTargetUserChange,
     onSubmit
 }: ProcessRequestModalProps) => {
     if (!request || !template) return null;
@@ -67,6 +75,10 @@ export const ProcessRequestModal = ({
                         onFileChange={onFileChange}
                         onFilesAdd={onFilesAdd}
                         onRemoveFile={onRemoveFile}
+                        submissionMode={submissionMode}
+                        onSubmissionModeChange={onSubmissionModeChange}
+                        targetUserId={targetUserId}
+                        onTargetUserChange={onTargetUserChange}
                         onSubmit={onSubmit}
                     />
                 </div>

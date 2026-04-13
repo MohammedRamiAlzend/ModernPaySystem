@@ -9,7 +9,9 @@ import type {
     CreateResponseDto,
     TemplateRequest,
     TemplateResponse,
-    PagedResult
+    PagedResult,
+    CreateRequestTransactionDto,
+    RequestTransactionDto
 } from '@/entities/form/model/types';
 
 // --- API Service ---
@@ -145,6 +147,34 @@ export const formEndpoints = {
     getResponsesByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateResponse> }> => {
         const response = await api.get(`/Responses/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
         return response.data;
+    },
+
+    createReferral: async (data: CreateRequestTransactionDto): Promise<any> => {
+        const formData = new FormData();
+        formData.append('RequestId', data.requestId);
+        if (data.notes) formData.append('Notes', data.notes);
+        if (data.parentTransactionId) formData.append('ParentTransactionId', data.parentTransactionId);
+        formData.append('CurrentUserHolderId', data.targetUserId);
+        
+        if (data.files && data.files.length > 0) {
+            data.files.forEach((file) => {
+                formData.append('Files', file);
+            });
+        }
+
+        const url = data.parentTransactionId ? '/RequestTransactions/AddTransactionChildren' : '/RequestTransactions';
+        const response = await api.post(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+
+    getRequestTransactions: async (status?: number, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<RequestTransactionDto> }> => {
+        const statusQuery = status !== undefined ? `&status=${status}` : '';
+        const response = await api.get(`/RequestTransactions?page=${page}&pageSize=${pageSize}${statusQuery}`);
+        return response.data;
     }
 };
 
@@ -217,6 +247,12 @@ export const useCreateResponse = () => {
     });
 };
 
+export const useCreateReferral = () => {
+    return useMutation({
+        mutationFn: formEndpoints.createReferral
+    });
+};
+
 export const useRequestResponses = (requestId: string | null) => {
     return useQuery({
         queryKey: ['responses', requestId],
@@ -262,6 +298,17 @@ export const useRequestsByRequester = (requesterId: string | null, page: number 
             return res.data;
         },
         enabled: !!requesterId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestTransactions = (status?: number, page: number = 1, pageSize: number = 10) => {
+    return useQuery({
+        queryKey: ['request-transactions', status, page, pageSize],
+        queryFn: async () => {
+            const res = await formEndpoints.getRequestTransactions(status, page, pageSize);
+            return res.data;
+        },
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };

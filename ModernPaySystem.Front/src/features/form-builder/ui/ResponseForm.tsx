@@ -6,6 +6,10 @@ import { Textarea } from '@/shared/ui/textarea';
 import { Button } from '@/shared/ui/button';
 import { ScannerModal } from '@/features/document-scanner';
 import type { ImageMeta } from '@/features/document-scanner';
+import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { SearchableSelect } from '@/shared/ui/searchable-select';
+import { useUsers } from '@/entities/user/api/userEndpoints';
+import { User } from 'lucide-react';
 
 interface ResponseFormProps {
     requestId: string;
@@ -16,6 +20,10 @@ interface ResponseFormProps {
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onFilesAdd?: (files: File[]) => void;
     onRemoveFile: (index: number) => void;
+    submissionMode: 'submit' | 'referral';
+    onSubmissionModeChange: (mode: 'submit' | 'referral') => void;
+    targetUserId: string;
+    onTargetUserChange: (userId: string) => void;
     onSubmit: () => void;
 }
 
@@ -28,8 +36,13 @@ export const ResponseForm = ({
     onFileChange,
     onFilesAdd,
     onRemoveFile,
+    submissionMode,
+    onSubmissionModeChange,
+    targetUserId,
+    onTargetUserChange,
     onSubmit
 }: ResponseFormProps) => {
+    const { data: users = [], isLoading: isLoadingUsers } = useUsers();
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [scannedImages, setScannedImages] = useState<ImageMeta[]>([]);
 
@@ -60,12 +73,47 @@ export const ResponseForm = ({
                 <div className="p-5 border-b bg-muted/20 shrink-0">
                     <h2 className="text-xl font-bold flex items-center gap-2 text-primary">
                         <Reply className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-                        إرسال رد
+                        {submissionMode === 'submit' ? 'إرسال رد نهائي' : 'إحالة الطلب لجهة أخرى'}
                     </h2>
+                </div>
+
+                {/* Mode Selector */}
+                <div className="px-5 py-2 border-b bg-muted/5">
+                    <Tabs 
+                        defaultValue="submit" 
+                        value={submissionMode} 
+                        onValueChange={(v) => onSubmissionModeChange(v as 'submit' | 'referral')}
+                        className="w-full"
+                    >
+                        <TabsList className="grid w-full grid-cols-2 rounded-xl">
+                            <TabsTrigger value="submit" className="gap-2 rounded-lg font-bold">
+                                <Reply className="w-4 h-4" />
+                                رد نهائي
+                            </TabsTrigger>
+                            <TabsTrigger value="referral" className="gap-2 rounded-lg font-bold">
+                                <User className="w-4 h-4" />
+                                إحالة الطلب
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                 </div>
 
                 {/* Scrollable Body */}
                 <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-5">
+                    {submissionMode === 'referral' && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                            <Label className="text-sm font-bold border-r-4 border-amber-400 pr-2">إحالة إلى (الموظف المستلم)</Label>
+                            <SearchableSelect
+                                options={users.map(u => ({ value: u.id, label: u.userName }))}
+                                value={targetUserId}
+                                onValueChange={onTargetUserChange}
+                                placeholder="اختر الموظف لإحالة الطلب إليه..."
+                                isLoading={isLoadingUsers}
+                                className="w-full"
+                            />
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 py-1">
                             <Label className="text-sm font-bold border-r-4 border-primary pr-2">نص الرد / القرار</Label>
@@ -149,10 +197,10 @@ export const ResponseForm = ({
                 <div className="p-5 border-t bg-muted/20 shrink-0">
                     <Button
                         onClick={onSubmit}
-                        disabled={!requestId || isPending}
+                        disabled={!requestId || isPending || (submissionMode === 'referral' && !targetUserId)}
                         className="w-full h-12 text-md font-black shadow-xl shadow-primary/10 rounded-xl transition-all hover:scale-[1.01] active:scale-95"
                     >
-                        {isPending ? 'جاري الإرسال...' : 'إرسال الرد النهائي'}
+                        {isPending ? 'جاري الإرسال...' : submissionMode === 'submit' ? 'إرسال الرد النهائي' : 'تأكيد الإحالة'}
                     </Button>
                 </div>
             </Card>

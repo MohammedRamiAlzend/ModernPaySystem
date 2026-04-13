@@ -29,7 +29,11 @@ export const ResponsesPage = () => {
         handleFilesAdd,
         removeFile,
         handleSelectRequest,
-        handleViewRequest
+        handleViewRequest,
+        submissionMode,
+        setSubmissionMode,
+        targetUserId,
+        setTargetUserId
     } = useResponsePageLogic();
 
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -97,6 +101,10 @@ export const ResponsesPage = () => {
                     onFileChange={handleFileChange}
                     onFilesAdd={handleFilesAdd}
                     onRemoveFile={removeFile}
+                    submissionMode={submissionMode}
+                    onSubmissionModeChange={setSubmissionMode}
+                    targetUserId={targetUserId}
+                    onTargetUserChange={setTargetUserId}
                     onSubmit={async () => {
                         await handleSubmit();
                     }}

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using System.Linq;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
@@ -83,6 +83,8 @@ public class Request : Entity<Guid>, IAuditableEntity
             UpdatedByUserId = this.UpdatedByUserId,
             UpdatedAt = this.UpdatedAt,
             ResponseId = this.ResponseId,
+            FirstTransactionId = this.FirstTransactionId,
+            CurrentTransactionId = this.CurrentTransactionId,
             ReadOnlyUsers = [.. this.ReadOnlyUsers.Select(u => u.Id)]
         };
     }
@@ -95,6 +97,8 @@ public class RequestDto
     public Guid RequesterId { get; set; }
     public Guid ApproverId { get; set; }
     public Guid? ResponseId { get; set; }
+    public Guid? FirstTransactionId { get; set; }
+    public Guid? CurrentTransactionId { get; set; }
     public RequestStatus Status { get; set; }
     public required string Content { get; set; }
     public List<RequestAttachmentDto> RequestAttachmentDtos { get; set; } = [];

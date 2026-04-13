@@ -4,7 +4,7 @@ import { PrefetchNavLink } from '@/shared/navigation/prefetch-nav-link';
 import { NAVIGATION_ITEMS } from '@/shared/config/navigation';
 import { FileText, ChevronDown } from 'lucide-react';
 import { useLocation, Link } from 'react-router-dom';
-import { useResponsesByRequester, useRequests, useTemplates } from '@/features/form-builder/api/formEndpoints';
+import { useResponsesByRequester, useRequests, useTemplates, useRequestTransactions } from '@/features/form-builder/api/formEndpoints';
 import { useBadgeCount } from '@/shared/hooks/use-badge-count';
 import { useAuthStore } from '@/app/store/authStore';
 import {
@@ -37,10 +37,20 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
     const totalPending = pagedPending?.totalItems || 0;
     const pendingRequestsBadge = useBadgeCount(totalPending, LAST_SEEN_PENDING_KEY, '/form-builder/responses');
 
+    const { data: pagedPendingReferrals } = useRequestTransactions(0, 1, 1);
+    const totalPendingReferrals = pagedPendingReferrals?.totalItems || 0;
+    const pendingReferralsBadge = useBadgeCount(totalPendingReferrals, 'last_seen_pending_referrals', '/form-builder/referrals/pending');
+
+    const { data: pagedSentReferrals } = useRequestTransactions(1, 1, 1);
+    const totalSentReferrals = pagedSentReferrals?.totalItems || 0;
+    const sentReferralsBadge = useBadgeCount(totalSentReferrals, 'last_seen_sent_referrals', '/form-builder/referrals/sent');
+
     const badges = useMemo(() => ({
         '/form-builder/my-responses': incomingResponsesBadge,
         '/form-builder/responses': pendingRequestsBadge,
-    }), [incomingResponsesBadge, pendingRequestsBadge]);
+        '/form-builder/referrals/pending': pendingReferralsBadge,
+        '/form-builder/referrals/sent': sentReferralsBadge,
+    }), [incomingResponsesBadge, pendingRequestsBadge, pendingReferralsBadge, sentReferralsBadge]);
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 

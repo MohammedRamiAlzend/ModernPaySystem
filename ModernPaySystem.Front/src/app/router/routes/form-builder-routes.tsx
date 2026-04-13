@@ -11,6 +11,7 @@ const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/respons
 const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/actioned-requests-page'));
 const MyResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/my-responses-page'));
 const MyRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/my-requests-page'));
+const ReferralsPage = lazyWithPreload(() => import('@/pages/form-builder/referrals-page'));
 const DelphiTransactionPage = lazyWithPreload(() => import('@/pages/delphi-transaction/delphi-transaction-page').then(module => ({ default: module.DelphiTransactionPage })));
 
 export const formBuilderRoutes: RouteObject = {
@@ -114,6 +115,32 @@ export const formBuilderRoutes: RouteObject = {
         crumb: () => 'الردود الواردة',
         permission: RoutePermissions.AUTHENTICATED,
         preload: () => MyResponsesPage.preload(),
+      },
+    },
+    {
+      path: 'referrals/pending',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ReferralsPage status={0} />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'الرد على الإحالات',
+        permission: RoutePermissions.AUTHENTICATED,
+        preload: () => ReferralsPage.preload(),
+      },
+    },
+    {
+      path: 'referrals/sent',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ReferralsPage status={1} />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'الإحالات الصادرة',
+        permission: RoutePermissions.AUTHENTICATED,
+        preload: () => ReferralsPage.preload(),
       },
     },
     {
