@@ -7,8 +7,7 @@ import { Button } from '@/shared/ui/button';
 import { ScannerModal } from '@/features/document-scanner';
 import type { ImageMeta } from '@/features/document-scanner';
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { SearchableSelect } from '@/shared/ui/searchable-select';
-import { useUsers } from '@/entities/user/api/userEndpoints';
+import { UserPicker } from '@/features/users/ui/UserPicker';
 import { User } from 'lucide-react';
 
 interface ResponseFormProps {
@@ -42,7 +41,6 @@ export const ResponseForm = ({
     onTargetUserChange,
     onSubmit
 }: ResponseFormProps) => {
-    const { data: users = [], isLoading: isLoadingUsers } = useUsers();
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [scannedImages, setScannedImages] = useState<ImageMeta[]>([]);
 
@@ -102,14 +100,14 @@ export const ResponseForm = ({
                 <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-5">
                     {submissionMode === 'referral' && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                            <Label className="text-sm font-bold border-r-4 border-amber-400 pr-2">إحالة إلى (الموظف المستلم)</Label>
-                            <SearchableSelect
-                                options={users.map(u => ({ value: u.id, label: u.userName }))}
-                                value={targetUserId}
-                                onValueChange={onTargetUserChange}
+                             <Label className="text-sm font-bold border-r-4 border-amber-400 pr-2 block mb-2">جهة الإحالة</Label>
+                             <UserPicker
+                                onUserSelect={onTargetUserChange}
+                                defaultValue={targetUserId}
+                                label="الموظف المستلم"
                                 placeholder="اختر الموظف لإحالة الطلب إليه..."
-                                isLoading={isLoadingUsers}
-                                className="w-full"
+                                className="!grid-cols-1 md:!grid-cols-1 space-y-4"
+                                showCurrentUser={false}
                             />
                         </div>
                     )}
