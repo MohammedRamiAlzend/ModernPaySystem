@@ -23,7 +23,10 @@ public class RequestTransactionService(
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
-            var filters = new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) };
+            var filters = new List<Expression<Func<RequestTransaction, bool>>>
+            {
+                RequestTransactionExpressions.CanReadByUserId(currentUserId)
+            };
 
             if (status.HasValue)
             {
@@ -315,6 +318,10 @@ public class RequestTransactionService(
             request.CurrentTransactionId = childTransaction.Id;
 
             await unitOfWork.Requests.UpdateAsync(request);
+            await unitOfWork.SaveChangesAsync();
+
+            parentTransaction.Value.Status = TransactionStatus.Transferred;
+            await unitOfWork.RequestTransactions.UpdateAsync(parentTransaction.Value);
             await unitOfWork.SaveChangesAsync();
 
             return Result.Success;
