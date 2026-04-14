@@ -40,6 +40,7 @@ public class RequestTransaction : Entity<Guid>, IAuditableEntity
         {
             Id = this.Id,
             RequestId = this.RequestId,
+            Request = this.Request?.ToDto(),
             Status = this.Status,
             Notes = this.Notes,
             Level = this.Level,
@@ -61,6 +62,7 @@ public class RequestTransactionDto
 {
     public Guid Id { get; set; }
     public Guid RequestId { get; set; }
+    public RequestDto? Request { get; set; }
     public TransactionStatus Status { get; set; }
     public string Notes { get; set; } = string.Empty;
     public int Level { get; set; }

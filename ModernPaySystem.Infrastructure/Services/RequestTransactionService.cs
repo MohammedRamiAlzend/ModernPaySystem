@@ -35,7 +35,8 @@ public class RequestTransactionService(
                 pageSize,
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.RequestTransactionAttachments)
-                                 .ThenInclude(a => a.Attachment),
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request),
                 additionalFilters: filters);
 
             if (pagedTransactions.IsError)
@@ -64,7 +65,8 @@ public class RequestTransactionService(
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.ChildTransactions)
                                  .Include(x => x.RequestTransactionAttachments)
-                                 .ThenInclude(a => a.Attachment),
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transaction.IsError)
@@ -94,7 +96,8 @@ public class RequestTransactionService(
                 filter: rt => rt.RequestId == requestId,
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.RequestTransactionAttachments)
-                                 .ThenInclude(a => a.Attachment),
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transactions.IsError)
@@ -122,7 +125,8 @@ public class RequestTransactionService(
                 filter: rt => rt.ParentTransactionId == parentTransactionId,
                 transform: x => x.Include(x => x.ChildTransactions)
                                  .Include(x => x.RequestTransactionAttachments)
-                                 .ThenInclude(a => a.Attachment),
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transactions.IsError)
@@ -149,7 +153,8 @@ public class RequestTransactionService(
             var transaction = await unitOfWork.RequestTransactions.GetAsync(
                 filter: rt => rt.RequestId == requestId && !rt.ParentTransactionId.HasValue,
                 transform: x => x.Include(x => x.RequestTransactionAttachments)
-                                 .ThenInclude(a => a.Attachment),
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transaction.IsError)
@@ -180,7 +185,8 @@ public class RequestTransactionService(
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.ChildTransactions)
                                  .ThenInclude(c => c.RequestTransactionAttachments)
-                                 .ThenInclude(a => a.Attachment),
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transaction.IsError)
@@ -241,13 +247,13 @@ public class RequestTransactionService(
 
             getRequestResult.Value.CurrentTransactionId = transactionEntity.Id;
             getRequestResult.Value.FirstTransactionId = transactionEntity.Id;
-            
+
             // Change Request status to InProcess when first transaction is created
             if (getRequestResult.Value.Status == RequestStatus.Pending || getRequestResult.Value.Status == RequestStatus.Delivered)
             {
                 getRequestResult.Value.Status = RequestStatus.InProcess;
             }
-            
+
             await unitOfWork.Requests.UpdateAsync(getRequestResult.Value);
             await unitOfWork.SaveChangesAsync();
 
@@ -284,7 +290,8 @@ public class RequestTransactionService(
                 transform: x =>
                 x
                 .Include(x => x.ParentTransaction).ThenInclude(i => i.Request).ThenInclude(i => i.CurrentTransaction)
-                .Include(x => x.ParentTransaction).ThenInclude(i => i.Request).ThenInclude(i => i.FirstTransaction));
+                .Include(x => x.ParentTransaction).ThenInclude(i => i.Request).ThenInclude(i => i.FirstTransaction)
+                .Include(x => x.Request));
 
             if (parentTransaction.IsError)
                 return parentTransaction.Errors;

@@ -9,24 +9,6 @@ namespace ModernPaySystem.Controllers;
 [Authorize]
 public class RequestsController(IRequestService requestService, ILogger<RequestsController> logger) : ControllerBase
 {
-    //[HttpGet]
-    //[EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
-    //public async Task<IActionResult> GetAll()
-    //{
-    //    logger.LogInformation("Getting all requests");
-    //    var result = await requestService.GetAllAsync();
-    //    return result.ToActionResult();
-    //}
-
-    //[HttpGet("GetAllRequestsNeedAction/{hasResponse}")]
-    //[EndpointPermission("requests.get-all", SubSystem.TransactionSystem, PermissionType.Read)]
-    //public async Task<IActionResult> GetAllRequestsNeedAction(bool hasResponse)
-    //{
-    //    logger.LogInformation("Getting all request need action requests");
-    //    var result = await requestService.GetAllAsync(hasResponse);
-    //    return result.ToActionResult();
-    //}
-
     [HttpGet("{id}")]
     [EndpointPermission("requests.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -62,7 +44,6 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         var result = await requestService.GetByTemplateIdAsync(templateId, page, pageSize);
         return result.ToActionResult();
     }
-
 
     [HttpPost]
     [Consumes("multipart/form-data")]
