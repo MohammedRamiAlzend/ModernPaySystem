@@ -31,7 +31,6 @@ import {
 } from '@/shared/ui/select';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
-import { cn } from '@/shared/lib/utils';
 import { APP_CONFIG } from '@/shared/config/appConfig';
 
 export const UserManagement = () => {
@@ -139,22 +138,22 @@ export const UserManagement = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                {APP_CONFIG.SHOW_SUB_SYSTEM && (
-                    <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
-                        <Filter className="w-4 h-4 text-muted-foreground mr-2" />
-                        <Select value={selectedSubSystem} onValueChange={setSelectedSubSystem}>
-                            <SelectTrigger className="w-[180px] h-9 border-none bg-transparent shadow-none focus:ring-0">
-                                <SelectValue placeholder={isLoadingSubSystems ? "جاري التحميل..." : "تصفية حسب النظام"} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">الكل</SelectItem>
-                                {subSystems.map(ss => (
-                                    <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
+                    {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                        <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
+                            <Filter className="w-4 h-4 text-muted-foreground mr-2" />
+                            <Select value={selectedSubSystem} onValueChange={setSelectedSubSystem}>
+                                <SelectTrigger className="w-[180px] h-9 border-none bg-transparent shadow-none focus:ring-0">
+                                    <SelectValue placeholder={isLoadingSubSystems ? "جاري التحميل..." : "تصفية حسب النظام"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">الكل</SelectItem>
+                                    {subSystems.map(ss => (
+                                        <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                     <Button onClick={handleAddUser} className="rounded-xl px-4 h-10 font-bold shadow-lg shadow-primary/20">
                         <Plus className="w-4 h-4 ml-2" />
                         إضافة مستخدم
