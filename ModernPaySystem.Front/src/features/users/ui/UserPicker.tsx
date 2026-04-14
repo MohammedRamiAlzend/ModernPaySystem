@@ -105,22 +105,24 @@ export const UserPicker = (props: UserPickerProps) => {
     return (
         <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-4', className)}>
             {/* SubSystem selector */}
-            <div className={cn("space-y-2", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
-                <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-                    <Shield className="w-3 h-3" />
-                    النظام الفرعي
-                </Label>
-                <Select value={selectedSubSystem} onValueChange={handleSubSystemChange}>
-                    <SelectTrigger className="h-10 rounded-xl bg-background/50 backdrop-blur-sm border-primary/10">
-                        <SelectValue placeholder={isLoadingSubSystems ? 'جاري التحميل...' : subSystemPlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-primary/10">
-                        {subSystems.map(ss => (
-                            <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
+            {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                        <Shield className="w-3 h-3" />
+                        النظام الفرعي
+                    </Label>
+                    <Select value={selectedSubSystem} onValueChange={handleSubSystemChange}>
+                        <SelectTrigger className="h-10 rounded-xl bg-background/50 backdrop-blur-sm border-primary/10">
+                            <SelectValue placeholder={isLoadingSubSystems ? 'جاري التحميل...' : subSystemPlaceholder} />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-primary/10">
+                            {subSystems.map(ss => (
+                                <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
 
             {/* User selector – single or multi via SearchableSelect */}
             <div className="space-y-2">

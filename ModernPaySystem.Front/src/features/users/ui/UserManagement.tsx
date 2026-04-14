@@ -139,7 +139,8 @@ export const UserManagement = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className={cn("flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
+                {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                    <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
                         <Filter className="w-4 h-4 text-muted-foreground mr-2" />
                         <Select value={selectedSubSystem} onValueChange={setSelectedSubSystem}>
                             <SelectTrigger className="w-[180px] h-9 border-none bg-transparent shadow-none focus:ring-0">
@@ -153,6 +154,7 @@ export const UserManagement = () => {
                             </SelectContent>
                         </Select>
                     </div>
+                )}
                     <Button onClick={handleAddUser} className="rounded-xl px-4 h-10 font-bold shadow-lg shadow-primary/20">
                         <Plus className="w-4 h-4 ml-2" />
                         إضافة مستخدم
@@ -169,7 +171,7 @@ export const UserManagement = () => {
                                 <TableRow>
                                     <TableHead className="text-right font-bold w-16">#</TableHead>
                                     <TableHead className="text-right font-bold">اسم المستخدم</TableHead>
-                                    <TableHead className={cn("text-right font-bold", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>النظام الفرعي</TableHead>
+                                    {APP_CONFIG.SHOW_SUB_SYSTEM && <TableHead className="text-right font-bold">النظام الفرعي</TableHead>}
                                     <TableHead className="text-right font-bold">تاريخ الإنشاء</TableHead>
                                     <TableHead className="text-left font-bold w-28">الإجراءات</TableHead>
                                 </TableRow>
@@ -196,14 +198,16 @@ export const UserManagement = () => {
                                                     <span className="font-bold">{user.userName}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className={cn("text-right", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
-                                                <div className="flex items-center gap-1.5">
-                                                    <Shield className="w-3.5 h-3.5 text-muted-foreground" />
-                                                    <span className="text-sm">
-                                                        {subSystems.find(ss => ss.value === user.subSystem?.toString())?.name || user.subSystem || 'لا يوجد'}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
+                                            {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Shield className="w-3.5 h-3.5 text-muted-foreground" />
+                                                        <span className="text-sm">
+                                                            {subSystems.find(ss => ss.value === user.subSystem?.toString())?.name || user.subSystem || 'لا يوجد'}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                            )}
                                             <TableCell className="text-right text-sm text-muted-foreground">
                                                 {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : '-'}
                                             </TableCell>
@@ -282,8 +286,8 @@ export const UserManagement = () => {
                                 className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary"
                             />
                         </div>
-                        {!currentUserSubsystem &&
-                            <div className={cn("space-y-2", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
+                        {!currentUserSubsystem && APP_CONFIG.SHOW_SUB_SYSTEM &&
+                            <div className="space-y-2">
                                 <Label htmlFor="subSystem">النظام الفرعي</Label>
                                 <Select value={userSubSystem} onValueChange={setUserSubSystem}>
                                     <SelectTrigger
