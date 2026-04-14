@@ -343,7 +343,6 @@ public class RequestService(
         }
     }
 
-
     public async Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(int page, int pageSize, bool hasResponse)
     {
         try
@@ -357,7 +356,7 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!,
-                additionalFilters: RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId()),
+                additionalFilters: RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId(), hasResponse),
                 logicalOperator: ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or);
 
             if (pagedRequests.IsError)

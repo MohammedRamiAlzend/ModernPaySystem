@@ -39,22 +39,27 @@ public static class RequestExpressions
         ];
     }
 
-    // Plan (pseudocode):
-    // 1. Create an expression `noResponse` that is true when a request has no response: r => !r.ResponseId.HasValue
-    // 2. Create an expression `noTransaction` that is true when a request has no transaction:
-    //    r => !(r.CurrentTransactionId.HasValue || r.FirstTransactionId.HasValue)
-    // 3. Combine `noResponse` and `noTransaction` with LogicalOperator.Or to represent "needs action if missing response OR missing transaction".
-    // 4. Combine the result with `ByApproverId(approverId)` using LogicalOperator.And so approverId must match.
-    // 5. Return a list containing the single combined expression.
-    public static List<Expression<Func<Request, bool>>> RequestsNeedAction(Guid approverId)
+    public static List<Expression<Func<Request, bool>>> RequestsNeedAction(Guid approverId, bool hasResponse)
     {
-        var noResponse = (Expression<Func<Request, bool>>)(r => !r.ResponseId.HasValue);
-        var noTransaction = (Expression<Func<Request, bool>>)(r => !(r.CurrentTransactionId.HasValue || r.FirstTransactionId.HasValue));
+        if (!hasResponse)
+        {
 
-        var needsActionInner = ExpressionCombiner.Combine(noResponse, noTransaction, LogicalOperator.Or);
-        var finalExpression = ExpressionCombiner.Combine(ByApproverId(approverId), needsActionInner, LogicalOperator.And);
+            var noResponse = (Expression<Func<Request, bool>>)(r => !r.ResponseId.HasValue);
+            var noTransaction = (Expression<Func<Request, bool>>)(r => !(r.CurrentTransactionId.HasValue || r.FirstTransactionId.HasValue));
 
-        return new List<Expression<Func<Request, bool>>> { finalExpression };
+            var needsActionInner = ExpressionCombiner.Combine(noResponse, noTransaction, LogicalOperator.And);
+            var finalExpression = ExpressionCombiner.Combine(ByApproverId(approverId), needsActionInner, LogicalOperator.And);
+
+            return new List<Expression<Func<Request, bool>>> { finalExpression };
+        }
+        else
+        {
+            var hasResp = (Expression<Func<Request, bool>>)(r => r.ResponseId.HasValue);
+
+            var needsActionInner = ExpressionCombiner.Combine(hasResp, ByApproverId(approverId), LogicalOperator.And);
+
+            return new List<Expression<Func<Request, bool>>> { needsActionInner };
+        }
     }
 
     public static List<Expression<Func<Request, bool>>> ByRequesterIdWithIncludes(Guid requesterId) =>
