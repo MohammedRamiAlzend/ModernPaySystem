@@ -13,6 +13,7 @@ import {
 } from '@/shared/ui/select';
 import { Shield, User as UserIcon } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { APP_CONFIG } from '@/shared/config/appConfig';
 
 // ─── Single-select mode props ────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ export const UserPicker = (props: UserPickerProps) => {
         label = 'الموافق (Approver)',
         placeholder = 'اختر المستخدم...',
         subSystemPlaceholder = 'اختر النظام...',
-        defaultSubSystemId = '1',
+        defaultSubSystemId = APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
         showCurrentUser = false,
         className,
     } = props;
@@ -104,7 +105,7 @@ export const UserPicker = (props: UserPickerProps) => {
     return (
         <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-4', className)}>
             {/* SubSystem selector */}
-            <div className="space-y-2">
+            <div className={cn("space-y-2", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
                 <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                     <Shield className="w-3 h-3" />
                     النظام الفرعي

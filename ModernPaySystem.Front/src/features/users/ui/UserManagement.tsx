@@ -31,18 +31,20 @@ import {
 } from '@/shared/ui/select';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
+import { cn } from '@/shared/lib/utils';
+import { APP_CONFIG } from '@/shared/config/appConfig';
 
 export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
     const currentUserSubsystem = useAuthStore((state) => state.user?.subsystem);
-    const [selectedSubSystem, setSelectedSubSystem] = useState<string>('all');
+    const [selectedSubSystem, setSelectedSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
     // Form State
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [userSubSystem, setUserSubSystem] = useState<string>('1');
+    const [userSubSystem, setUserSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
 
     const { data: users = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
@@ -53,7 +55,7 @@ export const UserManagement = () => {
         setUserName('');
         setPassword('');
         // إذا كان المستخدم الحالي لديه نظام فرعي محدد، يتم تعيينه تلقائياً وإجباري
-        setUserSubSystem(currentUserSubsystem || '1');
+        setUserSubSystem(currentUserSubsystem || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
         setIsUserDialogOpen(true);
     };
 
@@ -61,7 +63,7 @@ export const UserManagement = () => {
         setEditingUser(user);
         setUserName(user.userName);
         setPassword('');
-        setUserSubSystem(user.subSystem?.toString() || '1');
+        setUserSubSystem(user.subSystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
         setIsUserDialogOpen(true);
     };
 
@@ -137,7 +139,7 @@ export const UserManagement = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
+                    <div className={cn("flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
                         <Filter className="w-4 h-4 text-muted-foreground mr-2" />
                         <Select value={selectedSubSystem} onValueChange={setSelectedSubSystem}>
                             <SelectTrigger className="w-[180px] h-9 border-none bg-transparent shadow-none focus:ring-0">
@@ -167,7 +169,7 @@ export const UserManagement = () => {
                                 <TableRow>
                                     <TableHead className="text-right font-bold w-16">#</TableHead>
                                     <TableHead className="text-right font-bold">اسم المستخدم</TableHead>
-                                    <TableHead className="text-right font-bold">النظام الفرعي</TableHead>
+                                    <TableHead className={cn("text-right font-bold", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>النظام الفرعي</TableHead>
                                     <TableHead className="text-right font-bold">تاريخ الإنشاء</TableHead>
                                     <TableHead className="text-left font-bold w-28">الإجراءات</TableHead>
                                 </TableRow>
@@ -194,7 +196,7 @@ export const UserManagement = () => {
                                                     <span className="font-bold">{user.userName}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className={cn("text-right", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
                                                 <div className="flex items-center gap-1.5">
                                                     <Shield className="w-3.5 h-3.5 text-muted-foreground" />
                                                     <span className="text-sm">
@@ -281,7 +283,7 @@ export const UserManagement = () => {
                             />
                         </div>
                         {!currentUserSubsystem &&
-                            <div className="space-y-2">
+                            <div className={cn("space-y-2", !APP_CONFIG.SHOW_SUB_SYSTEM && "hidden")}>
                                 <Label htmlFor="subSystem">النظام الفرعي</Label>
                                 <Select value={userSubSystem} onValueChange={setUserSubSystem}>
                                     <SelectTrigger

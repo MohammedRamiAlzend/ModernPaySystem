@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
+import { APP_CONFIG } from '../config/appConfig';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5173/api',
+    baseURL: APP_CONFIG.API_BASE_URL || 'http://localhost:5173/api',
     headers: {
         'Content-Type': 'application/json',
     },
