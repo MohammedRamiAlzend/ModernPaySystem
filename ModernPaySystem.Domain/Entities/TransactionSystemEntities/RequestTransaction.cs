@@ -52,7 +52,7 @@ public class RequestTransaction : Entity<Guid>, IAuditableEntity
             UpdatedAt = this.UpdatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
             ParentTransaction = this.ParentTransaction?.ToDto(),
-            ChildTransactions = this.ChildTransactions?.Select(c => c.ToDto()).ToList() ?? [],
+            //ChildTransactions = this.ChildTransactions?.Select(c => c.ToDto()).ToList() ?? [],
             RequestTransactionAttachments = this.RequestTransactionAttachments?.Select(a => a.ToDto()).ToList() ?? []
         };
     }
