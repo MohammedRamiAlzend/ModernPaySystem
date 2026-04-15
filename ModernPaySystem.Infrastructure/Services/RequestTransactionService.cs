@@ -39,7 +39,9 @@ public class RequestTransactionService(
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
-                                 .Include(x => x.Request),
+                                 .Include(x => x.Request)
+                                    .ThenInclude(r => r.RequestAttachments)
+                                        .ThenInclude(ra => ra.Attachment),
                 additionalFilters: filters);
 
             if (pagedTransactions.IsError)
@@ -69,7 +71,9 @@ public class RequestTransactionService(
                                  .Include(x => x.ChildTransactions)
                                  .Include(x => x.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
-                                 .Include(x => x.Request),
+                                 .Include(x => x.Request)
+                                    .ThenInclude(r => r.RequestAttachments)
+                                        .ThenInclude(ra => ra.Attachment),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transaction.IsError)
@@ -100,7 +104,9 @@ public class RequestTransactionService(
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
-                                 .Include(x => x.Request),
+                                 .Include(x => x.Request)
+                                    .ThenInclude(r => r.RequestAttachments)
+                                        .ThenInclude(ra => ra.Attachment),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transactions.IsError)
@@ -129,7 +135,9 @@ public class RequestTransactionService(
                 transform: x => x.Include(x => x.ChildTransactions)
                                  .Include(x => x.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
-                                 .Include(x => x.Request),
+                                 .Include(x => x.Request)
+                                    .ThenInclude(r => r.RequestAttachments)
+                                        .ThenInclude(ra => ra.Attachment),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transactions.IsError)
@@ -157,7 +165,9 @@ public class RequestTransactionService(
                 filter: rt => rt.RequestId == requestId && !rt.ParentTransactionId.HasValue,
                 transform: x => x.Include(x => x.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
-                                 .Include(x => x.Request),
+                                 .Include(x => x.Request)
+                                    .ThenInclude(r => r.RequestAttachments)
+                                        .ThenInclude(ra => ra.Attachment),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transaction.IsError)
@@ -189,7 +199,9 @@ public class RequestTransactionService(
                                  .Include(x => x.ChildTransactions)
                                  .ThenInclude(c => c.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
-                                 .Include(x => x.Request),
+                                 .Include(x => x.Request)
+                                    .ThenInclude(r => r.RequestAttachments)
+                                        .ThenInclude(ra => ra.Attachment),
                 additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
 
             if (transaction.IsError)
