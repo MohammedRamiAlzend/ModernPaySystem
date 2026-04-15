@@ -11,7 +11,7 @@ graph TB
     end
     
     subgraph "المعالجة"
-        B -->|"يصل للموافق"| C["👨‍💼 الموافق<br/>Approver"]
+        B -->|"يصل للموافق"| C["👨‍💼 مستلم الطلب<br/>Approver"]
         C -->|"رد نهائي"| D["✅ Response<br/>+ صور الرد"]
         C -->|"إحالة"| E["🔄 Transaction<br/>Level 0"]
     end
@@ -44,7 +44,7 @@ graph TB
 | `Id` | `Guid` | المعرف الفريد |
 | `TemplateId` | `Guid` | النموذج المصدر |
 | `RequesterId` | `Guid` | مقدم الطلب |
-| `ApproverId` | `Guid` | الموافق/المسؤول |
+| `ApproverId` | `Guid` | مستلم الطلب/المسؤول |
 | `ContentAsJson` | `string` | بيانات النموذج (JSON) |
 | `Status` | `RequestStatus` | حالة الطلب |
 | `ResponseId` | `Guid?` | الرد المرتبط (إن وجد) |
@@ -121,7 +121,7 @@ sequenceDiagram
     participant FE as 🖥️ Frontend
     participant API as ⚙️ Backend API
     participant DB as 🗄️ Database
-    actor موافق as 👨‍💼 الموافق
+    actor موافق as 👨‍💼 مستلم الطلب
 
     مقدم->>FE: تعبئة النموذج + إرفاق صور
     FE->>API: POST /api/Requests (FormData)
@@ -143,7 +143,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    actor موافق as 👨‍💼 الموافق
+    actor موافق as 👨‍💼 مستلم الطلب
     participant FE as 🖥️ Frontend
     participant API as ⚙️ Backend API
     participant DB as 🗄️ Database
@@ -169,7 +169,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    actor A as 👨‍💼 الموافق
+    actor A as 👨‍💼 مستلم الطلب
     participant API as ⚙️ Backend
     actor B as 👤 مستلم 1
     actor C as 👤 مستلم 2
@@ -209,7 +209,7 @@ sequenceDiagram
 
 ### 1. الرد على الطلبات (`/form-builder/responses`)
 
-**الغرض:** عرض الطلبات التي وصلت للمستخدم الحالي (بصفته الموافق `Approver`) ولم يتم الرد عليها بعد.
+**الغرض:** عرض الطلبات التي وصلت للمستخدم الحالي (بصفته مستلم الطلب `Approver`) ولم يتم الرد عليها بعد.
 
 **مصدر البيانات:**
 ```
@@ -242,7 +242,7 @@ GET /api/Responses/by-requester/{currentUserId}?page=1&pageSize=10
 
 **ما يُعرض:**
 - اسم النموذج، محتوى الطلب
-- اسم الموافق الذي أرسل الرد
+- اسم مستلم الطلب الذي أرسل الرد
 - تاريخ الرد
 - عند الضغط "عرض الرد" → يفتح `ResponseDetailsModal` الذي يعرض:
   - بيانات الطلب + صور الطلب
@@ -356,14 +356,14 @@ graph LR
                 → تظهر في request.requestAttachmentDtos
 ```
 
-#### عند الرد على الطلب (الموافق):
+#### عند الرد على الطلب (مستلم الطلب):
 ```
 الملفات المرفوعة → POST /api/Responses (files في FormData)  
                 → تُحفظ كـ ResponseAttachment
                 → تظهر في response.responseAttachments
 ```
 
-#### عند إحالة الطلب (الموافق أو المستلم):
+#### عند إحالة الطلب (مستلم الطلب أو المستلم):
 ```
 الملفات المرفوعة → POST /api/RequestTransactions (Files في FormData)
                 → تُحفظ كـ RequestTransactionAttachment
@@ -387,7 +387,7 @@ graph LR
 ```mermaid
 graph TB
     subgraph "الخطوة 1: تقديم الطلب"
-        REQ["📄 طلب جديد<br/>صاحب الطلب: أحمد<br/>الموافق: محمد<br/><br/>📎 صور الطلب:<br/>- فاتورة.pdf<br/>- هوية.jpg"]
+        REQ["📄 طلب جديد<br/>صاحب الطلب: أحمد<br/>مستلم الطلب: محمد<br/><br/>📎 صور الطلب:<br/>- فاتورة.pdf<br/>- هوية.jpg"]
     end
     
     subgraph "الخطوة 2: محمد يحيل إلى سارة"
@@ -399,7 +399,7 @@ graph TB
     end
     
     subgraph "الخطوة 4: خالد يرد نهائياً"
-        RESP["✅ رد نهائي<br/>من: خالد<br/>تعليق: 'تمت الموافقة'<br/><br/>📎 صور الرد:<br/>- إيصال_معتمد.pdf"]
+        RESP["✅ رد نهائي<br/>من: خالد<br/>تعليق: 'تمت مستلم الطلبة'<br/><br/>📎 صور الرد:<br/>- إيصال_معتمد.pdf"]
     end
     
     REQ --> TX1
@@ -423,7 +423,7 @@ graph TB
 - يرى صور الرد (إيصال_معتمد)
 - ❌ لا يرى صور الإحالات الوسيطة
 <!-- slide -->
-### 👨‍💼 محمد (الموافق)
+### 👨‍💼 محمد (مستلم الطلب)
 
 **الردود الصادرة** (`/form-builder/actioned`):
 - يرى الطلب بعد اكتماله
