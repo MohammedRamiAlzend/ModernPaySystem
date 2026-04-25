@@ -27,6 +27,15 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
+    [HttpGet("without-response")]
+    [EndpointPermission("requests.get-without-response", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetWithoutResponse()
+    {
+        logger.LogInformation("Getting all requests without response");
+        var result = await requestService.GetAllAsync(false);
+        return result.ToActionResult();
+    }
+
     [HttpGet("{id}")]
     [EndpointPermission("requests.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
@@ -97,6 +106,15 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     {
         logger.LogInformation("Getting paged requests need action, hasResponse: {HasResponse}, page: {Page}, size: {PageSize}", hasResponse, page, pageSize);
         var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, hasResponse);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("without-response/paged")]
+    [EndpointPermission("requests.get-without-response-paged", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetWithoutResponsePaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting paged requests without response, page: {Page}, size: {PageSize}", page, pageSize);
+        var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, false);
         return result.ToActionResult();
     }
 }
