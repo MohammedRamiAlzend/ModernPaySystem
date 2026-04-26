@@ -108,7 +108,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, hasResponse);
         return result.ToActionResult();
     }
-
+    // بترجع الكل وماكان فيها لانكلودات 
     [HttpGet("without-response/paged")]
     [EndpointPermission("requests.get-without-response-paged", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetWithoutResponsePaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -117,7 +117,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         var result = await requestService.GetAllPagedAsync(page, pageSize, false);
         return result.ToActionResult();
     }
-
+    // بس بترجع تبعات المستخدم الحالي 
     [HttpGet("my-pending/paged")]
     [EndpointPermission("requests.get-my-pending-paged", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetMyPendingPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
