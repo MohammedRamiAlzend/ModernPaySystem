@@ -70,6 +70,11 @@ export const formEndpoints = {
         return response.data;
     },
 
+    getAllPendingRequestsPaged: async (page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.get(`/Requests/my-pending/paged?page=${page}&pageSize=${pageSize}`);
+        return response.data;
+    },
+
 
     // Responses
     getResponsesByRequestId: async (requestId: string): Promise<{ data: TemplateResponse[] }> => {
@@ -156,15 +161,26 @@ export const useRequests = (hasResponse: boolean = false, page: number = 1, page
     });
 };
 
+export const useAllPendingRequests = (page: number = 1, pageSize: number = 15) => {
+    return useQuery({
+        queryKey: ['requests', 'all-pending', page, pageSize],
+        queryFn: async () => {
+            const res = await formEndpoints.getAllPendingRequestsPaged(page, pageSize);
+            return res.data;
+        },
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
 export const useTemplates = (showExternal: boolean = false) => {
     return useQuery({
         queryKey: ['templates', showExternal],
         queryFn: async (): Promise<Template[]> => {
             const res = await formEndpoints.getTemplates();
             const filterFn = (t: Template) => showExternal || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"));
-            
+
             if (Array.isArray(res)) return res.filter(filterFn);
-            
+
             // Handle if data is wrapped in { data: [] }
             if (res && !Array.isArray(res) && 'data' in res && Array.isArray(res.data)) {
                 return (res.data as Template[]).filter(filterFn);
@@ -217,16 +233,16 @@ export const useRequestResponses = (requestId: string | null) => {
         queryFn: async () => {
             if (!requestId) return [];
             const res = await formEndpoints.getResponsesByRequestId(requestId);
-            
+
             // Handle PagedResult wrapping: { data: { items: [...] } }
             if (res && typeof res === 'object' && 'data' in res) {
                 const inner = res.data as any;
                 if (Array.isArray(inner)) return inner;
                 if (inner && Array.isArray(inner.items)) return inner.items;
             }
-            
+
             if (Array.isArray(res)) return res as TemplateResponse[];
-            
+
             return [] as TemplateResponse[];
         },
         enabled: !!requestId,

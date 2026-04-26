@@ -24,6 +24,7 @@ const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/
 const MyResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/my-responses-page'));
 const MyRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/my-requests-page'));
 const DelphiTransactionPage = lazyWithPreload(() => import('@/pages/delphi-transaction/delphi-transaction-page').then(module => ({ default: module.DelphiTransactionPage })));
+const AllPendingRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/all-pending-requests-page').then(module => ({ default: module.AllPendingRequestsPage })));
 
 const RoutePermissions = {
   PUBLIC: 'PUBLIC',
@@ -248,6 +249,19 @@ const routesConfig: RouteObject[] = [
               crumb: () => 'الردود الواردة',
               permission: RoutePermissions.AUTHENTICATED,
               preload: () => MyResponsesPage.preload(),
+            },
+          },
+          {
+            path: 'all-pending',
+            element: (
+              <Suspense fallback={<LoadingSpinner />}>
+                <AllPendingRequestsPage />
+              </Suspense>
+            ),
+            handle: {
+              crumb: () => 'الطلبات المعلقة',
+              permission: RoutePermissions.AUTHENTICATED, // or ADMIN if appropriate
+              preload: () => AllPendingRequestsPage.preload(),
             },
           },
           {

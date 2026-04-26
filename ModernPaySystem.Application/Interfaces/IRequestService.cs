@@ -26,4 +26,8 @@ public interface IRequestService
     Task<Result<RequestDto>> AddFilesToRequestAsync(Guid requestId, List<IFormFile> files);
 
     Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(int page, int pageSize, bool hasResponse);
+
+    Task<Result<PagedList<RequestDto>>> GetAllPagedAsync(int page, int pageSize, bool? hasResponse = null);
+
+    Task<Result<PagedList<RequestDto>>> GetPendingByCurrentRequesterPagedAsync(int page, int pageSize);
 }

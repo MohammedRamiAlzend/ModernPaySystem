@@ -93,10 +93,10 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
 
     [HttpGet("paged")]
     [EndpointPermission("requests.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] bool? hasResponse = null)
     {
-        logger.LogInformation("Getting paged requests, page: {Page}, size: {PageSize}", page, pageSize);
-        var result = await requestService.GetPagedAsync(page, pageSize);
+        logger.LogInformation("Getting paged requests, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", page, pageSize, hasResponse);
+        var result = await requestService.GetAllPagedAsync(page, pageSize, hasResponse);
         return result.ToActionResult();
     }
 
@@ -114,7 +114,16 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     public async Task<IActionResult> GetWithoutResponsePaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         logger.LogInformation("Getting paged requests without response, page: {Page}, size: {PageSize}", page, pageSize);
-        var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, false);
+        var result = await requestService.GetAllPagedAsync(page, pageSize, false);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("my-pending/paged")]
+    [EndpointPermission("requests.get-my-pending-paged", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetMyPendingPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting paged pending requests for current requester, page: {Page}, size: {PageSize}", page, pageSize);
+        var result = await requestService.GetPendingByCurrentRequesterPagedAsync(page, pageSize);
         return result.ToActionResult();
     }
 }
