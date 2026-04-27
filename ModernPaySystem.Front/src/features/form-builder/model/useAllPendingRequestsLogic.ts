@@ -1,19 +1,19 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+// import { useQueryClient } from '@tanstack/react-query';
 import { useQueryState, parseAsInteger } from 'nuqs';
 import { useAllPendingRequests } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useAuthStore } from '@/app/store/authStore';
-import { useUIStore } from '@/app/store/uiStore';
+// import { useUIStore } from '@/app/store/uiStore';
 import { useRequestDetails } from './useRequestDetails';
 
 const SEEN_ALL_PENDING_KEY = 'seen_all_pending_requests_ids';
 
 export const useAllPendingRequestsLogic = () => {
-    const { showStatus } = useUIStore();
-    const queryClient = useQueryClient();
+    // const { showStatus } = useUIStore();
+    // const queryClient = useQueryClient();
     const [requestId, setRequestId] = useState('');
-    
+
     // Load seen IDs from localStorage
     const [seenIds, setSeenIds] = useState<string[]>(() => {
         if (typeof window === 'undefined') return [];
@@ -34,7 +34,7 @@ export const useAllPendingRequestsLogic = () => {
     const currentUser = useAuthStore((state) => state.user);
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
     const { data: pagedRequests, isLoading } = useAllPendingRequests(page, 15);
-    
+
     // Map requests to include isNew status
     const requests = (pagedRequests?.items || []).map(r => ({
         ...r,
