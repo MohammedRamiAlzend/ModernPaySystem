@@ -4,7 +4,7 @@ namespace ModernPaySystem.Application.Interfaces;
 
 public interface IRequestTransactionService
 {
-    Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(int page, int pageSize, TransactionStatus? status = null);
+    Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(int page, int pageSize, TransactionStatus status);
     Task<Result<RequestTransactionDto>> GetByIdAsync(Guid id);
     Task<Result<List<RequestTransactionDto>>> GetByRequestIdAsync(Guid requestId);
     Task<Result<List<RequestTransactionDto>>> GetChildTransactionsAsync(Guid parentTransactionId);

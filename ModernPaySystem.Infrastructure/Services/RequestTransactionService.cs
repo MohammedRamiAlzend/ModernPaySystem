@@ -10,7 +10,7 @@ public class RequestTransactionService(
     IHttpContextServiceManager httpContextServiceManager,
     ILogger<RequestTransactionService> logger) : IRequestTransactionService
 {
-    public async Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(int page, int pageSize, TransactionStatus? status = null)
+    public async Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(int page, int pageSize, TransactionStatus status)
     {
         try
         {
@@ -22,27 +22,31 @@ public class RequestTransactionService(
                 return ApplicationErrors.InvalidInput;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-
-            var filters = new List<Expression<Func<RequestTransaction, bool>>>
+            List<Expression<Func<RequestTransaction, bool>>> filters = [];
+            if (status == TransactionStatus.PendingAction)
             {
-                RequestTransactionExpressions.CanReadByUserId(currentUserId)
-            };
-
-            if (status.HasValue)
-            {
-                filters.Add(rt => rt.Status == status.Value);
+                filters.Add(RequestTransactionExpressions.CanReadByUserId(currentUserId));
+                filters.Add(RequestTransactionExpressions.TransferStatus(status));
+                filters.Add(RequestTransactionExpressions.DoesNotHasResponse());
             }
+            else
+            {
+                filters.Add(RequestTransactionExpressions.CreatedByUserId(currentUserId.ToString()));
+                //filters.Add(RequestTransactionExpressions.TransferStatus(status));
+            }
+
+            var combinedExp = ExpressionCombiner.AndAll(filters.ToArray());
 
             var pagedTransactions = await unitOfWork.RequestTransactions.GetPagedAsync(
                 page,
                 pageSize,
+                combinedExp,
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.RequestTransactionAttachments)
                                  .ThenInclude(a => a.Attachment)
                                  .Include(x => x.Request)
                                     .ThenInclude(r => r.RequestAttachments)
-                                        .ThenInclude(ra => ra.Attachment),
-                additionalFilters: filters);
+                                        .ThenInclude(ra => ra.Attachment));
 
             if (pagedTransactions.IsError)
                 return pagedTransactions.Errors;

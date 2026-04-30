@@ -7,6 +7,8 @@ public static class RequestTransactionExpressions
 {
     public static Expression<Func<RequestTransaction, bool>> ByTransactionId(Guid transactionId) =>
         rt => rt.Id == transactionId;
+    public static Expression<Func<RequestTransaction, bool>> DoesNotHasResponse() =>
+        rt => rt.Request.ResponseId.HasValue == false;
 
     public static Expression<Func<RequestTransaction, bool>> ByRequestId(Guid requestId) =>
         rt => rt.RequestId == requestId;
@@ -25,6 +27,11 @@ public static class RequestTransactionExpressions
 
     public static Expression<Func<RequestTransaction, bool>> CanReadByUserId(Guid userId) =>
         rt => rt.CurrentUserHolderId == userId;
+    public static Expression<Func<RequestTransaction, bool>> CreatedByUserId(string userId) =>
+     rt => rt.CreatedByUserId == userId;
+    public static Expression<Func<RequestTransaction, bool>> TransferStatus(TransactionStatus status) =>
+     rt => rt.Status == status;
+
 
     public static Expression<Func<RequestTransaction, bool>> CanMakeUpdateByUserId(Guid userId) =>
         rt => rt.CurrentUserHolderId == userId;
