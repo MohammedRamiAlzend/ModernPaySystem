@@ -61,6 +61,7 @@ export const useAttachments = (
                 setZipImages([]);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [...dependencies]);
 
     return {
