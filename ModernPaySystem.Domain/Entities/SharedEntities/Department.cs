@@ -1,3 +1,5 @@
+using ModernPaySystem.Domain.DTOs;
+
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 /// <summary>
@@ -32,6 +34,27 @@ public class Department : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Maps the department entity to a DTO
+    /// </summary>
+    public DepartmentDto MapToDto()
+    {
+        return new DepartmentDto
+        {
+            Id = this.Id,
+            Name = this.Name,
+            Code = this.Code,
+            Description = this.Description,
+            ParentDepartmentId = this.ParentDepartmentId,
+            Level = this.Level,
+            MaterializedPath = this.MaterializedPath,
+            Type = this.Type,
+            ChildrenCount = 0, // Would need to query for this
+            UsersCount = this.Users?.Count ?? 0,
+            CreatedAt = this.CreatedAt
+        };
+    }
 }
 
 /// <summary>
