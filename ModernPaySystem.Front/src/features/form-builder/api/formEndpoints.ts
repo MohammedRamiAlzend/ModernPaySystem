@@ -200,6 +200,11 @@ export const formEndpoints = {
     getRequestTransactionsByRequestId: async (requestId: string): Promise<{ data: RequestTransactionDto[] }> => {
         const response = await api.get(`/RequestTransactions/by-request/${requestId}`);
         return response.data;
+    },
+
+    getAllPendingRequestsPaged: async (page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.get(`/Requests/my-pending/paged?page=${page}&pageSize=${pageSize}`);
+        return response.data;
     }
 
 };
@@ -212,6 +217,17 @@ export const useRequests = (hasResponse: boolean = false, page: number = 1, page
         queryKey: ['requests', hasResponse, page, pageSize],
         queryFn: async () => {
             const res = await formEndpoints.getRequestsByActionStatus(hasResponse, page, pageSize);
+            return res.data;
+        },
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useAllPendingRequests = (page: number = 1, pageSize: number = 15) => {
+    return useQuery({
+        queryKey: ['requests', 'all-pending', page, pageSize],
+        queryFn: async () => {
+            const res = await formEndpoints.getAllPendingRequestsPaged(page, pageSize);
             return res.data;
         },
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]

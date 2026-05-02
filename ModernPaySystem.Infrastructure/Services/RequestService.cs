@@ -373,4 +373,42 @@ public class RequestService(
             return ApplicationErrors.InternalServerError;
         }
     }
+
+    public async Task<Result<PagedList<RequestDto>>> GetPendingByCurrentRequesterPagedAsync(int page, int pageSize)
+    {
+        try
+        {
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            logger.LogInformation("Fetching pending requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", currentUserId, page, pageSize);
+
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+
+            var requestBuilder = new ExpressionBuilder<Request>();
+            requestBuilder.And(r => r.RequesterId == currentUserId);
+            requestBuilder.And(r => !r.ResponseId.HasValue);
+
+            var expression = requestBuilder.Build();
+
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
+                page,
+                pageSize,
+                expression,
+                i => i.Include(x => x.Template)
+                      .Include(x => x.Approver)
+                      .Include(x => x.Requester)
+                      .Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);
+
+            if (pagedRequests.IsError)
+                return pagedRequests.Errors;
+
+            var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
+            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching pending requests for requester, page: {Page}, size: {PageSize}", page, pageSize);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
 }

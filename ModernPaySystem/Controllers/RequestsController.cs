@@ -80,4 +80,13 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, hasResponse);
         return result.ToActionResult();
     }
+
+    [HttpGet("my-pending/paged")]
+    [EndpointPermission("requests.get-my-pending-paged", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetMyPendingPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        logger.LogInformation("Getting paged pending requests for current requester, page: {Page}, size: {PageSize}", page, pageSize);
+        var result = await requestService.GetPendingByCurrentRequesterPagedAsync(page, pageSize);
+        return result.ToActionResult();
+    }
 }

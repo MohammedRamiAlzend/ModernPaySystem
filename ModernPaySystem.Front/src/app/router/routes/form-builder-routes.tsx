@@ -11,6 +11,7 @@ const ResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/respons
 const ActionedRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/actioned-requests-page'));
 const MyResponsesPage = lazyWithPreload(() => import('@/pages/form-builder/my-responses-page'));
 const MyRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/my-requests-page'));
+const AllPendingRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/all-pending-requests-page'));
 const ReferralsPage = lazyWithPreload(() => import('@/pages/form-builder/referrals-page'));
 const DelphiTransactionPage = lazyWithPreload(() => import('@/pages/delphi-transaction/delphi-transaction-page').then(module => ({ default: module.DelphiTransactionPage })));
 
@@ -115,6 +116,19 @@ export const formBuilderRoutes: RouteObject = {
         crumb: () => 'الردود الواردة',
         permission: RoutePermissions.AUTHENTICATED,
         preload: () => MyResponsesPage.preload(),
+      },
+    },
+    {
+      path: 'all-pending',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <AllPendingRequestsPage />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'الطلبات المعلقة',
+        permission: RoutePermissions.AUTHENTICATED,
+        preload: () => AllPendingRequestsPage.preload(),
       },
     },
     {
