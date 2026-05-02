@@ -10,6 +10,13 @@ public class User : Entity<Guid>, IAuditableEntity
     public Guid? SubSystemUserId { get; set; }
     public SubSystemUser? SubSystemUser { get; set; }
 
+    // Department relationship
+    public Guid? DepartmentId { get; set; }
+    public Department? Department { get; set; }
+
+    // Whether this user represents a department head
+    public bool IsDepartmentHead { get; set; }
+
     public ICollection<Request> RequestsAsRequester { get; set; } = new List<Request>();
     public ICollection<Request> RequestsAsApprover { get; set; } = new List<Request>();
     public ICollection<Request>? MentionedRequests { get; set; } = new List<Request>();
@@ -29,7 +36,10 @@ public class User : Entity<Guid>, IAuditableEntity
             Id = this.Id,
             UserName = this.UserName,
             SubSystemUserId = this.SubSystemUserId,
-            SubSystem = this.SubSystemUser?.SubSystem,       
+            SubSystem = this.SubSystemUser?.SubSystem,
+            DepartmentId = this.DepartmentId,
+            DepartmentName = this.Department?.Name,
+            IsDepartmentHead = this.IsDepartmentHead,
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
@@ -44,6 +54,9 @@ public class UserDto
     public required string UserName { get; set; }
     public Guid? SubSystemUserId { get; set; }
     public SubSystem? SubSystem { get; set; }
+    public Guid? DepartmentId { get; set; }
+    public string? DepartmentName { get; set; }
+    public bool IsDepartmentHead { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -55,4 +68,6 @@ public class CreateUserDto
     public required string UserName { get; set; }
     public required string Password { get; set; }
     public SubSystem? SubSystem { get; set; }
+    public Guid? DepartmentId { get; set; }
+    public bool IsDepartmentHead { get; set; }
 }
