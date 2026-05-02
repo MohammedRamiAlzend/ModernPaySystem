@@ -110,8 +110,7 @@ public class RequestTransactionService(
                                  .ThenInclude(a => a.Attachment)
                                  .Include(x => x.Request)
                                     .ThenInclude(r => r.RequestAttachments)
-                                        .ThenInclude(ra => ra.Attachment),
-                additionalFilters: new List<Expression<Func<RequestTransaction, bool>>> { RequestTransactionExpressions.CanReadByUserId(currentUserId) });
+                                        .ThenInclude(ra => ra.Attachment));
 
             if (transactions.IsError)
                 return transactions.Errors;
@@ -340,7 +339,19 @@ public class RequestTransactionService(
             await unitOfWork.RequestTransactions.UpdateAsync(parentTransaction.Value);
             await unitOfWork.SaveChangesAsync();
 
+            if (dto.Files?.Any() == true)
+            {
+                logger.LogInformation("Uploading {FileCount} files for child transaction: {TransactionId}", dto.Files.Count, childTransaction.Id);
+                foreach (var file in dto.Files)
+                {
+                    var uploadResult = await webAttachmentService.UploadFileToRequestTransactionAsync(file, childTransaction.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
+            }
+
             return Result.Success;
+
         }
         catch (Exception ex)
         {

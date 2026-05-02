@@ -144,6 +144,26 @@ export const formEndpoints = {
         window.URL.revokeObjectURL(url);
     },
 
+    fetchTransactionAttachmentsBlob: async (transactionId: string): Promise<Blob> => {
+        const response = await api.get(`/Attachments/transaction/${transactionId}/download-all`, {
+            responseType: 'blob',
+        });
+        return new Blob([response.data]);
+    },
+
+    downloadTransactionAttachments: async (transactionId: string): Promise<void> => {
+        const blob = await formEndpoints.fetchTransactionAttachmentsBlob(transactionId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `transaction_${transactionId}_attachments.zip`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    },
+
+
     getResponsesByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateResponse> }> => {
         const response = await api.get(`/Responses/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
         return response.data;
@@ -175,7 +195,13 @@ export const formEndpoints = {
         const statusQuery = status !== undefined ? `&status=${status}` : '';
         const response = await api.get(`/RequestTransactions?page=${page}&pageSize=${pageSize}${statusQuery}`);
         return response.data;
+    },
+
+    getRequestTransactionsByRequestId: async (requestId: string): Promise<{ data: RequestTransactionDto[] }> => {
+        const response = await api.get(`/RequestTransactions/by-request/${requestId}`);
+        return response.data;
     }
+
 };
 
 
@@ -309,6 +335,19 @@ export const useRequestTransactions = (status?: number, page: number = 1, pageSi
             const res = await formEndpoints.getRequestTransactions(status, page, pageSize);
             return res.data;
         },
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestTransactionsHistory = (requestId: string | null) => {
+    return useQuery({
+        queryKey: ['request-transactions', 'by-request', requestId],
+        queryFn: async () => {
+            if (!requestId) return [];
+            const res = await formEndpoints.getRequestTransactionsByRequestId(requestId);
+            return res.data;
+        },
+        enabled: !!requestId,
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };

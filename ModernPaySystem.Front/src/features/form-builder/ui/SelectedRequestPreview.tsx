@@ -1,18 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Card } from '@/shared/ui/card';
-import { FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { FileText, Loader2, Printer, Download, FileDown } from 'lucide-react';
 import type { FormSchema, TemplateRequest, FormResponse } from '@/entities/form/model/types';
 import { getVisibleFields } from '@/shared/lib/form-engine/response-evaluator';
 import { ResponseDetailsData } from '@/widgets/form-editor/ui/response-details/ResponseDetailsData';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
-import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage } from '@/shared/utils/zip-handler';
-import { Printer, Download, FileDown, ExternalLink } from 'lucide-react';
+import { imagesToPdf } from '@/shared/utils/zip-handler';
 import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
 import { Button } from '@/shared/ui/button';
 import { useUIStore } from '@/app/store/uiStore';
-import { printImage, downloadImage } from '@/shared/utils/image-actions';
+import { useAttachments } from '@/features/form-builder/model/useAttachments';
+import { AttachmentsGallery } from '@/features/form-builder/ui/AttachmentsGallery';
+
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
+import { RequestTransactionsHistory } from './RequestTransactionsHistory';
 
 interface SelectedRequestPreviewProps {
     request: TemplateRequest | null;
@@ -21,42 +24,20 @@ interface SelectedRequestPreviewProps {
 
 export const SelectedRequestPreview = ({ request, template }: SelectedRequestPreviewProps) => {
     const { showStatus } = useUIStore();
-    const [zipImages, setZipImages] = useState<ZipImage[]>([]);
-    const [isLoadingImages, setIsLoadingImages] = useState(false);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [isGeneratingImagesPDF, setIsGeneratingImagesPDF] = useState(false);
-    const [isAllImages, setIsAllImages] = useState(false);
 
-    const zipImagesRef = useRef<ZipImage[]>([]);
-
-    // Load images from ZIP
-    useEffect(() => {
-        if (request?.id && request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0) {
-            const loadImages = async () => {
-                setIsLoadingImages(true);
-                try {
-                    const blob = await formEndpoints.fetchRequestAttachmentsBlob(request.id);
-                    const data = await extractImagesFromZip(blob);
-                    setZipImages(data.images);
-                    zipImagesRef.current = data.images;
-                    setIsAllImages(data.isAllImages);
-                } catch (error) {
-                    console.error('Failed to load images from ZIP', error);
-                } finally {
-                    setIsLoadingImages(false);
-                }
-            };
-            loadImages();
-        }
-
-        return () => {
-            if (zipImagesRef.current.length > 0) {
-                revokeZipImages(zipImagesRef.current);
-                zipImagesRef.current = [];
-                setZipImages([]);
-            }
-        };
-    }, [request?.id, request?.requestAttachmentDtos]);
+    const { 
+        zipImages, 
+        isLoading: isLoadingImages, 
+        isAllImages, 
+        totalFiles 
+    } = useAttachments(
+        request?.id && request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0
+            ? () => formEndpoints.fetchRequestAttachmentsBlob(request.id)
+            : null,
+        [request?.id, request?.requestAttachmentDtos]
+    );
 
     if (!request || !template) {
         return (
@@ -133,7 +114,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
 
     return (
         <Card className="flex flex-col h-full overflow-hidden border-primary/20 bg-muted/5">
-            <div className="p-4 border-b bg-muted/20 flex items-center justify-between gap-4">
+            <div className="p-4 border-b bg-muted/20 flex items-center justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-3 overflow-hidden">
                     <div className="p-2 bg-primary/10 rounded-lg">
                         <FileText className="w-4 h-4 text-primary" />
@@ -183,90 +164,45 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                <div className="space-y-6">
-                   <div className="bg-background/80 p-4 rounded-xl shadow-sm border">
-                       <ResponseDetailsData visibleFields={visibleFields} />
-                   </div>
-                   
-                   {/* Images Gallery */}
-                   {zipImages.length > 0 && (
-                       <div className="mt-6 pt-6 border-t animate-in fade-in slide-in-from-top-4 duration-500">
-                           <h4 className="text-sm font-bold text-primary mb-4 flex items-center gap-2">
-                               <ImageIcon className="w-4 h-4" />
-                               الصور المرفقة
-                           </h4>
-                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                               {zipImages.map((img, idx) => (
-                                   <div key={idx} className="group relative aspect-video bg-muted rounded-xl overflow-hidden border shadow-sm">
-                                       <img 
-                                           src={img.url} 
-                                           alt={img.name} 
-                                           className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                                       />
-                                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    printImage(img.url);
-                                                }}
-                                                className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                title="طباعة"
-                                            >
-                                                <Printer className="w-5 h-5" />
-                                            </button>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    downloadImage(img.url, img.name);
-                                                }}
-                                                className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                title="تنزيل"
-                                            >
-                                                <Download className="w-5 h-5" />
-                                            </button>
-                                            <a 
-                                                href={img.url} 
-                                                target="_blank" 
-                                                rel="noreferrer" 
-                                                className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                title="عرض الحجم الكامل"
-                                            >
-                                                <ExternalLink className="w-5 h-5" />
-                                            </a>
-                                       </div>
-                                       <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                            <p className="text-[10px] text-white truncate">{img.name}</p>
-                                       </div>
-                                   </div>
-                               ))}
-                           </div>
-                       </div>
-                   )}
-
-                   {isLoadingImages && (
-                       <div className="flex flex-col items-center justify-center p-8 text-muted-foreground gap-2 border border-dashed rounded-xl">
-                           <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                           <span className="text-xs font-bold">جاري استخراج الصور من المرفقات...</span>
-                       </div>
-                   )}
-                   
-                   {request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0 && !zipImages.length && !isLoadingImages && (
-                       <div className="mt-4 pt-4 border-t">
-                           <h4 className="text-xs font-bold text-muted-foreground mb-3 flex items-center gap-2">
-                               المرفقات المقدمة ({request.requestAttachmentDtos.length})
-                           </h4>
-                           <div className="grid grid-cols-1 gap-2">
-                               {request.requestAttachmentDtos.map((att: any) => (
-                                   <div key={att.id} className="p-2 bg-card border rounded-lg flex items-center gap-2 text-[10px]">
-                                       <FileText className="w-3 h-3 text-primary" />
-                                       <span className="truncate flex-1">{att.attachmentDto?.fileName || 'ملف مرفق'}</span>
-                                   </div>
-                               ))}
-                           </div>
-                       </div>
-                   )}
-                </div>
+            <div className="flex-1 overflow-hidden flex flex-col p-4">
+                <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden" dir="rtl">
+                    <TabsList className="w-full justify-start border-b border-primary/10 rounded-none p-0 h-auto bg-transparent mb-4 shrink-0">
+                        <TabsTrigger 
+                            value="details" 
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold"
+                        >
+                            بيانات الطلب
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="referrals" 
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold"
+                        >
+                            متابعة الإحالات
+                        </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="details" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
+                        <div className="space-y-6">
+                            <div className="bg-background/80 p-4 rounded-xl shadow-sm border">
+                                <ResponseDetailsData visibleFields={visibleFields} />
+                            </div>
+                            
+                            <AttachmentsGallery 
+                                images={zipImages}
+                                isLoading={isLoadingImages}
+                                isAllImages={isAllImages}
+                                totalFiles={totalFiles}
+                                requestId={request.id}
+                                onDownloadAll={() => formEndpoints.downloadRequestAttachments(request.id)}
+                                initialExpanded={true}
+                            />
+                        </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="referrals" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
+                        <RequestTransactionsHistory requestId={request.id} />
+                    </TabsContent>
+                </Tabs>
             </div>
         </Card>
     );

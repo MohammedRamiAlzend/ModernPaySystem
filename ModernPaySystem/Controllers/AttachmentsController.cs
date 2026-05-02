@@ -41,4 +41,18 @@ public class AttachmentsController(IAttachmentService attachmentService, ILogger
 
         return File(result.Value!, "application/zip", $"Response_{responseId}_Attachments.zip");
     }
+
+    [HttpGet("transaction/{transactionId}/download-all")]
+    [EndpointPermission("attachments.download-all-from-transaction", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> DownloadAllFilesFromTransaction(Guid transactionId)
+    {
+        logger.LogInformation("Downloading all files from transaction: {TransactionId}", transactionId);
+        var result = await attachmentService.DownloadFilesFromTransactionAsync(transactionId);
+        if (result.IsError)
+        {
+            return result.ToActionResult();
+        }
+
+        return File(result.Value!, "application/zip", $"Transaction_{transactionId}_Attachments.zip");
+    }
 }

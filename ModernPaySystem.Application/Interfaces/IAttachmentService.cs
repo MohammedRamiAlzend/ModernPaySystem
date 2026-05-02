@@ -60,6 +60,17 @@ public interface IAttachmentService
     Task<Result<byte[]>> DownloadFilesFromResponseAsync(Guid responseId);
 
     /// <summary>
+    /// Downloads a file associated with a transaction.
+    /// </summary>
+    Task<Result<byte[]>> DownloadFileFromTransactionAsync(Guid transactionId, Guid attachmentId);
+
+    /// <summary>
+    /// Downloads all files associated with a transaction.
+    /// </summary>
+    Task<Result<byte[]>> DownloadFilesFromTransactionAsync(Guid transactionId);
+
+
+    /// <summary>
     /// Removes a file attachment from a request.
     /// </summary>
     Task<Result<Success>> RemoveFileFromRequestAsync(Guid requestId, Guid attachmentId);
@@ -78,4 +89,10 @@ public interface IAttachmentService
     /// Gets all attachments for a response.
     /// </summary>
     Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForResponseAsync(Guid responseId);
+
+    /// <summary>
+    /// Gets all attachments for a transaction.
+    /// </summary>
+    Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForTransactionAsync(Guid transactionId);
+
 }

@@ -10,8 +10,11 @@ import {
     MessageSquare,
     User,
     Calendar,
-    ArrowRight
+    ArrowRight,
+    Paperclip,
+    Download
 } from 'lucide-react';
+
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { Pagination } from '@/shared/ui/common/pagination';
@@ -22,9 +25,45 @@ import { useRequestTransactions, formEndpoints } from '@/features/form-builder/a
 import { useForms } from '@/features/form-builder/model/useForms';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
+import { useAttachments } from '@/features/form-builder/model/useAttachments';
+import { AttachmentsGallery } from '@/features/form-builder/ui/AttachmentsGallery';
 import type { TemplateRequest, RequestTransactionDto } from '@/entities/form/model/types';
 
+interface ReferralAttachmentsProps {
+    referral: RequestTransactionDto;
+}
+
+const ReferralAttachments = ({ referral }: ReferralAttachmentsProps) => {
+    const { 
+        zipImages, 
+        isLoading, 
+        isAllImages, 
+        totalFiles 
+    } = useAttachments(
+        referral.requestTransactionAttachments && referral.requestTransactionAttachments.length > 0
+            ? () => formEndpoints.fetchTransactionAttachmentsBlob(referral.id)
+            : null,
+        [referral.id, referral.requestTransactionAttachments]
+    );
+
+    if (totalFiles === 0 && !isLoading) return null;
+
+    return (
+        <AttachmentsGallery 
+            images={zipImages}
+            isLoading={isLoading}
+            isAllImages={isAllImages}
+            totalFiles={totalFiles}
+            requestId={referral.id}
+            title="مرفقات الإحالة"
+            onDownloadAll={() => formEndpoints.downloadTransactionAttachments(referral.id)}
+            className="mt-2 pt-4"
+        />
+    );
+};
+
 interface ReferralsPageProps {
+
     status: number; // 0 for PendingAction, 1 for Transferred
 }
 
@@ -143,6 +182,8 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
 
     const isSubmitting = responseMutation.isPending || referralMutation.isPending;
 
+
+
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-8">
             {/* Header section */}
@@ -215,7 +256,17 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
                                                 <span className="font-bold">{new Date(referral.createdAt).toLocaleString('ar-EG')}</span>
                                             </div>
                                         </div>
+                                        {referral.createdByUserId && (
+                                            <div className="flex items-center gap-3 text-xs">
+                                                <Forward className="w-4 h-4 text-muted-foreground" />
+                                                <div className="flex flex-col">
+                                                    <span className="text-muted-foreground">مرسل الإحالة</span>
+                                                    <UserDisplay userId={referral.createdByUserId} className="font-bold" />
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
+
 
                                     {isPending && (
                                         <Button 
@@ -242,6 +293,11 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
                                             </p>
                                         </div>
                                     )}
+
+                                    <ReferralAttachments referral={referral} />
+
+                                    {/* Request Preview */}
+
 
                                     {/* Request Preview */}
                                     <div className="bg-background/40 p-5 rounded-2xl border border-primary/5">

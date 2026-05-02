@@ -188,13 +188,46 @@ public class AttachmentService(
         {
             return ApplicationErrors.ResponseNotFound;
         }
-
+ 
         // Check if the attachment is associated with this response
         var responseAttachment = await unitOfWork.ResponseAttachments.GetAsync(
             AttachmentExpressions.ResponseAttachmentByResponseIdAndAttachmentId(responseId, attachmentId),
             x => x.Include(x => x.Attachment).Include(x => x.Response));
-
+ 
         if (responseAttachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+ 
+        // Get the attachment details
+        var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+        if (attachment.IsError)
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+ 
+        // Return the file content
+        return await fileManager.GetFileBytesAsync(attachment.Value.Path);
+    }
+
+    /// <summary>
+    /// Downloads a file associated with a transaction.
+    /// </summary>
+    public async Task<Result<byte[]>> DownloadFileFromTransactionAsync(Guid transactionId, Guid attachmentId)
+    {
+        // Verify the transaction exists
+        var transaction = await unitOfWork.RequestTransactions.GetByIdAsync(transactionId);
+        if (transaction.IsError)
+        {
+            return ApplicationErrors.RequestTransactionNotFound;
+        }
+
+        // Check if the attachment is associated with this transaction
+        var transactionAttachment = await unitOfWork.RequestTransactionAttachments.GetAsync(
+            AttachmentExpressions.RequestTransactionAttachmentByTransactionIdAndAttachmentId(transactionId, attachmentId),
+            x => x.Include(x => x.Attachment).Include(x => x.RequestTransaction));
+
+        if (transactionAttachment.IsError)
         {
             return ApplicationErrors.AttachmentNotFound;
         }
@@ -209,6 +242,7 @@ public class AttachmentService(
         // Return the file content
         return await fileManager.GetFileBytesAsync(attachment.Value.Path);
     }
+
 
     /// <summary>
     /// Removes a file attachment from a request.
@@ -393,6 +427,41 @@ public class AttachmentService(
     }
 
     /// <summary>
+    /// Gets all attachments for a transaction.
+    /// </summary>
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForTransactionAsync(Guid transactionId)
+    {
+        var transaction = await unitOfWork.RequestTransactions.GetByIdAsync(transactionId);
+        if (transaction.IsError)
+        {
+            return ApplicationErrors.RequestTransactionNotFound;
+        }
+
+        // Get all RequestTransactionAttachment associations for this transaction
+        var transactionAttachments = await unitOfWork.RequestTransactionAttachments.GetAllAsync(AttachmentExpressions.RequestTransactionAttachmentByTransactionId(transactionId));
+        if (transactionAttachments.IsError)
+        {
+            return transactionAttachments.Errors;
+        }
+
+        var attachmentIds = transactionAttachments.Value!.ConvertAll(ra => ra.AttachmentId);
+
+        // Get the actual attachment entities
+        var attachmentDtos = new List<AttachmentDto>();
+        foreach (var attachmentId in attachmentIds)
+        {
+            var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
+            if (!attachment.IsError)
+            {
+                attachmentDtos.Add(attachment.Value.ToDto());
+            }
+        }
+
+        return attachmentDtos;
+    }
+
+
+    /// <summary>
     /// Downloads all files associated with a request as a ZIP archive.
     /// </summary>
     public async Task<Result<byte[]>> DownloadFilesFromRequestAsync(Guid requestId)
@@ -468,8 +537,9 @@ public class AttachmentService(
 
         if (responseAttachments.Value == null || !responseAttachments.Value.Any())
         {
-            return ApplicationErrors.OperationFailed; // Using a general error since NoAttachmentsFound doesn't exist
+            return ApplicationErrors.AttachmentNotFound;
         }
+
 
         // Create a memory stream to hold the ZIP archive
         using var zipMemoryStream = new MemoryStream();
@@ -501,6 +571,63 @@ public class AttachmentService(
         // Return the ZIP archive as a byte array
         return zipMemoryStream.ToArray();
     }
+
+    /// <summary>
+    /// Downloads all files associated with a transaction as a ZIP archive.
+    /// </summary>
+    public async Task<Result<byte[]>> DownloadFilesFromTransactionAsync(Guid transactionId)
+    {
+        // Verify the transaction exists
+        var transaction = await unitOfWork.RequestTransactions.GetByIdAsync(transactionId);
+        if (transaction.IsError)
+        {
+            return ApplicationErrors.RequestTransactionNotFound;
+        }
+
+        // Get all attachments associated with this transaction
+        var transactionAttachments = await unitOfWork.RequestTransactionAttachments.GetAllAsync(AttachmentExpressions.RequestTransactionAttachmentByTransactionId(transactionId));
+        if (transactionAttachments.IsError)
+        {
+            return transactionAttachments.Errors;
+        }
+
+        if (transactionAttachments.Value == null || !transactionAttachments.Value.Any())
+        {
+            return ApplicationErrors.AttachmentNotFound;
+        }
+
+
+        // Create a memory stream to hold the ZIP archive
+        using var zipMemoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(zipMemoryStream, ZipArchiveMode.Create, true))
+        {
+            foreach (var transactionAttachment in transactionAttachments.Value)
+            {
+                // Get the attachment details
+                var attachment = await unitOfWork.Attachments.GetByIdAsync(transactionAttachment.AttachmentId);
+                if (attachment.IsError)
+                {
+                    continue;
+                }
+
+                // Get the file content
+                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value.Path);
+                if (fileBytes.IsError)
+                {
+                    continue;
+                }
+
+                // Create an entry in the ZIP archive
+                var entry = archive.CreateEntry(attachment.Value.FileName, CompressionLevel.Optimal);
+                using var entryStream = entry.Open();
+                await entryStream.WriteAsync(fileBytes.Value);
+            }
+        }
+
+        // Return the ZIP archive as a byte array
+        return zipMemoryStream.ToArray();
+    }
+
 
     /// <summary>
     /// Checks if an attachment is used by any other requests or responses.

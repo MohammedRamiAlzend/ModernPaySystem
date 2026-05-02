@@ -159,6 +159,13 @@ export interface CreateRequestTransactionDto {
     files?: File[];
 }
 
+export interface RequestTransactionAttachmentDto {
+    id: string;
+    requestTransactionId: string;
+    attachmentId: string;
+    attachmentDto: AttachmentDto | null;
+}
+
 export interface RequestTransactionDto {
     id: string;
     requestId: string;
@@ -169,8 +176,10 @@ export interface RequestTransactionDto {
     currentUserHolderId: string;
     status: number; // TransactionStatus (0: PendingAction, 1: Transferred)
     createdAt: string;
+    createdByUserId: string | null;
     request?: TemplateRequest | null;
     currentUserHolder?: UserReference | null;
+    requestTransactionAttachments?: RequestTransactionAttachmentDto[];
 }
 
 /** Represents the join entity between a response and its attachments */
