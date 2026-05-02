@@ -5,9 +5,9 @@ namespace ModernPaySystem.Application.Interfaces;
 
 public interface IRequestService
 {
-    Task<Result<IEnumerable<RequestDto>>> GetAllAsync();
+    //Task<Result<IEnumerable<RequestDto>>> GetAllAsync();
 
-    Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse);
+    //Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse);
 
     Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize);
 

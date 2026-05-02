@@ -9,7 +9,9 @@ import type {
     CreateResponseDto,
     TemplateRequest,
     TemplateResponse,
-    PagedResult
+    PagedResult,
+    CreateRequestTransactionDto,
+    RequestTransactionDto
 } from '@/entities/form/model/types';
 
 // --- API Service ---
@@ -40,6 +42,12 @@ export const formEndpoints = {
         formData.append('RequesterId', data.RequesterId);
         if (data.ApproverId) formData.append('ApproverId', data.ApproverId);
         formData.append('Content', data.Content);
+        
+        if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
+            data.ReadOnlyUsers.forEach((userId) => {
+                formData.append('ReadOnlyUsers', userId);
+            });
+        }
 
         if (data.files && data.files.length > 0) {
             data.files.forEach((file) => {
@@ -136,10 +144,64 @@ export const formEndpoints = {
         window.URL.revokeObjectURL(url);
     },
 
+    fetchTransactionAttachmentsBlob: async (transactionId: string): Promise<Blob> => {
+        const response = await api.get(`/Attachments/transaction/${transactionId}/download-all`, {
+            responseType: 'blob',
+        });
+        return new Blob([response.data]);
+    },
+
+    downloadTransactionAttachments: async (transactionId: string): Promise<void> => {
+        const blob = await formEndpoints.fetchTransactionAttachmentsBlob(transactionId);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `transaction_${transactionId}_attachments.zip`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    },
+
+
     getResponsesByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateResponse> }> => {
         const response = await api.get(`/Responses/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
         return response.data;
+    },
+
+    createReferral: async (data: CreateRequestTransactionDto): Promise<any> => {
+        const formData = new FormData();
+        formData.append('RequestId', data.requestId);
+        if (data.notes) formData.append('Notes', data.notes);
+        if (data.parentTransactionId) formData.append('ParentTransactionId', data.parentTransactionId);
+        formData.append('CurrentUserHolderId', data.targetUserId);
+        
+        if (data.files && data.files.length > 0) {
+            data.files.forEach((file) => {
+                formData.append('Files', file);
+            });
+        }
+
+        const url = data.parentTransactionId ? '/RequestTransactions/AddTransactionChildren' : '/RequestTransactions';
+        const response = await api.post(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return response.data;
+    },
+
+    getRequestTransactions: async (status?: number, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<RequestTransactionDto> }> => {
+        const statusQuery = status !== undefined ? `&status=${status}` : '';
+        const response = await api.get(`/RequestTransactions?page=${page}&pageSize=${pageSize}${statusQuery}`);
+        return response.data;
+    },
+
+    getRequestTransactionsByRequestId: async (requestId: string): Promise<{ data: RequestTransactionDto[] }> => {
+        const response = await api.get(`/RequestTransactions/by-request/${requestId}`);
+        return response.data;
     }
+
 };
 
 
@@ -211,6 +273,12 @@ export const useCreateResponse = () => {
     });
 };
 
+export const useCreateReferral = () => {
+    return useMutation({
+        mutationFn: formEndpoints.createReferral
+    });
+};
+
 export const useRequestResponses = (requestId: string | null) => {
     return useQuery({
         queryKey: ['responses', requestId],
@@ -256,6 +324,30 @@ export const useRequestsByRequester = (requesterId: string | null, page: number 
             return res.data;
         },
         enabled: !!requesterId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestTransactions = (status?: number, page: number = 1, pageSize: number = 10) => {
+    return useQuery({
+        queryKey: ['request-transactions', status, page, pageSize],
+        queryFn: async () => {
+            const res = await formEndpoints.getRequestTransactions(status, page, pageSize);
+            return res.data;
+        },
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestTransactionsHistory = (requestId: string | null) => {
+    return useQuery({
+        queryKey: ['request-transactions', 'by-request', requestId],
+        queryFn: async () => {
+            if (!requestId) return [];
+            const res = await formEndpoints.getRequestTransactionsByRequestId(requestId);
+            return res.data;
+        },
+        enabled: !!requestId,
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };

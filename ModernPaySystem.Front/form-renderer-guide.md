@@ -130,18 +130,42 @@ colSpan = field.layout?.colSpan || 12   // الافتراضي: عرض كامل
 
 > الشبكة الأساسية هي `grid grid-cols-12 gap-x-6 gap-y-4`. على الشاشات الصغيرة كل حقل يأخذ `col-span-12`.
 
-### 3.4 توجيه الحقل للمكوّن المناسب
+### 3.4 أنواع الحقول المدعومة (Field Components)
 
-```
-بناءً على field.type.toLowerCase():
+بناءً على `field.type.toLowerCase()`، يتم توجيه الحقل للمكون المناسب:
 
-    'text' | 'email' | 'password' | 'number' → TextField
-    'textarea'                                → TextareaField
-    'select' | 'dropdown'                     → SelectField
-    'checkbox'                                → CheckboxField
-    'radio'                                   → RadioField
-    أي نوع آخر                               → رسالة خطأ
-```
+| النوع (Type) | المكوّن (Component) | الوصف |
+| :--- | :--- | :--- |
+| `text` | `TextField` | حقل نصي بسطر واحد |
+| `email` | `TextField` | حقل مخصص للبريد الإلكتروني (مع تحقق تلقائي) |
+| `password` | `TextField` | حقل كلمة مرور (مخفي) |
+| `number` | `TextField` | حقل للأرقام فقط |
+| `textarea` | `TextareaField` | حقل نصي مطول متعدد الأسطر |
+| `select` | `SelectField` | قائمة منسدلة (Static أو LookUp) |
+| `radio` | `RadioField` | أزرار اختيار دائرية (خيار واحد فقط) |
+| `checkbox` | `CheckboxField` | مربع اختيار (خيار واحد أو مصفوفة خيارات) |
+| `date` | `DateField` | حقل لاختيار التاريخ |
+
+### 3.5 تفاصيل وخصائص كل نوع (Field Properties)
+
+لكل نوع حقل خصائص إضافية يمكن تعريفها في الـ Schema:
+
+#### 1. الحقول النصية والرقمية (`text`, `number`, `email`, `password`)
+*   **`placeholder`**: النص المؤقت داخل الحقل.
+*   **`defaultValue`**: القيمة الأولية عند تحميل النموذج.
+*   **`numberSpelling`**: (للحقول التي تعرض التفقيط) تحتوي على `sourceField` الذي يشير لاسم الحقل الرقمي المصدر.
+
+#### 2. النص المطول (`textarea`)
+*   **`rows`**: عدد الأسطر الافتراضي (مثلاً: `4`).
+
+#### 3. القوائم (Select) والاختيارات (Radio/Checkbox)
+*   **`dataSource`**: يحدد مصدر البيانات:
+    *   `type: 'static'`: يتطلب مصفوفة `options` تحتوي على `{ label, value }`.
+    *   `type: 'lookup'`: يتطلب `lookUpFieldId` لجلب البيانات من النظام.
+*   **`direction`**: (لـ Radio و Checkbox) يحدد اتجاه العرض: `'horizontal'` أو `'vertical'`.
+
+#### 4. الحقل المسمّى (Label / Header Only)
+*   **`type: 'label'`**: حقل للعرض فقط، يستخدم لعرض نصوص توضيحية أو عناوين فرعية داخل النموذج ولا يقبل إدخال بيانات.
 
 ---
 
@@ -240,7 +264,20 @@ validateForm(fields, formData, fieldStates):
     إرجاع errors
 ```
 
-### 5.2 قواعد التحقق لكل حقل
+### 5.2 أنواع التحقق المتاحة (Validation Rules)
+
+يحتوي كل حقل على مصفوفة `validation` تتكون من كائنات `{ rule: string, value?: any, message?: string }`.
+
+| القاعدة (Rule) | القيمة (Value) | الوصف | مثال |
+| :--- | :--- | :--- | :--- |
+| **`required`** | لا يوجد | الحقل إلزامي ولا يمكن تركه فارغاً | `{ "rule": "required" }` |
+| **`minLength`** | `number` | الحد الأدنى لعدد الحروف المدخلة (للنصوص) | `{ "rule": "minLength", "value": 3 }` |
+| **`maxLength`** | `number` | الحد الأقصى لعدد الحروف المدخلة (للنصوص) | `{ "rule": "maxLength", "value": 100 }` |
+| **`minValue`** | `number` | أقل قيمة عددية مسموح بها (للأرقام) | `{ "rule": "minValue", "value": 1 }` |
+| **`maxValue`** | `number` | أكبر قيمة عددية مسموح بها (للأرقام) | `{ "rule": "maxValue", "value": 1000 }` |
+| **`pattern`** | `string` | تعبير نمطي (Regex) للتحقق من تنسيق خاص | `{ "rule": "pattern", "value": "^[0-9]{10}$" }` |
+
+### 5.3 آلية التحقق البرمجية
 
 ```
 validateField(field, value, isRequired):
@@ -260,6 +297,9 @@ validateField(field, value, isRequired):
     
     3. إرجاع null (بدون أخطاء)
 ```
+
+> [!TIP]
+> **رسائل الخطأ المخصصة:** إذا تم تزويد خاصية `message` في قاعدة التحقق، فسيتم عرضها بدلاً من الرسالة الافتراضية المولدة ذاتياً.
 
 > **ملاحظات:**
 > - قواعد `minLength`/`maxLength` تعمل فقط مع القيم النصية.

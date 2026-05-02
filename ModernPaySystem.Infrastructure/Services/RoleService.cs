@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Commons;
@@ -72,7 +73,10 @@ public class RoleService : IRoleService
         try
         {
             _logger.LogInformation("Fetching role by id: {RoleId}", id);
-            var role = await _unitOfWork.Roles.GetByIdAsync(id);
+            var role = await _unitOfWork.Roles.GetAsync(
+                filter: RoleExpressions.ById(id),
+                transform: x => x.Include(r => r.Permissions)
+                                 .Include(r => r.Users));
 
             if (role.IsError)
                 return role.Errors;
@@ -97,18 +101,18 @@ public class RoleService : IRoleService
                 return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Fetching role by name: {RoleName}", name);
-            var roles = await _unitOfWork.Roles.GetAllAsync();
-            if (roles.IsError)
-            {
-                return roles.Errors;
-            }
+            var role = await _unitOfWork.Roles.GetAsync(
+                filter: RoleExpressions.ByName(name),
+                transform: x => x.Include(r => r.Permissions)
+                                 .Include(r => r.Users));
 
-            var role = roles.Value!.FirstOrDefault(r => r.Name == name);
+            if (role.IsError)
+                return role.Errors;
 
-            if (role == null)
+            if (role.Value == null)
                 return ApplicationErrors.RoleNotFound;
 
-            return role.ToDto();
+            return role.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -160,7 +164,11 @@ public class RoleService : IRoleService
             if (id == Guid.Empty || role == null)
                 return ApplicationErrors.InvalidInput;
 
-            var existingRole = await _unitOfWork.Roles.GetByIdAsync(id);
+            var existingRole = await _unitOfWork.Roles.GetAsync(
+                filter: RoleExpressions.ById(id),
+                transform: x => x.Include(r => r.Permissions)
+                                 .Include(r => r.Users));
+
             if (existingRole.IsError)
                 return existingRole.Errors;
 
@@ -197,7 +205,9 @@ public class RoleService : IRoleService
             if (id == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            var role = await _unitOfWork.Roles.GetByIdAsync(id);
+            var role = await _unitOfWork.Roles.GetAsync(
+                filter: RoleExpressions.ById(id));
+
             if (role.IsError)
                 return role.Errors;
 
@@ -206,7 +216,7 @@ public class RoleService : IRoleService
 
             _logger.LogInformation("Deleting role: {RoleId}", id);
 
-            await _unitOfWork.Roles.RemoveAsync(x => x.Id == role.Value.Id);
+            await _unitOfWork.Roles.RemoveAsync(RoleExpressions.ById(id));
             int result = await _unitOfWork.SaveChangesAsync();
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;

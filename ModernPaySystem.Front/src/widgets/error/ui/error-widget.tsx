@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
-import { isRouteErrorResponse } from 'react-router-dom';
+import { Link, isRouteErrorResponse } from 'react-router-dom';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { AlertCircle } from 'lucide-react';
+import { APP_CONFIG } from '@/shared/config/appConfig';
 
 interface ErrorWidgetProps {
   error?: unknown;
@@ -63,7 +63,7 @@ export const ErrorWidget = ({ error }: ErrorWidgetProps) => {
           )}
 
           {/* Error Details (development only) */}
-          {import.meta.env.VITE_DEV === 'true' && errorDetails && (
+          {APP_CONFIG.IS_DEV && errorDetails && (
             <details className="text-xs">
               <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
                 📋 تفاصيل الخطأ (للمطورين فقط)

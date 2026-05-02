@@ -32,6 +32,10 @@ public interface IUnitOfWork
 
     IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues { get; }
 
+    IRepositoryBase<RequestTransaction, Guid> RequestTransactions { get; }
+
+    IRepositoryBase<RequestTransactionAttachment, Guid> RequestTransactionAttachments { get; }
+
     Task<int> SaveChangesAsync();
 
     Task BeginTransactionAsync();

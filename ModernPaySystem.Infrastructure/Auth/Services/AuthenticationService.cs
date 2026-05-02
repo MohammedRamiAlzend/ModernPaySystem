@@ -20,7 +20,8 @@ public class AuthenticationService(IUnitOfWork uow,
             x => x.UserName == username,
             i => i.Include(u => u.Roles)
                   .ThenInclude(rp => rp.Permissions)
-                  .Include(x => x.SubSystemUser));
+                  .Include(x => x.SubSystemUser),
+            bypassAuth: true);
 
         if (userResult.IsError)
             return ApplicationErrors.InvalidCredentials;
@@ -44,7 +45,8 @@ public class AuthenticationService(IUnitOfWork uow,
         var userResult = await uow.Users.GetAsync(
             x => x.Id == userId,
             i => i.Include(u => u.Roles)
-                  .ThenInclude(rp => rp.Permissions));
+                  .ThenInclude(rp => rp.Permissions),
+            bypassAuth: true);
 
         if (userResult.IsError)
             return ApplicationErrors.UserNotFound;

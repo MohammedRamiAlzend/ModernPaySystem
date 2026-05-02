@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,6 +19,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const LoginForm: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const isSessionExpired = searchParams.get('reason') === 'expired';
     const { mutate: login, isPending, error } = useLogin();
 
     const {
@@ -54,6 +57,12 @@ export const LoginForm: React.FC = () => {
 
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardContent className="space-y-6 px-8">
+                        {isSessionExpired && !error && (
+                            <div className="p-4 text-xs font-bold text-amber-600 bg-amber-50 border border-amber-200 rounded-2xl text-center animate-in fade-in slide-in-from-top-2">
+                                انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.
+                            </div>
+                        )}
+
                         {error && (
                             <div className="p-4 text-xs font-bold text-destructive bg-destructive/10 border border-destructive/20 rounded-2xl text-center animate-in fade-in slide-in-from-top-2">
                                 {errorMessage}

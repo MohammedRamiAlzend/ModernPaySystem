@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Commons;
@@ -74,7 +75,10 @@ public class TemplateService : ITemplateService
         try
         {
             _logger.LogInformation("Fetching template by id: {TemplateId}", id);
-            var template = await _unitOfWork.Templates.GetByIdAsync(id);
+            var template = await _unitOfWork.Templates.GetAsync(
+                filter: TemplateExpressions.ById(id),
+                transform: x => x.Include(t => t.Ownerships)
+                                 .Include(t => t.LookUpFields));
 
             if (template.IsError)
                 return template.Errors;
@@ -99,18 +103,18 @@ public class TemplateService : ITemplateService
                 return ApplicationErrors.InvalidInput;
 
             _logger.LogInformation("Fetching template by name: {TemplateName}", name);
-            var templates = await _unitOfWork.Templates.GetAllAsync();
-            if(templates.IsError)
-            {
-                return templates.Errors;
-            }
+            var template = await _unitOfWork.Templates.GetAsync(
+                filter: TemplateExpressions.ByName(name),
+                transform: x => x.Include(t => t.Ownerships)
+                                 .Include(t => t.LookUpFields));
 
-            var template = templates.Value!.FirstOrDefault(t => t.TemplateName == name);
+            if (template.IsError)
+                return template.Errors;
 
-            if (template == null)
+            if (template.Value == null)
                 return ApplicationErrors.TemplateNotFound;
 
-            return template.ToDto();
+            return template.Value.ToDto();
         }
         catch (Exception ex)
         {
@@ -163,7 +167,11 @@ public class TemplateService : ITemplateService
             if (id == Guid.Empty || template == null)
                 return ApplicationErrors.InvalidInput;
 
-            var existingTemplate = await _unitOfWork.Templates.GetByIdAsync(id);
+            var existingTemplate = await _unitOfWork.Templates.GetAsync(
+                filter: TemplateExpressions.ById(id),
+                transform: x => x.Include(t => t.Ownerships)
+                                 .Include(t => t.LookUpFields));
+
             if (existingTemplate.IsError)
                 return existingTemplate.Errors;
 
@@ -198,7 +206,9 @@ public class TemplateService : ITemplateService
             if (id == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
 
-            var template = await _unitOfWork.Templates.GetByIdAsync(id);
+            var template = await _unitOfWork.Templates.GetAsync(
+                filter: TemplateExpressions.ById(id));
+
             if (template.IsError)
                 return template.Errors;
 
@@ -207,7 +217,7 @@ public class TemplateService : ITemplateService
 
             _logger.LogInformation("Deleting template: {TemplateId}", id);
 
-            await _unitOfWork.Templates.RemoveAsync(x => x.Id == template.Value.Id);
+            await _unitOfWork.Templates.RemoveAsync(TemplateExpressions.ById(id));
             int result = await _unitOfWork.SaveChangesAsync();
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;

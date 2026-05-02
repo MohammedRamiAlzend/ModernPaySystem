@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Interfaces;
@@ -72,7 +73,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         {
             logger.LogInformation("Fetching user by id: {UserId}", id);
             var user = await unitOfWork.Users.GetAsync(
-                u => u.Id == id,
+                filter: UserExpressions.ById(id),
                 transform: query => query.Include(x => x.SubSystemUser)
             );
 
@@ -100,7 +101,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
 
             logger.LogInformation("Fetching user by username: {Username}", username);
             var user = await unitOfWork.Users.GetAsync(
-                u => u.UserName == username,
+                filter: UserExpressions.ByUsername(username),
                 transform: query => query.Include(x => x.SubSystemUser)
             );
 
@@ -202,19 +203,10 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         try
         {
             logger.LogInformation("Fetching users by subsystem: {SubSystem}", subSystem);
-            
-            // Get all SubSystemUser records for the specified subsystem
-            var subSystemUsers = await unitOfWork.SubSystemUsers.GetAllAsync(s => s.SubSystem == subSystem);
-            if (subSystemUsers.IsError)
-                return subSystemUsers.Errors;
 
-            // Extract user IDs from SubSystemUser records
-            var userIds = subSystemUsers.Value!.Select(su => su.UserId).ToList();
-
-            // Get users based on the extracted IDs, including SubSystemUser navigation property
             var users = await unitOfWork.Users.GetAllAsync(
-                u => userIds.Contains(u.Id),
-                transform: query => query.Include(x => x.SubSystemUser)
+                transform: query => query.Include(x => x.SubSystemUser),
+                additionalFilters: UserExpressions.BySubSystemWithIncludes(subSystem)
             );
             if (users.IsError)
                 return users.Errors;

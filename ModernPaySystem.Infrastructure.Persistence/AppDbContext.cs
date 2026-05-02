@@ -7,26 +7,24 @@ namespace ModernPaySystem.Infrastructure.Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    // Shared Entities
     public DbSet<User> Users { get; set; }
     public DbSet<SubSystemUser> SubSystemUsers { get; set; }
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<PermissionEntity> Permissions { get; set; }
 
-    // Transaction System Entities
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
     public DbSet<RequestAttachment> RequestAttachments { get; set; }
     public DbSet<Response> Responses { get; set; }
     public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
     public DbSet<TemplateOwnership> TemplateOwnerships { get; set; }
+    public DbSet<RequestTransaction> RequestTransactions { get; set; }
+    public DbSet<RequestTransactionAttachment> RequestTransactionAttachments { get; set; }
 
-// Lookup Field Entities
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
 
-    // Pay System Entities - Fast Operations
     public DbSet<Client> Clients { get; set; }
     public DbSet<Gender> Genders { get; set; }
     public DbSet<National> Nationals { get; set; }
@@ -125,7 +123,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(lfv => lfv.LookUpFiledId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Pay System Entities - Fast Operations Relationships
         modelBuilder.Entity<Client>()
             .HasOne(c => c.Gender)
             .WithMany()
@@ -173,5 +170,49 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(o => o.OperationServiceTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // RequestTransaction self-referencing relationship
+        modelBuilder.Entity<RequestTransaction>()
+            .HasOne(rt => rt.ParentTransaction)
+            .WithMany(rt => rt.ChildTransactions)
+            .HasForeignKey(rt => rt.ParentTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RequestTransaction>()
+            .HasOne(rt => rt.Request)
+            .WithMany()
+            .HasForeignKey(rt => rt.RequestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RequestTransaction>()
+            .HasOne(rt => rt.CurrentUserHolder)
+            .WithMany()
+            .HasForeignKey(rt => rt.CurrentUserHolderId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Request to RequestTransaction relationships
+        modelBuilder.Entity<Request>()
+            .HasOne(r => r.FirstTransaction)
+            .WithMany()
+            .HasForeignKey(r => r.FirstTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Request>()
+            .HasOne(r => r.CurrentTransaction)
+            .WithMany()
+            .HasForeignKey(r => r.CurrentTransactionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RequestTransactionAttachment>()
+            .HasOne(rta => rta.RequestTransaction)
+            .WithMany(rt => rt.RequestTransactionAttachments)
+            .HasForeignKey(rta => rta.RequestTransactionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RequestTransactionAttachment>()
+            .HasOne(rta => rta.Attachment)
+            .WithMany()
+            .HasForeignKey(rta => rta.AttachmentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

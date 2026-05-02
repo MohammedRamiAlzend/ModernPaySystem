@@ -1,7 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUsers, useSubSystems } from '../api/usersApi';
 import { Label } from '@/shared/ui/label';
+import { SearchableSelect } from '@/shared/ui/searchable-select';
+import type { SearchableSelectOption } from '@/shared/ui/searchable-select';
 import {
     Select,
     SelectContent,
@@ -9,111 +11,148 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select';
-import { Loader2, User as UserIcon, Shield } from 'lucide-react';
+import { Shield, User as UserIcon } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { APP_CONFIG } from '@/shared/config/appConfig';
 
-interface UserPickerProps {
+// ─── Single-select mode props ────────────────────────────────────────────────
+
+interface UserPickerSingleProps {
+    multiple?: false;
+    /** Callback when a single user is selected */
     onUserSelect: (userId: string) => void;
+    /** Currently selected user id */
+    defaultValue?: string;
+    /** Not used in single mode */
+    selectedUserIds?: never;
+    /** Not used in single mode */
+    onUsersChange?: never;
+}
+
+// ─── Multi-select mode props ─────────────────────────────────────────────────
+
+interface UserPickerMultiProps {
+    multiple: true;
+    /** Selected user IDs */
+    selectedUserIds: string[];
+    /** Callback when the set of selected users changes */
+    onUsersChange: (userIds: string[]) => void;
+    /** Not used in multi mode */
+    onUserSelect?: never;
+    /** Not used in multi mode */
+    defaultValue?: never;
+}
+
+// ─── Shared props ────────────────────────────────────────────────────────────
+
+interface UserPickerSharedProps {
     label?: string;
     placeholder?: string;
     subSystemPlaceholder?: string;
-    defaultValue?: string;
     defaultSubSystemId?: string;
     showCurrentUser?: boolean;
     className?: string;
 }
 
-export const UserPicker = ({
-    onUserSelect,
-    label = "الموافق (Approver)",
-    placeholder = "اختر المستخدم...",
-    subSystemPlaceholder = "اختر النظام...",
-    defaultValue,
-    defaultSubSystemId = "1",
-    showCurrentUser = false,
-    className
-}: UserPickerProps) => {
+export type UserPickerProps = UserPickerSharedProps & (UserPickerSingleProps | UserPickerMultiProps);
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export const UserPicker = (props: UserPickerProps) => {
+    const {
+        label = 'الموافق (Approver)',
+        placeholder = 'اختر المستخدم...',
+        subSystemPlaceholder = 'اختر النظام...',
+        defaultSubSystemId = APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
+        showCurrentUser = false,
+        className,
+    } = props;
+
+    const isMulti = props.multiple === true;
+
     const { user: currentUserData } = useAuthStore();
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(defaultSubSystemId);
-    const [selectedUser, setSelectedUser] = useState<string>(defaultValue || '');
 
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
     const { data: rawUsers = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
 
-    // Filter out current user if showCurrentUser is false
+    // Filter out current user if needed
     const users = useMemo(() => {
         if (showCurrentUser || !currentUserData) return rawUsers;
-        // The DTO might have id (Guid) or user_id or something else
-        // In User.ts (Backend) it is Guid Id. In authStore it is id.
         return rawUsers.filter(u => u.id !== currentUserData.id);
     }, [rawUsers, showCurrentUser, currentUserData]);
 
-    // Update internal state if defaultValue changes
-    useEffect(() => {
-        if (defaultValue && defaultValue !== selectedUser) {
-            setSelectedUser(defaultValue);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [defaultValue]);
+    // Convert users to SearchableSelect options
+    const userOptions: SearchableSelectOption[] = useMemo(() => {
+        return users.map((user, index) => ({
+            value: user.id,
+            label: user.userName,
+            order: index + 1,
+            icon: <UserIcon className="w-3.5 h-3.5 text-primary/60" />,
+        }));
+    }, [users]);
 
     const handleSubSystemChange = (value: string) => {
         setSelectedSubSystem(value);
-        setSelectedUser(''); // Reset user when subsystem changes
-    };
-
-    const handleUserChange = (value: string) => {
-        setSelectedUser(value);
-        onUserSelect(value);
+        // Reset selection when subsystem changes
+        if (isMulti) {
+            props.onUsersChange([]);
+        } else {
+            props.onUserSelect('');
+        }
     };
 
     return (
-        <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-4", className)}>
-            <div className="space-y-2">
-                <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-                    <Shield className="w-3 h-3" />
-                    النظام الفرعي
-                </Label>
-                <Select value={selectedSubSystem} onValueChange={handleSubSystemChange}>
-                    <SelectTrigger className="h-10 rounded-xl bg-background/50 backdrop-blur-sm border-primary/10">
-                        <SelectValue placeholder={isLoadingSubSystems ? "جاري التحميل..." : subSystemPlaceholder} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-primary/10">
-                        {subSystems.map(ss => (
-                            <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
+        <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-4', className)}>
+            {/* SubSystem selector */}
+            {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                <div className="space-y-2">
+                    <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                        <Shield className="w-3 h-3" />
+                        النظام الفرعي
+                    </Label>
+                    <Select value={selectedSubSystem} onValueChange={handleSubSystemChange}>
+                        <SelectTrigger className="h-10 rounded-xl bg-background/50 backdrop-blur-sm border-primary/10">
+                            <SelectValue placeholder={isLoadingSubSystems ? 'جاري التحميل...' : subSystemPlaceholder} />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border-primary/10">
+                            {subSystems.map(ss => (
+                                <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
 
+            {/* User selector – single or multi via SearchableSelect */}
             <div className="space-y-2">
                 <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                     <UserIcon className="w-3 h-3" />
                     {label}
                 </Label>
-                <Select value={selectedUser} onValueChange={handleUserChange}>
-                    <SelectTrigger className="h-10 rounded-xl bg-background/50 backdrop-blur-sm border-primary/10">
-                        <SelectValue placeholder={isLoadingUsers ? "جاري التحميل..." : placeholder} />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-primary/10">
-                        {users.length === 0 && !isLoadingUsers ? (
-                            <div className="p-4 text-center text-sm text-muted-foreground italic">
-                                لا يوجد مستخدمين لهذا النظام
-                            </div>
-                        ) : (
-                            users.map(user => (
-                                <SelectItem key={user.id} value={user.id}>
-                                    {user.userName}
-                                </SelectItem>
-                            ))
-                        )}
-                        {isLoadingUsers && (
-                            <div className="p-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                جاري تحميل المستخدمين...
-                            </div>
-                        )}
-                    </SelectContent>
-                </Select>
+
+                {isMulti ? (
+                    <SearchableSelect
+                        multiple
+                        options={userOptions}
+                        values={props.selectedUserIds}
+                        onValuesChange={props.onUsersChange}
+                        placeholder={placeholder}
+                        searchPlaceholder="ابحث بالاسم أو الترتيب..."
+                        emptyMessage="لا يوجد مستخدمين لهذا النظام"
+                        isLoading={isLoadingUsers}
+                    />
+                ) : (
+                    <SearchableSelect
+                        options={userOptions}
+                        value={props.defaultValue || ''}
+                        onValueChange={props.onUserSelect}
+                        placeholder={placeholder}
+                        searchPlaceholder="ابحث بالاسم أو الترتيب..."
+                        emptyMessage="لا يوجد مستخدمين لهذا النظام"
+                        isLoading={isLoadingUsers}
+                    />
+                )}
             </div>
         </div>
     );

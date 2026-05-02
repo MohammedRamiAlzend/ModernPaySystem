@@ -1,6 +1,7 @@
 import React from 'react';
-import { Image as ImageIcon, Loader2, Maximize2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2, Maximize2, Printer, Download } from 'lucide-react';
 import type { ZipImage } from '@/shared/utils/zip-handler';
+import { printImage, downloadImage } from '@/shared/utils/image-actions';
 
 interface ResponseDetailsAttachmentsProps {
     attachmentsCount: number;
@@ -47,8 +48,34 @@ export const ResponseDetailsAttachments: React.FC<ResponseDetailsAttachmentsProp
                                 alt={img.name}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <Maximize2 className="text-white w-8 h-8" />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <button 
+                                    className="p-2 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        printImage(img.url);
+                                    }}
+                                    title="طباعة"
+                                >
+                                    <Printer className="w-5 h-5 md:w-6 md:h-6" />
+                                </button>
+                                <button 
+                                    className="p-2 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        downloadImage(img.url, img.name);
+                                    }}
+                                    title="تنزيل"
+                                >
+                                    <Download className="w-5 h-5 md:w-6 md:h-6" />
+                                </button>
+                                <button 
+                                    className="p-2 bg-white/20 backdrop-blur-md rounded-xl text-white hover:bg-white/40 transition-all hover:scale-110"
+                                    onClick={() => setSelectedImage(img)}
+                                    title="تكبير"
+                                >
+                                    <Maximize2 className="w-5 h-5 md:w-6 md:h-6" />
+                                </button>
                             </div>
                             <div className="absolute bottom-0 inset-x-0 p-2 bg-black/60 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
                                 <p className="text-[10px] text-white truncate text-center font-mono">{img.name}</p>

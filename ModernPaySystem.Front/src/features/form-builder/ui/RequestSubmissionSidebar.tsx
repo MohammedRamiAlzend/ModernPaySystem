@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Shield, ImagePlus, FileText, X, Scan } from 'lucide-react';
+import { Shield, ImagePlus, FileText, X, Scan, Eye } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserPicker } from '@/features/users/ui/UserPicker';
 import { SidebarSection } from '@/shared/ui/sidebar-section';
@@ -10,6 +10,8 @@ import type { ImageMeta } from '@/features/document-scanner';
 interface RequestSubmissionSidebarProps {
     approverId: string;
     onApproverSelect: (id: string) => void;
+    readOnlyUsers: string[];
+    onReadOnlyUsersChange: (ids: string[]) => void;
     files: File[];
     onFilesChange: (files: File[]) => void;
     showFiles?: boolean;
@@ -20,6 +22,8 @@ interface RequestSubmissionSidebarProps {
 export const RequestSubmissionSidebar = ({
     approverId,
     onApproverSelect,
+    readOnlyUsers,
+    onReadOnlyUsersChange,
     files,
     onFilesChange,
     showFiles = true,
@@ -50,13 +54,26 @@ export const RequestSubmissionSidebar = ({
 
     return (
         <div className={cn("space-y-6 sticky top-8", className)}>
-            {/* Approver Selection */}
+            {/* Approver Selection (single) */}
             <SidebarSection title={approverLabel} icon={Shield}>
                 <UserPicker
                     onUserSelect={onApproverSelect}
                     className="!grid-cols-1"
                     label={approverLabel}
                     defaultValue={approverId}
+                    showCurrentUser={false}
+                />
+            </SidebarSection>
+
+            {/* ReadOnly (CC) Users Selection (multi) */}
+            <SidebarSection title="للاطلاع فقط" icon={Eye}>
+                <UserPicker
+                    multiple
+                    selectedUserIds={readOnlyUsers}
+                    onUsersChange={onReadOnlyUsersChange}
+                    className="!grid-cols-1"
+                    label="المراقبين (CC)"
+                    placeholder="اختر للاطلاع..."
                     showCurrentUser={false}
                 />
             </SidebarSection>

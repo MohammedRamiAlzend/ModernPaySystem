@@ -85,6 +85,9 @@ export const generateFormPDF = async (
                 margin-bottom: 25px;
                 border-bottom: 2px solid #000000;
             ">
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <img src="/ECSC.png" style="height: 60px; object-fit: contain; display: block; margin: 0 auto;" />
+                </div>
                 <h1 style="
                     font-size: 24px;
                     font-weight: 900;
@@ -114,6 +117,17 @@ export const generateFormPDF = async (
     try {
         // Wait for fonts to load
         await document.fonts.ready;
+
+        // Wait for images to load if any
+        const images = container.getElementsByTagName('img');
+        const imagePromises = Array.from(images).map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve; // Continue even if image fails
+            });
+        });
+        await Promise.all(imagePromises);
 
         // Use html2canvas to capture the rendered HTML
         const canvas = await html2canvas(container, {
@@ -189,7 +203,7 @@ export const printFormResponse = (
     // Generate fields HTML
     const fieldsHtml = fields.map(field => {
         const widthPercent = (field.colSpan / 12) * 100;
-        
+
         if (field.type === 'label') {
             return `
                 <div class="field-item label-item" style="width: 100%; border-bottom: 2px solid #16a34a; background-color: #f8fafc; padding-top: 20px;">
@@ -297,13 +311,17 @@ export const printFormResponse = (
         
         @media print {
             @page {
-                size: A4;
-                margin: 10mm;
+                size: auto;
+                margin: 0;
             }
             body {
-                padding: 0;
+                padding: 15mm;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            .document {
+                max-width: 100%;
+                margin: 0;
             }
         }
     </style>
@@ -311,6 +329,9 @@ export const printFormResponse = (
 <body>
     <div class="document">
         <div class="header">
+            <div style="margin-bottom: 10px; text-align: center;">
+                <img src="/ECSC.png" style="height: 60px; object-fit: contain; display: block; margin: 0 auto;" />
+            </div>
             <h1>${title}</h1>
             <div class="date">تاريخ التقديم: ${submittedAt}</div>
         </div>

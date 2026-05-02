@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { useUIStore } from '@/app/store/uiStore';
+import { useAuthStore } from '@/app/store/authStore';
+import { APP_CONFIG } from '../config/appConfig';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+    baseURL: APP_CONFIG.API_BASE_URL || 'http://localhost:5173/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -28,14 +30,15 @@ api.interceptors.response.use(
         const status = error.response?.status;
         const message = error.response?.data?.message || error.message || 'حدث خطأ في الاتصال بالخادم';
 
-        // التعامل مع أخطاء 401 (غير مصرح به)
+        // التعامل مع أخطاء 401 (غير مصرح به) - يعني التوكن انتهى أو غير صالح
         if (status === 401) {
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('user');
+            const { logout } = useAuthStore.getState();
+            logout();
 
-            // Redirect to login if not already there
+            // التحقق مما إذا كنا لسنا في صفحة تسجيل الدخول بالفعل لتجنب التكرار
             if (window.location.pathname !== '/auth/login') {
-                window.location.href = '/auth/login';
+                // إضافة معامل في الرابط لتمييز حالة انتهاء الجلسة عرض رسالة للمستخدم
+                window.location.href = '/auth/login?reason=expired';
             }
         } else {
             // إظهار رسالة خطأ لباقي الأخطاء

@@ -6,10 +6,9 @@ public class Response : Entity<Guid>, IAuditableEntity
 {
     public required Guid RequestId { get; set; }
     public Request? Request { get; set; }
-
     public required Guid RespondedByUserId { get; set; }
-
     public string? Comment { get; set; }
+
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -29,11 +28,9 @@ public class Response : Entity<Guid>, IAuditableEntity
             UpdatedAt = this.UpdatedAt,
             Request = this.Request?.ToDto(),
             ResponseAttachments = this.ResponseAttachments?.Select(ra => ra.ToDto()).ToList() ?? new List<ResponseAttachmentDto>()
-
         };
     }
 
-    // Navigation property for attachments
     public ICollection<ResponseAttachment> ResponseAttachments { get; set; } = [];
 }
 

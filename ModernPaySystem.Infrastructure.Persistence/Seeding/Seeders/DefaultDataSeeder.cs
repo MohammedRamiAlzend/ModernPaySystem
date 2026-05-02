@@ -111,10 +111,31 @@ public class DefaultDataSeeder(IPasswordHasher passwordHasher) : IEntitySeeder
         };
 
         await context.Users.AddAsync(superAdminUser);
+
+        // Add users 2 to 5 and assign them to SubSystem 1 (TransactionSystem)
+        for (int i = 2; i <= 5; i++)
+        {
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                UserName = i.ToString(),
+                HashedPassword = passwordHasher.HashPassword(i.ToString())
+            };
+            await context.Users.AddAsync(user);
+            
+            await context.SubSystemUsers.AddAsync(new SubSystemUser
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                SubSystem = SubSystem.TransactionSystem
+            });
+        }
+
         await context.SaveChangesAsync();
 
         superAdminUser.Roles.Add(superAdminRole);
         await context.SaveChangesAsync();
+
     }
 
  

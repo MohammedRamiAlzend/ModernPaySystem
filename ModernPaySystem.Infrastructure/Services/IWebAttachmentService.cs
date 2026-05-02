@@ -16,4 +16,9 @@ public interface IWebAttachmentService
     /// Uploads a file and associates it with a response.
     /// </summary>
     Task<Result<Attachment>> UploadFileToResponseAsync(IFormFile file, Guid responseId, string? subDirectory = null);
+
+    /// <summary>
+    /// Uploads a file and associates it with a request transaction.
+    /// </summary>
+    Task<Result<Attachment>> UploadFileToRequestTransactionAsync(IFormFile file, Guid requestTransactionId, string? subDirectory = null);
 }

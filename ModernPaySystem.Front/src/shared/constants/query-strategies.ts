@@ -1,3 +1,5 @@
+import { APP_CONFIG } from '../config/appConfig';
+
 /**
  * استراتيجيات تحديث البيانات (Update Strategies)
  * تُستخدم لتحديد سلوك React Query بناءً على نوع البيانات المجلوبة وأهميتها.
@@ -55,6 +57,7 @@ export const QUERY_STRATEGIES: Record<UpdateStrategy, QueryConfigOptions> = {
         gcTime: 1000 * 60 * 5,
         retry: 1,
         refetchOnWindowFocus: true,     // تحديث عند العودة
-        refetchInterval: 5000,          // جلب تلقائي كل 5 ثوانٍ
+        refetchInterval: APP_CONFIG.LIVE_REFETCH_INTERVAL,
     },
+
 };

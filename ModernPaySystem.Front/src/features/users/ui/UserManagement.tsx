@@ -31,18 +31,19 @@ import {
 } from '@/shared/ui/select';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
+import { APP_CONFIG } from '@/shared/config/appConfig';
 
 export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
     const currentUserSubsystem = useAuthStore((state) => state.user?.subsystem);
-    const [selectedSubSystem, setSelectedSubSystem] = useState<string>('all');
+    const [selectedSubSystem, setSelectedSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
     // Form State
     const [userName, setUserName] = useState('');
     const [password, setPassword] = useState('');
-    const [userSubSystem, setUserSubSystem] = useState<string>('0');
+    const [userSubSystem, setUserSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
 
     const { data: users = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
@@ -53,7 +54,7 @@ export const UserManagement = () => {
         setUserName('');
         setPassword('');
         // إذا كان المستخدم الحالي لديه نظام فرعي محدد، يتم تعيينه تلقائياً وإجباري
-        setUserSubSystem(currentUserSubsystem || '0');
+        setUserSubSystem(currentUserSubsystem || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
         setIsUserDialogOpen(true);
     };
 
@@ -61,7 +62,7 @@ export const UserManagement = () => {
         setEditingUser(user);
         setUserName(user.userName);
         setPassword('');
-        setUserSubSystem(user.subSystem?.toString() || '0');
+        setUserSubSystem(user.subSystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
         setIsUserDialogOpen(true);
     };
 
@@ -137,20 +138,22 @@ export const UserManagement = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
-                        <Filter className="w-4 h-4 text-muted-foreground mr-2" />
-                        <Select value={selectedSubSystem} onValueChange={setSelectedSubSystem}>
-                            <SelectTrigger className="w-[180px] h-9 border-none bg-transparent shadow-none focus:ring-0">
-                                <SelectValue placeholder={isLoadingSubSystems ? "جاري التحميل..." : "تصفية حسب النظام"} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">الكل</SelectItem>
-                                {subSystems.map(ss => (
-                                    <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
+                    {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                        <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
+                            <Filter className="w-4 h-4 text-muted-foreground mr-2" />
+                            <Select value={selectedSubSystem} onValueChange={setSelectedSubSystem}>
+                                <SelectTrigger className="w-[180px] h-9 border-none bg-transparent shadow-none focus:ring-0">
+                                    <SelectValue placeholder={isLoadingSubSystems ? "جاري التحميل..." : "تصفية حسب النظام"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">الكل</SelectItem>
+                                    {subSystems.map(ss => (
+                                        <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                     <Button onClick={handleAddUser} className="rounded-xl px-4 h-10 font-bold shadow-lg shadow-primary/20">
                         <Plus className="w-4 h-4 ml-2" />
                         إضافة مستخدم
@@ -167,7 +170,7 @@ export const UserManagement = () => {
                                 <TableRow>
                                     <TableHead className="text-right font-bold w-16">#</TableHead>
                                     <TableHead className="text-right font-bold">اسم المستخدم</TableHead>
-                                    <TableHead className="text-right font-bold">النظام الفرعي</TableHead>
+                                    {APP_CONFIG.SHOW_SUB_SYSTEM && <TableHead className="text-right font-bold">النظام الفرعي</TableHead>}
                                     <TableHead className="text-right font-bold">تاريخ الإنشاء</TableHead>
                                     <TableHead className="text-left font-bold w-28">الإجراءات</TableHead>
                                 </TableRow>
@@ -194,14 +197,16 @@ export const UserManagement = () => {
                                                     <span className="font-bold">{user.userName}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center gap-1.5">
-                                                    <Shield className="w-3.5 h-3.5 text-muted-foreground" />
-                                                    <span className="text-sm">
-                                                        {subSystems.find(ss => ss.value === user.subSystem?.toString())?.name || user.subSystem || 'لا يوجد'}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
+                                            {APP_CONFIG.SHOW_SUB_SYSTEM && (
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Shield className="w-3.5 h-3.5 text-muted-foreground" />
+                                                        <span className="text-sm">
+                                                            {subSystems.find(ss => ss.value === user.subSystem?.toString())?.name || user.subSystem || 'لا يوجد'}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                            )}
                                             <TableCell className="text-right text-sm text-muted-foreground">
                                                 {user.createdAt ? new Date(user.createdAt).toLocaleDateString('ar-EG') : '-'}
                                             </TableCell>
@@ -280,7 +285,7 @@ export const UserManagement = () => {
                                 className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary"
                             />
                         </div>
-                        {!currentUserSubsystem &&
+                        {!currentUserSubsystem && APP_CONFIG.SHOW_SUB_SYSTEM &&
                             <div className="space-y-2">
                                 <Label htmlFor="subSystem">النظام الفرعي</Label>
                                 <Select value={userSubSystem} onValueChange={setUserSubSystem}>

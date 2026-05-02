@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { printImage, downloadImage } from '@/shared/utils/image-actions';
 import { Button } from '@/shared/ui/button';
 import { ImageMeta } from '../model/types';
 import Cropper, { ReactCropperElement } from 'react-cropper';
@@ -12,6 +13,8 @@ import {
     Upload,
     FileText,
     RefreshCcw,
+    Printer,
+    Download
 } from 'lucide-react';
 
 interface ImagePreviewProps {
@@ -47,9 +50,17 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
                     {isEditing ? 'وضعية التحرير' : 'معاينة الملف'}
                 </span>
                 {activeImage && !isEditing && activeImage.type.startsWith('image/') && (
-                    <Button variant="ghost" size="sm" className="h-7 text-[11px] gap-1.5 rounded-lg" onClick={onStartEdit}>
-                        <Edit2 className="h-3 w-3" /> تعديل الصورة
-                    </Button>
+                    <div className="flex gap-1">
+                        <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1 rounded-lg hover:bg-primary/5 px-2" onClick={() => printImage(activeImage.url)}>
+                            <Printer className="h-3 w-3" /> طباعة
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1 rounded-lg hover:bg-primary/5 px-2" onClick={() => downloadImage(activeImage.url, activeImage.name)}>
+                            <Download className="h-3 w-3" /> تنزيل
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 text-[10px] gap-1 rounded-lg hover:bg-primary/5 px-2" onClick={onStartEdit}>
+                            <Edit2 className="h-3 w-3" /> تعديل
+                        </Button>
+                    </div>
                 )}
             </div>
 

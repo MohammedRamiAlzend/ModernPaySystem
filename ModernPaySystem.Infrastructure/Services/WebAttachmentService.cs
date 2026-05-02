@@ -145,4 +145,72 @@ public class WebAttachmentService(
 
         return attachment;
     }
+
+    public async Task<Result<Attachment>> UploadFileToRequestTransactionAsync(IFormFile file, Guid requestTransactionId, string? subDirectory = null)
+    {
+        // Verify the request transaction exists
+        var requestTransaction = await unitOfWork.RequestTransactions.GetByIdAsync(requestTransactionId);
+        if (requestTransaction.IsError)
+        {
+            return ApplicationErrors.RequestTransactionNotFound;
+        }
+
+        // Create a custom subdirectory for this request transaction
+        string requestTransactionSubDirectory = Path.Combine("TransactionSystem", "RequestTransactions", requestTransactionId.ToString());
+
+        // If a subdirectory was provided, append it to the request transaction directory
+        if (!string.IsNullOrEmpty(subDirectory))
+        {
+            requestTransactionSubDirectory = Path.Combine(requestTransactionSubDirectory, subDirectory);
+        }
+
+        // Save the file using the file manager
+        var fileResult = await fileManager.SaveFileAsync(file, requestTransactionSubDirectory);
+        if (fileResult.IsError)
+        {
+            return fileResult.Errors;
+        }
+
+        var fileMetadata = fileResult.Value;
+
+        // Create an attachment entity
+        var attachment = new Attachment
+        {
+            FileName = fileMetadata.OriginalFileName,
+            SafeName = fileMetadata.StoredFileName,
+            Extension = fileMetadata.FileExtension,
+            Path = fileMetadata.FilePath
+        };
+
+        // Save the attachment to the database
+        var attachmentResult = await unitOfWork.Attachments.AddAsync(attachment);
+        if (attachmentResult.IsError)
+        {
+            // Clean up the uploaded file if DB operation fails
+            await fileManager.DeleteFileAsync(fileMetadata.FilePath);
+            return attachmentResult.Errors;
+        }
+
+        // Associate the attachment with the request transaction
+        var requestTransactionAttachment = new RequestTransactionAttachment
+        {
+            RequestTransactionId = requestTransactionId,
+            AttachmentId = attachment.Id
+        };
+
+        var associationResult = await unitOfWork.RequestTransactionAttachments.AddAsync(requestTransactionAttachment);
+        if (associationResult.IsError)
+        {
+            // Clean up: remove the attachment from DB and file system if association fails
+            await unitOfWork.Attachments.RemoveAsync(x => x.Id == attachment.Id);
+            await fileManager.DeleteFileAsync(fileMetadata.FilePath);
+            return associationResult.Errors;
+        }
+
+        int result = await unitOfWork.SaveChangesAsync();
+        if (result <= 0)
+            return ApplicationErrors.DatabaseError;
+
+        return attachment;
+    }
 }

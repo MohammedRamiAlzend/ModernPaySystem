@@ -2,15 +2,16 @@ import { useEffect, useCallback } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 // import { useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/app/store/authStore';
+import { RoutePermissions } from './route-permissions';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  permission?: 'PUBLIC' | 'AUTHENTICATED' | 'ADMIN' | 'USER';
+  permission?: RoutePermissions;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  permission = 'AUTHENTICATED'
+  permission = RoutePermissions.AUTHENTICATED
 }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const currentUser = useAuthStore((state) => state.user);

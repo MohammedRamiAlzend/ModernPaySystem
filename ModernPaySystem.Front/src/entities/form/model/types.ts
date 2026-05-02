@@ -97,6 +97,7 @@ export interface CreateRequestDto {
     TemplateId: string;
     RequesterId: string; // UUID
     ApproverId?: string; // UUID
+    ReadOnlyUsers?: string[]; // List of user IDs for CC/Read-only
     Content: string; // JSON content
     files?: File[]; // For multi-part file upload
 }
@@ -133,6 +134,9 @@ export interface TemplateRequest {
     requesterId: string;
     approverId: string;
     content: string;
+    status: number; // RequestStatus
+    currentTransactionId?: string | null;
+    firstTransactionId?: string | null;
     requestAttachmentDtos?: RequestAttachmentDto[];
     template?: Template | null;
     requester?: UserReference | null;
@@ -145,6 +149,37 @@ export interface CreateResponseDto {
     requestId: string;
     respondedByUserId: string;
     files?: File[];
+}
+
+export interface CreateRequestTransactionDto {
+    requestId: string;
+    notes: string | null;
+    parentTransactionId?: string | null;
+    targetUserId: string; // We'll map this to CurrentUserHolderId in the API service
+    files?: File[];
+}
+
+export interface RequestTransactionAttachmentDto {
+    id: string;
+    requestTransactionId: string;
+    attachmentId: string;
+    attachmentDto: AttachmentDto | null;
+}
+
+export interface RequestTransactionDto {
+    id: string;
+    requestId: string;
+    notes: string | null;
+    level: number;
+    path: string;
+    parentTransactionId: string | null;
+    currentUserHolderId: string;
+    status: number; // TransactionStatus (0: PendingAction, 1: Transferred)
+    createdAt: string;
+    createdByUserId: string | null;
+    request?: TemplateRequest | null;
+    currentUserHolder?: UserReference | null;
+    requestTransactionAttachments?: RequestTransactionAttachmentDto[];
 }
 
 /** Represents the join entity between a response and its attachments */

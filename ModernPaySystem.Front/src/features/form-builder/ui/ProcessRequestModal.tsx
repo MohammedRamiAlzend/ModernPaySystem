@@ -18,6 +18,10 @@ interface ProcessRequestModalProps {
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onFilesAdd: (files: File[]) => void;
     onRemoveFile: (index: number) => void;
+    submissionMode: 'submit' | 'referral';
+    onSubmissionModeChange: (mode: 'submit' | 'referral') => void;
+    targetUserId: string;
+    onTargetUserChange: (userId: string) => void;
     onSubmit: () => void;
 }
 
@@ -33,6 +37,10 @@ export const ProcessRequestModal = ({
     onFileChange,
     onFilesAdd,
     onRemoveFile,
+    submissionMode,
+    onSubmissionModeChange,
+    targetUserId,
+    onTargetUserChange,
     onSubmit
 }: ProcessRequestModalProps) => {
     if (!request || !template) return null;
@@ -50,14 +58,14 @@ export const ProcessRequestModal = ({
                 </div>
             }
         >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[70vh] overflow-hidden" dir="rtl">
+            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:h-[75vh]" dir="rtl">
                 {/* Details Section (60%) */}
-                <div className="lg:col-span-7 h-full overflow-hidden flex flex-col">
+                <div className="lg:col-span-7 h-[600px] lg:h-full">
                     <SelectedRequestPreview request={request} template={template} />
                 </div>
 
                 {/* Response Form Section (40%) */}
-                <div className="lg:col-span-5 h-full overflow-hidden flex flex-col">
+                <div className="lg:col-span-5 h-[500px] lg:h-full pt-4 lg:pt-0 border-t lg:border-t-0">
                     <ResponseForm
                         requestId={request.id}
                         comment={comment}
@@ -67,6 +75,10 @@ export const ProcessRequestModal = ({
                         onFileChange={onFileChange}
                         onFilesAdd={onFilesAdd}
                         onRemoveFile={onRemoveFile}
+                        submissionMode={submissionMode}
+                        onSubmissionModeChange={onSubmissionModeChange}
+                        targetUserId={targetUserId}
+                        onTargetUserChange={onTargetUserChange}
                         onSubmit={onSubmit}
                     />
                 </div>
