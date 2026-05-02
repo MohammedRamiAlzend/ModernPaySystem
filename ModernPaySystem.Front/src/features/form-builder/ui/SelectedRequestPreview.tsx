@@ -164,8 +164,8 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden flex flex-col p-4">
-                <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden" dir="rtl">
+            <div className="flex-1 overflow-hidden flex flex-col p-4" dir="rtl">
+                <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
                     <TabsList className="w-full justify-start border-b border-primary/10 rounded-none p-0 h-auto bg-transparent mb-4 shrink-0">
                         <TabsTrigger 
                             value="details" 

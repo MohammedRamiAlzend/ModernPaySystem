@@ -10,9 +10,7 @@ import {
     MessageSquare,
     User,
     Calendar,
-    ArrowRight,
-    Paperclip,
-    Download
+    ArrowRight
 } from 'lucide-react';
 
 import { Button } from '@/shared/ui/button';

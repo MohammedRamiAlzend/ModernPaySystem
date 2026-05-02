@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { extractImagesFromZip, revokeZipImages, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
+import { extractImagesFromZip, revokeZipImages, type ZipImage } from '@/shared/utils/zip-handler';
 
 /**
  * Hook to handle fetching and extracting images from a ZIP blob
