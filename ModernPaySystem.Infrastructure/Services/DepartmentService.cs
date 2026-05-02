@@ -138,7 +138,7 @@ public class DepartmentService(
             // Update fields
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 department.Name = dto.Name;
-            
+
             department.Code = dto.Code ?? department.Code;
             department.Description = dto.Description ?? department.Description;
             department.ParentDepartmentId = dto.ParentDepartmentId;
@@ -336,9 +336,10 @@ public class DepartmentService(
     {
         try
         {
-            // This would require a UserRepository with department filtering
-            // For now, return empty list - to be implemented when User-Department integration is complete
-            return new List<UserDto>();
+            var deptResult = await _unitOfWork.Departments.GetAsync(x => x.Id == departmentId, i => i.Include(x => x.Users).ThenInclude(x=>x.SubSystemUser));
+            if (deptResult.IsError || deptResult.Value == null)
+                return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
+            return deptResult.Value.Users.Select(x=> x.ToDto()).ToList();
         }
         catch (Exception ex)
         {
@@ -351,13 +352,20 @@ public class DepartmentService(
     {
         try
         {
-            // Verify department exists
             var deptResult = await _unitOfWork.Departments.GetByIdAsync(departmentId);
             if (deptResult.IsError || deptResult.Value == null)
                 return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
 
-            // This would require UserRepository to update user's DepartmentId
-            // To be implemented when User-Department integration is complete
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (user.IsError || user.Value == null)
+                return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
+
+            user.Value.DepartmentId = departmentId;
+            var updateResult = await _unitOfWork.Users.UpdateAsync(user.Value);
+            if (updateResult.IsError)
+                return updateResult.Errors;
+            await _unitOfWork.SaveChangesAsync();
+
             logger.LogInformation("Assigning user: {UserId} to department: {DepartmentId}", userId, departmentId);
             return true;
         }

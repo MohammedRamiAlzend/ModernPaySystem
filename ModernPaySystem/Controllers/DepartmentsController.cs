@@ -12,7 +12,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get the full department tree
     /// </summary>
     [HttpGet("tree")]
-    [EndpointPermission("departments.view_tree", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view_tree", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetTree()
     {
         logger.LogInformation("Fetching full department tree");
@@ -24,7 +24,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get a subtree starting from a specific department
     /// </summary>
     [HttpGet("{id:guid}/subtree")]
-    [EndpointPermission("departments.view_tree", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view_tree", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetSubTree(Guid id)
     {
         logger.LogInformation("Fetching subtree for department: {DepartmentId}", id);
@@ -36,7 +36,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get department by ID
     /// </summary>
     [HttpGet("{id:guid}")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
     {
         logger.LogInformation("Fetching department by id: {DepartmentId}", id);
@@ -48,7 +48,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get direct children of a department
     /// </summary>
     [HttpGet("{id:guid}/children")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetChildren(Guid id)
     {
         logger.LogInformation("Fetching children for department: {DepartmentId}", id);
@@ -60,7 +60,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get the path from a department to root
     /// </summary>
     [HttpGet("{id:guid}/path")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetPathToRoot(Guid id)
     {
         logger.LogInformation("Fetching path to root for department: {DepartmentId}", id);
@@ -72,7 +72,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get parent department
     /// </summary>
     [HttpGet("{id:guid}/parent")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetParent(Guid id)
     {
         logger.LogInformation("Fetching parent for department: {DepartmentId}", id);
@@ -84,7 +84,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Search departments by name or code
     /// </summary>
     [HttpGet("search")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromQuery] int level = 0)
     {
         logger.LogInformation("Searching departments with term: {SearchTerm}, level: {Level}", searchTerm, level);
@@ -96,7 +96,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get departments by level
     /// </summary>
     [HttpGet("level/{level:int}")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByLevel(int level)
     {
         logger.LogInformation("Fetching departments at level: {Level}", level);
@@ -108,7 +108,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Create a new department
     /// </summary>
     [HttpPost]
-    [EndpointPermission("departments.create", SubSystem.Shared, PermissionType.Insert)]
+    [EndpointPermission("departments.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromBody] CreateDepartmentDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -134,7 +134,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Update an existing department
     /// </summary>
     [HttpPut("{id:guid}")]
-    [EndpointPermission("departments.edit", SubSystem.Shared, PermissionType.Update)]
+    [EndpointPermission("departments.edit", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDepartmentDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -154,7 +154,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Delete a department
     /// </summary>
     [HttpDelete("{id:guid}")]
-    [EndpointPermission("departments.delete", SubSystem.Shared, PermissionType.Delete)]
+    [EndpointPermission("departments.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)
     {
         logger.LogInformation("Deleting department: {DepartmentId}", id);
@@ -166,7 +166,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Get users in a department
     /// </summary>
     [HttpGet("{id:guid}/users")]
-    [EndpointPermission("departments.view", SubSystem.Shared, PermissionType.Read)]
+    [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetUsersInDepartment(Guid id, [FromQuery] bool includeSubDepartments = false)
     {
         logger.LogInformation("Fetching users in department: {DepartmentId}", id);
@@ -178,7 +178,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Assign a user to a department
     /// </summary>
     [HttpPost("{id:guid}/assign-user")]
-    [EndpointPermission("departments.assign_user", SubSystem.Shared, PermissionType.Update)]
+    [EndpointPermission("departments.assign_user", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> AssignUser(Guid id, [FromBody] AssignUserDto dto)
     {
         logger.LogInformation("Assigning user: {UserId} to department: {DepartmentId}", dto.UserId, id);
@@ -190,7 +190,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// Remove a user from a department
     /// </summary>
     [HttpDelete("{id:guid}/remove-user/{userId:guid}")]
-    [EndpointPermission("departments.assign_user", SubSystem.Shared, PermissionType.Update)]
+    [EndpointPermission("departments.assign_user", SubSystem.TransactionSystem, PermissionType.Update)]
     public async Task<IActionResult> RemoveUser(Guid id, Guid userId)
     {
         logger.LogInformation("Removing user: {UserId} from department: {DepartmentId}", userId, id);
