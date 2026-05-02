@@ -58,6 +58,9 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<INumberSpellingWrapperService, NumberSpellingWrapperService>();
         services.AddTransient<AuditInterceptor>();
 
+        // Register Department Service
+        services.AddScoped<IDepartmentService, DepartmentService>();
+
         services.AddTransient<IPermissionSeederService>(provider =>
         {
             var applicationPartManager = provider.GetRequiredService<ApplicationPartManager>();

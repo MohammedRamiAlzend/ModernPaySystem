@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<PermissionEntity> Permissions { get; set; }
+    public DbSet<Department> Departments { get; set; }
 
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
@@ -214,5 +215,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(rta => rta.AttachmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Department self-referencing relationship
+        modelBuilder.Entity<Department>()
+            .HasOne(d => d.ParentDepartment)
+            .WithMany(d => d.ChildDepartments)
+            .HasForeignKey(d => d.ParentDepartmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Department-User relationship
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Department)
+            .WithMany(d => d.Users)
+            .HasForeignKey(u => u.DepartmentId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

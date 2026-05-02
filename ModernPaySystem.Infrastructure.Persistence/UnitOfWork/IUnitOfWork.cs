@@ -36,6 +36,8 @@ public interface IUnitOfWork
 
     IRepositoryBase<RequestTransactionAttachment, Guid> RequestTransactionAttachments { get; }
 
+    IRepositoryBase<Department, Guid> Departments { get; }
+
     Task<int> SaveChangesAsync();
 
     Task BeginTransactionAsync();

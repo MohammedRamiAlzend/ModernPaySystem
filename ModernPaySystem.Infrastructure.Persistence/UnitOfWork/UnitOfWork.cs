@@ -39,6 +39,7 @@ public class UnitOfWork(
     private IRepositoryBase<LookUpFiledValues, Guid>? _lookUpFiledValues;
     private IRepositoryBase<RequestTransaction, Guid>? _requestTransactions;
     private IRepositoryBase<RequestTransactionAttachment, Guid>? _requestTransactionAttachments;
+    private IRepositoryBase<Department, Guid>? _departments;
 
     public IRepositoryBase<User, Guid> Users =>
         _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>(), _httpContextServiceManager);
@@ -84,6 +85,9 @@ public class UnitOfWork(
 
     public IRepositoryBase<RequestTransactionAttachment, Guid> RequestTransactionAttachments =>
         _requestTransactionAttachments ??= new RepositoryBase<RequestTransactionAttachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<RequestTransactionAttachment, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<Department, Guid> Departments =>
+        _departments ??= new RepositoryBase<Department, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Department, Guid>>(), _httpContextServiceManager);
 
     public async Task<int> SaveChangesAsync()
     {
