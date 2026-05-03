@@ -21,6 +21,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             logger.LogInformation("Fetching all users");
             var users = await unitOfWork.Users.GetAllAsync(
                 transform: query => query.Include(x => x.SubSystemUser)
+                                         .Include(x => x.Department)
             );
             if (users.IsError)
                 return users.Errors;
@@ -50,7 +51,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             var pagedUsers = await unitOfWork.Users.GetPagedAsync(
                 page, 
                 pageSize,
-                transform: query => query.Include(x => x.SubSystemUser)
+                transform: query => query.Include(x => x.SubSystemUser).Include(x => x.Department)
             );
             if (pagedUsers.IsError)
                 return pagedUsers.Errors;
@@ -74,7 +75,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             logger.LogInformation("Fetching user by id: {UserId}", id);
             var user = await unitOfWork.Users.GetAsync(
                 filter: UserExpressions.ById(id),
-                transform: query => query.Include(x => x.SubSystemUser)
+                transform: query => query.Include(x => x.SubSystemUser).Include(x => x.Department)
             );
 
             if (user.IsError)
@@ -102,7 +103,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             logger.LogInformation("Fetching user by username: {Username}", username);
             var user = await unitOfWork.Users.GetAsync(
                 filter: UserExpressions.ByUsername(username),
-                transform: query => query.Include(x => x.SubSystemUser)
+                transform: query => query.Include(x => x.SubSystemUser).Include(x => x.Department)
             );
 
             if (user.IsError)
@@ -205,7 +206,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             logger.LogInformation("Fetching users by subsystem: {SubSystem}", subSystem);
 
             var users = await unitOfWork.Users.GetAllAsync(
-                transform: query => query.Include(x => x.SubSystemUser),
+                transform: query => query.Include(x => x.SubSystemUser).Include(x => x.Department),
                 additionalFilters: UserExpressions.BySubSystemWithIncludes(subSystem)
             );
             if (users.IsError)

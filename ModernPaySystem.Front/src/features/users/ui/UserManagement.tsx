@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { useUsers, useSubSystems, useUserMutations, User } from '../api/usersApi';
+import { useState, useMemo } from 'react';
+import { useUsers, useSubSystems, useUserMutations, User, UserCreateDto } from '../api/usersApi';
 import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import {
@@ -11,17 +10,16 @@ import {
     Loader2,
     Users,
     Filter,
-    Shield
+    Shield,
+    Building2
 } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
     DialogDescription
 } from '@/shared/ui/dialog';
-import { Label } from '@/shared/ui/label';
 import {
     Select,
     SelectContent,
@@ -32,72 +30,67 @@ import {
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
 import { APP_CONFIG } from '@/shared/config/appConfig';
+import { AssignDepartmentDialog } from './AssignDepartmentDialog';
+import { useDepartments } from '@/entities/department/model/useDepartments';
+import { SearchableSelect } from '@/shared/ui/searchable-select';
+import { UserForm, UserFormValues } from './UserForm';
 
 export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
     const currentUserSubsystem = useAuthStore((state) => state.user?.subsystem);
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
+    const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('all');
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-
-    // Form State
-    const [userName, setUserName] = useState('');
-    const [password, setPassword] = useState('');
-    const [userSubSystem, setUserSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
+    const [assigningUser, setAssigningUser] = useState<User | null>(null);
 
     const { data: users = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
+    const { departmentOptions } = useDepartments();
     const { createUser, updateUser, deleteUser } = useUserMutations();
+
+    const filteredUsers = useMemo(() => {
+        let result = users;
+        if (selectedDepartmentId !== 'all') {
+            result = result.filter(u => u.departmentId === selectedDepartmentId);
+        }
+        return result;
+    }, [users, selectedDepartmentId]);
+
+    const filterDepartmentOptions = useMemo(() => {
+        return [{ value: 'all', label: 'كافة الأقسام' }, ...departmentOptions];
+    }, [departmentOptions]);
 
     const handleAddUser = () => {
         setEditingUser(null);
-        setUserName('');
-        setPassword('');
-        // إذا كان المستخدم الحالي لديه نظام فرعي محدد، يتم تعيينه تلقائياً وإجباري
-        setUserSubSystem(currentUserSubsystem || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
         setIsUserDialogOpen(true);
     };
 
     const handleEditUser = (user: User) => {
         setEditingUser(user);
-        setUserName(user.userName);
-        setPassword('');
-        setUserSubSystem(user.subSystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
         setIsUserDialogOpen(true);
     };
 
-    const handleSaveUser = async () => {
-        if (!userName.trim()) {
-            showStatus({ type: 'error', title: 'خطأ', message: 'يرجى إدخال اسم المستخدم' });
-            return;
-        }
-
-        if (!editingUser && !password.trim()) {
-            showStatus({ type: 'error', title: 'خطأ', message: 'يرجى إدخال كلمة المرور' });
-            return;
-        }
-
+    const handleSaveUser = async (values: UserFormValues) => {
         const targetSubSystemValue = subSystems.find(ss =>
-            ss.value.toString() == userSubSystem.toString() || ss.name.toString() == userSubSystem.toString()
+            ss.value.toString() == values.subSystem.toString() || ss.name.toString() == values.subSystem.toString()
         )?.value || "0";
-        // console.log(subSystems, targetSubSystemValue);
+
         try {
+            const dto: UserCreateDto = {
+                userName: values.userName,
+                password: values.password || undefined,
+                subSystem: parseInt(targetSubSystemValue)
+            };
+
             if (editingUser) {
                 await updateUser.mutateAsync({
                     id: editingUser.id,
-                    userName,
-                    password: password.trim() || undefined,
-                    // subSystem: parseInt(userSubSystem)
-                    subSystem: parseInt(targetSubSystemValue)
+                    ...dto
                 });
                 showStatus({ type: 'success', title: 'نجاح', message: 'تم تحديث المستخدم بنجاح' });
             } else {
-                await createUser.mutateAsync({
-                    userName,
-                    password,
-                    // subSystem: parseInt(userSubSystem)
-                    subSystem: parseInt(targetSubSystemValue)
-                });
+                await createUser.mutateAsync(dto as Required<UserCreateDto>);
                 showStatus({ type: 'success', title: 'نجاح', message: 'تم إضافة المستخدم بنجاح' });
             }
             setIsUserDialogOpen(false);
@@ -138,6 +131,19 @@ export const UserManagement = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
+                        <Building2 className="w-4 h-4 text-muted-foreground mr-2" />
+                        <div className="w-[200px]">
+                            <SearchableSelect
+                                options={filterDepartmentOptions}
+                                value={selectedDepartmentId}
+                                onValueChange={setSelectedDepartmentId}
+                                placeholder="تصفية حسب القسم"
+                                className="h-9 border-none bg-transparent shadow-none focus:ring-0"
+                            />
+                        </div>
+                    </div>
+
                     {APP_CONFIG.SHOW_SUB_SYSTEM && (
                         <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-xl border border-muted-foreground/10">
                             <Filter className="w-4 h-4 text-muted-foreground mr-2" />
@@ -146,7 +152,7 @@ export const UserManagement = () => {
                                     <SelectValue placeholder={isLoadingSubSystems ? "جاري التحميل..." : "تصفية حسب النظام"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">الكل</SelectItem>
+                                    <SelectItem value="all">كافة الأنظمة</SelectItem>
                                     {subSystems.map(ss => (
                                         <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
                                     ))}
@@ -170,6 +176,7 @@ export const UserManagement = () => {
                                 <TableRow>
                                     <TableHead className="text-right font-bold w-16">#</TableHead>
                                     <TableHead className="text-right font-bold">اسم المستخدم</TableHead>
+                                    <TableHead className="text-right font-bold">القسم</TableHead>
                                     {APP_CONFIG.SHOW_SUB_SYSTEM && <TableHead className="text-right font-bold">النظام الفرعي</TableHead>}
                                     <TableHead className="text-right font-bold">تاريخ الإنشاء</TableHead>
                                     <TableHead className="text-left font-bold w-28">الإجراءات</TableHead>
@@ -178,24 +185,29 @@ export const UserManagement = () => {
                             <TableBody>
                                 {isLoadingUsers ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="h-48 text-center">
+                                        <TableCell colSpan={6} className="h-48 text-center">
                                             <div className="flex flex-col items-center gap-2">
                                                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                                 <span className="text-muted-foreground animate-pulse">جاري تحميل المستخدمين...</span>
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ) : users.length > 0 ? (
-                                    users.map((user, index) => (
+                                ) : filteredUsers.length > 0 ? (
+                                    filteredUsers.map((user, index) => (
                                         <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
                                             <TableCell className="text-right font-mono text-muted-foreground">{index + 1}</TableCell>
                                             <TableCell className="text-right">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                        {user.userName.charAt(0).toUpperCase()}
+                                                <span className="font-bold">{user.userName}</span>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                {user.departmentName ? (
+                                                    <div className="flex items-center gap-1.5 text-primary bg-primary/5 px-2 py-1 rounded-md w-fit">
+                                                        <Building2 className="w-3.5 h-3.5" />
+                                                        <span className="text-xs font-medium">{user.departmentName}</span>
                                                     </div>
-                                                    <span className="font-bold">{user.userName}</span>
-                                                </div>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground italic">غير معين</span>
+                                                )}
                                             </TableCell>
                                             {APP_CONFIG.SHOW_SUB_SYSTEM && (
                                                 <TableCell className="text-right">
@@ -215,7 +227,17 @@ export const UserManagement = () => {
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-8 hidden w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                        title="تعيين قسم"
+                                                        onClick={() => setAssigningUser(user)}
+                                                    >
+                                                        <Building2 className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                        title="تعديل المستخدم"
                                                         onClick={() => handleEditUser(user)}
                                                     >
                                                         <Edit2 className="w-4 h-4" />
@@ -234,11 +256,11 @@ export const UserManagement = () => {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center h-48">
+                                        <TableCell colSpan={6} className="text-center h-48">
                                             <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
                                                 <Users className="w-12 h-12 opacity-20" />
-                                                <p className="text-lg font-medium">لا يوجد مستخدمين مضافين</p>
-                                                <p className="text-sm">أضف أول مستخدم للبدء في إدارة النظام</p>
+                                                <p className="text-lg font-medium">لا يوجد مستخدمين مطابقين للبحث</p>
+                                                <p className="text-sm">حاول تغيير خيارات التصفية أعلاه</p>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -262,71 +284,24 @@ export const UserManagement = () => {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="userName">اسم المستخدم</Label>
-                            <Input
-                                id="userName"
-                                value={userName}
-                                onChange={(e) => setUserName(e.target.value)}
-                                placeholder="أدخل اسم المستخدم"
-                                className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="password">كلمة المرور {editingUser && '(اتركه فارغاً إذا كنت لا تريد تغييره)'}</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="أدخل كلمة المرور"
-                                className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary"
-                            />
-                        </div>
-                        {!currentUserSubsystem && APP_CONFIG.SHOW_SUB_SYSTEM &&
-                            <div className="space-y-2">
-                                <Label htmlFor="subSystem">النظام الفرعي</Label>
-                                <Select value={userSubSystem} onValueChange={setUserSubSystem}>
-                                    <SelectTrigger
-                                        disabled={!!currentUserSubsystem}
-                                        className="rounded-xl h-11 border-muted-foreground/20 focus:border-primary disabled:opacity-80 disabled:bg-muted"
-                                    >
-                                        <SelectValue placeholder="اختر النظام" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {subSystems.map(ss => (
-                                            <SelectItem key={ss.value} value={ss.value}>{ss.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        }
-                    </div>
-
-                    <DialogFooter className="gap-2 sm:gap-0 mt-2">
-                        <Button
-                            onClick={handleSaveUser}
-                            className="rounded-xl h-11 px-8 font-bold flex-1 sm:flex-none shadow-lg shadow-primary/20"
-                            disabled={createUser.isPending || updateUser.isPending}
-                        >
-                            {(createUser.isPending || updateUser.isPending) ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                'حفظ البيانات'
-                            )}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsUserDialogOpen(false)}
-                            className="rounded-xl h-11 px-8 border-none bg-muted hover:bg-muted/80 flex-1 sm:flex-none"
-                        >
-                            إلغاء
-                        </Button>
-                    </DialogFooter>
+                    <UserForm
+                        onSubmit={handleSaveUser}
+                        initialData={editingUser}
+                        subSystems={subSystems}
+                        currentUserSubsystem={currentUserSubsystem}
+                        isLoading={createUser.isPending || updateUser.isPending}
+                    />
                 </DialogContent>
             </Dialog>
+
+            {/* Assign Department Dialog */}
+            <AssignDepartmentDialog
+                isOpen={!!assigningUser}
+                onClose={() => setAssigningUser(null)}
+                userId={assigningUser?.id || ''}
+                userName={assigningUser?.userName || ''}
+                initialDepartmentId={assigningUser?.departmentId || ''}
+            />
         </div>
     );
 };

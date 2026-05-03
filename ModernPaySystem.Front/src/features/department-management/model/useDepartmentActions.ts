@@ -90,10 +90,32 @@ export const useDepartmentActions = () => {
         }
     });
 
+    const assignUserMutation = useMutation({
+        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) => 
+            departmentActionsApi.assignUser(departmentId, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.department.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+            showStatus({
+                type: 'success',
+                title: 'تم التعيين',
+                message: 'تم تعيين المستخدم للقسم بنجاح'
+            });
+        },
+        onError: (error: any) => {
+            showStatus({
+                type: 'error',
+                title: 'خطأ في التعيين',
+                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين المستخدم للقسم'
+            });
+        }
+    });
+
     return {
         createDepartment: createMutation.mutateAsync,
         updateDepartment: updateMutation.mutateAsync,
         deleteDepartment: deleteMutation.mutateAsync,
-        isLoading: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending
+        assignUserToDepartment: assignUserMutation.mutateAsync,
+        isLoading: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || assignUserMutation.isPending
     };
 };
