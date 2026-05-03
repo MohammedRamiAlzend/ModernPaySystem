@@ -1,14 +1,21 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
-
-#nullable disable
-
-namespace ModernPaySystem.Infrastructure.Persistence.Migrations
+﻿namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
+    using Microsoft.EntityFrameworkCore.Migrations;
+    using System;
+
     /// <inheritdoc />
+
+    /// <summary>
+    /// Defines the <see cref="MoveStatusToRequestAndUpdateRelationships" />
+    /// </summary>
     public partial class MoveStatusToRequestAndUpdateRelationships : Migration
     {
         /// <inheritdoc />
+
+        /// <summary>
+        /// The Up
+        /// </summary>
+        /// <param name="migrationBuilder">The migrationBuilder<see cref="MigrationBuilder"/></param>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
@@ -158,6 +165,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
         }
 
         /// <inheritdoc />
+
+        /// <summary>
+        /// The Down
+        /// </summary>
+        /// <param name="migrationBuilder">The migrationBuilder<see cref="MigrationBuilder"/></param>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(

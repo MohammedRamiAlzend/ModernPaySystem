@@ -1,5 +1,3 @@
-using BCrypt.Net;
-
 namespace ModernPaySystem.Infrastructure.Services;
 
 public class PasswordHasher : IPasswordHasher

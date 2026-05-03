@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using NumberSpelling;
 
 namespace ModernPaySystem.Infrastructure.Services;

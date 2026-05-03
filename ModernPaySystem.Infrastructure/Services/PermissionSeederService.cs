@@ -1,7 +1,7 @@
-﻿global using Microsoft.AspNetCore.Mvc.ApplicationParts;
-global using System.Reflection;
-global using Microsoft.AspNetCore.Mvc;
+﻿global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.AspNetCore.Mvc.ApplicationParts;
 global using ModernPaySystem.Domain.Attrs;
+global using System.Reflection;
 global using System.Threading;
 
 namespace ModernPaySystem.Infrastructure.Services;

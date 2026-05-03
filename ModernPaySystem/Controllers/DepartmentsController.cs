@@ -1,4 +1,3 @@
-using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.DTOs;
 
 namespace ModernPaySystem.Controllers;
@@ -112,7 +111,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     public async Task<IActionResult> Create([FromBody] CreateDepartmentDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         if (string.IsNullOrEmpty(userId))
         {
             logger.LogWarning("Create department attempt without valid user ID");
@@ -121,7 +120,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
 
         logger.LogInformation("Creating new department: {DepartmentName}", dto.Name);
         var result = await departmentService.CreateAsync(dto, userId);
-        
+
         if (!result.IsError && result.Value != null)
         {
             return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
@@ -138,7 +137,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDepartmentDto dto)
     {
         var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        
+
         if (string.IsNullOrEmpty(userId))
         {
             logger.LogWarning("Update department attempt without valid user ID");

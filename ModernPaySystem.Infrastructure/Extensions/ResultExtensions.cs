@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Domain.Commons;
-
 namespace ModernPaySystem.Infrastructure.Extensions;
 
 /// <summary>

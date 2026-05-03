@@ -1,6 +1,6 @@
-﻿using System.Linq.Expressions;
-using ExpressionBuilderLib.src.Core.Enums;
+﻿using ExpressionBuilderLib.src.Core.Enums;
 using ExpressionBuilderLib.src.Utilities;
+using System.Linq.Expressions;
 
 namespace ExpressionBuilderLib.src.Core;
 

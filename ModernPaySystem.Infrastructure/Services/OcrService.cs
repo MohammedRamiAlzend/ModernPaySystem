@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Logging;
-using ModernPaySystem.Domain.Commons;
 using OcrReader;
 using System.IO;
 
@@ -24,7 +22,7 @@ public class OcrService : IOcrService
         try
         {
             _logger.LogInformation("Extracting text from image: {ImagePath} using language: {Language}", imagePath, language);
-            
+
             if (string.IsNullOrWhiteSpace(imagePath))
                 return ApplicationErrors.InvalidInput;
 
@@ -32,7 +30,7 @@ public class OcrService : IOcrService
                 return ApplicationErrors.OperationFailed;
 
             var extractedText = await _ocrGenerator.ExtractTextFromImageAsync(imagePath, language);
-            
+
             _logger.LogInformation("Successfully extracted text from image: {ImagePath}", imagePath);
             return extractedText;
         }
@@ -48,7 +46,7 @@ public class OcrService : IOcrService
         try
         {
             _logger.LogInformation("Extracting text from PDF: {PdfPath} using language: {Language}", pdfPath, language);
-            
+
             if (string.IsNullOrWhiteSpace(pdfPath))
                 return ApplicationErrors.InvalidInput;
 
@@ -56,7 +54,7 @@ public class OcrService : IOcrService
                 return ApplicationErrors.OperationFailed;
 
             var extractedText = await _ocrGenerator.ExtractTextFromPdfAsync(pdfPath, language);
-            
+
             _logger.LogInformation("Successfully extracted text from PDF: {PdfPath}", pdfPath);
             return extractedText;
         }

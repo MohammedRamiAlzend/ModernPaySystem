@@ -1,8 +1,8 @@
-global using Scalar.AspNetCore;
-global using ModernPaySystem.Infrastructure.Persistence;
-global using ModernPaySystem.Infrastructure.Persistence.Seeding;
 global using ModernPaySystem.Infrastructure;
 global using ModernPaySystem.Infrastructure.Auth;
+global using ModernPaySystem.Infrastructure.Persistence;
+global using ModernPaySystem.Infrastructure.Persistence.Seeding;
+global using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

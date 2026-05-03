@@ -1,7 +1,5 @@
-using Bogus;
-using Microsoft.EntityFrameworkCore;
-using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Attrs;
+using ModernPaySystem.Domain.Entities.SharedEntities;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding;
 

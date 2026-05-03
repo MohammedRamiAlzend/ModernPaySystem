@@ -1,6 +1,6 @@
-﻿using System.Linq.Expressions;
-using ExpressionBuilderLib.src.Core;
+﻿using ExpressionBuilderLib.src.Core;
 using ExpressionBuilderLib.src.Core.Enums;
+using System.Linq.Expressions;
 
 namespace ExpressionBuilderLib;
 
@@ -118,7 +118,7 @@ public class Class1
 
     public static void RequestFilteringExample()
     {
-        Guid currentUserId = Guid.NewGuid();     
+        Guid currentUserId = Guid.NewGuid();
 
         var requestBuilder = new ExpressionBuilder<Request>();
 
@@ -131,7 +131,7 @@ public class Class1
         var allRequests = new List<Request>
         {
             new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() },
-            new Request { Id = Guid.NewGuid(), ApproverId = Guid.NewGuid(), RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() },   
+            new Request { Id = Guid.NewGuid(), ApproverId = Guid.NewGuid(), RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() },
             new Request { Id = Guid.NewGuid(), ApproverId = currentUserId, RequesterId = Guid.NewGuid(), TemplateId = Guid.NewGuid() }
         };
 
@@ -146,7 +146,7 @@ public class Class1
 
     public static void RequestPaginationExample()
     {
-        Guid currentUserId = Guid.NewGuid();     
+        Guid currentUserId = Guid.NewGuid();
 
         var requestBuilder = new ExpressionBuilder<Request>();
 

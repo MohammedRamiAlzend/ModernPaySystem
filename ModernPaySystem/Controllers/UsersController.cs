@@ -1,9 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Infrastructure.Extensions;
-
 namespace ModernPaySystem.Controllers;
 
 [ApiController]
@@ -78,12 +72,12 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> GetBySubSystem([FromRoute] int subSystemId)
     {
         _logger.LogInformation("Getting users by subsystem ID: {SubSystemId}", subSystemId);
-        
+
         if (!Enum.IsDefined(typeof(SubSystem), subSystemId))
         {
             return BadRequest($"Invalid subsystem ID: {subSystemId}");
         }
-        
+
         var subSystem = (SubSystem)subSystemId;
         var result = await _userService.GetBySubSystemAsync(subSystem);
         return result.ToActionResult();

@@ -1,7 +1,8 @@
-using System.Linq;
-using System.Linq.Expressions;
 using ExpressionBuilderLib.src.Core;
 using ExpressionBuilderLib.src.Core.Enums;
+using System.Linq;
+using System.Linq.Expressions;
+
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public static class RequestExpressions

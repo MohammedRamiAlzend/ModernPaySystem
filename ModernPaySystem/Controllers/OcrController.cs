@@ -40,7 +40,7 @@ public class OcrController : ControllerBase
             }
 
             var result = await _ocrService.ExtractTextFromImageAsync(tempFilePath, language);
-            
+
             if (System.IO.File.Exists(tempFilePath))
             {
                 System.IO.File.Delete(tempFilePath);
@@ -64,7 +64,7 @@ public class OcrController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error extracting text from image: {FileName}", imageFile.FileName);
-            
+
             var errorResponse = new OcrErrorResponse
             {
                 Success = false,
@@ -124,7 +124,7 @@ public class OcrController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error extracting text from PDF: {FileName}", pdfFile.FileName);
-            
+
             var errorResponse = new OcrErrorResponse
             {
                 Success = false,

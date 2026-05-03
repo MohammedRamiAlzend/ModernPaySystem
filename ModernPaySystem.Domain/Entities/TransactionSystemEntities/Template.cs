@@ -19,8 +19,6 @@ public class TemplateFiled : Entity<Guid>, IAuditableEntity
     public required int? Rows { get; set; }
     public required string NumberSpelling { get; set; }
 
-
-
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }

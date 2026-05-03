@@ -90,7 +90,7 @@ public class DepartmentSeeder : EntitySeederBase<Department>
             doumaMunicipality,
             technicalOffice
         );
-        
+
         await context.SaveChangesAsync();
     }
 }

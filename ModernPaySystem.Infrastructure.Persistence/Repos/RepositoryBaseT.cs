@@ -1,16 +1,13 @@
-﻿using System.Linq.Expressions;
-using System.Text.RegularExpressions;
-using ExpressionBuilderLib.src.Core;
-using Microsoft.AspNetCore.Http;
+﻿using ExpressionBuilderLib.src.Core;
+using ExpressionBuilderLib.src.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Repos;
 using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.Entities.Abstraction;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using System.Linq;
-using ExpressionBuilderLib.src.Core.Enums;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Repos;
 
@@ -56,7 +53,6 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         List<Expression<Func<TEntity, bool>>>? additionalFilters = null)
     {
         IQueryable<TEntity> query = dbcontext.Set<TEntity>();
-
 
         try
         {

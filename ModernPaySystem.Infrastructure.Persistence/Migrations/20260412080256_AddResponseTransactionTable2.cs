@@ -1,13 +1,20 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
-
-#nullable disable
-
-namespace ModernPaySystem.Infrastructure.Persistence.Migrations
+﻿namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
+    using Microsoft.EntityFrameworkCore.Migrations;
+
     /// <inheritdoc />
+
+    /// <summary>
+    /// Defines the <see cref="AddResponseTransactionTable2" />
+    /// </summary>
     public partial class AddResponseTransactionTable2 : Migration
     {
         /// <inheritdoc />
+
+        /// <summary>
+        /// The Up
+        /// </summary>
+        /// <param name="migrationBuilder">The migrationBuilder<see cref="MigrationBuilder"/></param>
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
@@ -36,6 +43,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
         }
 
         /// <inheritdoc />
+
+        /// <summary>
+        /// The Down
+        /// </summary>
+        /// <param name="migrationBuilder">The migrationBuilder<see cref="MigrationBuilder"/></param>
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(

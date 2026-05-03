@@ -1,10 +1,5 @@
-using Microsoft.Extensions.Logging;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.DTOs;
-using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Infrastructure.Persistence.Repos;
-using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -75,9 +70,9 @@ public class DepartmentService(
 
             await unitOfWork.SaveChangesAsync();
 
-             logger.LogInformation("Created department: {DepartmentId} with name: {Name}", department.Id, department.Name);
+            logger.LogInformation("Created department: {DepartmentId} with name: {Name}", department.Id, department.Name);
 
-             return department.MapToDto();
+            return department.MapToDto();
         }
         catch (Exception ex)
         {
@@ -336,10 +331,10 @@ public class DepartmentService(
     {
         try
         {
-            var deptResult = await _unitOfWork.Departments.GetAsync(x => x.Id == departmentId, i => i.Include(x => x.Users).ThenInclude(x=>x.SubSystemUser));
+            var deptResult = await _unitOfWork.Departments.GetAsync(x => x.Id == departmentId, i => i.Include(x => x.Users).ThenInclude(x => x.SubSystemUser));
             if (deptResult.IsError || deptResult.Value == null)
                 return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
-            return deptResult.Value.Users.Select(x=> x.ToDto()).ToList();
+            return deptResult.Value.Users.Select(x => x.ToDto()).ToList();
         }
         catch (Exception ex)
         {
@@ -443,8 +438,6 @@ public class DepartmentService(
         }
     }
 
-    #region Private Helper Methods
-
     private async Task BuildTreeRecursive(Guid parentId, DepartmentTreeDto parentNode)
     {
         var children = await _unitOfWork.Departments.GetChildrenAsync(parentId);
@@ -495,5 +488,4 @@ public class DepartmentService(
         return id.ToString("N")[..8];
     }
 
-    #endregion
 }

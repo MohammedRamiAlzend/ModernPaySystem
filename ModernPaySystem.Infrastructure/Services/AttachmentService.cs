@@ -1,11 +1,7 @@
-using System.Linq.Expressions;
 using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
-using ModernPaySystem.Domain.Commons;
-using System.IO.Compression;
 using System.IO;
+using System.IO.Compression;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -188,24 +184,24 @@ public class AttachmentService(
         {
             return ApplicationErrors.ResponseNotFound;
         }
- 
+
         // Check if the attachment is associated with this response
         var responseAttachment = await unitOfWork.ResponseAttachments.GetAsync(
             AttachmentExpressions.ResponseAttachmentByResponseIdAndAttachmentId(responseId, attachmentId),
             x => x.Include(x => x.Attachment).Include(x => x.Response));
- 
+
         if (responseAttachment.IsError)
         {
             return ApplicationErrors.AttachmentNotFound;
         }
- 
+
         // Get the attachment details
         var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
         if (attachment.IsError)
         {
             return ApplicationErrors.AttachmentNotFound;
         }
- 
+
         // Return the file content
         return await fileManager.GetFileBytesAsync(attachment.Value.Path);
     }
@@ -242,7 +238,6 @@ public class AttachmentService(
         // Return the file content
         return await fileManager.GetFileBytesAsync(attachment.Value.Path);
     }
-
 
     /// <summary>
     /// Removes a file attachment from a request.
@@ -460,7 +455,6 @@ public class AttachmentService(
         return attachmentDtos;
     }
 
-
     /// <summary>
     /// Downloads all files associated with a request as a ZIP archive.
     /// </summary>
@@ -540,7 +534,6 @@ public class AttachmentService(
             return ApplicationErrors.AttachmentNotFound;
         }
 
-
         // Create a memory stream to hold the ZIP archive
         using var zipMemoryStream = new MemoryStream();
         using (var archive = new ZipArchive(zipMemoryStream, ZipArchiveMode.Create, true))
@@ -596,7 +589,6 @@ public class AttachmentService(
             return ApplicationErrors.AttachmentNotFound;
         }
 
-
         // Create a memory stream to hold the ZIP archive
         using var zipMemoryStream = new MemoryStream();
         using (var archive = new ZipArchive(zipMemoryStream, ZipArchiveMode.Create, true))
@@ -627,7 +619,6 @@ public class AttachmentService(
         // Return the ZIP archive as a byte array
         return zipMemoryStream.ToArray();
     }
-
 
     /// <summary>
     /// Checks if an attachment is used by any other requests or responses.

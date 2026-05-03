@@ -69,7 +69,6 @@ public interface IAttachmentService
     /// </summary>
     Task<Result<byte[]>> DownloadFilesFromTransactionAsync(Guid transactionId);
 
-
     /// <summary>
     /// Removes a file attachment from a request.
     /// </summary>

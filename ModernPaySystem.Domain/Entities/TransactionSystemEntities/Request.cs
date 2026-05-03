@@ -32,7 +32,7 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public Guid? CurrentTransactionId { get; set; }
     public RequestTransaction? CurrentTransaction { get; set; }
-    
+
     public required string ContentAsJson { get; set; }
 
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = [];

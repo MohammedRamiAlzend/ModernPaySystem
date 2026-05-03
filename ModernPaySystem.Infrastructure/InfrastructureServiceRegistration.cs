@@ -1,10 +1,6 @@
 using FileManager.Extensions;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Application.Services;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.Interceptors;
-using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 using ModernPaySystem.Infrastructure.Services;
 using NumberSpelling;
 using OcrReader;
@@ -44,15 +40,15 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
-        
+
         // Register Lookup Field Services
         services.AddScoped<ILookUpFieldService, LookUpFieldService>();
         services.AddScoped<ILookUpFiledValuesService, LookUpFiledValuesService>();
-        
+
         // Register OCR Service
         services.AddOcrTesseract();
         services.AddScoped<IOcrService, OcrService>();
-        
+
         // Register Number Spelling Service
         services.AddNumberSpelling();
         services.AddScoped<INumberSpellingWrapperService, NumberSpellingWrapperService>();
