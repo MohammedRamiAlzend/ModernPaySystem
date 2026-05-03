@@ -107,9 +107,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<TemplateOwnership>()
-            .HasOne(to => to.User)
+            .HasOne(to => to.Department)
             .WithMany(u => u.TemplateOwnerships)
-            .HasForeignKey(to => to.UserId)
+            .HasForeignKey(to => to.DepartmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<SubSystemUser>()
