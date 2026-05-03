@@ -7,9 +7,9 @@ public class Template : Entity<Guid>, IAuditableEntity
     public string? TemplateDescription { get; set; }
 
     // Navigation properties
-    public ICollection<Request> Requests { get; set; } = new List<Request>();
-    public ICollection<TemplateOwnership> Ownerships { get; set; } = new List<TemplateOwnership>();
-    public ICollection<LookUpField> LookUpFields { get; set; } = new List<LookUpField>();
+    public ICollection<Request> Requests { get; set; } = [];
+    public ICollection<TemplateOwnership>? Ownerships { get; set; } = null;
+    public ICollection<LookUpField> LookUpFields { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

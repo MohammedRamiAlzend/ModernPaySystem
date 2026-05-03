@@ -32,6 +32,9 @@ public static class ApplicationErrors
     public static readonly Error TemplateInUse = new("303", "The template is currently in use and cannot be deleted.", ErrorKind.Conflict, "القالب قيد الاستخدام ولا يمكن حذفه.");
     public static readonly Error UnauthorizedTemplateAccess = new("304", "You do not have access to this template.", ErrorKind.Forbidden, "ليس لديك حق الوصول إلى هذا القالب.");
 
+    // Department Errors (310-319)
+    public static readonly Error DepartmentNotFound = new("310", "The specified department was not found.", ErrorKind.NotFound, "لم يتم العثور على القسم المحدد.");
+
     // Request Errors (400-499)
     public static readonly Error RequestNotFound = new("400", "The specified request was not found.", ErrorKind.NotFound, "لم يتم العثور على الطلب المحدد.");
     public static readonly Error RequestAlreadyApproved = new("401", "The request has already been approved.", ErrorKind.Conflict, "تم بالفعل الموافقة على الطلب.");
@@ -68,6 +71,9 @@ public static class ApplicationErrors
     public static readonly Error OperationFailed = new("802", "The operation could not be completed.", ErrorKind.Failure, "لم يتمكن من إكمال العملية.");
     public static readonly Error NotImplemented = new("803", "This feature has not been implemented yet.", ErrorKind.Failure, "هذه الميزة لم يتم تنفيذها بعد.");
     public static readonly Error ConcurrencyError = new("804", "The resource was modified by another user. Please refresh and try again.", ErrorKind.Conflict, "تم تعديل المورد من قبل مستخدم آخر. يرجى التحديث والمحاولة مرة أخرى.");
+
+    // General duplicate/conflict
+    public static readonly Error DuplicateEntry = new("805", "A duplicate entry was detected.", ErrorKind.Conflict, "تم العثور على إدخال مكرر.");
 
     // Transaction System Errors (900-999)
     public static readonly Error TransactionNotFound = new("900", "The specified transaction was not found.", ErrorKind.NotFound, "لم يتم العثور على المعاملة المحددة.");
