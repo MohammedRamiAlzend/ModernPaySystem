@@ -5,7 +5,7 @@ import { convertToMermaid } from '../model/useDepartmentTree';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 import { useTheme } from '@/app/providers/theme-context';
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
-import { ZoomIn, ZoomOut, Maximize, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 
 interface DepartmentMermaidTreeProps {
@@ -31,10 +31,10 @@ const Controls = () => {
     );
 };
 
-export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({ 
-    data, 
+export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
+    data,
     highlightId,
-    isLoading 
+    isLoading
 }) => {
     const mermaidRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
@@ -57,10 +57,10 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
     useEffect(() => {
         if (mermaidRef.current && data && data.length > 0) {
             const chartConfig = convertToMermaid(data, highlightId, isDark);
-            
+
             // Clear previous content
             mermaidRef.current.innerHTML = `<div class="mermaid">${chartConfig}</div>`;
-            
+
             // Re-render
             try {
                 mermaid.contentLoaded();
@@ -117,7 +117,7 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                     </>
                 )}
             </TransformWrapper>
-            
+
             <div className="absolute bottom-4 right-4 text-[10px] text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity">
                 استخدم العجلة للتكبير، واسحب للتحريك
             </div>
