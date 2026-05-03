@@ -180,7 +180,7 @@ export const SearchableSelect = (props: SearchableSelectProps) => {
                             !triggerLabel && 'text-muted-foreground'
                         )}
                     >
-                        <span className="truncate">
+                        <span className="truncate" title={typeof triggerLabel === 'string' ? triggerLabel : undefined}>
                             {isLoading ? (
                                 <span className="flex items-center gap-2">
                                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -241,7 +241,7 @@ export const SearchableSelect = (props: SearchableSelectProps) => {
                                             {option.icon && (
                                                 <span className="shrink-0">{option.icon}</span>
                                             )}
-                                            <span className="flex-1 truncate">{option.label}</span>
+                                            <span className="flex-1 truncate" title={option.label}>{option.label}</span>
                                             {option.order !== undefined && (
                                                 <span className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-1.5 py-0.5 rounded">
                                                     #{option.order}
