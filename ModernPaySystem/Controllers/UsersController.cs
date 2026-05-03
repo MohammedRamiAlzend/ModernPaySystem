@@ -51,6 +51,16 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
+    [HttpPut("{id}")]
+    [EndpointPermission("users.update", SubSystem.TransactionSystem, PermissionType.Update)]
+    public async Task<IActionResult> Update(Guid id, [FromBody] CreateUserDto user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        _logger.LogInformation("Updating user: {UserId}", id);
+        var result = await _userService.UpdateAsync(id, user);
+        return result.ToActionResult();
+    }
+
     [HttpDelete("{id}")]
     [EndpointPermission("users.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)

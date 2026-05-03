@@ -84,7 +84,7 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     /// </summary>
     [HttpGet("search")]
     [EndpointPermission("departments.view", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> Search([FromQuery] string searchTerm, [FromQuery] int level = 0)
+    public async Task<IActionResult> Search([FromQuery] string? searchTerm = null, [FromQuery] int level = 0)
     {
         logger.LogInformation("Searching departments with term: {SearchTerm}, level: {Level}", searchTerm, level);
         var result = await departmentService.SearchAsync(searchTerm, level);

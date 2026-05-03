@@ -56,8 +56,8 @@ public interface IDepartmentService
     /// <summary>
     /// Search departments by name or code
     /// </summary>
-    Task<Result<List<DepartmentDto>>> SearchAsync(string searchTerm, int level = 0);
-
+    Task<Result<List<DepartmentDto>>> SearchAsync(string? searchTerm = null, int level = 0);
+    
     /// <summary>
     /// Get departments by level
     /// </summary>

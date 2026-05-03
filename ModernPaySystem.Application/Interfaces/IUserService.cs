@@ -42,5 +42,10 @@ public interface IUserService
     /// </summary>
     Task<Result<IEnumerable<UserDto>>> GetBySubSystemAsync(SubSystem subSystem);
 
+    /// <summary>
+    /// Update existing user.
+    /// </summary>
+    Task<Result<UserDto>> UpdateAsync(Guid id, CreateUserDto user);
+
     Task<Result<List<SubSystemDto>>> GetSubSystemsAsync();
 }

@@ -8,6 +8,7 @@ import {
     FileStack,
     Palette,
     Wrench,
+    GitBranch,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -15,6 +16,7 @@ import {
 const LookUpManagement = lazyWithPreload(() => import('@/features/lookup-management/ui/LookUpManagement').then(m => ({ default: m.LookUpManagement })));
 const UserManagement = lazyWithPreload(() => import('@/features/users/ui/UserManagement').then(m => ({ default: m.UserManagement })));
 const TemplatesList = lazyWithPreload(() => import('@/features/form-builder/ui/TemplatesList').then(m => ({ default: m.TemplatesList })));
+const DepartmentManagement = lazyWithPreload(() => import('@/features/department-management/ui/DepartmentManagement').then(m => ({ default: m.DepartmentManagement })));
 
 export interface SettingsTab {
     id: string;
@@ -26,6 +28,14 @@ export interface SettingsTab {
 }
 
 export const SETTINGS_CONFIG: SettingsTab[] = [
+    {
+        id: 'departments',
+        label: 'الأقسام والهيكل التنظيمي',
+        description: 'إدارة شجرة الأقسام والهيكلية الإدارية للمؤسسة',
+        icon: GitBranch,
+        component: <DepartmentManagement />,
+        preload: () => DepartmentManagement.preload()
+    },
     {
         id: 'lookup',
         label: 'إدارة الحقول العامة',

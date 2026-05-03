@@ -7,6 +7,9 @@ export interface User {
     userName: string;
     subSystemUserId: string | null;
     subSystem: number | null;
+    departmentId: string | null;
+    departmentName: string | null;
+    isDepartmentHead: boolean;
     createdByUserId: string | null;
     createdAt: string | null;
     updatedByUserId: string | null;
