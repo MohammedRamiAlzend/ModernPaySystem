@@ -69,6 +69,9 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
             mermaidText += `    class ${nodeId} root\n`;
         }
 
+        // Add click handler for each node
+        mermaidText += `    click ${nodeId} call onMermaidNodeClick()\n`;
+
         if (node.children && node.children.length > 0) {
             node.children.forEach(child => traverse(child, node.id));
         }

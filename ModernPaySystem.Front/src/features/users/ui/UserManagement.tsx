@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUsers, useSubSystems, useUserMutations, User, UserCreateDto } from '../api/usersApi';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -34,6 +35,8 @@ import { AssignDepartmentDialog } from './AssignDepartmentDialog';
 import { useDepartments } from '@/entities/department/model/useDepartments';
 import { SearchableSelect } from '@/shared/ui/searchable-select';
 import { UserForm, UserFormValues } from './UserForm';
+import { DepartmentMermaidTree } from '@/features/department-management/ui/DepartmentMermaidTree';
+import { useDepartmentTree } from '@/features/department-management/model/useDepartmentTree';
 
 export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
@@ -44,18 +47,25 @@ export const UserManagement = () => {
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [assigningUser, setAssigningUser] = useState<User | null>(null);
 
-    const { data: users = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
-    const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
+    const { data: usersData = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
+    const { data: subSystemsData = [], isLoading: isLoadingSubSystems } = useSubSystems();
     const { departmentOptions } = useDepartments();
     const { createUser, updateUser, deleteUser } = useUserMutations();
+    const navigate = useNavigate();
+
+    const [selectedDeptForTree, setSelectedDeptForTree] = useState<string | null>(null);
+    const { data: treeData, isLoading: isTreeLoading } = useDepartmentTree(undefined, 'full');
+
+    const subSystems = subSystemsData || [];
+    const users = usersData || [];
 
     const filteredUsers = useMemo(() => {
-        let result = users;
-        if (selectedDepartmentId !== 'all') {
-            result = result.filter(u => u.departmentId === selectedDepartmentId);
-        }
-        return result;
-    }, [users, selectedDepartmentId]);
+        return users.filter(user => {
+            const matchesSubSystem = selectedSubSystem === 'all' || user.subSystem?.toString() === selectedSubSystem;
+            const matchesDepartment = selectedDepartmentId === 'all' || user.departmentId === selectedDepartmentId;
+            return matchesSubSystem && matchesDepartment;
+        });
+    }, [users, selectedSubSystem, selectedDepartmentId]);
 
     const filterDepartmentOptions = useMemo(() => {
         return [{ value: 'all', label: 'كافة الأقسام' }, ...departmentOptions];
@@ -201,7 +211,11 @@ export const UserManagement = () => {
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 {user.departmentName ? (
-                                                    <div className="flex items-center gap-1.5 text-primary bg-primary/5 px-2 py-1 rounded-md w-fit">
+                                                    <div
+                                                        className="flex items-center gap-1.5 text-primary bg-primary/5 px-2 py-1 rounded-md w-fit cursor-pointer hover:bg-primary/10 transition-colors"
+                                                        onClick={() => setSelectedDeptForTree(user.departmentId!)}
+                                                        title="عرض في الهيكل التنظيمي"
+                                                    >
                                                         <Building2 className="w-3.5 h-3.5" />
                                                         <span className="text-xs font-medium">{user.departmentName}</span>
                                                     </div>
@@ -294,14 +308,66 @@ export const UserManagement = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Assign Department Dialog */}
             <AssignDepartmentDialog
-                isOpen={!!assigningUser}
-                onClose={() => setAssigningUser(null)}
-                userId={assigningUser?.id || ''}
-                userName={assigningUser?.userName || ''}
-                initialDepartmentId={assigningUser?.departmentId || ''}
+                user={assigningUser}
+                open={!!assigningUser}
+                onOpenChange={(open) => !open && setAssigningUser(null)}
+                onAssigned={() => setAssigningUser(null)}
             />
+
+            {/* Department Tree Preview Dialog */}
+            <Dialog open={!!selectedDeptForTree} onOpenChange={(open) => !open && setSelectedDeptForTree(null)}>
+                <DialogContent className="sm:max-w-5xl h-[85vh] flex flex-col p-0 overflow-hidden border-none shadow-2xl" style={{ direction: 'rtl' }}>
+                    <DialogHeader className="p-6 bg-primary text-primary-foreground shrink-0">
+                        <div className="flex items-center gap-4 justify-start text-right w-full">
+                            <div className="p-3 bg-white/10 rounded-2xl">
+                                <Building2 className="w-8 h-8" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <DialogTitle className="text-2xl font-black leading-none">موقع القسم في الهيكل التنظيمي</DialogTitle>
+                                <DialogDescription className="text-primary-foreground/80 font-medium">
+                                    معاينة بصرية كاملة للهيكل الإداري مع تمييز القسم المختار
+                                </DialogDescription>
+                            </div>
+                        </div>
+                    </DialogHeader>
+                    
+                    <div className="flex-1 p-4 bg-muted/30 overflow-hidden relative flex flex-col">
+                        <div className="flex-1 bg-background/50 rounded-2xl border-2 border-dashed border-primary/10 overflow-hidden relative">
+                            <DepartmentMermaidTree
+                                data={treeData || []}
+                                highlightId={selectedDeptForTree || undefined}
+                                isLoading={isTreeLoading}
+                                onNodeClick={(id) => {
+                                    setSelectedDepartmentId(id);
+                                    setSelectedDeptForTree(null);
+                                }}
+                            />
+                        </div>
+                        
+                        <div className="mt-4 flex flex-row-reverse justify-between items-center bg-background/80 backdrop-blur-md p-4 rounded-2xl border shadow-lg">
+                            <div className="flex flex-row-reverse gap-6 text-sm font-bold">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded-full bg-blue-600 shadow-sm" />
+                                    <span>القسم المختار</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 rounded-full bg-emerald-600 shadow-sm" />
+                                    <span>أقسام رئيسية</span>
+                                </div>
+                            </div>
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                className="font-bold px-6 rounded-xl hover:scale-105 transition-transform"
+                                onClick={() => setSelectedDeptForTree(null)}
+                            >
+                                إغلاق المعاينة
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

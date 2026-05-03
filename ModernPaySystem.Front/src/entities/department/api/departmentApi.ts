@@ -37,5 +37,12 @@ export const departmentApi = {
     getByLevel: async (level: number) => {
         const response = await api.get<{ data: Department[] }>(`/Departments/level/${level}`);
         return response.data.data;
+    },
+
+    getUsers: async (id: string, includeSubDepartments: boolean = false) => {
+        const response = await api.get<{ data: any[] }>(`/Departments/${id}/users`, {
+            params: { includeSubDepartments }
+        });
+        return response.data.data;
     }
 };
