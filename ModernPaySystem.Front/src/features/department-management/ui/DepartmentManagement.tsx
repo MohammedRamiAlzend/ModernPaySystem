@@ -4,8 +4,7 @@ import { DepartmentMermaidTree } from './DepartmentMermaidTree';
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { GitBranch, GitMerge, GitPullRequest, Plus, RefreshCw, Layers, Trash2 } from 'lucide-react';
+import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/lib/query-keys';
@@ -20,7 +19,7 @@ export const DepartmentManagement: React.FC = () => {
     const [viewMode, setViewMode] = useState<'full' | 'subtree' | 'children'>('full');
     const [highlightId, setHighlightId] = useState<string>('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    
+
     const { showConfirm } = useUIStore();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -59,7 +58,7 @@ export const DepartmentManagement: React.FC = () => {
 
     const handleDelete = () => {
         if (!selectedRootId) return;
-        
+
         showConfirm({
             title: 'تأكيد الحذف',
             message: 'هل أنت متأكد من حذف هذا القسم؟ لا يمكن التراجع عن هذا الإجراء.',
@@ -99,9 +98,9 @@ export const DepartmentManagement: React.FC = () => {
                                 <DialogTitle>إضافة قسم جديد</DialogTitle>
                                 <DialogDescription>أدخل تفاصيل القسم الجديد ومكانه في الهيكل التنظيمي</DialogDescription>
                             </DialogHeader>
-                            <DepartmentForm 
-                                onSubmit={handleCreate} 
-                                parentOptions={departmentOptions} 
+                            <DepartmentForm
+                                onSubmit={handleCreate}
+                                parentOptions={departmentOptions}
                                 isLoading={isActionLoading}
                             />
                         </DialogContent>
@@ -137,18 +136,18 @@ export const DepartmentManagement: React.FC = () => {
                         <div className="space-y-2">
                             <label className="text-sm font-medium">طريقة العرض</label>
                             <div className="flex gap-2">
-                                <Button 
-                                    variant={viewMode === 'full' ? 'default' : 'outline'} 
-                                    size="sm" 
+                                <Button
+                                    variant={viewMode === 'full' ? 'default' : 'outline'}
+                                    size="sm"
                                     className="flex-1 gap-2"
                                     onClick={() => setViewMode('full')}
                                 >
                                     <Layers className="w-4 h-4" />
                                     الشجرة الكاملة
                                 </Button>
-                                <Button 
-                                    variant={viewMode === 'subtree' ? 'default' : 'outline'} 
-                                    size="sm" 
+                                <Button
+                                    variant={viewMode === 'subtree' ? 'default' : 'outline'}
+                                    size="sm"
                                     className="flex-1 gap-2"
                                     disabled={!selectedRootId}
                                     onClick={() => setViewMode('subtree')}
@@ -156,9 +155,9 @@ export const DepartmentManagement: React.FC = () => {
                                     <GitBranch className="w-4 h-4" />
                                     الشجرة الفرعية
                                 </Button>
-                                <Button 
-                                    variant={viewMode === 'children' ? 'default' : 'outline'} 
-                                    size="sm" 
+                                <Button
+                                    variant={viewMode === 'children' ? 'default' : 'outline'}
+                                    size="sm"
                                     className="flex-1 gap-2"
                                     disabled={!selectedRootId}
                                     onClick={() => setViewMode('children')}
@@ -171,10 +170,10 @@ export const DepartmentManagement: React.FC = () => {
                     </div>
 
                     <div className="relative min-h-[400px] border rounded-xl overflow-hidden bg-muted/20">
-                        <DepartmentMermaidTree 
-                            data={treeData || []} 
-                            highlightId={highlightId} 
-                            isLoading={isTreeLoading} 
+                        <DepartmentMermaidTree
+                            data={treeData || []}
+                            highlightId={highlightId}
+                            isLoading={isTreeLoading}
                         />
                     </div>
 

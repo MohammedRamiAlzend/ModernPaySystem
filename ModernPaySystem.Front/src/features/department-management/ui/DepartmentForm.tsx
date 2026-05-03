@@ -14,7 +14,7 @@ const departmentFormSchema = z.object({
     name: z.string().min(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' }),
     code: z.string().optional(),
     description: z.string().optional(),
-    parentDepartmentId: z.string().optional(),
+    parentDepartmentId: z.string().min(1, { message: 'يجب اختيار القسم الأب' }),
     type: z.nativeEnum(DepartmentType),
 });
 
@@ -108,7 +108,7 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
                     name="parentDepartmentId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>القسم الأب (اختياري)</FormLabel>
+                            <FormLabel>القسم الأب</FormLabel>
                             <FormControl>
                                 <SearchableSelect
                                     options={parentOptions}
