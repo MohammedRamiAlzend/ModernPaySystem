@@ -3,10 +3,6 @@ using ModernPaySystem.Infrastructure.Persistence.Repos;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
-/// <summary>
-/// Service implementation for Department operations
-/// Uses IUnitOfWork directly following RequestService pattern
-/// </summary>
 public class DepartmentService(
     IUnitOfWork unitOfWork,
     ILogger<DepartmentService> logger,
@@ -21,7 +17,6 @@ public class DepartmentService(
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return ApplicationErrors.InvalidInput;
 
-            // Validate parent if provided
             if (dto.ParentDepartmentId.HasValue)
             {
                 var parentResult = await _unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
@@ -29,7 +24,6 @@ public class DepartmentService(
                     return new Error("PARENT_NOT_FOUND", "Parent department not found", ErrorKind.NotFound);
             }
 
-            // Calculate level and materialized path
             int level = 1;
             string? materializedPath = null;
 
@@ -110,14 +104,11 @@ public class DepartmentService(
 
             var department = existingResult.Value;
 
-            // Validate parent change if provided
             if (dto.ParentDepartmentId.HasValue && dto.ParentDepartmentId != department.ParentDepartmentId)
             {
-                // Check for circular reference
                 if (await _unitOfWork.Departments.WouldCreateCircularReferenceAsync(id, dto.ParentDepartmentId.Value))
                     return new Error("CIRCULAR_REFERENCE", "Cannot create circular reference", ErrorKind.Validation);
 
-                // Update level and materialized path
                 var parentResult = await _unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
                 if (parentResult.Value != null)
                 {
@@ -126,7 +117,6 @@ public class DepartmentService(
                 }
             }
 
-            // Update fields
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 department.Name = dto.Name;
 
@@ -158,7 +148,6 @@ public class DepartmentService(
     {
         try
         {
-            // Check if department has children
             var hasChildren = await _unitOfWork.Departments.HasChildrenAsync(id);
             if (hasChildren)
                 return new Error("HAS_CHILDREN", "Cannot delete department with children", ErrorKind.Validation);
@@ -397,31 +386,23 @@ public class DepartmentService(
 
     public bool CanAssignParent(Guid departmentId, Guid parentDepartmentId)
     {
-        // Basic validation - cannot assign self as parent
         if (departmentId == parentDepartmentId)
             return false;
 
-        // Check for circular references synchronously
-        // We cannot call async repository methods directly, so we implement a basic check
-        // For a production system, this should ideally be done async in the service layer
         try
         {
-            // Cannot assign self as parent (already checked above)
-            // Check if proposed parent is a descendant of the department
             var currentId = parentDepartmentId;
-            var maxDepth = 100; // Prevent infinite loops
+            var maxDepth = 100;
             var depth = 0;
 
             while (currentId != Guid.Empty && depth < maxDepth)
             {
-                // Get the department synchronously - we'll use a blocking call for this check
-                // In a real implementation, this check should be done async in the service layer
                 var result = _unitOfWork.Departments.GetByIdAsync(currentId).GetAwaiter().GetResult();
                 if (result.IsError || result.Value == null || !result.Value.ParentDepartmentId.HasValue)
                     break;
 
                 if (result.Value.Id == departmentId)
-                    return false; // Circular reference detected
+                    return false;
 
                 currentId = result.Value.ParentDepartmentId.Value;
                 depth++;
@@ -431,8 +412,6 @@ public class DepartmentService(
         }
         catch
         {
-            // If there's an error in our check, we'll be conservative and allow the assignment
-            // The actual validation will happen when we try to make the change
             return true;
         }
     }
@@ -463,7 +442,7 @@ public class DepartmentService(
             Level = department.Level,
             MaterializedPath = department.MaterializedPath,
             Type = department.Type,
-            ChildrenCount = 0, // Would need to query for this
+            ChildrenCount = 0,
             UsersCount = department.Users?.Count ?? 0,
             CreatedAt = department.CreatedAt
         };

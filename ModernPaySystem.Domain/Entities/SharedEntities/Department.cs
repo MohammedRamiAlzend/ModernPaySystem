@@ -15,7 +15,7 @@ public class Department : Entity<Guid>, IAuditableEntity
     // Tree Relationships
     public Guid? ParentDepartmentId { get; set; }       // Parent department ID
     public Department? ParentDepartment { get; set; }   // Reference to parent department
-    public ICollection<Department> ChildDepartments { get; set; } = new List<Department>(); // Child departments
+    public ICollection<Department> ChildDepartments { get; set; } = []; // Child departments
 
     // Hierarchy Level (1: Country, 2: Governorate, 3: District, 4: Municipality, 5: Office, ...)
     public int Level { get; set; }
@@ -27,7 +27,7 @@ public class Department : Entity<Guid>, IAuditableEntity
     public DepartmentType Type { get; set; }
 
     // Users belonging to this department
-    public ICollection<User> Users { get; set; } = new List<User>();
+    public ICollection<User> Users { get; set; } = [];
 
     // Audit Data
     public string? CreatedByUserId { get; set; }
