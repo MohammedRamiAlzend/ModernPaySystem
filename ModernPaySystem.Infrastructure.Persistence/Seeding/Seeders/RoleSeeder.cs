@@ -1,4 +1,3 @@
-using Bogus;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;

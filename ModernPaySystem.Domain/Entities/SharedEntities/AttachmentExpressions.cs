@@ -1,5 +1,5 @@
-using System.Linq.Expressions;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using System.Linq.Expressions;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 

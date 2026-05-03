@@ -122,7 +122,7 @@ public class DefaultDataSeeder(IPasswordHasher passwordHasher) : IEntitySeeder
                 HashedPassword = passwordHasher.HashPassword(i.ToString())
             };
             await context.Users.AddAsync(user);
-            
+
             await context.SubSystemUsers.AddAsync(new SubSystemUser
             {
                 Id = Guid.NewGuid(),
@@ -138,5 +138,4 @@ public class DefaultDataSeeder(IPasswordHasher passwordHasher) : IEntitySeeder
 
     }
 
- 
 }

@@ -1,10 +1,3 @@
-using System.Linq.Expressions;
-using Microsoft.Extensions.Logging;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Domain.Commons;
-using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
-using ModernPaySystem.Infrastructure.Persistence;
-
 namespace ModernPaySystem.Infrastructure.Services;
 
 /// <summary>
@@ -27,7 +20,7 @@ public class TemplateService : ITemplateService
         {
             _logger.LogInformation("Fetching all templates");
             var templates = await _unitOfWork.Templates.GetAllAsync();
-            if(templates.IsError)
+            if (templates.IsError)
             {
                 return templates.Errors;
             }

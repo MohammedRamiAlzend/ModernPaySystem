@@ -1,8 +1,8 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using ModernPaySystem.Domain.Entities.Abstraction;
+using System.Security.Claims;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Interceptors;
 

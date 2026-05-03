@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-namespace ModernPaySystem;
+﻿namespace ModernPaySystem;
 
 public class HasPermissionAttribute(string permission) : AuthorizeAttribute(policy: permission)
 {

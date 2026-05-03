@@ -43,21 +43,21 @@ public static class DepartmentRepositoryExtensions
     {
         var path = new List<Department>();
         var currentId = departmentId;
-        
+
         while (true)
         {
             var result = await repository.GetByIdAsync(currentId);
             if (result.IsError || result.Value == null)
                 break;
-                
+
             path.Add(result.Value);
-            
+
             if (!result.Value.ParentDepartmentId.HasValue)
                 break;
-                
+
             currentId = result.Value.ParentDepartmentId.Value;
         }
-        
+
         path.Reverse();
         return path;
     }
@@ -66,8 +66,8 @@ public static class DepartmentRepositoryExtensions
     /// Check if assigning a parent would create a circular reference
     /// </summary>
     public static async Task<bool> WouldCreateCircularReferenceAsync(
-        this IRepositoryBase<Department, Guid> repository, 
-        Guid departmentId, 
+        this IRepositoryBase<Department, Guid> repository,
+        Guid departmentId,
         Guid proposedParentId)
     {
         // Cannot assign self as parent

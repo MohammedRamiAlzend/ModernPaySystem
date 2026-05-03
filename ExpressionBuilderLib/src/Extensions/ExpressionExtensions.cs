@@ -1,5 +1,5 @@
-﻿using System.Linq.Expressions;
-using ExpressionBuilderLib.src.Core;
+﻿using ExpressionBuilderLib.src.Core;
+using System.Linq.Expressions;
 
 namespace ExpressionBuilderLib.src.Extensions;
 

@@ -10,7 +10,7 @@ public class ResponseAttachment : Entity<Guid>, IAuditableEntity
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    
+
     public ResponseAttachmentDto ToDto()
     {
         return new ResponseAttachmentDto

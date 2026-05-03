@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
 namespace ModernPaySystem.Application.Interfaces;
 
 public interface IRequestTransactionService

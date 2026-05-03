@@ -11,24 +11,24 @@ public class Department : Entity<Guid>, IAuditableEntity
     public required string Name { get; set; }           // Department name (e.g., "Technical Office Diwan")
     public string? Code { get; set; }                   // Department code for unique identification
     public string? Description { get; set; }            // Department description
-    
+
     // Tree Relationships
     public Guid? ParentDepartmentId { get; set; }       // Parent department ID
     public Department? ParentDepartment { get; set; }   // Reference to parent department
     public ICollection<Department> ChildDepartments { get; set; } = new List<Department>(); // Child departments
-    
+
     // Hierarchy Level (1: Country, 2: Governorate, 3: District, 4: Municipality, 5: Office, ...)
     public int Level { get; set; }
-    
+
     // Full materialized path for hierarchical sequence (e.g., "1/5/12/45/78")
     public string? MaterializedPath { get; set; }
-    
+
     // Department type (for validation)
     public DepartmentType Type { get; set; }
-    
+
     // Users belonging to this department
     public ICollection<User> Users { get; set; } = new List<User>();
-    
+
     // Audit Data
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

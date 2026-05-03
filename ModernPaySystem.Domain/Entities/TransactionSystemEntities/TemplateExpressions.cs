@@ -1,5 +1,6 @@
-using System.Linq.Expressions;
 using System.Linq;
+using System.Linq.Expressions;
+
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public static class TemplateExpressions

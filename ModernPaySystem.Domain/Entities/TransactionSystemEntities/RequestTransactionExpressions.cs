@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using ExpressionBuilderLib.src.Core;
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -31,7 +30,6 @@ public static class RequestTransactionExpressions
      rt => rt.CreatedByUserId == userId;
     public static Expression<Func<RequestTransaction, bool>> TransferStatus(TransactionStatus status) =>
      rt => rt.Status == status;
-
 
     public static Expression<Func<RequestTransaction, bool>> CanMakeUpdateByUserId(Guid userId) =>
         rt => rt.CurrentUserHolderId == userId;

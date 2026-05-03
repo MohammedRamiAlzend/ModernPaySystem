@@ -1,11 +1,4 @@
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using ModernPaySystem.Application.Interfaces;
-using ModernPaySystem.Domain.Commons;
 using ModernPaySystem.Domain.DTOs;
-using ModernPaySystem.Domain.Entities.SharedEntities;
-using ModernPaySystem.Infrastructure.Persistence;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -49,7 +42,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
                 return ApplicationErrors.InvalidInput;
 
             var pagedUsers = await unitOfWork.Users.GetPagedAsync(
-                page, 
+                page,
                 pageSize,
                 transform: query => query.Include(x => x.SubSystemUser).Include(x => x.Department)
             );
