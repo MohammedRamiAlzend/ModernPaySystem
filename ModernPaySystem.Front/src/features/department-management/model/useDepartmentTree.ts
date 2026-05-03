@@ -50,7 +50,6 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
     }
 
 
-    const visited = new Set<string>();
 
     const traverse = (node: DepartmentTree, parentId?: string) => {
         const nodeId = node.id.replace(/-/g, '_');

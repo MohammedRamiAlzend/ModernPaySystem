@@ -15,7 +15,7 @@ import { useUIStore } from '@/app/store/uiStore';
 import { useTheme } from '@/app/providers/theme-context';
 import { useSearchParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/shared/ui/sheet';
-import { User as UserIcon, Building2 as BuildingIcon, Users as UsersIcon } from 'lucide-react';
+import { Building2 as BuildingIcon, Users as UsersIcon } from 'lucide-react';
 import { User } from '@/features/users/api/usersApi';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 
@@ -203,7 +203,7 @@ export const DepartmentManagement: React.FC = () => {
                             data={treeData || []}
                             highlightId={highlightId}
                             isLoading={isTreeLoading}
-                            onNodeClick={(id) => setSelectedDeptForUsers(id)}
+                            onNodeClick={(id: string) => setSelectedDeptForUsers(id)}
                         />
                     </div>
 

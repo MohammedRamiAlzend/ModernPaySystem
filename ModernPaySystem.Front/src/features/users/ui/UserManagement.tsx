@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUsers, useSubSystems, useUserMutations, User, UserCreateDto } from '../api/usersApi';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -51,7 +50,6 @@ export const UserManagement = () => {
     const { data: subSystemsData = [], isLoading: isLoadingSubSystems } = useSubSystems();
     const { departmentOptions } = useDepartments();
     const { createUser, updateUser, deleteUser } = useUserMutations();
-    const navigate = useNavigate();
 
     const [selectedDeptForTree, setSelectedDeptForTree] = useState<string | null>(null);
     const { data: treeData, isLoading: isTreeLoading } = useDepartmentTree(undefined, 'full');
@@ -302,17 +300,18 @@ export const UserManagement = () => {
                         onSubmit={handleSaveUser}
                         initialData={editingUser}
                         subSystems={subSystems}
-                        currentUserSubsystem={currentUserSubsystem}
+                        currentUserSubsystem={currentUserSubsystem ? Number(currentUserSubsystem) : null}
                         isLoading={createUser.isPending || updateUser.isPending}
                     />
                 </DialogContent>
             </Dialog>
 
             <AssignDepartmentDialog
-                user={assigningUser}
-                open={!!assigningUser}
-                onOpenChange={(open) => !open && setAssigningUser(null)}
-                onAssigned={() => setAssigningUser(null)}
+                isOpen={!!assigningUser}
+                onClose={() => setAssigningUser(null)}
+                userId={assigningUser?.id || ''}
+                userName={assigningUser?.userName || ''}
+                initialDepartmentId={assigningUser?.departmentId || ''}
             />
 
             {/* Department Tree Preview Dialog */}
@@ -338,7 +337,7 @@ export const UserManagement = () => {
                                 data={treeData || []}
                                 highlightId={selectedDeptForTree || undefined}
                                 isLoading={isTreeLoading}
-                                onNodeClick={(id) => {
+                                onNodeClick={(id: string) => {
                                     setSelectedDepartmentId(id);
                                     setSelectedDeptForTree(null);
                                 }}

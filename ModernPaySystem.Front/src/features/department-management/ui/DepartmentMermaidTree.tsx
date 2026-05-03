@@ -12,6 +12,7 @@ interface DepartmentMermaidTreeProps {
     data: DepartmentTree[];
     highlightId?: string;
     isLoading?: boolean;
+    onNodeClick?: (id: string) => void;
 }
 
 const Controls = () => {
@@ -111,7 +112,7 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                 centerOnInit={true}
                 wheel={{ step: 0.1 }}
             >
-                {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                {() => (
                     <>
                         <Controls />
                         <TransformComponent
