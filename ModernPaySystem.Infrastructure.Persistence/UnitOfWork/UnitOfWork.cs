@@ -33,6 +33,7 @@ public class UnitOfWork(
     private IRepositoryBase<Request, Guid>? _requests;
     private IRepositoryBase<Response, Guid>? _responses;
     private IRepositoryBase<TemplateOwnership, Guid>? _templateOwnerships;
+    private IRepositoryBase<UserTemplateOwnership, Guid>? _userTemplateOwnerships;
     private IRepositoryBase<ResponseAttachment, Guid>? _responseAttachments;
     private IRepositoryBase<RequestAttachment, Guid>? _requestAttachments;
     private IRepositoryBase<LookUpField, Guid>? _lookUpFields;
@@ -67,6 +68,9 @@ public class UnitOfWork(
 
     public IRepositoryBase<TemplateOwnership, Guid> TemplateOwnerships =>
         _templateOwnerships ??= new RepositoryBase<TemplateOwnership, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<TemplateOwnership, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<UserTemplateOwnership, Guid> UserTemplateOwnerships =>
+        _userTemplateOwnerships ??= new RepositoryBase<UserTemplateOwnership, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<UserTemplateOwnership, Guid>>(), _httpContextServiceManager);
 
     public IRepositoryBase<ResponseAttachment, Guid> ResponseAttachments =>
         _responseAttachments ??= new RepositoryBase<ResponseAttachment, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ResponseAttachment, Guid>>(), _httpContextServiceManager);

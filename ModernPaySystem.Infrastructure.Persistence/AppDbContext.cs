@@ -14,13 +14,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PermissionEntity> Permissions { get; set; }
     public DbSet<Department> Departments { get; set; }
 
-    public DbSet<Template> Templates { get; set; }
-    public DbSet<Request> Requests { get; set; }
-    public DbSet<RequestAttachment> RequestAttachments { get; set; }
-    public DbSet<Response> Responses { get; set; }
-    public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
-    public DbSet<TemplateOwnership> TemplateOwnerships { get; set; }
-    public DbSet<RequestTransaction> RequestTransactions { get; set; }
+     public DbSet<Template> Templates { get; set; }
+     public DbSet<Request> Requests { get; set; }
+     public DbSet<RequestAttachment> RequestAttachments { get; set; }
+     public DbSet<Response> Responses { get; set; }
+     public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
+     public DbSet<TemplateOwnership> TemplateOwnerships { get; set; }
+     public DbSet<UserTemplateOwnership> UserTemplateOwnerships { get; set; }
+     public DbSet<RequestTransaction> RequestTransactions { get; set; }
     public DbSet<RequestTransactionAttachment> RequestTransactionAttachments { get; set; }
 
     public DbSet<LookUpField> LookUpFields { get; set; }
@@ -100,17 +101,29 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(p => p.Roles)
             .UsingEntity(j => j.ToTable("RolePermissions"));
 
-        modelBuilder.Entity<TemplateOwnership>()
-            .HasOne(to => to.Template)
-            .WithMany(t => t.Ownerships)
-            .HasForeignKey(to => to.TemplateId)
-            .OnDelete(DeleteBehavior.Cascade);
+         modelBuilder.Entity<TemplateOwnership>()
+             .HasOne(to => to.Template)
+             .WithMany(t => t.Ownerships)
+             .HasForeignKey(to => to.TemplateId)
+             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<TemplateOwnership>()
-            .HasOne(to => to.Department)
-            .WithMany(u => u.TemplateOwnerships)
-            .HasForeignKey(to => to.DepartmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+         modelBuilder.Entity<TemplateOwnership>()
+             .HasOne(to => to.Department)
+             .WithMany(u => u.TemplateOwnerships)
+             .HasForeignKey(to => to.DepartmentId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+         modelBuilder.Entity<UserTemplateOwnership>()
+             .HasOne(uto => uto.Template)
+             .WithMany(t => t.UserOwnerships)
+             .HasForeignKey(uto => uto.TemplateId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+         modelBuilder.Entity<UserTemplateOwnership>()
+             .HasOne(uto => uto.User)
+             .WithMany(u => u.TemplateOwnerships)
+             .HasForeignKey(uto => uto.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<SubSystemUser>()
             .HasOne(ssu => ssu.User)

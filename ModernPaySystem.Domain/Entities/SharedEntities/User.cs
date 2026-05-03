@@ -20,7 +20,7 @@ public class User : Entity<Guid>, IAuditableEntity
     public ICollection<Request> RequestsAsRequester { get; set; } = new List<Request>();
     public ICollection<Request> RequestsAsApprover { get; set; } = new List<Request>();
     public ICollection<Request>? MentionedRequests { get; set; } = new List<Request>();
-
+    public ICollection<UserTemplateOwnership>? TemplateOwnerships { get; set; } = null;
     public ICollection<Role> Roles { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }

@@ -100,4 +100,31 @@ public class TemplatesController : ControllerBase
         var result = await _templateService.RemoveOwnershipAsync(id, departmentId);
         return result.ToActionResult();
     }
+
+    [HttpGet("{id}/ownerships/user")]
+    [EndpointPermission("templates.ownership.user.get", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetUserOwnerships(Guid id)
+    {
+        _logger.LogInformation("Getting user ownerships for template: {TemplateId}", id);
+        var result = await _templateService.GetUserOwnershipsAsync(id);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{id}/ownerships/user")]
+    [EndpointPermission("templates.ownership.user.add", SubSystem.TransactionSystem, PermissionType.Insert)]
+    public async Task<IActionResult> AddUserOwnership(Guid id, [FromBody] CreateUserTemplateOwnershipDto dto)
+    {
+        _logger.LogInformation("Adding user ownership for template {TemplateId} -> user {UserId}", id, dto?.UserId);
+        var result = await _templateService.AddUserOwnershipAsync(id, dto.UserId);
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("{id}/ownerships/user/{userId}")]
+    [EndpointPermission("templates.ownership.user.remove", SubSystem.TransactionSystem, PermissionType.Delete)]
+    public async Task<IActionResult> RemoveUserOwnership(Guid id, Guid userId)
+    {
+        _logger.LogInformation("Removing user ownership for template {TemplateId} -> user {UserId}", id, userId);
+        var result = await _templateService.RemoveUserOwnershipAsync(id, userId);
+        return result.ToActionResult();
+    }
 }

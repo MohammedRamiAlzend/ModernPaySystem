@@ -23,6 +23,7 @@ public interface IUnitOfWork
     IRepositoryBase<Response, Guid> Responses { get; }
 
     IRepositoryBase<TemplateOwnership, Guid> TemplateOwnerships { get; }
+    IRepositoryBase<UserTemplateOwnership, Guid> UserTemplateOwnerships { get; }
 
     IRepositoryBase<ResponseAttachment, Guid> ResponseAttachments { get; }
 

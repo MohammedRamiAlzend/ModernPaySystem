@@ -331,4 +331,111 @@ public class TemplateService : ITemplateService
             return ApplicationErrors.InternalServerError;
         }
     }
+
+    public async Task<Result<IEnumerable<UserTemplateOwnershipDto>>> GetUserOwnershipsAsync(Guid templateId)
+    {
+        try
+        {
+            if (templateId == Guid.Empty) return ApplicationErrors.InvalidInput;
+
+            var ownerships = await _unitOfWork.UserTemplateOwnerships.FindAsync(
+                filter: uto => uto.TemplateId == templateId,
+                transform: q => q.Include(uto => uto.User)
+            );
+
+            if (ownerships.IsError) return ownerships.Errors;
+
+            var dtos = ownerships.Value!.Select(uto => new UserTemplateOwnershipDto
+            {
+                Id = uto.Id,
+                TemplateId = uto.TemplateId,
+                UserId = uto.UserId,
+                UserName = uto.User?.UserName
+            }).ToList();
+
+            return dtos;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching user template ownerships for template: {TemplateId}", templateId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<UserTemplateOwnershipDto>> AddUserOwnershipAsync(Guid templateId, Guid userId)
+    {
+        try
+        {
+            if (templateId == Guid.Empty || userId == Guid.Empty) return ApplicationErrors.InvalidInput;
+
+            var template = await _unitOfWork.Templates.GetByIdAsync(templateId);
+            if (template.IsError) return template.Errors;
+            if (template.Value == null) return ApplicationErrors.TemplateNotFound;
+
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (user.IsError) return user.Errors;
+            if (user.Value == null) return ApplicationErrors.UserNotFound;
+
+            var exists = await _unitOfWork.UserTemplateOwnerships.AnyAsync(uto => uto.TemplateId == templateId && uto.UserId == userId);
+            if (exists) return ApplicationErrors.DuplicateEntry;
+
+            var ownership = new UserTemplateOwnership
+            {
+                TemplateId = templateId,
+                UserId = userId
+            };
+
+            var addRes = await _unitOfWork.UserTemplateOwnerships.AddAsync(ownership);
+            if (addRes.IsError) return addRes.Errors;
+
+            int saved = await _unitOfWork.SaveChangesAsync();
+            if (saved <= 0) return ApplicationErrors.DatabaseError;
+
+            return new UserTemplateOwnershipDto
+            {
+                Id = ownership.Id,
+                TemplateId = ownership.TemplateId,
+                UserId = ownership.UserId
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding user template ownership for template {TemplateId}", templateId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<UserTemplateOwnershipDto>> RemoveUserOwnershipAsync(Guid templateId, Guid userId)
+    {
+        try
+        {
+            if (templateId == Guid.Empty || userId == Guid.Empty) return ApplicationErrors.InvalidInput;
+
+            var ownership = await _unitOfWork.UserTemplateOwnerships.GetAsync(
+                filter: uto => uto.TemplateId == templateId && uto.UserId == userId
+            );
+
+            if (ownership.IsError) return ownership.Errors;
+            if (ownership.Value == null) return ApplicationErrors.UserNotFound;
+
+            var removeRes = await _unitOfWork.UserTemplateOwnerships.RemoveAsync(
+                uto => uto.TemplateId == templateId && uto.UserId == userId);
+            if (removeRes.IsError) return removeRes.Errors;
+
+            int saved = await _unitOfWork.SaveChangesAsync();
+            if (saved <= 0) return ApplicationErrors.DatabaseError;
+
+            return new UserTemplateOwnershipDto
+            {
+                Id = ownership.Value.Id,
+                TemplateId = ownership.Value.TemplateId,
+                UserId = ownership.Value.UserId
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error removing user template ownership for template {TemplateId}", templateId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
 }
