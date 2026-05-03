@@ -71,9 +71,9 @@ public class DepartmentService(
 
             await unitOfWork.SaveChangesAsync();
 
-            logger.LogInformation("Created department: {DepartmentId} with name: {Name}", department.Id, department.Name);
+             logger.LogInformation("Created department: {DepartmentId} with name: {Name}", department.Id, department.Name);
 
-            return MapToDto(department);
+             return department.MapToDto();
         }
         catch (Exception ex)
         {
