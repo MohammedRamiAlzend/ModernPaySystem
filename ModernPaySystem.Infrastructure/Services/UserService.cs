@@ -128,7 +128,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             if (user == null)
                 return ApplicationErrors.InvalidInput;
 
-            if (string.IsNullOrWhiteSpace(user.UserName))
+            if (string.IsNullOrWhiteSpace(user.UserName) || string.IsNullOrWhiteSpace(user.Password))
                 return ApplicationErrors.MissingRequiredField;
 
             logger.LogInformation("Creating new user: {Username}", user.UserName);
@@ -164,6 +164,64 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating user");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<UserDto>> UpdateAsync(Guid id, CreateUserDto userDto)
+    {
+        try
+        {
+            if (id == Guid.Empty || userDto == null)
+                return ApplicationErrors.InvalidInput;
+
+            logger.LogInformation("Updating user: {UserId}", id);
+
+            var userResult = await unitOfWork.Users.GetAsync(
+                filter: x => x.Id == id,
+                transform: query => query.Include(x => x.SubSystemUser)
+            );
+
+            if (userResult.IsError)
+                return userResult.Errors;
+
+            if (userResult.Value == null)
+                return ApplicationErrors.OperationFailed;
+
+            var userEntity = userResult.Value;
+
+            // Update basic info
+            userEntity.UserName = userDto.UserName;
+
+            // Update password if provided
+            if (!string.IsNullOrWhiteSpace(userDto.Password))
+            {
+                userEntity.HashedPassword = passwordHasher.HashPassword(userDto.Password);
+            }
+
+            // Update SubSystem
+            if (userEntity.SubSystemUser != null)
+            {
+                userEntity.SubSystemUser.SubSystem = userDto.SubSystem ?? SubSystem.None;
+            }
+            else
+            {
+                var subSystemUser = new SubSystemUser()
+                {
+                    UserId = userEntity.Id,
+                    SubSystem = userDto.SubSystem ?? SubSystem.None
+                };
+                await unitOfWork.SubSystemUsers.AddAsync(subSystemUser);
+            }
+
+            int result = await unitOfWork.SaveChangesAsync();
+            
+            logger.LogInformation("Successfully updated user: {UserId}", id);
+            return userEntity.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating user: {UserId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }

@@ -1,4 +1,4 @@
-﻿using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
@@ -66,7 +66,7 @@ public class UserDto
 public class CreateUserDto
 {
     public required string UserName { get; set; }
-    public required string Password { get; set; }
+    public string? Password { get; set; }
     public SubSystem? SubSystem { get; set; }
     public Guid? DepartmentId { get; set; }
     public bool IsDepartmentHead { get; set; }

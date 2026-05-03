@@ -10,8 +10,12 @@ import { User, SubSystem } from '../api/usersApi';
 import { APP_CONFIG } from '@/shared/config/appConfig';
 
 const userFormSchema = z.object({
-    userName: z.string().min(3, { message: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' }),
-    password: z.string().min(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }).optional().or(z.literal('')),
+    userName: z.string().min(APP_CONFIG.IS_DEV ? 1 : 3, { 
+        message: `اسم المستخدم يجب أن يكون ${APP_CONFIG.IS_DEV ? 1 : 3} أحرف على الأقل` 
+    }),
+    password: z.string().min(APP_CONFIG.IS_DEV ? 1 : 6, { 
+        message: `كلمة المرور يجب أن تكون ${APP_CONFIG.IS_DEV ? 1 : 6} أحرف على الأقل` 
+    }).optional().or(z.literal('')),
     subSystem: z.string().min(1, { message: 'يرجى اختيار النظام الفرعي' }),
 });
 
@@ -35,11 +39,28 @@ export const UserForm: React.FC<UserFormProps> = ({
     const form = useForm<UserFormValues>({
         resolver: zodResolver(userFormSchema),
         defaultValues: {
-            userName: initialData?.userName || '',
+            userName: '',
             password: '',
-            subSystem: initialData?.subSystem?.toString() || currentUserSubsystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
+            subSystem: currentUserSubsystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
         },
     });
+
+    // تحديث قيم النموذج عند تغيير البيانات الأولية (عند الضغط على تعديل مستخدم مختلف)
+    React.useEffect(() => {
+        if (initialData) {
+            form.reset({
+                userName: initialData.userName,
+                password: '',
+                subSystem: initialData.subSystem?.toString() || currentUserSubsystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
+            });
+        } else {
+            form.reset({
+                userName: '',
+                password: '',
+                subSystem: currentUserSubsystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
+            });
+        }
+    }, [initialData, form, currentUserSubsystem]);
 
     return (
         <Form {...form}>
@@ -79,7 +100,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>النظام الفرعي</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="اختر النظام" />
