@@ -53,7 +53,7 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
 
     const traverse = (node: DepartmentTree, parentId?: string) => {
         const nodeId = node.id.replace(/-/g, '_');
-        const safeName = node.name.replace(/[\[\]\(\)\{\}]/g, '');
+        const safeName = node.name.replace(/[[](){}]/g, '');
         
         mermaidText += `    ${nodeId}["${safeName}"]\n`;
         

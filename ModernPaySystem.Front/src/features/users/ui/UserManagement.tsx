@@ -55,15 +55,14 @@ export const UserManagement = () => {
     const { data: treeData, isLoading: isTreeLoading } = useDepartmentTree(undefined, 'full');
 
     const subSystems = subSystemsData || [];
-    const users = usersData || [];
-
     const filteredUsers = useMemo(() => {
+        const users = usersData || [];
         return users.filter(user => {
             const matchesSubSystem = selectedSubSystem === 'all' || user.subSystem?.toString() === selectedSubSystem;
             const matchesDepartment = selectedDepartmentId === 'all' || user.departmentId === selectedDepartmentId;
             return matchesSubSystem && matchesDepartment;
         });
-    }, [users, selectedSubSystem, selectedDepartmentId]);
+    }, [usersData, selectedSubSystem, selectedDepartmentId]);
 
     const filterDepartmentOptions = useMemo(() => {
         return [{ value: 'all', label: 'كافة الأقسام' }, ...departmentOptions];
