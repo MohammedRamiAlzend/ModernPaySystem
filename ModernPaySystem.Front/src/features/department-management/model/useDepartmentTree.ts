@@ -50,11 +50,10 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
     }
 
 
-    const visited = new Set<string>();
 
     const traverse = (node: DepartmentTree, parentId?: string) => {
         const nodeId = node.id.replace(/-/g, '_');
-        const safeName = node.name.replace(/[\[\]\(\)\{\}]/g, '');
+        const safeName = node.name.replace(/[[](){}]/g, '');
         
         mermaidText += `    ${nodeId}["${safeName}"]\n`;
         
@@ -68,6 +67,9 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
         } else if (node.level === 1) {
             mermaidText += `    class ${nodeId} root\n`;
         }
+
+        // Add click handler for each node
+        mermaidText += `    click ${nodeId} call onMermaidNodeClick()\n`;
 
         if (node.children && node.children.length > 0) {
             node.children.forEach(child => traverse(child, node.id));

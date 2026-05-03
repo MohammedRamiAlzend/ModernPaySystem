@@ -12,6 +12,7 @@ interface DepartmentMermaidTreeProps {
     data: DepartmentTree[];
     highlightId?: string;
     isLoading?: boolean;
+    onNodeClick?: (id: string) => void;
 }
 
 const Controls = () => {
@@ -34,11 +35,27 @@ const Controls = () => {
 export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
     data,
     highlightId,
-    isLoading
+    isLoading,
+    onNodeClick
 }) => {
     const mermaidRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+
+    // Setup global callback for Mermaid
+    useEffect(() => {
+        (window as any).onMermaidNodeClick = (nodeId: string) => {
+            if (onNodeClick) {
+                // Convert nodeId back to GUID (underscore to hyphen)
+                const originalId = nodeId.replace(/_/g, '-');
+                onNodeClick(originalId);
+            }
+        };
+
+        return () => {
+            delete (window as any).onMermaidNodeClick;
+        };
+    }, [onNodeClick]);
 
     useEffect(() => {
         mermaid.initialize({
@@ -95,7 +112,7 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                 centerOnInit={true}
                 wheel={{ step: 0.1 }}
             >
-                {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+                {() => (
                     <>
                         <Controls />
                         <TransformComponent

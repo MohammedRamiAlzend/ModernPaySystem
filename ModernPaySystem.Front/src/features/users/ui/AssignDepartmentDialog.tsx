@@ -66,7 +66,7 @@ export const AssignDepartmentDialog: React.FC<AssignDepartmentDialogProps> = ({
                 userId 
             });
             onClose();
-        } catch (error) {
+        } catch {
             // Error handled in hook
         }
     };

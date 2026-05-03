@@ -13,12 +13,21 @@ import { DepartmentForm } from './DepartmentForm';
 import { useDepartmentActions } from '../model/useDepartmentActions';
 import { useUIStore } from '@/app/store/uiStore';
 import { useTheme } from '@/app/providers/theme-context';
+import { useSearchParams } from 'react-router-dom';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/shared/ui/sheet';
+import { Building2 as BuildingIcon, Users as UsersIcon } from 'lucide-react';
+import { User } from '@/features/users/api/usersApi';
+import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 
 export const DepartmentManagement: React.FC = () => {
     const [selectedRootId, setSelectedRootId] = useState<string>('');
     const [viewMode, setViewMode] = useState<'full' | 'subtree' | 'children'>('full');
     const [highlightId, setHighlightId] = useState<string>('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [selectedDeptForUsers, setSelectedDeptForUsers] = useState<string | null>(null);
+
+    const [searchParams] = useSearchParams();
+    const urlHighlightId = searchParams.get('highlightId');
 
     const { showConfirm } = useUIStore();
     const { theme } = useTheme();
@@ -50,6 +59,26 @@ export const DepartmentManagement: React.FC = () => {
         setHighlightId(id);
         if (viewMode === 'full') setViewMode('subtree');
     };
+
+    // Handle deep linking from users page
+    React.useEffect(() => {
+        if (urlHighlightId) {
+            setHighlightId(urlHighlightId);
+            setSelectedRootId(urlHighlightId);
+            setViewMode('subtree');
+        }
+    }, [urlHighlightId]);
+
+    // Fetch users for the side panel
+    const { data: deptUsers, isLoading: isUsersLoading } = useQuery({
+        queryKey: ['department-users', selectedDeptForUsers],
+        queryFn: () => selectedDeptForUsers ? departmentApi.getUsers(selectedDeptForUsers) : [],
+        enabled: !!selectedDeptForUsers
+    });
+
+    const selectedDeptName = useMemo(() => {
+        return departmentOptions.find(d => d.value === selectedDeptForUsers)?.label;
+    }, [selectedDeptForUsers, departmentOptions]);
 
     const handleCreate = async (data: any) => {
         await createDepartment(data);
@@ -174,8 +203,67 @@ export const DepartmentManagement: React.FC = () => {
                             data={treeData || []}
                             highlightId={highlightId}
                             isLoading={isTreeLoading}
+                            onNodeClick={(id: string) => setSelectedDeptForUsers(id)}
                         />
                     </div>
+
+                    <Sheet open={!!selectedDeptForUsers} onOpenChange={(open) => !open && setSelectedDeptForUsers(null)}>
+                        <SheetContent className="sm:max-w-md">
+                            <SheetHeader className="text-right">
+                                <SheetTitle className="flex items-center gap-2 justify-end">
+                                    <span>مستخدمي {selectedDeptName}</span>
+                                    <UsersIcon className="w-5 h-5 text-primary" />
+                                </SheetTitle>
+                                <SheetDescription className="text-right">
+                                    قائمة الموظفين المعينين في هذا القسم
+                                </SheetDescription>
+                            </SheetHeader>
+
+                            <div className="mt-8">
+                                {isUsersLoading ? (
+                                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                        <RefreshCw className="w-8 h-8 animate-spin text-primary/50" />
+                                        <p className="text-sm text-muted-foreground">جاري تحميل قائمة المستخدمين...</p>
+                                    </div>
+                                ) : (deptUsers || []).length > 0 ? (
+                                    <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4 custom-scrollbar">
+                                        <div className="space-y-4">
+                                            {(deptUsers as User[]).map((user) => (
+                                                <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-md transition-all group">
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-10 w-10 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
+                                                            <AvatarFallback className="bg-primary/5 text-primary font-bold">
+                                                                {user.userName.substring(0, 2).toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="text-right">
+                                                            <p className="text-sm font-bold">{user.userName}</p>
+                                                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                                <BuildingIcon className="w-3 h-3" />
+                                                                <span>{selectedDeptName}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <RefreshCw className="w-3 h-3" />
+                                                        ملف المستخدم
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center gap-4 border-2 border-dashed rounded-xl">
+                                        <UsersIcon className="w-12 h-12 text-muted-foreground/20" />
+                                        <div className="space-y-1">
+                                            <p className="font-medium text-muted-foreground">لا يوجد مستخدمين</p>
+                                            <p className="text-xs text-muted-foreground/60">لم يتم تعيين أي موظف في هذا القسم حالياً</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </SheetContent>
+                    </Sheet>
 
                     <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2">
                         <div className="flex items-center gap-1.5">
