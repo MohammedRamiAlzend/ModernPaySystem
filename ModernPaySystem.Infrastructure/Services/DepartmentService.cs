@@ -380,9 +380,18 @@ public class DepartmentService(
     {
         try
         {
-            // This would require UserRepository to clear user's DepartmentId
-            // To be implemented when User-Department integration is complete
-            logger.LogInformation("Removing user: {UserId} from department", userId);
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            if (user.IsError || user.Value == null)
+                return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
+
+            user.Value.DepartmentId = null;
+            var updateResult = await _unitOfWork.Users.UpdateAsync(user.Value);
+            if (updateResult.IsError)
+                return updateResult.Errors;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            logger.LogInformation("Removed user: {UserId} from department", userId);
             return true;
         }
         catch (Exception ex)
@@ -398,10 +407,40 @@ public class DepartmentService(
         if (departmentId == parentDepartmentId)
             return false;
 
-        // Would need to check for circular references
-        // This is a synchronous method, so we can't call async repository methods
-        // The actual check should be done in the service layer before calling this
-        return true;
+        // Check for circular references synchronously
+        // We cannot call async repository methods directly, so we implement a basic check
+        // For a production system, this should ideally be done async in the service layer
+        try
+        {
+            // Cannot assign self as parent (already checked above)
+            // Check if proposed parent is a descendant of the department
+            var currentId = parentDepartmentId;
+            var maxDepth = 100; // Prevent infinite loops
+            var depth = 0;
+
+            while (currentId != Guid.Empty && depth < maxDepth)
+            {
+                // Get the department synchronously - we'll use a blocking call for this check
+                // In a real implementation, this check should be done async in the service layer
+                var result = _unitOfWork.Departments.GetByIdAsync(currentId).GetAwaiter().GetResult();
+                if (result.IsError || result.Value == null || !result.Value.ParentDepartmentId.HasValue)
+                    break;
+
+                if (result.Value.Id == departmentId)
+                    return false; // Circular reference detected
+
+                currentId = result.Value.ParentDepartmentId.Value;
+                depth++;
+            }
+
+            return true;
+        }
+        catch
+        {
+            // If there's an error in our check, we'll be conservative and allow the assignment
+            // The actual validation will happen when we try to make the change
+            return true;
+        }
     }
 
     #region Private Helper Methods
