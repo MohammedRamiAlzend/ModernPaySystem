@@ -32,10 +32,6 @@ public class DepartmentService(
                 var parentResult = await _unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
                 if (parentResult.IsError || parentResult.Value == null)
                     return new Error("PARENT_NOT_FOUND", "Parent department not found", ErrorKind.NotFound);
-
-                // Check for circular reference
-                if (await _unitOfWork.Departments.WouldCreateCircularReferenceAsync(dto.ParentDepartmentId.Value, dto.ParentDepartmentId.Value))
-                    return new Error("CIRCULAR_REFERENCE", "Cannot create circular reference", ErrorKind.Validation);
             }
 
             // Calculate level and materialized path
@@ -272,7 +268,7 @@ public class DepartmentService(
         }
     }
 
-    public async Task<Result<List<DepartmentDto>>> SearchAsync(string searchTerm, int level = 0)
+    public async Task<Result<List<DepartmentDto>>> SearchAsync(string? searchTerm = null, int level = 0)
     {
         try
         {
@@ -280,10 +276,13 @@ public class DepartmentService(
             if (allDepts.IsError)
                 return allDepts.Errors;
 
-            var filtered = allDepts.Value!
-                .Where(d => d.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                           (d.Code != null && d.Code.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
-                .ToList();
+            var filtered = allDepts.Value!.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                filtered = filtered.Where(d => d.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                                              (d.Code != null && d.Code.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+            }
 
             if (level > 0)
                 filtered = filtered.Where(d => d.Level == level).ToList();
