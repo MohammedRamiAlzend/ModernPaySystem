@@ -18,6 +18,7 @@ export const ResponsesPage = () => {
         selectedRequest,
         isLoading,
         templates,
+        selectedTemplate,
         totalPages,
         page,
         setPage,
@@ -93,7 +94,7 @@ export const ResponsesPage = () => {
                     isOpen={isProcessModalOpen}
                     onClose={handleCloseProcessModal}
                     request={selectedRequest}
-                    template={templates.find(t => t.id === selectedRequest.templateId) || null}
+                    template={selectedTemplate ?? templates.find(t => t.id === selectedRequest.templateId) ?? null}
                     comment={comment}
                     files={files}
                     isPending={isPending}

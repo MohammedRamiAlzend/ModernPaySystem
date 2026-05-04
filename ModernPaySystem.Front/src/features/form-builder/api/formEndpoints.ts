@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 import type {
     Template,
+    FormSchema,
     CreateTemplateDto,
     CreateRequestDto,
     CreateResponseDto,
@@ -35,6 +36,13 @@ export const formEndpoints = {
         // User said: "For display, use endpoint: Templates of type post"
         const response = await api.get('/Templates', {});
         return response.data;
+    },
+
+    getTemplateById: async (id: string): Promise<Template> => {
+        const response = await api.get(`/Templates/${id}`);
+        const raw = response.data;
+        // Handle both { data: Template } and direct Template response
+        return raw?.data ?? raw;
     },
 
     // Ownerships
@@ -284,6 +292,37 @@ export const useTemplates = (showExternal: boolean = false) => {
 
             return [];
         },
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
+    });
+};
+
+export const useTemplateById = (templateId: string | null) => {
+    return useQuery({
+        queryKey: ['template-schema', templateId],
+        queryFn: async (): Promise<FormSchema | null> => {
+            if (!templateId) return null;
+            const t = await formEndpoints.getTemplateById(templateId);
+            if (!t || !t.contentAsJson) return null;
+            try {
+                let parsed;
+                try {
+                    parsed = JSON.parse(t.contentAsJson);
+                } catch {
+                    parsed = JSON.parse(t.contentAsJson.replace(/'/g, '"'));
+                }
+                const baseSchema = Array.isArray(parsed) ? parsed[0] : parsed;
+                if (!baseSchema || typeof baseSchema !== 'object') return null;
+                const schema = baseSchema as FormSchema;
+                schema.id = t.id;
+                schema.title = t.templateName;
+                schema.description = t.templateDescription || '';
+                return schema;
+            } catch {
+                console.error('Failed to parse template content by ID', t);
+                return null;
+            }
+        },
+        enabled: !!templateId,
         ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
     });
 };
