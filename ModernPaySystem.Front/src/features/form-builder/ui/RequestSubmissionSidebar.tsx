@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Shield, ImagePlus, FileText, X, Scan, Eye } from 'lucide-react';
+import { Shield, ImagePlus, FileText, X, Scan } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserPicker } from '@/features/users/ui/UserPicker';
 import { SidebarSection } from '@/shared/ui/sidebar-section';
@@ -22,8 +22,6 @@ interface RequestSubmissionSidebarProps {
 export const RequestSubmissionSidebar = ({
     approverId,
     onApproverSelect,
-    readOnlyUsers,
-    onReadOnlyUsersChange,
     files,
     onFilesChange,
     showFiles = true,
