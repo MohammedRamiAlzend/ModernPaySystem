@@ -25,13 +25,15 @@ interface DepartmentFormProps {
     initialData?: Partial<DepartmentFormValues>;
     parentOptions: SearchableSelectOption[];
     isLoading?: boolean;
+    isParentDisabled?: boolean;
 }
 
 export const DepartmentForm: React.FC<DepartmentFormProps> = ({
     onSubmit,
     initialData,
     parentOptions,
-    isLoading
+    isLoading,
+    isParentDisabled = false
 }) => {
     const form = useForm<DepartmentFormValues>({
         resolver: zodResolver(departmentFormSchema),
@@ -115,6 +117,7 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
                                     value={field.value}
                                     onValueChange={field.onChange}
                                     placeholder="اختر القسم الأب..."
+                                    disabled={isParentDisabled}
                                 />
                             </FormControl>
                             <FormMessage />

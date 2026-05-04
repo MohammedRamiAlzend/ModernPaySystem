@@ -27,6 +27,8 @@ export const DepartmentManagement: React.FC = () => {
     const [highlightId, setHighlightId] = useState<string>('');
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [selectedDeptForUsers, setSelectedDeptForUsers] = useState<string | null>(null);
+    const [initialParentId, setInitialParentId] = useState<string>('');
+    const [isParentFixed, setIsParentFixed] = useState(false);
 
     const [searchParams] = useSearchParams();
     const urlHighlightId = searchParams.get('highlightId');
@@ -85,6 +87,8 @@ export const DepartmentManagement: React.FC = () => {
     const handleCreate = async (data: any) => {
         await createDepartment(data);
         setIsCreateOpen(false);
+        setInitialParentId('');
+        setIsParentFixed(false);
     };
 
     const handleDelete = () => {
@@ -117,7 +121,13 @@ export const DepartmentManagement: React.FC = () => {
                             حذف المحدد
                         </Button>
                     )}
-                    <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                    <Dialog open={isCreateOpen} onOpenChange={(open) => {
+                        setIsCreateOpen(open);
+                        if (!open) {
+                            setInitialParentId('');
+                            setIsParentFixed(false);
+                        }
+                    }}>
                         <DialogTrigger asChild>
                             <Button className="gap-2" size="sm">
                                 <Plus className="w-4 h-4" />
@@ -133,6 +143,8 @@ export const DepartmentManagement: React.FC = () => {
                                 onSubmit={handleCreate}
                                 parentOptions={departmentOptions}
                                 isLoading={isActionLoading}
+                                initialData={initialParentId ? { parentDepartmentId: initialParentId } : undefined}
+                                isParentDisabled={isParentFixed}
                             />
                         </DialogContent>
                     </Dialog>
@@ -211,13 +223,56 @@ export const DepartmentManagement: React.FC = () => {
 
                     <Sheet open={!!selectedDeptForUsers} onOpenChange={(open) => !open && setSelectedDeptForUsers(null)}>
                         <SheetContent className="sm:max-w-md">
-                            <SheetHeader className="text-right">
-                                <SheetTitle className="flex items-center gap-2 justify-end">
-                                    <span>مستخدمي {selectedDeptName}</span>
-                                    <UsersIcon className="w-5 h-5 text-primary" />
-                                </SheetTitle>
+                            <SheetHeader className="text-right pr-8">
+                                <div className="flex flex-col gap-4">
+                                    <SheetTitle className="flex items-center gap-2 justify-end text-xl">
+                                        <span>{selectedDeptName}</span>
+                                        <BuildingIcon className="w-6 h-6 text-primary" />
+                                    </SheetTitle>
+                                    
+                                    <div className="flex gap-2 justify-end">
+                                        <Button 
+                                            size="sm" 
+                                            variant="destructive" 
+                                            className="gap-2 h-9"
+                                            onClick={() => {
+                                                if (selectedDeptForUsers) {
+                                                    showConfirm({
+                                                        title: 'تأكيد الحذف',
+                                                        message: `هل أنت متأكد من حذف قسم "${selectedDeptName}"؟ لا يمكن التراجع عن هذا الإجراء.`,
+                                                        variant: 'destructive',
+                                                        confirmLabel: 'حذف',
+                                                        onConfirm: async () => {
+                                                            await deleteDepartment(selectedDeptForUsers);
+                                                            setSelectedDeptForUsers(null);
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            حذف القسم
+                                        </Button>
+
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            className="gap-2 h-9 border-primary/20 hover:bg-primary/5"
+                                            onClick={() => {
+                                                if (selectedDeptForUsers) {
+                                                    setInitialParentId(selectedDeptForUsers);
+                                                    setIsParentFixed(true);
+                                                    setIsCreateOpen(true);
+                                                }
+                                            }}
+                                        >
+                                            <Plus className="w-4 h-4" />
+                                            إضافة قسم تابع
+                                        </Button>
+                                    </div>
+                                </div>
                                 <SheetDescription className="text-right">
-                                    قائمة الموظفين المعينين في هذا القسم
+                                    إدارة بيانات الموظفين والصلاحيات والهيكل التنظيمي لقسم {selectedDeptName}
                                 </SheetDescription>
                             </SheetHeader>
 
