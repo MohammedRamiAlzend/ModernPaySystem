@@ -103,7 +103,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<TemplateDepartmentOwnership>()
             .HasOne(to => to.Template)
-            .WithMany(t => t.Ownerships)
+            .WithMany(t => t.DepartmentOwnerships)
             .HasForeignKey(to => to.TemplateId)
             .OnDelete(DeleteBehavior.Cascade);
 
