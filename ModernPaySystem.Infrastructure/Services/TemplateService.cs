@@ -10,10 +10,11 @@ public class TemplateService : ITemplateService
 
     private readonly IHttpContextServiceManager httpContextServiceManager;
 
-    public TemplateService(IUnitOfWork unitOfWork, ILogger<TemplateService> logger)
+    public TemplateService(IUnitOfWork unitOfWork, ILogger<TemplateService> logger, IHttpContextServiceManager httpContextServiceManager)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        this.httpContextServiceManager = httpContextServiceManager;
     }
 
     public async Task<Result<IEnumerable<TemplateDto>>> GetAllAsync()
