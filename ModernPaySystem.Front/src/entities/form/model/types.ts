@@ -78,6 +78,7 @@ export interface CreateTemplateDto {
     contentAsJson: string; // JSON string of the form schema
     templateName: string;
     templateDescription?: string | null;
+    isExternal?: boolean;
 }
 
 export interface Template {

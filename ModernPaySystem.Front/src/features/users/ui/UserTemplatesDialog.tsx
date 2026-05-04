@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
-import { RefreshCw, FileStack, Plus, Trash2, ShieldAlert } from 'lucide-react';
+import { RefreshCw, FileStack, Plus, Trash2, ShieldAlert, X } from 'lucide-react';
 import { useTemplatesByUserDirect, useAddUserTemplateOwnership, useRemoveUserTemplateOwnership } from '@/features/form-builder/model/useTemplateOwnerships';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { SearchableSelect } from '@/shared/ui/searchable-select';

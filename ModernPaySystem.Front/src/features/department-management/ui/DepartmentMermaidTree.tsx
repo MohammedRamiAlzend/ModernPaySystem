@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import mermaid from 'mermaid';
 import { DepartmentTree } from '@/entities/department/model/types';
 import { convertToMermaid } from '../model/useDepartmentTree';
-import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 import { useTheme } from '@/app/providers/theme-context';
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
