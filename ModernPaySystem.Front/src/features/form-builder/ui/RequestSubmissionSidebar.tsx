@@ -66,7 +66,8 @@ export const RequestSubmissionSidebar = ({
             </SidebarSection>
 
             {/* ReadOnly (CC) Users Selection (multi) */}
-            <SidebarSection title="للاطلاع فقط" icon={Eye}>
+            {/* تم تعليق حاليا حتى يتم اكمال المنطق البرمجي في باك ايند */}
+            {/* <SidebarSection title="للاطلاع فقط" icon={Eye}>
                 <UserPicker
                     multiple
                     selectedUserIds={readOnlyUsers}
@@ -76,14 +77,14 @@ export const RequestSubmissionSidebar = ({
                     placeholder="اختر للاطلاع..."
                     showCurrentUser={false}
                 />
-            </SidebarSection>
+            </SidebarSection> */}
 
             {/* File Upload & Scanner */}
             {showFiles && (
                 <SidebarSection title="المرفقات" icon={ImagePlus}>
                     <div className="space-y-3">
                         <div className="flex gap-2">
-                             <Button
+                            <Button
                                 variant="outline"
                                 className="flex-1 h-12 gap-2 border-dashed border-primary/20 hover:border-primary/50 hover:bg-primary/5 hover:text-primary transition-all rounded-xl"
                                 onClick={() => fileInputRef.current?.click()}
@@ -92,7 +93,7 @@ export const RequestSubmissionSidebar = ({
                                 <ImagePlus className="w-5 h-5" />
                                 <span className="text-xs">إرفاق ({files.length})</span>
                             </Button>
-                            
+
                             <Button
                                 variant="outline"
                                 className="flex-1 h-12 gap-2 border-dashed border-sky-200 hover:border-sky-500 hover:bg-sky-50 hover:text-sky-600 transition-all rounded-xl"
