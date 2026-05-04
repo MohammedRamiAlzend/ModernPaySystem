@@ -141,11 +141,21 @@ public class TemplateService : ITemplateService
 
             _logger.LogInformation("Creating new template: {TemplateName}", template.TemplateName);
 
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var currentUserResult = await _unitOfWork.Users.GetByIdAsync(currentUserId);
+
+            if (currentUserResult.IsError)
+                return currentUserResult.Errors;
+
+            var currentUser = currentUserResult.Value;
+            if (currentUser == null)
+                return ApplicationErrors.UserNotFound;
+
             var templateEntity = new Template
             {
                 ContentAsJson = template.ContentAsJson,
                 TemplateName = template.TemplateName,
-                TemplateDescription = template.TemplateDescription
+                TemplateDescription = template.TemplateDescription,
             };
 
             var addResult = await _unitOfWork.Templates.AddAsync(templateEntity);
@@ -156,7 +166,29 @@ public class TemplateService : ITemplateService
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
-            _logger.LogInformation("Successfully created template: {TemplateName}", template.TemplateName);
+            if (currentUser.DepartmentId.HasValue)
+            {
+                var departmentOwnership = new TemplateDepartmentOwnership
+                {
+                    TemplateId = templateEntity.Id,
+                    DepartmentId = currentUser.DepartmentId.Value
+                };
+
+               var addDepartmentOwnershipResult =  await _unitOfWork.TemplateOwnerships.AddAsync(departmentOwnership);
+               if (addDepartmentOwnershipResult.IsError)
+                   return addDepartmentOwnershipResult.Errors;
+            }
+            var userOwnership = new UserTemplateOwnership
+            {
+                TemplateId = templateEntity.Id,
+                UserId = currentUser.Id
+            };
+
+            var addUserOwnershipResult = await _unitOfWork.UserTemplateOwnerships.AddAsync(userOwnership);
+            if (addUserOwnershipResult.IsError)
+                return addUserOwnershipResult.Errors;
+            
+            await _unitOfWork.SaveChangesAsync();
             return templateEntity.ToDto();
         }
         catch (Exception ex)
@@ -285,7 +317,7 @@ public class TemplateService : ITemplateService
             var exists = await _unitOfWork.TemplateOwnerships.AnyAsync(to => to.TemplateId == templateId && to.DepartmentId == departmentId);
             if (exists) return ApplicationErrors.DuplicateEntry;
 
-            var ownership = new TemplateOwnership
+            var ownership = new TemplateDepartmentOwnership
             {
                 TemplateId = templateId,
                 DepartmentId = departmentId

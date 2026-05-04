@@ -32,7 +32,7 @@ public class UnitOfWork(
     private IRepositoryBase<Template, Guid>? _templates;
     private IRepositoryBase<Request, Guid>? _requests;
     private IRepositoryBase<Response, Guid>? _responses;
-    private IRepositoryBase<TemplateOwnership, Guid>? _templateOwnerships;
+    private IRepositoryBase<TemplateDepartmentOwnership, Guid>? _templateOwnerships;
     private IRepositoryBase<UserTemplateOwnership, Guid>? _userTemplateOwnerships;
     private IRepositoryBase<ResponseAttachment, Guid>? _responseAttachments;
     private IRepositoryBase<RequestAttachment, Guid>? _requestAttachments;
@@ -66,8 +66,8 @@ public class UnitOfWork(
     public IRepositoryBase<Response, Guid> Responses =>
         _responses ??= new RepositoryBase<Response, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Response, Guid>>(), _httpContextServiceManager);
 
-    public IRepositoryBase<TemplateOwnership, Guid> TemplateOwnerships =>
-        _templateOwnerships ??= new RepositoryBase<TemplateOwnership, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<TemplateOwnership, Guid>>(), _httpContextServiceManager);
+    public IRepositoryBase<TemplateDepartmentOwnership, Guid> TemplateOwnerships =>
+        _templateOwnerships ??= new RepositoryBase<TemplateDepartmentOwnership, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<TemplateDepartmentOwnership, Guid>>(), _httpContextServiceManager);
 
     public IRepositoryBase<UserTemplateOwnership, Guid> UserTemplateOwnerships =>
         _userTemplateOwnerships ??= new RepositoryBase<UserTemplateOwnership, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<UserTemplateOwnership, Guid>>(), _httpContextServiceManager);

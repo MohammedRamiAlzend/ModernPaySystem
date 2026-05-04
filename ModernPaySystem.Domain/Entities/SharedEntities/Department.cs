@@ -18,7 +18,7 @@ public class Department : Entity<Guid>, IAuditableEntity
 
     public ICollection<Department> ChildDepartments { get; set; } = [];
     public ICollection<User> Users { get; set; } = [];
-    public ICollection<TemplateOwnership> TemplateOwnerships { get; set; } = new List<TemplateOwnership>();
+    public ICollection<TemplateDepartmentOwnership> TemplateOwnerships { get; set; } = new List<TemplateDepartmentOwnership>();
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

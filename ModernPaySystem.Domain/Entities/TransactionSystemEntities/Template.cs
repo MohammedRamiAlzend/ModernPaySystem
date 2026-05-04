@@ -8,7 +8,7 @@ public class Template : Entity<Guid>, IAuditableEntity
 
     // Navigation properties
     public ICollection<Request> Requests { get; set; } = [];
-    public ICollection<TemplateOwnership>? Ownerships { get; set; } = null;
+    public ICollection<TemplateDepartmentOwnership>? Ownerships { get; set; } = null;
     public ICollection<UserTemplateOwnership>? UserOwnerships { get; set; } = null;
     public ICollection<LookUpField> LookUpFields { get; set; } = [];
 
@@ -28,7 +28,7 @@ public class Template : Entity<Guid>, IAuditableEntity
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
-            UpdatedAt = this.UpdatedAt
+            UpdatedAt = this.UpdatedAt,
         };
     }
 }
@@ -44,6 +44,8 @@ public class TemplateDto
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public Guid OwnerId { get; set; }
+    public Guid? DepartmentId { get; set; }
 }
 
 public class CreateTemplateDto
@@ -51,6 +53,8 @@ public class CreateTemplateDto
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
+    public Guid OwnerId { get; set; }
+    public Guid? DepartmentId { get; set; }
 }
 
 public class UpdateTemplateDto

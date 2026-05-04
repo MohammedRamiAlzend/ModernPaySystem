@@ -2,7 +2,7 @@
 
 namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
-public class TemplateOwnership : Entity<Guid>
+public class TemplateDepartmentOwnership : Entity<Guid>
 {
     public required Guid TemplateId { get; set; }
     public Template? Template { get; set; }
