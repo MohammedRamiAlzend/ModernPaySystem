@@ -36,8 +36,8 @@ const Controls = () => {
     );
 };
 
-const TreeSkeleton = () => (
-    <div className="w-full h-[500px] bg-muted/10 animate-pulse rounded-xl flex items-center justify-center overflow-hidden">
+const TreeSkeleton = ({ className }: { className?: string }) => (
+    <div className={cn("w-full h-[500px] bg-background/50 backdrop-blur-sm animate-pulse rounded-xl flex items-center justify-center overflow-hidden z-50", className)}>
         <div className="flex flex-col items-center gap-8 opacity-20">
             <Skeleton className="w-48 h-12 rounded-2xl" />
             <div className="flex gap-12">
@@ -103,11 +103,18 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
 
                 // Use unique ID for rendering to avoid conflicts
                 const id = `mermaid-chart-${Math.random().toString(36).substr(2, 9)}`;
-
+                
                 try {
-                    const { svg } = await mermaid.render(id, chartConfig);
+                    // mermaid.render returns { svg, bindFunctions } in newer versions
+                    const result = await mermaid.render(id, chartConfig);
+                    
                     if (mermaidRef.current) {
-                        mermaidRef.current.innerHTML = svg;
+                        mermaidRef.current.innerHTML = result.svg;
+                        
+                        // CRITICAL: Bind functions to the newly inserted SVG to enable click events
+                        if (result.bindFunctions) {
+                            result.bindFunctions(mermaidRef.current);
+                        }
                     }
                 } catch (error) {
                     console.error("Mermaid rendering error:", error);
@@ -120,11 +127,8 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
         renderChart();
     }, [data, highlightId, isDark]);
 
-    if (isLoading || isRendering) {
-        return <TreeSkeleton />;
-    }
-
     if (!data || data.length === 0) {
+        if (isLoading) return <TreeSkeleton />;
         return (
             <div className="flex items-center justify-center h-64 text-muted-foreground">
                 لا توجد بيانات لعرض الشجرة
@@ -134,6 +138,9 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
 
     return (
         <div className="w-full relative bg-card rounded-lg border border-border shadow-sm min-h-[500px] overflow-hidden group">
+            {/* Show Skeleton as an absolute overlay to prevent unmounting mermaidRef */}
+            {(isLoading || isRendering) && <TreeSkeleton className="absolute inset-0" />}
+            
             <TransformWrapper
                 initialScale={1}
                 minScale={0.2}
@@ -158,7 +165,13 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                                 alignItems: 'center'
                             }}
                         >
-                            <div ref={mermaidRef} className="p-10 transition-all duration-300 active:cursor-grabbing" />
+                            <div 
+                                ref={mermaidRef} 
+                                className={cn(
+                                    "p-10 transition-all duration-300 active:cursor-grabbing",
+                                    (isLoading || isRendering) && "opacity-0"
+                                )} 
+                            />
                         </TransformComponent>
                     </>
                 )}
