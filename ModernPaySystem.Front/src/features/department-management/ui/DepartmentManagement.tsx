@@ -15,9 +15,11 @@ import { useUIStore } from '@/app/store/uiStore';
 import { useTheme } from '@/app/providers/theme-context';
 import { useSearchParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/shared/ui/sheet';
-import { Building2 as BuildingIcon, Users as UsersIcon } from 'lucide-react';
+import { Building2 as BuildingIcon, Users as UsersIcon, FileStack } from 'lucide-react';
 import { User } from '@/features/users/api/usersApi';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
+import { DepartmentTemplatesTab } from './DepartmentTemplatesTab';
 
 export const DepartmentManagement: React.FC = () => {
     const [selectedRootId, setSelectedRootId] = useState<string>('');
@@ -219,48 +221,72 @@ export const DepartmentManagement: React.FC = () => {
                                 </SheetDescription>
                             </SheetHeader>
 
-                            <div className="mt-8">
-                                {isUsersLoading ? (
-                                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                        <RefreshCw className="w-8 h-8 animate-spin text-primary/50" />
-                                        <p className="text-sm text-muted-foreground">جاري تحميل قائمة المستخدمين...</p>
-                                    </div>
-                                ) : (deptUsers || []).length > 0 ? (
-                                    <div className="h-[calc(100vh-200px)] overflow-y-auto pr-4 custom-scrollbar">
-                                        <div className="space-y-4">
-                                            {(deptUsers as User[]).map((user) => (
-                                                <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-md transition-all group">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-10 w-10 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
-                                                            <AvatarFallback className="bg-primary/5 text-primary font-bold">
-                                                                {user.userName.substring(0, 2).toUpperCase()}
-                                                            </AvatarFallback>
-                                                        </Avatar>
-                                                        <div className="text-right">
-                                                            <p className="text-sm font-bold">{user.userName}</p>
-                                                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                                                                <BuildingIcon className="w-3 h-3" />
-                                                                <span>{selectedDeptName}</span>
+                            <div className="mt-6">
+                                <Tabs defaultValue="users" className="w-full">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger value="users" className="gap-2">
+                                            <UsersIcon className="w-4 h-4" /> المستخدمين
+                                        </TabsTrigger>
+                                        <TabsTrigger value="templates" className="gap-2">
+                                            <FileStack className="w-4 h-4" /> النماذج والصلاحيات
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    
+                                    <TabsContent value="users" className="mt-4">
+                                        {isUsersLoading ? (
+                                            <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                                <RefreshCw className="w-8 h-8 animate-spin text-primary/50" />
+                                                <p className="text-sm text-muted-foreground">جاري تحميل قائمة المستخدمين...</p>
+                                            </div>
+                                        ) : (deptUsers || []).length > 0 ? (
+                                            <div className="h-[calc(100vh-280px)] overflow-y-auto pr-4 custom-scrollbar">
+                                                <div className="space-y-4">
+                                                    {(deptUsers as User[]).map((user) => (
+                                                        <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-md transition-all group">
+                                                            <div className="flex items-center gap-3">
+                                                                <Avatar className="h-10 w-10 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
+                                                                    <AvatarFallback className="bg-primary/5 text-primary font-bold">
+                                                                        {user.userName.substring(0, 2).toUpperCase()}
+                                                                    </AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="text-right">
+                                                                    <p className="text-sm font-bold">{user.userName}</p>
+                                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                                                        <BuildingIcon className="w-3 h-3" />
+                                                                        <span>{selectedDeptName}</span>
+                                                                    </div>
+                                                                </div>
                                                             </div>
+                                                            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <RefreshCw className="w-3 h-3" />
+                                                                ملف المستخدم
+                                                            </Button>
                                                         </div>
-                                                    </div>
-                                                    <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <RefreshCw className="w-3 h-3" />
-                                                        ملف المستخدم
-                                                    </Button>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center py-20 text-center gap-4 border-2 border-dashed rounded-xl">
+                                                <UsersIcon className="w-12 h-12 text-muted-foreground/20" />
+                                                <div className="space-y-1">
+                                                    <p className="font-medium text-muted-foreground">لا يوجد مستخدمين</p>
+                                                    <p className="text-xs text-muted-foreground/60">لم يتم تعيين أي موظف في هذا القسم حالياً</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </TabsContent>
+                                    
+                                    <TabsContent value="templates" className="mt-4">
+                                        <div className="h-[calc(100vh-280px)] overflow-y-auto pr-2 custom-scrollbar">
+                                            {selectedDeptForUsers && (
+                                                <DepartmentTemplatesTab 
+                                                    departmentId={selectedDeptForUsers} 
+                                                    departmentName={selectedDeptName} 
+                                                />
+                                            )}
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center py-20 text-center gap-4 border-2 border-dashed rounded-xl">
-                                        <UsersIcon className="w-12 h-12 text-muted-foreground/20" />
-                                        <div className="space-y-1">
-                                            <p className="font-medium text-muted-foreground">لا يوجد مستخدمين</p>
-                                            <p className="text-xs text-muted-foreground/60">لم يتم تعيين أي موظف في هذا القسم حالياً</p>
-                                        </div>
-                                    </div>
-                                )}
+                                    </TabsContent>
+                                </Tabs>
                             </div>
                         </SheetContent>
                     </Sheet>

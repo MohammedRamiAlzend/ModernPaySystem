@@ -19,10 +19,12 @@ public interface ITemplateService
     Task<Result<IEnumerable<TemplateOwnershipDto>>> GetOwnershipsAsync(Guid templateId);
     Task<Result<TemplateOwnershipDto>> AddOwnershipAsync(Guid templateId, Guid departmentId);
     Task<Result<bool>> RemoveOwnershipAsync(Guid templateId, Guid departmentId);
+    Task<Result<IEnumerable<TemplateDto>>> GetByDepartmentAsync(Guid departmentId);
 
     Task<Result<IEnumerable<UserTemplateOwnershipDto>>> GetUserOwnershipsAsync(Guid templateId);
     Task<Result<UserTemplateOwnershipDto>> AddUserOwnershipAsync(Guid templateId, Guid userId);
     Task<Result<UserTemplateOwnershipDto>> RemoveUserOwnershipAsync(Guid templateId, Guid userId);
+    Task<Result<IEnumerable<TemplateDto>>> GetUserDirectAsync(Guid userId);
 }
 
 public class TemplateOwnershipDto

@@ -92,6 +92,28 @@ export interface Template {
     isExternal: boolean;
 }
 
+export interface TemplateOwnershipDto {
+    id: string;
+    templateId: string;
+    departmentId: string;
+    departmentName: string | null;
+}
+
+export interface CreateTemplateOwnershipDto {
+    departmentId: string;
+}
+
+export interface UserTemplateOwnershipDto {
+    id: string;
+    templateId: string;
+    userId: string;
+    userName: string | null;
+}
+
+export interface CreateUserTemplateOwnershipDto {
+    userId: string;
+}
+
 export interface CreateRequestDto {
     TemplateId: string;
     RequesterId: string; // UUID

@@ -7,6 +7,11 @@ import { useTheme } from '@/app/providers/theme-context';
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
+import { cn } from '@/shared/lib/utils';
+
+const Skeleton = ({ className }: { className?: string }) => (
+    <div className={cn("animate-pulse rounded-md bg-muted/20", className)} />
+);
 
 interface DepartmentMermaidTreeProps {
     data: DepartmentTree[];
@@ -32,6 +37,25 @@ const Controls = () => {
     );
 };
 
+const TreeSkeleton = () => (
+    <div className="w-full h-[500px] bg-muted/10 animate-pulse rounded-xl flex items-center justify-center overflow-hidden">
+        <div className="flex flex-col items-center gap-8 opacity-20">
+            <Skeleton className="w-48 h-12 rounded-2xl" />
+            <div className="flex gap-12">
+                <Skeleton className="w-32 h-24 rounded-2xl" />
+                <Skeleton className="w-32 h-24 rounded-2xl" />
+                <Skeleton className="w-32 h-24 rounded-2xl" />
+            </div>
+            <div className="flex gap-12">
+                <Skeleton className="w-24 h-16 rounded-2xl" />
+                <Skeleton className="w-24 h-16 rounded-2xl" />
+                <Skeleton className="w-24 h-16 rounded-2xl" />
+                <Skeleton className="w-24 h-16 rounded-2xl" />
+            </div>
+        </div>
+    </div>
+);
+
 export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
     data,
     highlightId,
@@ -39,6 +63,7 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
     onNodeClick
 }) => {
     const mermaidRef = useRef<HTMLDivElement>(null);
+    const [isRendering, setIsRendering] = React.useState(false);
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
@@ -72,27 +97,32 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
     }, [isDark]);
 
     useEffect(() => {
-        if (mermaidRef.current && data && data.length > 0) {
-            const chartConfig = convertToMermaid(data, highlightId, isDark);
+        const renderChart = async () => {
+            if (mermaidRef.current && data && data.length > 0) {
+                setIsRendering(true);
+                const chartConfig = convertToMermaid(data, highlightId, isDark);
 
-            // Clear previous content
-            mermaidRef.current.innerHTML = `<div class="mermaid">${chartConfig}</div>`;
+                // Use unique ID for rendering to avoid conflicts
+                const id = `mermaid-chart-${Math.random().toString(36).substr(2, 9)}`;
 
-            // Re-render
-            try {
-                mermaid.contentLoaded();
-            } catch (error) {
-                console.error("Mermaid rendering error:", error);
+                try {
+                    const { svg } = await mermaid.render(id, chartConfig);
+                    if (mermaidRef.current) {
+                        mermaidRef.current.innerHTML = svg;
+                    }
+                } catch (error) {
+                    console.error("Mermaid rendering error:", error);
+                } finally {
+                    setIsRendering(false);
+                }
             }
-        }
+        };
+
+        renderChart();
     }, [data, highlightId, isDark]);
 
-    if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <LoadingSpinner size="lg" />
-            </div>
-        );
+    if (isLoading || isRendering) {
+        return <TreeSkeleton />;
     }
 
     if (!data || data.length === 0) {

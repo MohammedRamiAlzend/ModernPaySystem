@@ -10,7 +10,7 @@ import {
     AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { cn } from '@/shared/lib/utils';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 
 export interface BaseModalProps {
     isOpen: boolean;
@@ -38,6 +38,7 @@ export const BaseModal: React.FC<BaseModalProps> = ({
     footer,
     maxWidth = 'md',
     maxHeight = 'lg',
+    showCloseButton = true,
     hideHeaderVisually = false
 }) => {
     const maxWidthClasses = {
@@ -69,8 +70,17 @@ export const BaseModal: React.FC<BaseModalProps> = ({
                 )}
             >
                 <div className="p-4 md:p-6 flex flex-col h-full overflow-hidden">
-                    <AlertDialogHeader className={cn("text-right space-y-2 shrink-0", (hideHeaderVisually || (!title && !description)) && "sr-only")}>
-                        <AlertDialogTitle asChild className={cn("text-2xl font-black leading-tight", !title && !hideHeaderVisually && "sr-only")}>
+                    <AlertDialogHeader className={cn("text-right space-y-2 shrink-0 relative", (hideHeaderVisually || (!title && !description)) && "sr-only")}>
+                        {showCloseButton && (
+                            <button
+                                onClick={onClose}
+                                className="absolute left-0 top-0 p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
+                                aria-label="إغلاق"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        )}
+                        <AlertDialogTitle asChild className={cn("text-2xl font-black leading-tight ml-8", !title && !hideHeaderVisually && "sr-only")}>
                             <div>{title || 'تنبيه'}</div>
                         </AlertDialogTitle>
                         <AlertDialogDescription asChild className={cn("font-medium text-base leading-relaxed", !description && !hideHeaderVisually && "sr-only")}>

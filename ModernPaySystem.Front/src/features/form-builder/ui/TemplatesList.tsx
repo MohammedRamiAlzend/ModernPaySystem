@@ -4,12 +4,15 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, FileText } from 'lucide-react';
+import { PlusCircle, FileText, ShieldAlert } from 'lucide-react';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
+import { ManageTemplateOwnershipsModal } from './ManageTemplateOwnershipsModal';
+import { useState } from 'react';
 
 export const TemplatesList = () => {
     const { data: forms = [], isLoading } = useForms();
     const navigate = useNavigate();
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
     if (isLoading) {
         return <Skeleton cards={3} />;
@@ -56,10 +59,34 @@ export const TemplatesList = () => {
                                 </span>
                                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-primary">تعديل النموذج ←</span>
                             </div>
+                            
+                            {/* Manage Access Button */}
+                            <div className="absolute top-4 left-4 z-20">
+                                <Button 
+                                    variant="secondary" 
+                                    size="sm" 
+                                    className="opacity-0 group-hover:opacity-100 transition-opacity gap-1.5 bg-background/80 hover:bg-background"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedTemplateId(form.id);
+                                    }}
+                                >
+                                    <ShieldAlert className="w-3.5 h-3.5" />
+                                    <span>الصلاحيات</span>
+                                </Button>
+                            </div>
                         </Card>
                     ))
                 )}
             </div>
+
+            {selectedTemplateId && (
+                <ManageTemplateOwnershipsModal
+                    templateId={selectedTemplateId}
+                    isOpen={!!selectedTemplateId}
+                    onClose={() => setSelectedTemplateId(null)}
+                />
+            )}
         </AnimatedContainer>
     );
 };

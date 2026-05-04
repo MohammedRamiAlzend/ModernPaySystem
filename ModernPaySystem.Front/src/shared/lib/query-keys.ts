@@ -13,5 +13,16 @@ export const queryKeys = {
         list: (filters: any) => [...queryKeys.user.lists(), filters] as const,
         details: () => [...queryKeys.user.all, 'detail'] as const,
         detail: (id: string) => [...queryKeys.user.details(), id] as const,
+    },
+    template: {
+        all: ['templates'] as const,
+        lists: () => [...queryKeys.template.all, 'list'] as const,
+        list: (filters: any) => [...queryKeys.template.lists(), filters] as const,
+        details: () => [...queryKeys.template.all, 'detail'] as const,
+        detail: (id: string) => [...queryKeys.template.details(), id] as const,
+        ownerships: (id: string) => [...queryKeys.template.detail(id), 'ownerships'] as const,
+        userOwnerships: (id: string) => [...queryKeys.template.detail(id), 'userOwnerships'] as const,
+        byDepartment: (departmentId: string) => [...queryKeys.template.all, 'byDepartment', departmentId] as const,
+        byUser: (userId: string) => [...queryKeys.template.all, 'byUser', userId] as const,
     }
 };

@@ -471,4 +471,72 @@ public class TemplateService : ITemplateService
             return ApplicationErrors.InternalServerError;
         }
     }
+
+    public async Task<Result<IEnumerable<TemplateDto>>> GetByDepartmentAsync(Guid departmentId)
+    {
+        try
+        {
+            if (departmentId == Guid.Empty) return ApplicationErrors.InvalidInput;
+
+            _logger.LogInformation("Fetching templates for department: {DepartmentId}", departmentId);
+
+            // We need to fetch TemplateDepartmentOwnerships for this department and include the Template
+            var ownerships = await _unitOfWork.TemplateOwnerships.FindAsync(
+                filter: to => to.DepartmentId == departmentId,
+                transform: q => q.Include(to => to.Template)
+                                 .ThenInclude(t => t.DepartmentOwnerships)
+                                 .Include(to => to.Template)
+                                 .ThenInclude(t => t.LookUpFields)
+            );
+
+            if (ownerships.IsError) return ownerships.Errors;
+
+            // Map the fetched templates to TemplateDto
+            var dtos = ownerships.Value!
+                .Where(o => o.Template != null)
+                .Select(o => o.Template.ToDto())
+                .ToList();
+
+            return dtos;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching templates for department: {DepartmentId}", departmentId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<IEnumerable<TemplateDto>>> GetUserDirectAsync(Guid userId)
+    {
+        try
+        {
+            if (userId == Guid.Empty) return ApplicationErrors.InvalidInput;
+
+            _logger.LogInformation("Fetching direct templates for user: {UserId}", userId);
+
+            // We need to fetch UserTemplateOwnerships for this user and include the Template
+            var ownerships = await _unitOfWork.UserTemplateOwnerships.FindAsync(
+                filter: uto => uto.UserId == userId,
+                transform: q => q.Include(uto => uto.Template)
+                                 .ThenInclude(t => t.DepartmentOwnerships)
+                                 .Include(uto => uto.Template)
+                                 .ThenInclude(t => t.LookUpFields)
+            );
+
+            if (ownerships.IsError) return ownerships.Errors;
+
+            // Map the fetched templates to TemplateDto
+            var dtos = ownerships.Value!
+                .Where(o => o.Template != null)
+                .Select(o => o.Template.ToDto())
+                .ToList();
+
+            return dtos;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching direct templates for user: {UserId}", userId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
 }

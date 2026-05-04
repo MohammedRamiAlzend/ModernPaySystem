@@ -36,6 +36,7 @@ import { SearchableSelect } from '@/shared/ui/searchable-select';
 import { UserForm, UserFormValues } from './UserForm';
 import { DepartmentMermaidTree } from '@/features/department-management/ui/DepartmentMermaidTree';
 import { useDepartmentTree } from '@/features/department-management/model/useDepartmentTree';
+import { UserTemplatesDialog } from './UserTemplatesDialog';
 
 export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
@@ -45,6 +46,7 @@ export const UserManagement = () => {
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [assigningUser, setAssigningUser] = useState<User | null>(null);
+    const [managingTemplatesUser, setManagingTemplatesUser] = useState<User | null>(null);
 
     const { data: usersData = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
     const { data: subSystemsData = [], isLoading: isLoadingSubSystems } = useSubSystems();
@@ -248,6 +250,15 @@ export const UserManagement = () => {
                                                         variant="ghost"
                                                         size="icon"
                                                         className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                                                        title="صلاحيات النماذج"
+                                                        onClick={() => setManagingTemplatesUser(user)}
+                                                    >
+                                                        <Shield className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
                                                         title="تعديل المستخدم"
                                                         onClick={() => handleEditUser(user)}
                                                     >
@@ -311,6 +322,12 @@ export const UserManagement = () => {
                 userId={assigningUser?.id || ''}
                 userName={assigningUser?.userName || ''}
                 initialDepartmentId={assigningUser?.departmentId || ''}
+            />
+
+            <UserTemplatesDialog
+                isOpen={!!managingTemplatesUser}
+                onClose={() => setManagingTemplatesUser(null)}
+                user={managingTemplatesUser}
             />
 
             {/* Department Tree Preview Dialog */}

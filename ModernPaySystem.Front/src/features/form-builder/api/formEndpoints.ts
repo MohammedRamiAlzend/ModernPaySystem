@@ -11,7 +11,9 @@ import type {
     TemplateResponse,
     PagedResult,
     CreateRequestTransactionDto,
-    RequestTransactionDto
+    RequestTransactionDto,
+    TemplateOwnershipDto,
+    UserTemplateOwnershipDto
 } from '@/entities/form/model/types';
 
 // --- API Service ---
@@ -32,6 +34,38 @@ export const formEndpoints = {
     getTemplates: async (): Promise<Template[] | { data: Template[] }> => {
         // User said: "For display, use endpoint: Templates of type post"
         const response = await api.get('/Templates', {});
+        return response.data;
+    },
+
+    // Ownerships
+    getTemplateOwnerships: async (id: string): Promise<{ data: TemplateOwnershipDto[] } | TemplateOwnershipDto[]> => {
+        const response = await api.get(`/Templates/${id}/ownerships`);
+        return response.data;
+    },
+    addTemplateOwnership: async (id: string, departmentId: string): Promise<{ data: TemplateOwnershipDto } | TemplateOwnershipDto> => {
+        const response = await api.post(`/Templates/${id}/ownerships`, { departmentId });
+        return response.data;
+    },
+    removeTemplateOwnership: async (id: string, departmentId: string): Promise<void> => {
+        await api.delete(`/Templates/${id}/ownerships/${departmentId}`);
+    },
+    getUserOwnerships: async (id: string): Promise<{ data: UserTemplateOwnershipDto[] } | UserTemplateOwnershipDto[]> => {
+        const response = await api.get(`/Templates/${id}/ownerships/user`);
+        return response.data;
+    },
+    addUserOwnership: async (id: string, userId: string): Promise<{ data: UserTemplateOwnershipDto } | UserTemplateOwnershipDto> => {
+        const response = await api.post(`/Templates/${id}/ownerships/user`, { userId });
+        return response.data;
+    },
+    removeUserOwnership: async (id: string, userId: string): Promise<void> => {
+        await api.delete(`/Templates/${id}/ownerships/user/${userId}`);
+    },
+    getTemplatesByDepartment: async (departmentId: string): Promise<Template[] | { data: Template[] }> => {
+        const response = await api.get(`/Templates/department/${departmentId}`);
+        return response.data;
+    },
+    getTemplatesByUserDirect: async (userId: string): Promise<Template[] | { data: Template[] }> => {
+        const response = await api.get(`/Templates/user/${userId}`);
         return response.data;
     },
 

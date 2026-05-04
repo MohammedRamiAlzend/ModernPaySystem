@@ -127,4 +127,22 @@ public class TemplatesController : ControllerBase
         var result = await _templateService.RemoveUserOwnershipAsync(id, userId);
         return result.ToActionResult();
     }
+
+    [HttpGet("department/{departmentId}")]
+    [EndpointPermission("templates.department.get", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetByDepartment(Guid departmentId)
+    {
+        _logger.LogInformation("Getting templates for department: {DepartmentId}", departmentId);
+        var result = await _templateService.GetByDepartmentAsync(departmentId);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("user/{userId}")]
+    [EndpointPermission("templates.user.get", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetUserDirect(Guid userId)
+    {
+        _logger.LogInformation("Getting direct templates for user: {UserId}", userId);
+        var result = await _templateService.GetUserDirectAsync(userId);
+        return result.ToActionResult();
+    }
 }
