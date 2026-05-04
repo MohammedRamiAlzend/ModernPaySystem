@@ -23,13 +23,13 @@ const Controls = () => {
     const { zoomIn, zoomOut, resetTransform } = useControls();
     return (
         <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-background/80 backdrop-blur-sm p-1 rounded-lg border shadow-sm">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => zoomIn()}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => zoomIn(0.4, 300)}>
                 <ZoomIn className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => zoomOut()}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => zoomOut(0.4, 300)}>
                 <ZoomOut className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetTransform()}>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetTransform(300)}>
                 <RotateCcw className="w-4 h-4" />
             </Button>
         </div>
@@ -103,14 +103,14 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
 
                 // Use unique ID for rendering to avoid conflicts
                 const id = `mermaid-chart-${Math.random().toString(36).substr(2, 9)}`;
-                
+
                 try {
                     // mermaid.render returns { svg, bindFunctions } in newer versions
                     const result = await mermaid.render(id, chartConfig);
-                    
+
                     if (mermaidRef.current) {
                         mermaidRef.current.innerHTML = result.svg;
-                        
+
                         // CRITICAL: Bind functions to the newly inserted SVG to enable click events
                         if (result.bindFunctions) {
                             result.bindFunctions(mermaidRef.current);
@@ -140,13 +140,16 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
         <div className="w-full relative bg-card rounded-lg border border-border shadow-sm min-h-[500px] overflow-hidden group">
             {/* Show Skeleton as an absolute overlay to prevent unmounting mermaidRef */}
             {(isLoading || isRendering) && <TreeSkeleton className="absolute inset-0" />}
-            
+
             <TransformWrapper
                 initialScale={1}
-                minScale={0.2}
-                maxScale={3}
+                minScale={0.1}
+                maxScale={4}
                 centerOnInit={true}
                 wheel={{ step: 0.1 }}
+                pinch={{ step: 5, disabled: false }}
+                doubleClick={{ disabled: true }}
+                panning={{ activationKeys: [], disabled: false, velocityDisabled: false }}
             >
                 {() => (
                     <>
@@ -165,12 +168,12 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                                 alignItems: 'center'
                             }}
                         >
-                            <div 
-                                ref={mermaidRef} 
+                            <div
+                                ref={mermaidRef}
                                 className={cn(
                                     "p-10 transition-all duration-300 active:cursor-grabbing",
                                     (isLoading || isRendering) && "opacity-0"
-                                )} 
+                                )}
                             />
                         </TransformComponent>
                     </>
