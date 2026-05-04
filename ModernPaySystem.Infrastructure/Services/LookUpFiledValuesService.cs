@@ -143,10 +143,7 @@ public class LookUpFiledValuesService : ILookUpFiledValuesService
             var updateResult = await _unitOfWork.LookUpFiledValues.UpdateAsync(existingLookUpFiledValue.Value);
             if (updateResult.IsError)
                 return updateResult.Errors;
-
-            int result = await _unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated lookup field value: {LookUpFiledValueId}", id);
             return existingLookUpFiledValue.Value.ToDto();

@@ -223,9 +223,7 @@ public class TemplateService : ITemplateService
             existingTemplate.Value.TemplateDescription = template.TemplateDescription;
 
             await _unitOfWork.Templates.UpdateAsync(existingTemplate.Value);
-            int result = await _unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
+            await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Successfully updated template: {TemplateId}", id);
             return existingTemplate.Value.ToDto();

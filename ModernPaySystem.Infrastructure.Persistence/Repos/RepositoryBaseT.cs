@@ -1,4 +1,4 @@
-﻿using ExpressionBuilderLib.src.Core;
+using ExpressionBuilderLib.src.Core;
 using ExpressionBuilderLib.src.Core.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -256,8 +256,7 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
 
             dbcontext.Attach(entity);
             dbcontext.Set<TEntity>().Entry(entity).State = EntityState.Modified;
-            int saveResult = await dbcontext.SaveChangesAsync();
-            return saveResult > 0 ? Result.Updated : new Error("00", "Failed to update entity.", ErrorKind.Failure);
+            return Result.Updated;
         }
         catch (Exception e)
         {
