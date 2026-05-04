@@ -23,7 +23,7 @@ public class TemplateService : ITemplateService
         {
             _logger.LogInformation("Fetching all templates");
             var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
-            var templates = await _unitOfWork.Templates.GetAllAsync(filter: TemplateExpressions.CanReadByUserId(getCurrentUserId.ToString()),
+            var templates = await _unitOfWork.Templates.GetAllAsync(filter: TemplateExpressions.CanReadByUserId(getCurrentUserId),
                 transform: x => x.Include(t => t.DepartmentOwnerships).ThenInclude(o => o.Department).ThenInclude(d => d.Users)
             );
             if (templates.IsError)
@@ -56,7 +56,7 @@ public class TemplateService : ITemplateService
             var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
 
             var pagedTemplates = await _unitOfWork.Templates.GetPagedAsync(
-                filter: TemplateExpressions.CanReadByUserId(getCurrentUserId.ToString()),
+                filter: TemplateExpressions.CanReadByUserId(getCurrentUserId),
                 page: page,
                 pageSize: pageSize,
                 transform: x => x.Include(t => t.DepartmentOwnerships).ThenInclude(o => o.Department).ThenInclude(d => d.Users)
