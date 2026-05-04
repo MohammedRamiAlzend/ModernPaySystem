@@ -1,27 +1,30 @@
 import React, { useState, useMemo } from 'react';
-import { useDepartmentTree } from '../model/useDepartmentTree';
-import { DepartmentMermaidTree } from './DepartmentMermaidTree';
+import { 
+    useDepartmentTree, 
+    DepartmentMermaidTree, 
+    DepartmentForm, 
+    useDepartmentActions, 
+    DepartmentTemplatesTab 
+} from '@/features/department-management';
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/lib/query-keys';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/shared/ui/dialog';
-import { DepartmentForm } from './DepartmentForm';
-import { useDepartmentActions } from '../model/useDepartmentActions';
 import { useUIStore } from '@/app/store/uiStore';
 import { useTheme } from '@/app/providers/theme-context';
 import { useSearchParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/shared/ui/sheet';
 import { Building2 as BuildingIcon, Users as UsersIcon, FileStack } from 'lucide-react';
-import { User } from '@/features/users/api/usersApi';
 import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
-import { DepartmentTemplatesTab } from './DepartmentTemplatesTab';
+import { User, UserForm, UserFormValues, useUserMutations, useSubSystems, useUsers } from '@/features/users';
+import { UserPlus } from 'lucide-react';
 
-export const DepartmentManagement: React.FC = () => {
+export const DepartmentDashboardWidget: React.FC = () => {
     const [selectedRootId, setSelectedRootId] = useState<string>('');
     const [viewMode, setViewMode] = useState<'full' | 'subtree' | 'children'>('full');
     const [highlightId, setHighlightId] = useState<string>('');
@@ -29,11 +32,12 @@ export const DepartmentManagement: React.FC = () => {
     const [selectedDeptForUsers, setSelectedDeptForUsers] = useState<string | null>(null);
     const [initialParentId, setInitialParentId] = useState<string>('');
     const [isParentFixed, setIsParentFixed] = useState(false);
+    const [isAddUserOpen, setIsAddUserOpen] = useState(false);
 
     const [searchParams] = useSearchParams();
     const urlHighlightId = searchParams.get('highlightId');
 
-    const { showConfirm } = useUIStore();
+    const { showConfirm, showStatus } = useUIStore();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const { createDepartment, deleteDepartment, isLoading: isActionLoading } = useDepartmentActions();
@@ -43,6 +47,13 @@ export const DepartmentManagement: React.FC = () => {
         queryKey: queryKeys.department.lists(),
         queryFn: () => departmentApi.search('', 0)
     });
+
+    const { data: subSystems = [] } = useSubSystems();
+    const { createUser } = useUserMutations();
+    const { assignUserToDepartment } = useDepartmentActions();
+    const { refetch: refetchAllUsers } = useUsers();
+
+    const queryClient = useQueryClient();
 
     const departmentOptions: SearchableSelectOption[] = useMemo(() => {
         return (allDepartments || []).map(d => ({
@@ -89,6 +100,42 @@ export const DepartmentManagement: React.FC = () => {
         setIsCreateOpen(false);
         setInitialParentId('');
         setIsParentFixed(false);
+    };
+
+    const handleSaveUser = async (values: UserFormValues) => {
+        if (!selectedDeptForUsers) return;
+
+        try {
+            // 1. Create the user
+            await createUser.mutateAsync({
+                userName: values.userName,
+                password: values.password || undefined,
+                subSystem: parseInt(values.subSystem)
+            });
+
+            // 2. Fetch fresh users list to find the new ID
+            const users = await refetchAllUsers();
+            const newUser = users.data?.find(u => u.userName === values.userName);
+
+            if (newUser) {
+                // 3. Assign to this department
+                await assignUserToDepartment({
+                    userId: newUser.id,
+                    departmentId: selectedDeptForUsers
+                });
+
+                showStatus({
+                    type: 'success',
+                    title: 'تمت الإضافة',
+                    message: `تم إنشاء المستخدم "${values.userName}" وتعيينه للقسم بنجاح`
+                });
+                setIsAddUserOpen(false);
+                // Refresh the department users list
+                queryClient.invalidateQueries({ queryKey: ['department-users', selectedDeptForUsers] });
+            }
+        } catch (error) {
+            console.error("Failed to create and assign user:", error);
+        }
     };
 
     const handleDelete = () => {
@@ -229,11 +276,11 @@ export const DepartmentManagement: React.FC = () => {
                                         <span>{selectedDeptName}</span>
                                         <BuildingIcon className="w-6 h-6 text-primary" />
                                     </SheetTitle>
-                                    
+
                                     <div className="flex gap-2 justify-end">
-                                        <Button 
-                                            size="sm" 
-                                            variant="destructive" 
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
                                             className="gap-2 h-9"
                                             onClick={() => {
                                                 if (selectedDeptForUsers) {
@@ -254,9 +301,19 @@ export const DepartmentManagement: React.FC = () => {
                                             حذف القسم
                                         </Button>
 
-                                        <Button 
-                                            size="sm" 
-                                            variant="outline" 
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-2 h-9 border-primary/20 hover:bg-primary/5"
+                                            onClick={() => setIsAddUserOpen(true)}
+                                        >
+                                            <UserPlus className="w-4 h-4" />
+                                            إضافة مستخدم
+                                        </Button>
+
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
                                             className="gap-2 h-9 border-primary/20 hover:bg-primary/5"
                                             onClick={() => {
                                                 if (selectedDeptForUsers) {
@@ -286,7 +343,7 @@ export const DepartmentManagement: React.FC = () => {
                                             <FileStack className="w-4 h-4" /> النماذج والصلاحيات
                                         </TabsTrigger>
                                     </TabsList>
-                                    
+
                                     <TabsContent value="users" className="mt-4">
                                         {isUsersLoading ? (
                                             <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -330,13 +387,13 @@ export const DepartmentManagement: React.FC = () => {
                                             </div>
                                         )}
                                     </TabsContent>
-                                    
+
                                     <TabsContent value="templates" className="mt-4">
                                         <div className="h-[calc(100vh-280px)] overflow-y-auto pr-2 custom-scrollbar">
                                             {selectedDeptForUsers && (
-                                                <DepartmentTemplatesTab 
-                                                    departmentId={selectedDeptForUsers} 
-                                                    departmentName={selectedDeptName} 
+                                                <DepartmentTemplatesTab
+                                                    departmentId={selectedDeptForUsers}
+                                                    departmentName={selectedDeptName}
                                                 />
                                             )}
                                         </div>
@@ -362,6 +419,27 @@ export const DepartmentManagement: React.FC = () => {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Add User to Department Dialog */}
+            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <DialogContent className="rounded-2xl max-w-md" style={{ direction: 'rtl' }}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <UserPlus className="w-5 h-5" />
+                            إضافة مستخدم إلى {selectedDeptName}
+                        </DialogTitle>
+                        <DialogDescription>
+                            سيتم إنشاء حساب المستخدم وتعيينه تلقائياً لهذا القسم
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <UserForm
+                        onSubmit={handleSaveUser}
+                        subSystems={subSystems as any}
+                        isLoading={createUser.isPending}
+                    />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
