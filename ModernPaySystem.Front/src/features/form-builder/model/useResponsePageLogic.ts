@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useQueryState, parseAsInteger } from 'nuqs';
-import { formEndpoints, useRequests, useCreateReferral } from '../api/formEndpoints';
+import { formEndpoints, useRequests, useCreateReferral, useTemplateById } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
@@ -46,6 +46,9 @@ export const useResponsePageLogic = () => {
     }));
 
     const { data: templates = [] } = useForms(true);
+
+    const selectedRequest = requests.find(r => r.id === requestId);
+    const { data: selectedTemplate } = useTemplateById(selectedRequest?.templateId || null);
 
     const responseMutation = useMutation({
         mutationFn: formEndpoints.createResponse,
@@ -160,7 +163,6 @@ export const useResponsePageLogic = () => {
         setRequestId(id);
     };
 
-    const selectedRequest = requests.find(r => r.id === requestId);
 
     return {
         requestId,
@@ -174,6 +176,7 @@ export const useResponsePageLogic = () => {
         selectedRequest,
         isLoading,
         templates,
+        selectedTemplate,
         totalItems: pagedRequests?.totalItems || 0,
         totalPages: pagedRequests?.totalPages || 0,
         page,
