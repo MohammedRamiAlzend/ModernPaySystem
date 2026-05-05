@@ -96,7 +96,7 @@ export const useResponsePageLogic = () => {
         });
     };
 
-    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails(templates);
+    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest, isTemplateLoading } = useRequestDetails();
 
     const markAsSeen = (id: string) => {
         if (id && !seenIds.includes(id)) {
@@ -193,6 +193,7 @@ export const useResponsePageLogic = () => {
         handleFilesAdd,
         removeFile,
         handleSelectRequest,
-        handleViewRequest
+        handleViewRequest,
+        isTemplateLoading
     };
 };

@@ -34,7 +34,8 @@ export const ResponsesPage = () => {
         submissionMode,
         setSubmissionMode,
         targetUserId,
-        setTargetUserId
+        setTargetUserId,
+        isTemplateLoading
     } = useResponsePageLogic();
 
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -94,7 +95,7 @@ export const ResponsesPage = () => {
                     isOpen={isProcessModalOpen}
                     onClose={handleCloseProcessModal}
                     request={selectedRequest}
-                    template={selectedTemplate ?? templates.find(t => t.id === selectedRequest.templateId) ?? null}
+                    template={selectedTemplate ?? null}
                     comment={comment}
                     files={files}
                     isPending={isPending}
@@ -120,6 +121,15 @@ export const ResponsesPage = () => {
                     response={viewingResponse}
                     schema={viewingResponse.schema}
                 />
+            )}
+
+            {isTemplateLoading && (
+                <div className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[9999] flex items-center justify-center pointer-events-none">
+                    <div className="bg-white p-4 rounded-2xl shadow-xl flex items-center gap-3 border animate-in fade-in zoom-in duration-200">
+                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-sm font-bold text-primary">جاري جلب بيانات النموذج...</span>
+                    </div>
+                </div>
             )}
         </AnimatedContainer>
     );

@@ -17,7 +17,6 @@ createRoot(document.getElementById('root')!).render(
         <ThemeProvider defaultTheme="dark" storageKey="paysystem-theme">
           <ContractProvider>
             <App />
-
             <GlobalDialogContainer />
           </ContractProvider>
         </ThemeProvider>

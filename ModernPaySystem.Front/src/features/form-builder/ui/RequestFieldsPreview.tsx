@@ -1,11 +1,14 @@
 import React from 'react';
 import type { FormField } from '@/entities/form/model/types';
+import { useTemplateById } from '../api/formEndpoints';
 
 interface RequestFieldsPreviewProps {
     /** Raw JSON content string from the request */
     content: string;
-    /** Fields from the template schema */
-    fields: FormField[];
+    /** Fields from the template schema (optional if templateId is provided) */
+    fields?: FormField[];
+    /** The ID of the template to fetch fields from if 'fields' is not provided */
+    templateId?: string;
     /** Maximum number of fields to display */
     maxFields?: number;
     /** Visual variant: 'card' for card-like display, 'inline' for table rows */
@@ -20,11 +23,18 @@ interface RequestFieldsPreviewProps {
  */
 export const RequestFieldsPreview = ({
     content,
-    fields,
+    fields: initialFields = [],
+    templateId,
     maxFields = 3,
     variant = 'card',
     className
 }: RequestFieldsPreviewProps) => {
+    // Fetch template by ID if fields are not provided and templateId is available
+    const { data: fetchedTemplate } = useTemplateById(!initialFields.length && templateId ? templateId : null);
+
+    // Determine which fields to use
+    const fields = initialFields.length > 0 ? initialFields : (fetchedTemplate?.fields || []);
+
     const data = React.useMemo(() => {
         try {
             return JSON.parse(content) as Record<string, unknown>;
@@ -34,7 +44,7 @@ export const RequestFieldsPreview = ({
     }, [content]);
 
     const displayFields = React.useMemo(() => {
-        if (!data) return [];
+        if (!data || !fields.length) return [];
         return fields
             .filter(field => data[field.name] !== undefined && data[field.name] !== null && data[field.name] !== '')
             .slice(0, maxFields);

@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from './RequestFieldsPreview';
 import { Pagination } from '@/shared/ui/common/pagination';
+import { useTemplateById } from '../api/formEndpoints';
 import type { FormSchema, TemplateRequest } from '@/entities/form/model/types';
 
 interface IncomingRequestsListProps {
@@ -18,6 +19,11 @@ interface IncomingRequestsListProps {
     totalPages: number;
     onPageChange: (page: number) => void;
 }
+
+const TemplateTitle = ({ templateId, fallbackTitle }: { templateId: string, fallbackTitle: string }) => {
+    const { data: template } = useTemplateById(templateId);
+    return <>{template?.title || fallbackTitle}</>;
+};
 
 export const IncomingRequestsList = ({
     requests,
@@ -70,7 +76,10 @@ export const IncomingRequestsList = ({
                                     </div>
                                     <div>
                                         <div className="font-bold text-sm truncate max-w-[200px] flex items-center gap-2">
-                                            {templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`}
+                                            <TemplateTitle 
+                                                templateId={request.templateId} 
+                                                fallbackTitle={templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`} 
+                                            />
                                             {request.isNew && (
                                                 <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md">جديد</span>
                                             )}
@@ -104,6 +113,7 @@ export const IncomingRequestsList = ({
                             <RequestFieldsPreview
                                 content={request.content}
                                 fields={templates.find(t => t.id === request.templateId)?.fields || []}
+                                templateId={request.templateId}
                                 variant="card"
                             />
 
