@@ -34,7 +34,7 @@
     "jszip": "^3.10.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.562.0",
-    "mermaid": "^9.1.7",
+    "mermaid": "^11.14.0",
     "nuqs": "^2.8.9",
     "react": "^19.2.5",
     "react-cropper": "^2.3.3",
