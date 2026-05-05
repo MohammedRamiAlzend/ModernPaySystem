@@ -221,8 +221,8 @@ public class ResponseService(
             {
                 return updateResult.Errors;
             }
-
             logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
+            await unitOfWork.SaveChangesAsync();
             return responseEntity.ToDto();
         }
         catch (Exception ex)
