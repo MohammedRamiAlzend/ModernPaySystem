@@ -20,14 +20,16 @@ export const SettingsPage = () => {
   return (
     <div className="container mx-auto py-8 space-y-6" style={{ direction: 'rtl' }}>
       {/* Section Header */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-black text-foreground tracking-tight">
-          {activeConfig.label}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {activeConfig.description}
-        </p>
-      </div>
+      {(activeConfig.showDescription !== false) && (
+        <div className="flex flex-col gap-1">
+          <h1 className="text-2xl font-black text-foreground tracking-tight">
+            {activeConfig.label}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {activeConfig.description}
+          </p>
+        </div>
+      )}
 
       {/* Section Content */}
       <Suspense fallback={

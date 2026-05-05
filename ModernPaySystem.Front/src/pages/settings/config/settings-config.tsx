@@ -25,6 +25,7 @@ export interface SettingsTab {
     icon: LucideIcon;
     component: ReactNode;
     preload?: () => void;
+    showDescription?: boolean;
 }
 
 export const SETTINGS_CONFIG: SettingsTab[] = [
@@ -34,7 +35,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'إدارة شجرة الأقسام والهيكلية الإدارية للمؤسسة',
         icon: GitBranch,
         component: <DepartmentDashboardWidget />,
-        preload: () => DepartmentDashboardWidget.preload()
+        preload: () => DepartmentDashboardWidget.preload(),
+        showDescription: false
     },
     {
         id: 'lookup',
@@ -42,7 +44,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'إدارة المسميات الرئيسية للنظام والحقول المساعدة',
         icon: Database,
         component: <LookUpManagement />,
-        preload: () => LookUpManagement.preload()
+        preload: () => LookUpManagement.preload(),
+        showDescription: true
     },
     {
         id: 'users',
@@ -50,7 +53,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'إدارة حسابات المستخدمين وصلاحيات الوصول للنظام',
         icon: Users,
         component: <UserManagement />,
-        preload: () => UserManagement.preload()
+        preload: () => UserManagement.preload(),
+        showDescription: false
     },
     {
         id: 'templates',
@@ -58,20 +62,23 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'إدارة وتخصيص نماذج الطلبات والمعاملات',
         icon: FileStack,
         component: <TemplatesList />,
-        preload: () => TemplatesList.preload()
+        preload: () => TemplatesList.preload(),
+        showDescription: false
     },
     {
         id: 'appearance',
         label: 'المظهر والتفضيلات',
         description: 'تحكم في كيفية ظهور التطبيق والخيارات الشخصية',
         icon: Palette,
-        component: <AppearanceSettings />
+        component: <AppearanceSettings />,
+        showDescription: true
     },
     {
         id: 'tools',
         label: 'أدوات الدعم و التشغيل',
         description: 'تحميل الأدوات المساعدة وبرامج التشغيل للنظام',
         icon: Wrench,
-        component: <ToolsSettings />
+        component: <ToolsSettings />,
+        showDescription: false
     }
 ];
