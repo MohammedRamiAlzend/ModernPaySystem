@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    exclude: ['cytoscape'],
     include: ['jspdf', 'html2canvas'],
   },
   build: {
