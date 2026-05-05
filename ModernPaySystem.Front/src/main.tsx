@@ -21,7 +21,7 @@ createRoot(document.getElementById('root')!).render(
             <GlobalDialogContainer />
           </ContractProvider>
         </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
+        {import.meta.env.VITE_DEV === 'true' && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     </NuqsAdapter>
   </StrictMode>,
