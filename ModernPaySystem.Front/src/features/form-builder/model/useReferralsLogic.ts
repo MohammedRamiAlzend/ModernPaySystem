@@ -4,6 +4,7 @@ import { useRequestTransactions, formEndpoints, useTemplateById } from '../api/f
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
 import type { TemplateRequest, RequestTransactionDto } from '@/entities/form/model/types';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 export const useReferralsLogic = (status: number) => {
     const [page, setPage] = useState(1);
@@ -30,8 +31,8 @@ export const useReferralsLogic = (status: number) => {
         mutationFn: formEndpoints.createResponse,
         onSuccess: () => {
             showStatus({ type: 'success', title: 'تمت العملية', message: 'تم إرسال الرد بنجاح' });
-            queryClient.invalidateQueries({ queryKey: ['request-transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['requests'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.process.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
             handleCloseProcessModal();
         },
         onError: () => {
@@ -43,8 +44,8 @@ export const useReferralsLogic = (status: number) => {
         mutationFn: formEndpoints.createReferral,
         onSuccess: () => {
             showStatus({ type: 'success', title: 'تمت الإحالة', message: 'تمت إحالة الطلب بنجاح' });
-            queryClient.invalidateQueries({ queryKey: ['request-transactions'] });
-            queryClient.invalidateQueries({ queryKey: ['requests'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.process.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
             handleCloseProcessModal();
         },
         onError: () => {

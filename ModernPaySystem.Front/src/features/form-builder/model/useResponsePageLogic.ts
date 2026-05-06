@@ -6,6 +6,7 @@ import { useForms } from './useForms';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
 import { useRequestDetails } from './useRequestDetails';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 const SEEN_REQUESTS_KEY = 'seen_incoming_requests_ids';
 
@@ -58,7 +59,7 @@ export const useResponsePageLogic = () => {
                 title: 'تمت العملية',
                 message: 'تم إرسال الرد بنجاح'
             });
-            queryClient.invalidateQueries({ queryKey: ['requests'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
             setComment('');
             setRequestId('');
             setFiles([]);
@@ -80,7 +81,7 @@ export const useResponsePageLogic = () => {
             title: 'تمت الإحالة',
             message: 'تمت إحالة الطلب بنجاح'
         });
-        queryClient.invalidateQueries({ queryKey: ['requests'] });
+        queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
         setComment('');
         setRequestId('');
         setFiles([]);

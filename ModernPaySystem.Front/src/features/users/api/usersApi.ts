@@ -1,5 +1,6 @@
 import api from '@/shared/api/baseApi';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 // User type definition
 export interface User {
@@ -67,7 +68,7 @@ export const fetchUsersBySubSystem = async (subSystemId: string): Promise<User[]
 // React Query hooks
 export const useUser = (userId: string | null | undefined) => {
     return useQuery({
-        queryKey: ['user', userId],
+        queryKey: queryKeys.user.detail(userId || ''),
         queryFn: () => fetchUserById(userId!),
         enabled: !!userId,
         staleTime: 5 * 60 * 1000,
@@ -79,14 +80,14 @@ export const useUsers = (subSystemId?: string) => {
     // If we have an array of IDs in some cases, we might need a different hook or overloaded one.
     // But for management we usually need the list.
     return useQuery({
-        queryKey: ['users', subSystemId],
+        queryKey: queryKeys.user.list({ subSystemId: subSystemId || 'all' }),
         queryFn: () => subSystemId && subSystemId !== 'all' ? fetchUsersBySubSystem(subSystemId) : fetchUsers(),
     });
 };
 
 export const useSubSystems = () => {
     return useQuery({
-        queryKey: ['subsystems'],
+        queryKey: queryKeys.lookup.list('subsystems'),
         queryFn: fetchSubSystems,
     });
 };
@@ -97,22 +98,22 @@ export const useUserMutations = () => {
     const createMutation = useMutation({
         mutationFn: createUser,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
         },
     });
 
     const updateMutation = useMutation({
         mutationFn: updateUser,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
-            queryClient.invalidateQueries({ queryKey: ['user'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.details() });
         },
     });
 
     const deleteMutation = useMutation({
         mutationFn: deleteUser,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
         },
     });
 

@@ -56,7 +56,7 @@ export const useMyResponsesLogic = () => {
 
     const { data: templates = [] } = useForms(true);
 
-    const { isModalOpen: isDetailsOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails(templates);
+    const { isModalOpen: isDetailsOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails();
 
     // Override handleViewRequest to mark as seen
     const handleViewRequest = (request: any) => {

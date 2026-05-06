@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTemplates, useCreateTemplate, useUpdateTemplate } from '@/features/form-builder/api/formEndpoints';
 import { DELPHI_TEMPLATE_NAME, DELPHI_FIXED_SCHEMA } from './delphi-schema';
 import { processDelphiData, type DelphiInput, type DelphiValidationResult } from './delphi-data-processor';
@@ -14,7 +14,6 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
     const { mutateAsync: updateTemplate, isPending: isUpdatingTemplate } = useUpdateTemplate();
 
     const [templateToUse, setTemplateToUse] = useState<FormSchema | null>(null);
-    const [processedData, setProcessedData] = useState<DelphiValidationResult | null>(null);
     const [syncError, setSyncError] = useState<string | null>(null);
 
     // Guard ref: prevents concurrent or duplicate creation calls
@@ -91,28 +90,26 @@ export const useDelphiTransaction = (rawInput?: DelphiInput | string) => {
         syncTemplate();
     }, [templates, isLoadingTemplates, createTemplate, updateTemplate]);
 
-    // 2. Data Processing Logic
-    useEffect(() => {
-        if (!rawInput) return;
+    // 2. Data Processing Logic (Derived State)
+    const derivedProcessedData = useMemo(() => {
+        if (!rawInput) return null;
 
-        let inputObj: DelphiInput;
         try {
-            inputObj = typeof rawInput === 'string' ? JSON.parse(rawInput) : rawInput;
-            const result = processDelphiData(inputObj);
-            setProcessedData(result);
+            const inputObj = typeof rawInput === 'string' ? JSON.parse(rawInput) : rawInput;
+            return processDelphiData(inputObj);
         } catch {
-            setProcessedData({
+            return {
                 status: 'error',
                 errors: ["Invalid JSON received from source app"],
                 ui: { highlight_missing: [], warnings: [], ready_to_submit: false }
-            });
+            } as DelphiValidationResult;
         }
     }, [rawInput]);
 
     return {
         template: templateToUse,
-        processed: processedData,
+        processed: derivedProcessedData,
         isLoading: isLoadingTemplates || isCreatingTemplate || isUpdatingTemplate,
-        error: syncError || (processedData?.status === 'error' ? processedData.errors?.join(', ') : null)
+        error: syncError || (derivedProcessedData?.status === 'error' ? derivedProcessedData.errors?.join(', ') : null)
     };
 };

@@ -2,14 +2,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/shared/api/baseApi';
 import type { Contract } from '@/entities/contracts/types/contract-types';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 export type CreateContractInput = Omit<Contract, 'id' | 'status'>;
 export type UpdateContractInput = Partial<CreateContractInput>;
-
-/**
- * مفتاح الكاش الأساسي للعقود (Query Key)
- */
-const CONTRACTS_KEY = ['contracts'];
 
 /**
  * هوك لجلب قائمة كافة العقود من الخادم.
@@ -17,7 +13,7 @@ const CONTRACTS_KEY = ['contracts'];
  */
 export const useContractsQuery = () => {
     return useQuery<Contract[]>({
-        queryKey: CONTRACTS_KEY,
+        queryKey: queryKeys.contract.all,
         queryFn: async () => {
             const response = await api.get('/contracts');
             return response.data;
@@ -33,7 +29,7 @@ export const useContractsQuery = () => {
  */
 export const useContractQuery = (id: number | string | undefined) => {
     return useQuery<Contract>({
-        queryKey: [...CONTRACTS_KEY, id],
+        queryKey: queryKeys.contract.detail(id || ''),
         queryFn: async () => {
             const response = await api.get(`/contracts/${id}`);
             return response.data;
@@ -56,7 +52,7 @@ export const useCreateContractMutation = () => {
         },
         onSuccess: () => {
             // تحديث قائمة العقود في الكاش فوراً
-            queryClient.invalidateQueries({ queryKey: CONTRACTS_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.contract.all });
         },
     });
 };
@@ -75,8 +71,8 @@ export const useUpdateContractMutation = (id: number | string) => {
         },
         onSuccess: () => {
             // تفريغ كاش القائمة وكاش العقد المحدد لضمان المزامنة
-            queryClient.invalidateQueries({ queryKey: CONTRACTS_KEY });
-            queryClient.invalidateQueries({ queryKey: [...CONTRACTS_KEY, id] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.contract.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.contract.detail(id) });
         },
     });
 };
@@ -93,7 +89,7 @@ export const useDeleteContractMutation = () => {
         },
         onSuccess: () => {
             // تحديث القائمة بعد الحذف
-            queryClient.invalidateQueries({ queryKey: CONTRACTS_KEY });
+            queryClient.invalidateQueries({ queryKey: queryKeys.contract.all });
         },
     });
 };

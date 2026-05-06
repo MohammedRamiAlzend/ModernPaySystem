@@ -1,6 +1,7 @@
 import api from '@/shared/api/baseApi';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
+import { queryKeys } from '@/shared/constants/query-keys';
 import type { UserReference } from '@/entities/form/model/types';
 
 export const userEndpoints = {
@@ -12,7 +13,7 @@ export const userEndpoints = {
 
 export const useUsers = () => {
     return useQuery({
-        queryKey: ['users', 'all'],
+        queryKey: queryKeys.user.all,
         queryFn: async () => {
             const res = await userEndpoints.getAllUsers();
             return res.data;

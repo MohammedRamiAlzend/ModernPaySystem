@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/sha
 import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
-import { queryKeys } from '@/shared/lib/query-keys';
+import { queryKeys } from '@/shared/constants/query-keys';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/shared/ui/dialog';
 import { useUIStore } from '@/app/store/uiStore';
 import { useTheme } from '@/app/providers/theme-context';
@@ -75,14 +75,16 @@ export const DepartmentDashboardWidget: React.FC = () => {
         if (viewMode === 'full') setViewMode('subtree');
     };
 
-    // Handle deep linking from users page
-    React.useEffect(() => {
+    // Handle deep linking from users page - sync during render
+    const [prevUrlHighlightId, setPrevUrlHighlightId] = React.useState(urlHighlightId);
+    if (urlHighlightId !== prevUrlHighlightId) {
+        setPrevUrlHighlightId(urlHighlightId);
         if (urlHighlightId) {
             setHighlightId(urlHighlightId);
             setSelectedRootId(urlHighlightId);
             setViewMode('subtree');
         }
-    }, [urlHighlightId]);
+    }
 
     // Fetch users for the side panel
     const { data: deptUsers, isLoading: isUsersLoading } = useQuery({

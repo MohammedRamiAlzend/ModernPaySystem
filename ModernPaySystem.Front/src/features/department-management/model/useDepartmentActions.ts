@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentActionsApi } from '../api/departmentActionsApi';
-import { queryKeys } from '@/shared/lib/query-keys';
+import { queryKeys } from '@/shared/constants/query-keys';
 import { useUIStore } from '@/app/store/uiStore';
 import { CreateDepartmentDto, UpdateDepartmentDto } from '@/entities/department/model/types';
 

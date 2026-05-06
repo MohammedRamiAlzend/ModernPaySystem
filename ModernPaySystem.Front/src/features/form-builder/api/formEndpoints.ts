@@ -1,6 +1,7 @@
 
 import api from '@/shared/api/baseApi';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/constants/query-keys';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 import type {
     Template,
@@ -256,7 +257,7 @@ export const formEndpoints = {
 
 export const useRequests = (hasResponse: boolean = false, page: number = 1, pageSize: number = 15) => {
     return useQuery({
-        queryKey: ['requests', hasResponse, page, pageSize],
+        queryKey: queryKeys.form.list({ hasResponse, page, pageSize }),
         queryFn: async () => {
             const res = await formEndpoints.getRequestsByActionStatus(hasResponse, page, pageSize);
             return res.data;
@@ -267,7 +268,7 @@ export const useRequests = (hasResponse: boolean = false, page: number = 1, page
 
 export const useAllPendingRequests = (page: number = 1, pageSize: number = 15) => {
     return useQuery({
-        queryKey: ['requests', 'all-pending', page, pageSize],
+        queryKey: queryKeys.form.list({ type: 'all-pending', page, pageSize }),
         queryFn: async () => {
             const res = await formEndpoints.getAllPendingRequestsPaged(page, pageSize);
             return res.data;
@@ -278,7 +279,7 @@ export const useAllPendingRequests = (page: number = 1, pageSize: number = 15) =
 
 export const useTemplates = (showExternal: boolean = false) => {
     return useQuery({
-        queryKey: ['templates', showExternal],
+        queryKey: queryKeys.template.list({ showExternal }),
         queryFn: async (): Promise<Template[]> => {
             const res = await formEndpoints.getTemplates();
             const filterFn = (t: Template) => showExternal || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"));
@@ -298,7 +299,7 @@ export const useTemplates = (showExternal: boolean = false) => {
 
 export const useTemplateById = (templateId: string | null) => {
     return useQuery({
-        queryKey: ['template-schema', templateId],
+        queryKey: queryKeys.template.detail(templateId),
         queryFn: async (): Promise<FormSchema | null> => {
             if (!templateId) return null;
             const t = await formEndpoints.getTemplateById(templateId);
@@ -332,8 +333,8 @@ export const useCreateTemplate = () => {
     return useMutation({
         mutationFn: formEndpoints.createTemplate,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
-            queryClient.invalidateQueries({ queryKey: ['forms'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
         }
     });
 };
@@ -344,8 +345,8 @@ export const useUpdateTemplate = () => {
         mutationFn: ({ id, data }: { id: string; data: CreateTemplateDto }) =>
             formEndpoints.updateTemplate(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
-            queryClient.invalidateQueries({ queryKey: ['forms'] }); // Some hooks use 'forms' key
+            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all }); // Some hooks use 'forms' key
         }
     });
 };
@@ -371,7 +372,7 @@ export const useCreateReferral = () => {
 
 export const useRequestResponses = (requestId: string | null) => {
     return useQuery({
-        queryKey: ['responses', requestId],
+        queryKey: queryKeys.form.responses(requestId),
         queryFn: async () => {
             if (!requestId) return [];
             const res = await formEndpoints.getResponsesByRequestId(requestId);
@@ -394,7 +395,7 @@ export const useRequestResponses = (requestId: string | null) => {
 
 export const useResponsesByRequester = (requesterId: string | null, page: number = 1, pageSize: number = 10) => {
     return useQuery({
-        queryKey: ['responses', 'by-requester', requesterId, page, pageSize],
+        queryKey: queryKeys.form.list({ type: 'responses', requester: requesterId, page, pageSize }),
         queryFn: async () => {
             if (!requesterId) return null;
             const res = await formEndpoints.getResponsesByRequesterId(requesterId, page, pageSize);
@@ -407,7 +408,7 @@ export const useResponsesByRequester = (requesterId: string | null, page: number
 
 export const useRequestsByRequester = (requesterId: string | null, page: number = 1, pageSize: number = 10) => {
     return useQuery({
-        queryKey: ['requests', 'by-requester', requesterId, page, pageSize],
+        queryKey: queryKeys.form.list({ requester: requesterId, page, pageSize }),
         queryFn: async () => {
             if (!requesterId) return null;
             const res = await formEndpoints.getRequestsByRequesterId(requesterId, page, pageSize);
@@ -420,7 +421,7 @@ export const useRequestsByRequester = (requesterId: string | null, page: number 
 
 export const useRequestTransactions = (status?: number, page: number = 1, pageSize: number = 10) => {
     return useQuery({
-        queryKey: ['request-transactions', status, page, pageSize],
+        queryKey: queryKeys.process.list({ status, page, pageSize }),
         queryFn: async () => {
             const res = await formEndpoints.getRequestTransactions(status, page, pageSize);
             return res.data;
@@ -431,7 +432,7 @@ export const useRequestTransactions = (status?: number, page: number = 1, pageSi
 
 export const useRequestTransactionsHistory = (requestId: string | null) => {
     return useQuery({
-        queryKey: ['request-transactions', 'by-request', requestId],
+        queryKey: queryKeys.form.transactions(requestId),
         queryFn: async () => {
             if (!requestId) return [];
             const res = await formEndpoints.getRequestTransactionsByRequestId(requestId);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useQueryState, parseAsInteger, parseAsString } from 'nuqs';
 import type { Client, KinshipType, Service, OperationDetail, Operation, ProcessFormData } from '@/entities/processes/types/process-types';
 
@@ -17,75 +17,49 @@ export const useProcessManager = () => {
         Date_Of_work: new Date().toISOString().split('T')[0]
     });
 
-    const [clients, setClients] = useState<Client[]>([]);
-    const [kinshipTypes, setKinshipTypes] = useState<KinshipType[]>([]);
-    const [services, setServices] = useState<Service[]>([]);
+    const [clients] = useState<Client[]>([
+        { Client_No: 1, FIRST_NAME: 'أحمد', FATHER_NAME: 'محمد', LAST_NAME: 'علي' },
+        { Client_No: 2, FIRST_NAME: 'سارة', FATHER_NAME: 'خالد', LAST_NAME: 'الفهيد' },
+    ]);
+    const [kinshipTypes] = useState<KinshipType[]>([
+        { CODE: 1, DESCR: 'أب' },
+        { CODE: 2, DESCR: 'أم' },
+        { CODE: 3, DESCR: 'ابن' },
+    ]);
+    const [services] = useState<Service[]>([
+        { code: 1, descr: 'خدمة الأحوال المدنية' },
+        { code: 2, descr: 'خدمة السجل العدلي' },
+        { code: 3, descr: 'خدمة السجل العقاري' },
+        { code: 4, descr: 'خدمة السجل الصناعي' },
+    ]);
     const [selectedServices, setSelectedServices] = useState<OperationDetail[]>([]);
-    const [operationsList, setOperationsList] = useState<Operation[]>([]);
+    const [operationsList, setOperationsList] = useState<Operation[]>([
+        {
+            CODE: 1,
+            CODE_CLIENT: 1,
+            CODE_CLIENT2: 2,
+            CODE_KINSHIP: 1,
+            SUM_AMOUNT: 500,
+            DATE_ACTION: '2024-01-15',
+            NOTES: 'عملية تجريبية',
+            user_no: 1,
+            Client_No: 1,
+            First_Name: 'أحمد',
+            FATHER_NAME: 'محمد',
+            LAST_NAME: 'علي',
+            MOTHER_NAME: 'فاطمة'
+        }
+    ]);
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentRecordIndex, setCurrentRecordIndex] = useQueryState('id', parseAsInteger.withDefault(0));
-    const [totalRecords, setTotalRecords] = useState(0);
+    const [totalRecords, setTotalRecords] = useState(1);
     const [searchDate, setSearchDate] = useQueryState('date', parseAsString.withDefault(''));
     const [username] = useState('المستخدم الحالي');
 
     const clientInputRef = useRef<HTMLInputElement>(null);
     const client2InputRef = useRef<HTMLInputElement>(null);
 
-    const loadInitialData = async () => {
-        try {
-            const mockClients: Client[] = [
-                { Client_No: 1, FIRST_NAME: 'أحمد', FATHER_NAME: 'محمد', LAST_NAME: 'علي' },
-                { Client_No: 2, FIRST_NAME: 'سارة', FATHER_NAME: 'خالد', LAST_NAME: 'الفهيد' },
-            ];
-
-            const mockKinship: KinshipType[] = [
-                { CODE: 1, DESCR: 'أب' },
-                { CODE: 2, DESCR: 'أم' },
-                { CODE: 3, DESCR: 'ابن' },
-            ];
-
-            const mockServices: Service[] = [
-                { code: 1, descr: 'خدمة الأحوال المدنية' },
-                { code: 2, descr: 'خدمة السجل العدلي' },
-                { code: 3, descr: 'خدمة السجل العقاري' },
-                { code: 4, descr: 'خدمة السجل الصناعي' },
-            ];
-
-            setClients(mockClients);
-            setKinshipTypes(mockKinship);
-            setServices(mockServices);
-
-            const mockOperations: Operation[] = [
-                {
-                    CODE: 1,
-                    CODE_CLIENT: 1,
-                    CODE_CLIENT2: 2,
-                    CODE_KINSHIP: 1,
-                    SUM_AMOUNT: 500,
-                    DATE_ACTION: '2024-01-15',
-                    NOTES: 'عملية تجريبية',
-                    user_no: 1,
-                    Client_No: 1,
-                    First_Name: 'أحمد',
-                    FATHER_NAME: 'محمد',
-                    LAST_NAME: 'علي',
-                    MOTHER_NAME: 'فاطمة'
-                }
-            ];
-
-            setOperationsList(mockOperations);
-            setTotalRecords(mockOperations.length);
-
-        } catch (error) {
-            console.error('Error loading data:', error);
-        }
-    };
-
-    // Initial Data Loading
-    useEffect(() => {
-        loadInitialData();
-    }, []);
 
     // Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -39,7 +39,7 @@ export const useAllPendingRequestsLogic = () => {
 
     const { data: templates = [] } = useForms(true);
 
-    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails(templates);
+    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest: originalHandleViewRequest } = useRequestDetails();
 
     const markAsSeen = (id: string) => {
         if (id && !seenIds.includes(id)) {

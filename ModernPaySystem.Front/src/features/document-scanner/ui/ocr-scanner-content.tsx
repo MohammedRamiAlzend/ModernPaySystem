@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/shared/ui/button';
 import { useOcr } from '../model/use-ocr';
 import { useScanner } from '../model/use-scanner';
@@ -27,7 +27,7 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
     imageFiles = [],
     setImageFiles,
     activeImageIndex: propActiveImageIndex,
-    setActiveImageIndex: propSetActiveImageIndex,
+    // setActiveImageIndex: propSetActiveImageIndex,
     onApply,
     acceptAllFiles = false,
     hideOcr = false,
@@ -51,31 +51,21 @@ export const OcrScannerContent: React.FC<OcrScannerContentProps> = ({
     const [isEditing, setIsEditing] = useState(false);
     const ocrTextAreaRef = useRef<OcrTextAreaRef>(null);
 
-    // Initialize language when languages are loaded
-    useEffect(() => {
-        if (languages.length > 0 && !ocrLanguage) {
-            const hasAra = languages.some(l => l.code === 'ara');
-            if (hasAra) {
-                setOcrLanguage('ara');
-            } else if (defaultLanguage) {
-                setOcrLanguage(defaultLanguage);
-            }
+    // Initialize language when languages are loaded - update during render
+    if (languages.length > 0 && !ocrLanguage) {
+        const hasAra = languages.some(l => l.code === 'ara');
+        if (hasAra) {
+            setOcrLanguage('ara');
+        } else if (defaultLanguage) {
+            setOcrLanguage(defaultLanguage);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [languages, defaultLanguage]);
+    }
 
-    // Sync external index change - only update if different
-    useEffect(() => {
-        if (propActiveImageIndex !== undefined && propActiveImageIndex !== activeImageIndex) {
-            setActiveImageIndex(propActiveImageIndex);
-        }
+    // Sync external index change - update during render to avoid cascading renders
+    if (propActiveImageIndex !== undefined && propActiveImageIndex !== activeImageIndex) {
+        setActiveImageIndex(propActiveImageIndex);
         setIsEditing(false);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [propActiveImageIndex]);
-
-    useEffect(() => {
-        if (propSetActiveImageIndex) propSetActiveImageIndex(activeImageIndex);
-    }, [activeImageIndex, propSetActiveImageIndex]);
+    }
 
     // ─────────────────────────────────────────────────────────
     // Utility: Read image metadata

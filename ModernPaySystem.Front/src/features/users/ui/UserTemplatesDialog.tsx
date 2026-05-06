@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog';
 import { Button } from '@/shared/ui/button';
-import { RefreshCw, FileStack, Plus, Trash2, ShieldAlert, X } from 'lucide-react';
+import { RefreshCw, FileStack, Plus, Trash2, ShieldAlert } from 'lucide-react';
 import { useTemplatesByUserDirect, useAddUserTemplateOwnership, useRemoveUserTemplateOwnership } from '@/features/form-builder/model/useTemplateOwnerships';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { SearchableSelect } from '@/shared/ui/searchable-select';
@@ -16,18 +16,18 @@ interface UserTemplatesDialogProps {
 
 export const UserTemplatesDialog: React.FC<UserTemplatesDialogProps> = ({ user, isOpen, onClose }) => {
     const { showConfirm } = useUIStore();
-    
+
     // Fetch assigned templates directly to user
     const { data: assignedTemplates = [], isLoading } = useTemplatesByUserDirect(user?.id);
-    
+
     // Fetch all templates for assignment
     const { data: allTemplates = [] } = useForms();
-    
+
     const addMut = useAddUserTemplateOwnership();
     const removeMut = useRemoveUserTemplateOwnership();
-    
+
     const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-    
+
     // Unassigned templates are those not already in assignedTemplates
     const unassignedTemplates = allTemplates.filter(t => !assignedTemplates.some(at => at.id === t.id));
     const templateOptions = unassignedTemplates.map(t => ({ value: t.id, label: t.title }));
@@ -56,13 +56,6 @@ export const UserTemplatesDialog: React.FC<UserTemplatesDialogProps> = ({ user, 
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-2xl" style={{ direction: 'rtl' }}>
                 <DialogHeader className="relative">
-                    <button
-                        onClick={onClose}
-                        className="absolute left-0 top-0 p-2 rounded-xl hover:bg-muted/80 transition-colors text-muted-foreground hover:text-foreground"
-                        aria-label="إغلاق"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
                     <DialogTitle className="flex items-center gap-2 ml-8">
                         <ShieldAlert className="w-5 h-5 text-primary" />
                         الصلاحيات المباشرة للمستخدم
@@ -83,8 +76,8 @@ export const UserTemplatesDialog: React.FC<UserTemplatesDialogProps> = ({ user, 
                                 placeholder="ابحث عن نموذج..."
                             />
                         </div>
-                        <Button 
-                            onClick={handleAssign} 
+                        <Button
+                            onClick={handleAssign}
                             disabled={!selectedTemplate || addMut.isPending}
                             className="gap-2"
                         >
@@ -108,9 +101,9 @@ export const UserTemplatesDialog: React.FC<UserTemplatesDialogProps> = ({ user, 
                                             </div>
                                             <span className="font-medium line-clamp-1">{template.title}</span>
                                         </div>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
                                             className="text-destructive hover:text-destructive/90 hover:bg-destructive/10 shrink-0"
                                             onClick={() => handleRemove(template.id, template.title)}
                                         >

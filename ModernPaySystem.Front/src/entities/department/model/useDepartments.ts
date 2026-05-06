@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { departmentApi } from '../api/departmentApi';
-import { queryKeys } from '@/shared/lib/query-keys';
+import { queryKeys } from '@/shared/constants/query-keys';
 import { SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { useMemo } from 'react';
 

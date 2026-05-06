@@ -1,5 +1,6 @@
 import api from '@/shared/api/baseApi';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 export interface LookUpField {
     id: string;
@@ -55,14 +56,14 @@ export const deleteLookUpFieldValue = async (id: string): Promise<void> => {
 // Hooks
 export const useLookUpFields = () => {
     return useQuery({
-        queryKey: ['lookUpFields'],
+        queryKey: queryKeys.lookup.all,
         queryFn: fetchLookUpFields,
     });
 };
 
 export const useLookUpFieldValues = (lookUpFieldId: string | null) => {
     return useQuery({
-        queryKey: ['lookUpFieldValues', lookUpFieldId],
+        queryKey: queryKeys.lookup.list(lookUpFieldId || 'all'),
         queryFn: () => fetchLookUpFieldValues(lookUpFieldId!),
         enabled: !!lookUpFieldId,
     });
@@ -73,32 +74,32 @@ export const useLookUpMutations = () => {
 
     const createFieldMutation = useMutation({
         mutationFn: createLookUpField,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lookUpFields'] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.lookup.all }),
     });
 
     const updateFieldMutation = useMutation({
         mutationFn: updateLookUpField,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lookUpFields'] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.lookup.all }),
     });
 
     const deleteFieldMutation = useMutation({
         mutationFn: deleteLookUpField,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lookUpFields'] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.lookup.all }),
     });
 
     const createValueMutation = useMutation({
         mutationFn: createLookUpFieldValue,
-        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: ['lookUpFieldValues', variables.lookUpFiledId] }),
+        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: queryKeys.lookup.list(variables.lookUpFiledId) }),
     });
 
     const updateValueMutation = useMutation({
         mutationFn: updateLookUpFieldValue,
-        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: ['lookUpFieldValues', variables.lookUpFiledId] }),
+        onSuccess: (_, variables) => queryClient.invalidateQueries({ queryKey: queryKeys.lookup.list(variables.lookUpFiledId) }),
     });
 
     const deleteValueMutation = useMutation({
         mutationFn: deleteLookUpFieldValue,
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['lookUpFieldValues'] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.lookup.all }),
     });
 
     return {

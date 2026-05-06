@@ -18,13 +18,15 @@ export const useAttachments = (
     
     const zipImagesRef = useRef<ZipImage[]>([]);
 
+    // Reset state if blobFetcher becomes null - sync during render
+    if (!blobFetcher && (zipImages.length > 0 || totalFiles > 0)) {
+        setZipImages([]);
+        setIsAllImages(false);
+        setTotalFiles(0);
+    }
+
     useEffect(() => {
-        if (!blobFetcher) {
-            setZipImages([]);
-            setIsAllImages(false);
-            setTotalFiles(0);
-            return;
-        }
+        if (!blobFetcher) return;
 
         const loadAttachments = async () => {
             setIsLoading(true);

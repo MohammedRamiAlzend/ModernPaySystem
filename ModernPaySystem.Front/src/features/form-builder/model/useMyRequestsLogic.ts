@@ -15,7 +15,7 @@ export const useMyRequestsLogic = () => {
 
     const { data: templates = [] } = useForms(true);
 
-    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest } = useRequestDetails(templates);
+    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest } = useRequestDetails();
 
     return {
         requests,

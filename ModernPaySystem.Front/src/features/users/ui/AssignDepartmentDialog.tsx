@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
-import { queryKeys } from '@/shared/lib/query-keys';
+import { queryKeys } from '@/shared/constants/query-keys';
 import { useDepartmentActions } from '@/features/department-management/model/useDepartmentActions';
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import {
@@ -34,12 +34,21 @@ export const AssignDepartmentDialog: React.FC<AssignDepartmentDialogProps> = ({
     const [selectedDepartmentId, setSelectedDepartmentId] = React.useState<string>(initialDepartmentId || '');
     const { assignUserToDepartment, isLoading } = useDepartmentActions();
 
-    // Reset selection when dialog opens with new user
-    React.useEffect(() => {
-        if (isOpen) {
-            setSelectedDepartmentId(initialDepartmentId || '');
-        }
-    }, [isOpen, initialDepartmentId]);
+    // Reset selection when dialog opens with new user - sync during render
+    const [prevInitialId, setPrevInitialId] = React.useState(initialDepartmentId);
+    const [prevIsOpen, setPrevIsOpen] = React.useState(isOpen);
+
+    if (isOpen && !prevIsOpen) {
+        setPrevIsOpen(true);
+        setSelectedDepartmentId(initialDepartmentId || '');
+    } else if (!isOpen && prevIsOpen) {
+        setPrevIsOpen(false);
+    }
+
+    if (initialDepartmentId !== prevInitialId) {
+        setPrevInitialId(initialDepartmentId);
+        setSelectedDepartmentId(initialDepartmentId || '');
+    }
 
     // Fetch all departments for selection
     const { data: allDepartments, isLoading: isAllLoading } = useQuery({

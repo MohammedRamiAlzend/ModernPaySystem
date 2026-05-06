@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formEndpoints } from '../api/formEndpoints';
 import type { FormSchema, CreateTemplateDto } from '@/entities/form/model/types';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 /**
  * Hook for fetching forms (Templates)
@@ -10,7 +11,7 @@ import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strat
  */
 export const useForms = (showAll: boolean = false) => {
     const query = useQuery({
-        queryKey: ['forms', showAll],
+        queryKey: queryKeys.form.list({ showAll }),
         queryFn: async () => {
             const result = await formEndpoints.getTemplates();
             // Support both array response or object with data array
@@ -68,8 +69,8 @@ export const useDeleteForm = () => {
             // throw new Error('Delete not supported');
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['forms'] });
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
         },
     });
 };
@@ -90,8 +91,8 @@ export const useSaveForm = () => {
             return formEndpoints.createTemplate(dto);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['forms'] });
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
         },
     });
 };
@@ -112,8 +113,8 @@ export const useUpdateForm = () => {
             return formEndpoints.updateTemplate(id, dto);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['forms'] });
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
         },
     });
 };

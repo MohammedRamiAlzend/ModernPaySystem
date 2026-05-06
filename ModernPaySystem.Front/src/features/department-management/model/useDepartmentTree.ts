@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { DepartmentTree } from '@/entities/department/model/types';
-import { queryKeys } from '@/shared/lib/query-keys';
+import { queryKeys } from '@/shared/constants/query-keys';
 
 export const useDepartmentTree = (rootId?: string, mode: 'full' | 'subtree' | 'children' = 'full') => {
     return useQuery({

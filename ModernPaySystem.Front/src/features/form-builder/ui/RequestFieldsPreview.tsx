@@ -33,7 +33,9 @@ export const RequestFieldsPreview = ({
     const { data: fetchedTemplate } = useTemplateById(!initialFields.length && templateId ? templateId : null);
 
     // Determine which fields to use
-    const fields = initialFields.length > 0 ? initialFields : (fetchedTemplate?.fields || []);
+    const fields = React.useMemo(() => 
+        initialFields.length > 0 ? initialFields : (fetchedTemplate?.fields || []),
+    [initialFields, fetchedTemplate]);
 
     const data = React.useMemo(() => {
         try {

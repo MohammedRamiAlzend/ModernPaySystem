@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formEndpoints } from '../api/formEndpoints';
-import { queryKeys } from '@/shared/lib/query-keys';
+import { queryKeys } from '@/shared/constants/query-keys';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 import { useUIStore } from '@/app/store/uiStore';
 import type { FormSchema } from '@/entities/form/model/types';

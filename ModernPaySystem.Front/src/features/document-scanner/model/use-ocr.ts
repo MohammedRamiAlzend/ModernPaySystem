@@ -7,7 +7,7 @@ export const useOcr = () => {
     const [ocrResult, setOcrResult] = useState('');
 
     const { data: languagesData, isLoading: isLoadingLanguages } = useQuery({
-        queryKey: ['ocr-languages'],
+        queryKey: ['ocr', 'languages'],
         queryFn: getSupportedLanguages,
     });
 
