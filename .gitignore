@@ -18,6 +18,7 @@ mono_crash.*
 
 # ازالة البيلد من المشروع
 ModernPaySystem/wwwroot/*
+ModernPaySystem/Diwan/Uploads/TransactionSystem/*
 !ModernPaySystem/wwwroot/.gitkeep
 .agent/*
 # Build results
