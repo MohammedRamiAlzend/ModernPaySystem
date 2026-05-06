@@ -69,6 +69,7 @@ export const useDeleteForm = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['forms'] });
+            queryClient.invalidateQueries({ queryKey: ['templates'] });
         },
     });
 };
@@ -90,6 +91,7 @@ export const useSaveForm = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['forms'] });
+            queryClient.invalidateQueries({ queryKey: ['templates'] });
         },
     });
 };
@@ -111,6 +113,7 @@ export const useUpdateForm = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['forms'] });
+            queryClient.invalidateQueries({ queryKey: ['templates'] });
         },
     });
 };

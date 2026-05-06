@@ -333,6 +333,7 @@ export const useCreateTemplate = () => {
         mutationFn: formEndpoints.createTemplate,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: ['forms'] });
         }
     });
 };
