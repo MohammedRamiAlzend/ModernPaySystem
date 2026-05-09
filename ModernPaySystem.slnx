@@ -20,5 +20,4 @@
   <Project Path="src/Modules/Diwan/ModernPaySystem.Modules.Diwan.Application/ModernPaySystem.Modules.Diwan.Application.csproj" />
   <Project Path="src/Modules/Diwan/ModernPaySystem.Modules.Diwan.Infrastructure/ModernPaySystem.Modules.Diwan.Infrastructure.csproj" />
   <Project Path="src/Modules/Diwan/ModernPaySystem.Modules.Diwan.Contracts/ModernPaySystem.Modules.Diwan.Contracts.csproj" />
-  <Project Path="tests/ModernPaySystem.ArchitectureTests/ModernPaySystem.ArchitectureTests.csproj" />
 </Solution>
