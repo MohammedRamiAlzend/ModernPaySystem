@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NetArchTest.Rules" Version="1.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Modules\Transactions\ModernPaySystem.Modules.Transactions.Domain\ModernPaySystem.Modules.Transactions.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Transactions\ModernPaySystem.Modules.Transactions.Application\ModernPaySystem.Modules.Transactions.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Transactions\ModernPaySystem.Modules.Transactions.Infrastructure\ModernPaySystem.Modules.Transactions.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Transactions\ModernPaySystem.Modules.Transactions.Contracts\ModernPaySystem.Modules.Transactions.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Diwan\ModernPaySystem.Modules.Diwan.Domain\ModernPaySystem.Modules.Diwan.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Diwan\ModernPaySystem.Modules.Diwan.Application\ModernPaySystem.Modules.Diwan.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Diwan\ModernPaySystem.Modules.Diwan.Infrastructure\ModernPaySystem.Modules.Diwan.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Diwan\ModernPaySystem.Modules.Diwan.Contracts\ModernPaySystem.Modules.Diwan.Contracts.csproj" />
+  </ItemGroup>
+</Project>

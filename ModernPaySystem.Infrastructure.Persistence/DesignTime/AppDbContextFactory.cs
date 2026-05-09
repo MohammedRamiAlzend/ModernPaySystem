@@ -12,15 +12,25 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 {
     public AppDbContext CreateDbContext(string[] args)
     {
-        var basePath = Directory.GetCurrentDirectory();
+        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+        var startupProjectPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "ModernPaySystem"));
+        var configurationBasePath = Directory.Exists(startupProjectPath)
+            ? startupProjectPath
+            : Directory.GetCurrentDirectory();
 
-        // var configuration = new ConfigurationBuilder()
-        //     .SetBasePath(basePath)
-        //     .AddJsonFile("appsettings.json", optional: true)
-        //     .AddEnvironmentVariables()
-        //     .Build();
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(configurationBasePath)
+            .AddJsonFile("appsettings.json", optional: true)
+            .AddJsonFile($"appsettings.{environment}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
 
-        var connectionString = "Host=localhost;Database=ModernPaySystemDb;Username=postgres;Password=0000";
+        var connectionString =
+            Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("DefaultConnection is not configured for design-time DbContext creation.");
 
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseNpgsql(connectionString, npgsqlOptions =>

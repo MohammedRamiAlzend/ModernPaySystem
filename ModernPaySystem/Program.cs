@@ -2,6 +2,8 @@ global using ModernPaySystem.Infrastructure;
 global using ModernPaySystem.Infrastructure.Auth;
 global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.Seeding;
+global using ModernPaySystem.Modules.Diwan.Infrastructure;
+global using ModernPaySystem.Modules.Transactions.Infrastructure;
 global using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +20,8 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorizationPolicies();
 
 builder.Services.AddInfrastructureServices();
+builder.Services.AddTransactionsModule();
+builder.Services.AddDiwanModule();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",

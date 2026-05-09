@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.12.36" />
@@ -26,6 +25,8 @@
     <ProjectReference Include="..\ModernPaySystem.Domain\ModernPaySystem.Domain.csproj" />
     <ProjectReference Include="..\ModernPaySystem.Infrastructure.Persistence\ModernPaySystem.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="..\ModernPaySystem.Infrastructure\ModernPaySystem.Infrastructure.csproj" />
+    <ProjectReference Include="..\src\Modules\Diwan\ModernPaySystem.Modules.Diwan.Infrastructure\ModernPaySystem.Modules.Diwan.Infrastructure.csproj" />
+    <ProjectReference Include="..\src\Modules\Transactions\ModernPaySystem.Modules.Transactions.Infrastructure\ModernPaySystem.Modules.Transactions.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

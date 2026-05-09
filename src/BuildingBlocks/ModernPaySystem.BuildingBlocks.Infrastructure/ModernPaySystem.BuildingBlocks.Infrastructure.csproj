@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ModernPaySystem.BuildingBlocks.Application\ModernPaySystem.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\ModernPaySystem.BuildingBlocks.Integration\ModernPaySystem.BuildingBlocks.Integration.csproj" />
+  </ItemGroup>
+</Project>
