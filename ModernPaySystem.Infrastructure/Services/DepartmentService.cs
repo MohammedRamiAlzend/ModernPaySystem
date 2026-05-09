@@ -5,10 +5,8 @@ namespace ModernPaySystem.Infrastructure.Services;
 
 public class DepartmentService(
     IUnitOfWork unitOfWork,
-    ILogger<DepartmentService> logger,
-    IHttpContextServiceManager httpContextServiceManager) : IDepartmentService
+    ILogger<DepartmentService> logger) : IDepartmentService
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
     public async Task<Result<DepartmentDto>> CreateAsync(CreateDepartmentDto dto, string userId)
     {
@@ -19,7 +17,7 @@ public class DepartmentService(
 
             if (dto.ParentDepartmentId.HasValue)
             {
-                var parentResult = await _unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
+                var parentResult = await unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
                 if (parentResult.IsError || parentResult.Value == null)
                     return new Error("PARENT_NOT_FOUND", "Parent department not found", ErrorKind.NotFound);
             }
@@ -29,7 +27,7 @@ public class DepartmentService(
 
             if (dto.ParentDepartmentId.HasValue)
             {
-                var parentResult = await _unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
+                var parentResult = await unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
                 if (parentResult.Value != null)
                 {
                     level = parentResult.Value.Level + 1;
@@ -54,7 +52,7 @@ public class DepartmentService(
                 CreatedAt = DateTime.UtcNow
             };
 
-            var addResult = await _unitOfWork.Departments.AddAsync(department);
+            var addResult = await unitOfWork.Departments.AddAsync(department);
             if (addResult.IsError)
                 return addResult.Errors;
 
@@ -75,12 +73,12 @@ public class DepartmentService(
     {
         try
         {
-            var result = await _unitOfWork.Departments.GetByIdAsync(id);
+            var result = await unitOfWork.Departments.GetByIdAsync(id);
             if (result.IsError)
                 return result.Errors;
 
             if (result.Value == null)
-                return null;
+                return null!;
 
             return MapToDto(result.Value);
         }
@@ -95,7 +93,7 @@ public class DepartmentService(
     {
         try
         {
-            var existingResult = await _unitOfWork.Departments.GetByIdAsync(id);
+            var existingResult = await unitOfWork.Departments.GetByIdAsync(id);
             if (existingResult.IsError)
                 return existingResult.Errors;
 
@@ -106,10 +104,10 @@ public class DepartmentService(
 
             if (dto.ParentDepartmentId.HasValue && dto.ParentDepartmentId != department.ParentDepartmentId)
             {
-                if (await _unitOfWork.Departments.WouldCreateCircularReferenceAsync(id, dto.ParentDepartmentId.Value))
+                if (await unitOfWork.Departments.WouldCreateCircularReferenceAsync(id, dto.ParentDepartmentId.Value))
                     return new Error("CIRCULAR_REFERENCE", "Cannot create circular reference", ErrorKind.Validation);
 
-                var parentResult = await _unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
+                var parentResult = await unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
                 if (parentResult.Value != null)
                 {
                     department.Level = parentResult.Value.Level + 1;
@@ -127,7 +125,7 @@ public class DepartmentService(
             department.UpdatedByUserId = userId;
             department.UpdatedAt = DateTime.UtcNow;
 
-            var updateResult = await _unitOfWork.Departments.UpdateAsync(department);
+            var updateResult = await unitOfWork.Departments.UpdateAsync(department);
             if (updateResult.IsError)
                 return updateResult.Errors;
 
@@ -148,11 +146,11 @@ public class DepartmentService(
     {
         try
         {
-            var hasChildren = await _unitOfWork.Departments.HasChildrenAsync(id);
+            var hasChildren = await unitOfWork.Departments.HasChildrenAsync(id);
             if (hasChildren)
                 return new Error("HAS_CHILDREN", "Cannot delete department with children", ErrorKind.Validation);
 
-            var deleted = await _unitOfWork.Departments.RemoveAsync(d => d.Id == id);
+            var deleted = await unitOfWork.Departments.RemoveAsync(d => d.Id == id);
             if (deleted.IsError)
                 return deleted.Errors;
 
@@ -173,7 +171,7 @@ public class DepartmentService(
     {
         try
         {
-            var roots = await _unitOfWork.Departments.GetRootDepartmentsAsync();
+            var roots = await unitOfWork.Departments.GetRootDepartmentsAsync();
             if (roots.IsError)
                 return roots.Errors;
 
@@ -198,7 +196,7 @@ public class DepartmentService(
     {
         try
         {
-            var deptResult = await _unitOfWork.Departments.GetByIdAsync(departmentId);
+            var deptResult = await unitOfWork.Departments.GetByIdAsync(departmentId);
             if (deptResult.IsError || deptResult.Value == null)
                 return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
 
@@ -218,7 +216,7 @@ public class DepartmentService(
     {
         try
         {
-            var children = await _unitOfWork.Departments.GetChildrenAsync(departmentId);
+            var children = await unitOfWork.Departments.GetChildrenAsync(departmentId);
             if (children.IsError)
                 return children.Errors;
 
@@ -235,13 +233,13 @@ public class DepartmentService(
     {
         try
         {
-            var deptResult = await _unitOfWork.Departments.GetByIdAsync(departmentId);
+            var deptResult = await unitOfWork.Departments.GetByIdAsync(departmentId);
             if (deptResult.IsError || deptResult.Value == null || !deptResult.Value.ParentDepartmentId.HasValue)
-                return null;
+                return null!;
 
-            var parentResult = await _unitOfWork.Departments.GetByIdAsync(deptResult.Value.ParentDepartmentId.Value);
+            var parentResult = await unitOfWork.Departments.GetByIdAsync(deptResult.Value.ParentDepartmentId.Value);
             if (parentResult.IsError || parentResult.Value == null)
-                return null;
+                return null!;
 
             return MapToDto(parentResult.Value);
         }
@@ -256,7 +254,7 @@ public class DepartmentService(
     {
         try
         {
-            var allDepts = await _unitOfWork.Departments.GetAllAsync();
+            var allDepts = await unitOfWork.Departments.GetAllAsync();
             if (allDepts.IsError)
                 return allDepts.Errors;
 
@@ -284,7 +282,7 @@ public class DepartmentService(
     {
         try
         {
-            var allDepts = await _unitOfWork.Departments.GetAllAsync();
+            var allDepts = await unitOfWork.Departments.GetAllAsync();
             if (allDepts.IsError)
                 return allDepts.Errors;
 
@@ -302,7 +300,7 @@ public class DepartmentService(
     {
         try
         {
-            var path = await _unitOfWork.Departments.GetPathToRootAsync(departmentId);
+            var path = await unitOfWork.Departments.GetPathToRootAsync(departmentId);
             if (path.IsError)
                 return path.Errors;
 
@@ -319,7 +317,7 @@ public class DepartmentService(
     {
         try
         {
-            var deptResult = await _unitOfWork.Departments.GetAsync(x => x.Id == departmentId, i => i.Include(x => x.Users).ThenInclude(x => x.SubSystemUser));
+            var deptResult = await unitOfWork.Departments.GetAsync(x => x.Id == departmentId, i => i.Include(x => x.Users).ThenInclude(x => x.SubSystemUser));
             if (deptResult.IsError || deptResult.Value == null)
                 return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
             return deptResult.Value.Users.Select(x => x.ToDto()).ToList();
@@ -335,19 +333,19 @@ public class DepartmentService(
     {
         try
         {
-            var deptResult = await _unitOfWork.Departments.GetByIdAsync(departmentId);
+            var deptResult = await unitOfWork.Departments.GetByIdAsync(departmentId);
             if (deptResult.IsError || deptResult.Value == null)
                 return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
 
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            var user = await unitOfWork.Users.GetByIdAsync(userId);
             if (user.IsError || user.Value == null)
                 return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
 
             user.Value.DepartmentId = departmentId;
-            var updateResult = await _unitOfWork.Users.UpdateAsync(user.Value);
+            var updateResult = await unitOfWork.Users.UpdateAsync(user.Value);
             if (updateResult.IsError)
                 return updateResult.Errors;
-            await _unitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Assigning user: {UserId} to department: {DepartmentId}", userId, departmentId);
             return true;
@@ -363,16 +361,16 @@ public class DepartmentService(
     {
         try
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(userId);
+            var user = await unitOfWork.Users.GetByIdAsync(userId);
             if (user.IsError || user.Value == null)
                 return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
 
             user.Value.DepartmentId = null;
-            var updateResult = await _unitOfWork.Users.UpdateAsync(user.Value);
+            var updateResult = await unitOfWork.Users.UpdateAsync(user.Value);
             if (updateResult.IsError)
                 return updateResult.Errors;
 
-            await _unitOfWork.SaveChangesAsync();
+            await unitOfWork.SaveChangesAsync();
 
             logger.LogInformation("Removed user: {UserId} from department", userId);
             return true;
@@ -397,7 +395,7 @@ public class DepartmentService(
 
             while (currentId != Guid.Empty && depth < maxDepth)
             {
-                var result = _unitOfWork.Departments.GetByIdAsync(currentId).GetAwaiter().GetResult();
+                var result = unitOfWork.Departments.GetByIdAsync(currentId).GetAwaiter().GetResult();
                 if (result.IsError || result.Value == null || !result.Value.ParentDepartmentId.HasValue)
                     break;
 
@@ -418,7 +416,7 @@ public class DepartmentService(
 
     private async Task BuildTreeRecursive(Guid parentId, DepartmentTreeDto parentNode)
     {
-        var children = await _unitOfWork.Departments.GetChildrenAsync(parentId);
+        var children = await unitOfWork.Departments.GetChildrenAsync(parentId);
         if (children.IsError || children.Value == null || !children.Value.Any())
             return;
 

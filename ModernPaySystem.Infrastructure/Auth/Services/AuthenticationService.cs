@@ -23,7 +23,7 @@ public class AuthenticationService(IUnitOfWork uow,
 
         var user = userResult.Value;
 
-        if (!passwordHasher.VerifyPassword(password, user.HashedPassword))
+        if (!passwordHasher.VerifyPassword(password, user!.HashedPassword))
             return ApplicationErrors.InvalidCredentials;
 
         var permissions = user.Roles
@@ -48,7 +48,7 @@ public class AuthenticationService(IUnitOfWork uow,
 
         var user = userResult.Value;
 
-        var permissions = user.Roles
+        var permissions = user!.Roles
           .SelectMany(ur => ur.Permissions)
           .Select(rp => rp.Name)
           .Distinct()

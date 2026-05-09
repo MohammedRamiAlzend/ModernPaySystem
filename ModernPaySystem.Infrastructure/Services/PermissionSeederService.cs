@@ -128,7 +128,7 @@ public class PermissionSeederService(
                 return dbPermissionResult.Errors;
 
             var dbPermission = dbPermissionResult.Value;
-            dbPermission.Roles.Add(getSuperAdminRoleResult.Value!);
+            dbPermission!.Roles.Add(getSuperAdminRoleResult.Value!);
             var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission, bypassAuth: true);
             if (updateResult.IsError)
                 return updateResult.Errors;
@@ -178,7 +178,7 @@ public class PermissionSeederService(
                 return dbPermissionResult.Errors;
 
             var dbPermission = dbPermissionResult.Value;
-            dbPermission.Roles.Add(superAdminRole);
+            dbPermission!.Roles.Add(superAdminRole);
             var updateResult = await unitOfWork.Permissions.UpdateAsync(dbPermission, bypassAuth: true);
             if (updateResult.IsError)
                 return updateResult.Errors;
@@ -200,7 +200,7 @@ public class PermissionSeederService(
         }
 
         var role = getSuperAdminRoleResult.Value;
-        Guid superAdminRoleId = role.Id;
+        Guid superAdminRoleId = role!.Id;
 
         var userResult = await unitOfWork.Users.GetAsync(
           u => u.Id == Constants.DefaultUserId,

@@ -246,7 +246,7 @@ public class RequestTransactionService(
             if (getRequestResult.IsError)
                 return getRequestResult.Errors;
 
-            if (getRequestResult.Value.FirstTransaction != null || getRequestResult.Value.CurrentTransaction != null)
+            if (getRequestResult.Value!.FirstTransaction != null || getRequestResult.Value.CurrentTransaction != null)
                 return ApplicationErrors.RequestAlreadyHasTransaction;
 
             var transactionEntity = new RequestTransaction
@@ -307,8 +307,8 @@ public class RequestTransactionService(
                 filter: rt => rt.Id == dto.ParentTransactionId,
                 transform: x =>
                 x
-                .Include(x => x.ParentTransaction).ThenInclude(i => i.Request).ThenInclude(i => i.CurrentTransaction)
-                .Include(x => x.ParentTransaction).ThenInclude(i => i.Request).ThenInclude(i => i.FirstTransaction)
+                .Include(x => x.ParentTransaction).ThenInclude(i => i!.Request).ThenInclude(i => i.CurrentTransaction)
+                .Include(x => x.ParentTransaction).ThenInclude(i => i!.Request).ThenInclude(i => i.FirstTransaction)
                 .Include(x => x.Request));
 
             if (parentTransaction.IsError)
@@ -323,14 +323,14 @@ public class RequestTransactionService(
                 Notes = dto.Notes,
                 ParentTransactionId = dto.ParentTransactionId,
                 CurrentUserHolderId = dto.CurrentUserHolderId,
-                Level = parentTransaction.Value.Level + 1,
-                Path = $"{parentTransaction.Value.Path}/{newId}"
+                Level = parentTransaction.Value!.Level + 1,
+                Path = $"{parentTransaction.Value!.Path}/{newId}"
             };
             var addResult = await unitOfWork.RequestTransactions.AddAsync(childTransaction);
             if (addResult.IsError)
                 return addResult.Errors;
 
-            request.CurrentTransactionId = childTransaction.Id;
+            request!.CurrentTransactionId = childTransaction.Id;
 
             await unitOfWork.Requests.UpdateAsync(request);
             await unitOfWork.SaveChangesAsync();

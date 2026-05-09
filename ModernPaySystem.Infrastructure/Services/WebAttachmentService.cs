@@ -40,7 +40,7 @@ public class WebAttachmentService(
         // Create an attachment entity
         var attachment = new Attachment
         {
-            FileName = fileMetadata.OriginalFileName,
+            FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
             Path = fileMetadata.FilePath
@@ -108,7 +108,7 @@ public class WebAttachmentService(
         // Create an attachment entity
         var attachment = new Attachment
         {
-            FileName = fileMetadata.OriginalFileName,
+            FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
             Path = fileMetadata.FilePath
@@ -176,7 +176,7 @@ public class WebAttachmentService(
         // Create an attachment entity
         var attachment = new Attachment
         {
-            FileName = fileMetadata.OriginalFileName,
+            FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
             Path = fileMetadata.FilePath

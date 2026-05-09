@@ -7,8 +7,7 @@ namespace ModernPaySystem.Infrastructure.Services;
 public class RequestService(
     IUnitOfWork unitOfWork, ILogger<RequestService> logger,
     IWebAttachmentService webAttachmentService,
-    IHttpContextServiceManager httpContextServiceManager,
-    IAuthorizationService authorizationService) : IRequestService
+    IHttpContextServiceManager httpContextServiceManager) : IRequestService
 {
     public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
     {

@@ -15,7 +15,7 @@ public class HttpContextServiceManager(IHttpContextAccessor httpContextAccessor)
         try
         {
             var user = httpContextAccessor.HttpContext?.User;
-            return user?.Identity.IsAuthenticated == true ? Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)!.Value) : throw new Exception("User is not authenticated");
+            return user?.Identity!.IsAuthenticated == true ? Guid.Parse(user.FindFirst(ClaimTypes.NameIdentifier)!.Value) : throw new Exception("User is not authenticated");
         }
         catch (Exception)
         {

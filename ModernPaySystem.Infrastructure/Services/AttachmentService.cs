@@ -36,7 +36,7 @@ public class AttachmentService(
         // Create an attachment entity
         var attachment = new Attachment
         {
-            FileName = fileMetadata.OriginalFileName,
+            FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
             Path = fileMetadata.FilePath
@@ -103,7 +103,7 @@ public class AttachmentService(
         // Create an attachment entity
         var attachment = new Attachment
         {
-            FileName = fileMetadata.OriginalFileName,
+            FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
             Path = fileMetadata.FilePath
@@ -170,7 +170,7 @@ public class AttachmentService(
         }
 
         // Return the file content
-        return await fileManager.GetFileBytesAsync(attachment.Value.Path);
+        return await fileManager.GetFileBytesAsync(attachment.Value!.Path);
     }
 
     /// <summary>
@@ -203,7 +203,7 @@ public class AttachmentService(
         }
 
         // Return the file content
-        return await fileManager.GetFileBytesAsync(attachment.Value.Path);
+        return await fileManager.GetFileBytesAsync(attachment.Value!.Path);
     }
 
     /// <summary>
@@ -236,7 +236,7 @@ public class AttachmentService(
         }
 
         // Return the file content
-        return await fileManager.GetFileBytesAsync(attachment.Value.Path);
+        return await fileManager.GetFileBytesAsync(attachment.Value!.Path);
     }
 
     /// <summary>
@@ -268,7 +268,7 @@ public class AttachmentService(
         }
 
         // Remove the association
-        var removeAssociationResult = await unitOfWork.RequestAttachments.RemoveAsync(x => x.Id == requestAttachment.Value.Id);
+        var removeAssociationResult = await unitOfWork.RequestAttachments.RemoveAsync(x => x.Id == requestAttachment.Value!.Id);
         if (removeAssociationResult.IsError)
         {
             return removeAssociationResult.Errors;
@@ -279,7 +279,7 @@ public class AttachmentService(
         if (!isUsedElsewhere)
         {
             // Delete the file from the file system
-            var fileDeleteResult = await fileManager.DeleteFileAsync(attachment.Value.Path);
+            var fileDeleteResult = await fileManager.DeleteFileAsync(attachment.Value!.Path);
             if (fileDeleteResult.IsError)
             {
                 // Log the error but don't fail the operation as the DB records are cleaned up
@@ -326,7 +326,7 @@ public class AttachmentService(
         }
 
         // Remove the association
-        var removeAssociationResult = await unitOfWork.ResponseAttachments.RemoveAsync(x => x.Id == responseAttachment.Value.Id);
+        var removeAssociationResult = await unitOfWork.ResponseAttachments.RemoveAsync(x => x.Id == responseAttachment.Value!.Id);
         if (removeAssociationResult.IsError)
         {
             return removeAssociationResult.Errors;
@@ -337,7 +337,7 @@ public class AttachmentService(
         if (!isUsedElsewhere)
         {
             // Delete the file from the file system
-            var fileDeleteResult = await fileManager.DeleteFileAsync(attachment.Value.Path);
+            var fileDeleteResult = await fileManager.DeleteFileAsync(attachment.Value!.Path);
             if (fileDeleteResult.IsError)
             {
                 // Log the error but don't fail the operation as DB records are cleaned up
@@ -371,7 +371,7 @@ public class AttachmentService(
         if (requestAttachments.IsError)
             return requestAttachments.Errors;
 
-        var attachmentIds = requestAttachments.Value.ConvertAll(ra => ra.AttachmentId);
+        var attachmentIds = requestAttachments.Value!.ConvertAll(ra => ra.AttachmentId);
 
         // Get the actual attachment entities
         var attachmentDtos = new List<AttachmentDto>();
@@ -380,7 +380,7 @@ public class AttachmentService(
             var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
             if (!attachment.IsError)
             {
-                attachmentDtos.Add(attachment.Value.ToDto());
+                attachmentDtos.Add(attachment.Value!.ToDto());
             }
         }
 
@@ -414,7 +414,7 @@ public class AttachmentService(
             var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
             if (!attachment.IsError)
             {
-                attachmentDtos.Add(attachment.Value.ToDto());
+                attachmentDtos.Add(attachment.Value!.ToDto());
             }
         }
 
@@ -448,7 +448,7 @@ public class AttachmentService(
             var attachment = await unitOfWork.Attachments.GetByIdAsync(attachmentId);
             if (!attachment.IsError)
             {
-                attachmentDtos.Add(attachment.Value.ToDto());
+                attachmentDtos.Add(attachment.Value!.ToDto());
             }
         }
 
@@ -493,7 +493,7 @@ public class AttachmentService(
                 }
 
                 // Get the file content
-                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value.Path);
+                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value!.Path);
                 if (fileBytes.IsError)
                 {
                     continue; // Skip this attachment if the file doesn't exist
@@ -548,7 +548,7 @@ public class AttachmentService(
                 }
 
                 // Get the file content
-                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value.Path);
+                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value!.Path);
                 if (fileBytes.IsError)
                 {
                     continue; // Skip this attachment if the file doesn't exist
@@ -603,7 +603,7 @@ public class AttachmentService(
                 }
 
                 // Get the file content
-                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value.Path);
+                var fileBytes = await fileManager.GetFileBytesAsync(attachment.Value!.Path);
                 if (fileBytes.IsError)
                 {
                     continue;
@@ -757,7 +757,7 @@ public class AttachmentService(
         existingAttachment.Value.FileName = attachment.FileName;
         existingAttachment.Value.SafeName = attachment.SafeName;
         existingAttachment.Value.Extension = attachment.Extension;
-        existingAttachment.Value.Path = attachment.Path;
+        existingAttachment.Value!.Path = attachment.Path;
 
         var result = await unitOfWork.Attachments.UpdateAsync(existingAttachment.Value);
         if (result.IsError)

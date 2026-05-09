@@ -24,7 +24,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: x => x.Include(x => x.Request).ThenInclude(r => r.RequestAttachments),
+                transform: x => x.Include(x => x.Request).ThenInclude(r => r!.RequestAttachments),
                 additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.ByRespondedByUserId(currentUserId) });
 
             if (pagedResponses.IsError)
@@ -51,7 +51,7 @@ public class ResponseService(
             var response = await unitOfWork.Responses.GetAsync(
                 filter: r => r.Id == id,
                 transform: x => x.Include(x => x.Request)
-                                 .ThenInclude(r => r.RequestAttachments)
+                                 .ThenInclude(r => r!.RequestAttachments)
                                  .Include(x => x.ResponseAttachments),
                 additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanReadByUserId(currentUserId) });
 
@@ -84,7 +84,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r.RequestAttachments),
+                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments),
                 additionalFilters: ResponseExpressions.ByRequestIdWithIncludes(requestId));
 
             if (pagedResponses.IsError)
@@ -114,7 +114,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r.RequestAttachments),
+                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments),
                 additionalFilters: ResponseExpressions.ByRespondedByUserIdWithIncludes(responderId));
 
             if (pagedResponses.IsError)
@@ -143,7 +143,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.Request).ThenInclude(r => r.RequestAttachments),
+                transform: i => i.Include(r => r.Request).ThenInclude(r => r!.RequestAttachments),
                 additionalFilters: ResponseExpressions.ByRequesterIdWithIncludes(requesterId));
 
             if (pagedResponses.IsError)
@@ -166,7 +166,7 @@ public class ResponseService(
             return checkIfRequestHasResponse.Errors;
         }
 
-        return checkIfRequestHasResponse.Value.Response is not null;
+        return checkIfRequestHasResponse.Value!.Response is not null;
     }
 
     public async Task<Result<ResponseDto>> CreateAsync(CreateResponseDto response)
@@ -215,7 +215,7 @@ public class ResponseService(
                 return getRequest.Errors;
             }
 
-            getRequest.Value.ResponseId = responseEntity.Id;
+            getRequest.Value!.ResponseId = responseEntity.Id;
             var updateResult = await unitOfWork.Requests.UpdateAsync(getRequest.Value);
             if (updateResult.IsError)
             {
