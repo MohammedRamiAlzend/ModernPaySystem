@@ -39,6 +39,13 @@ public class DepartmentService(
                 materializedPath = GetShortId(Guid.NewGuid());
             }
 
+            var userResult = await unitOfWork.Users.GetByIdAsync(dto.HeadedUserId.Value);
+            if (userResult.IsError)
+                return userResult.Errors;
+
+            userResult.Value.IsDepartmentHead = true;
+            var userUpdateResult = await unitOfWork.Users.UpdateAsync(userResult.Value);
+
             var department = new Department
             {
                 Name = dto.Name,
@@ -361,6 +368,63 @@ public class DepartmentService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error assigning user to department");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<bool>> AssignDepartmentHeadAsync(Guid departmentId, Guid userId)
+    {
+        try
+        {
+            var departmentResult = await unitOfWork.Departments.GetByIdAsync(departmentId);
+            if (departmentResult.IsError || departmentResult.Value == null)
+                return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
+
+            var userResult = await unitOfWork.Users.GetByIdAsync(userId);
+            if (userResult.IsError || userResult.Value == null)
+                return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
+
+            var department = departmentResult.Value;
+            var user = userResult.Value;
+
+            if (user.IsDepartmentHead && user.HeadedDepartmentId.HasValue && user.HeadedDepartmentId.Value != departmentId)
+                return new Error("USER_ALREADY_DEPARTMENT_HEAD", "User is already assigned as head of another department", ErrorKind.Validation);
+
+            if (department.DepartmentHeadId is Guid previousHeadId && previousHeadId != userId)
+            {
+                var previousHeadResult = await unitOfWork.Users.GetByIdAsync(previousHeadId);
+                if (!previousHeadResult.IsError && previousHeadResult.Value != null)
+                {
+                    previousHeadResult.Value.IsDepartmentHead = false;
+                    previousHeadResult.Value.HeadedDepartmentId = null;
+                    var previousHeadUpdate = await unitOfWork.Users.UpdateAsync(previousHeadResult.Value);
+                    if (previousHeadUpdate.IsError)
+                        return previousHeadUpdate.Errors;
+                }
+            }
+
+            department.DepartmentHeadId = userId;
+            user.IsDepartmentHead = true;
+            user.HeadedDepartmentId = departmentId;
+            if (!user.DepartmentId.HasValue)
+                user.DepartmentId = departmentId;
+
+            var departmentUpdate = await unitOfWork.Departments.UpdateAsync(department);
+            if (departmentUpdate.IsError)
+                return departmentUpdate.Errors;
+
+            var userUpdate = await unitOfWork.Users.UpdateAsync(user);
+            if (userUpdate.IsError)
+                return userUpdate.Errors;
+
+            await unitOfWork.SaveChangesAsync();
+
+            logger.LogInformation("Assigned user: {UserId} as head of department: {DepartmentId}", userId, departmentId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error assigning department head: {UserId} to department: {DepartmentId}", userId, departmentId);
             return ApplicationErrors.InternalServerError;
         }
     }

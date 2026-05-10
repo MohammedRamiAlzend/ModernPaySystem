@@ -186,6 +186,18 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     }
 
     /// <summary>
+    /// Assign a user as department head
+    /// </summary>
+    [HttpPost("{id:guid}/assign-head")]
+    [EndpointPermission("departments.assign_head", SubSystem.TransactionSystem, PermissionType.Update)]
+    public async Task<IActionResult> AssignDepartmentHead(Guid id, [FromBody] AssignUserDto dto)
+    {
+        logger.LogInformation("Assigning user: {UserId} as head of department: {DepartmentId}", dto.UserId, id);
+        var result = await departmentService.AssignDepartmentHeadAsync(id, dto.UserId);
+        return result.ToActionResult();
+    }
+
+    /// <summary>
     /// Remove a user from a department
     /// </summary>
     [HttpDelete("{id:guid}/remove-user/{userId:guid}")]

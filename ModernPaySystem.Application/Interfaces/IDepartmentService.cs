@@ -81,6 +81,11 @@ public interface IDepartmentService
     Task<Result<bool>> AssignUserToDepartmentAsync(Guid userId, Guid departmentId);
 
     /// <summary>
+    /// Assign a user as department head
+    /// </summary>
+    Task<Result<bool>> AssignDepartmentHeadAsync(Guid departmentId, Guid userId);
+
+    /// <summary>
     /// Remove a user from a department
     /// </summary>
     Task<Result<bool>> RemoveUserFromDepartmentAsync(Guid userId);
