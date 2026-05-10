@@ -4,7 +4,7 @@ using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Extensions;
 
-namespace ModernPaySystem.Controllers;
+namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
 
 [ApiController]
 [Route("api/[controller]")]

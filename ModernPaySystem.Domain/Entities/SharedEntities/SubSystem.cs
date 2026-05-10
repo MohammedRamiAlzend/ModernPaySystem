@@ -4,5 +4,6 @@ public enum SubSystem
 {
     None = 0,
     TransactionSystem = 1,
-    Shared = 2,
+    Diwan = 2,
+    Shared = 3,
 }
