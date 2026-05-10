@@ -1,5 +1,8 @@
 using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Infrastructure.Persistence.Repos;
+using Microsoft.EntityFrameworkCore;
+using ModernPaySystem.Domain.Entities.SharedEntities;
+
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -260,21 +263,23 @@ public class DepartmentService(
     {
         try
         {
-            var allDepts = await unitOfWork.Departments.GetAllAsync(null, i => i.Include(x => x.DepartmentHead).Include(x => x.Users).Include(x => x.ChildDepartments));
-            if (allDepts.IsError)
-                return allDepts.Errors;
+            // جلب الأقسام بفلتر بسيط أو كلها، ثم الفلترة في الذاكرة
+            // يتجنب هذا مشكلة ترجمة string.IsNullOrEmpty داخل EF Core Expressions
+            var result = await unitOfWork.Departments.GetAllAsync(
+                filter: level > 0 ? (d => d.Level == level) : null
+            );
 
+            if (result.IsError)
+                return result.Errors;
 
-            var filtered = allDepts.Value!.AsEnumerable();
+            var filtered = result.Value!.AsEnumerable();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                filtered = filtered.Where(d => d.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                                              (d.Code != null && d.Code.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+                filtered = filtered.Where(d =>
+                    d.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (d.Code != null && d.Code.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
             }
-
-            if (level > 0)
-                filtered = filtered.Where(d => d.Level == level).ToList();
 
             return filtered.Select(MapToDto).ToList();
         }
@@ -285,15 +290,19 @@ public class DepartmentService(
         }
     }
 
+
+
+
     public async Task<Result<List<DepartmentDto>>> GetByLevelAsync(int level)
     {
         try
         {
-            var allDepts = await unitOfWork.Departments.GetAllAsync(d => d.Level == level, i => i.Include(x => x.DepartmentHead).Include(x => x.Users).Include(x => x.ChildDepartments));
+            var allDepts = await unitOfWork.Departments.GetAllAsync(d => d.Level == level, i => i.Include(x => x.DepartmentHead));
             if (allDepts.IsError)
                 return allDepts.Errors;
 
             var filtered = allDepts.Value!.ToList();
+
 
             return filtered.Select(MapToDto).ToList();
         }
@@ -446,8 +455,9 @@ public class DepartmentService(
             Code = department.Code,
             Description = department.Description,
             ParentDepartmentId = department.ParentDepartmentId,
-            DepartmentHeadId = department.DepartmentHeadId.Value,
+            DepartmentHeadId = department.DepartmentHeadId ?? Guid.Empty,
             DepartmentHeadName = department.DepartmentHead?.UserName,
+
             Level = department.Level,
             MaterializedPath = department.MaterializedPath,
             Type = department.Type,
