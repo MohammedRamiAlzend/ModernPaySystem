@@ -5,7 +5,7 @@ public class Template : Entity<Guid>, IAuditableEntity
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
-    public required bool IsRequireAttachments { get; set; }
+    public required bool IsRequireAttachments { get; set; } = false;
     public Department DefaultReceiverDepartment { get; set; } = null!;
     public Guid DefaultReceiverDepartmentId { get; set; }
 

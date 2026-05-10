@@ -221,7 +221,14 @@ public class RequestService(
             var getDepartmentResult = await unitOfWork.Departments.GetAsync(x => x.Id == request.DepartmentId, i => i.Include(x => x.DepartmentHead));
             if (getDepartmentResult.IsError)
                 return getDepartmentResult.Errors;
-
+            var getTemplateResult = await unitOfWork.Templates.GetByIdAsync(request.TemplateId);
+            if (getTemplateResult.IsError)
+                return getTemplateResult.Errors;
+            if (getTemplateResult.Value!.IsRequireAttachments)
+            {
+                if (files == null || files.Count == 0)
+                    return ApplicationErrors.MissingRequiredField;
+            }
             var requestEntity = new Request
             {
                 TemplateId = request.TemplateId,
