@@ -39,6 +39,8 @@ public class JwtTokenService : ITokenService
         if (user?.SubSystemUser?.SubSystem != null)
             claims.Add(new Claim(ClaimTypes.System, user.SubSystemUser.SubSystem.ToString()!));
 
+        claims.Add(new Claim("IsDepartmentHead", user!.IsDepartmentHead.ToString()));
+
         // Guard against a null permissions list and skip null/empty permission entries.
         foreach (string permission in (permissions ?? Enumerable.Empty<string>()).Where(x => !string.IsNullOrEmpty(x)))
         {
