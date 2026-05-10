@@ -62,6 +62,11 @@ const SIDEBAR_HEADERS: Record<SidebarMode, {
 export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const logout = useAuthStore((state) => state.logout);
+    const handleLogout = () => {
+        logout();
+        // التوجيه لصفحة تسجيل الدخول بشكل نظيف لمسح أي معاملات redirect في الرابط
+        window.location.href = '/auth/login';
+    };
     const activeMode = useSidebarMode();
 
     const headerConfig = SIDEBAR_HEADERS[activeMode];
@@ -135,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
             <div className="p-1 border-t space-y-1">
                 <Button
                     variant="ghost"
-                    onClick={logout}
+                    onClick={handleLogout}
                     className={cn(
                         "w-full rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30",
                         isCollapsed ? "px-0 justify-center" : "justify-start px-3 gap-4"

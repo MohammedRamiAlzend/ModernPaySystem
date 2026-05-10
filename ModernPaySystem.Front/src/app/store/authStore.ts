@@ -8,6 +8,7 @@ export interface User {
   subsystem: string;
   permissions: string[];
   roles: string[];
+  isDepartmentHead: boolean;
 }
 
 interface AuthState {
@@ -38,6 +39,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     sessionStorage.removeItem('token');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('redirectAfterLogin');
+
     queryClient.clear(); // مسح الكاش تماماً عند تسجيل الخروج
     set({ user: null, token: null, isAuthenticated: false });
   },
@@ -60,7 +63,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const decoded = jwtDecode<{ exp: number }>(token);
       const currentTime = Date.now() / 1000;
-      
+
       if (decoded.exp < currentTime) {
         console.warn('Session expired based on token payload');
         logout();
