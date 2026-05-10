@@ -156,6 +156,8 @@ public class TemplateService : ITemplateService
                 ContentAsJson = template.ContentAsJson,
                 TemplateName = template.TemplateName,
                 TemplateDescription = template.TemplateDescription,
+                IsRequireAttachments = template.IsRequireAttachments,
+                DefaultReceiverDepartmentId = template.DefaultReceiverDepartmentId
             };
 
             var addResult = await _unitOfWork.Templates.AddAsync(templateEntity);

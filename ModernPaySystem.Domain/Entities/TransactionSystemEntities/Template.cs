@@ -5,6 +5,9 @@ public class Template : Entity<Guid>, IAuditableEntity
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
+    public required bool IsRequireAttachments { get; set; }
+    public Department DefaultReceiverDepartment { get; set; } = null!;
+    public Guid DefaultReceiverDepartmentId { get; set; }
 
     // Navigation properties
     public ICollection<Request> Requests { get; set; } = [];
@@ -55,6 +58,8 @@ public class CreateTemplateDto
     public string? TemplateDescription { get; set; }
     public Guid OwnerId { get; set; }
     public Guid? DepartmentId { get; set; }
+    public bool IsRequireAttachments { get; set; }
+    public Guid DefaultReceiverDepartmentId { get; set; }
 }
 
 public class UpdateTemplateDto
