@@ -28,7 +28,6 @@ public class Template : Entity<Guid>, IAuditableEntity
             ContentAsJson = this.ContentAsJson,
             TemplateName = this.TemplateName,
             TemplateDescription = this.TemplateDescription,
-            IsRequireAttachments = this.IsRequireAttachments,
             DefaultReceiverDepartmentId = this.DefaultReceiverDepartmentId,
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
@@ -47,8 +46,6 @@ public class TemplateDto
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public required Guid? DepartmentId { get; set; }
-    public bool IsRequireAttachments { get; set; }
-
     public string? TemplateDescription { get; set; }
     public bool IsRequireAttachments { get; set; }
     public Guid DefaultReceiverDepartmentId { get; set; }

@@ -446,7 +446,7 @@ public class DepartmentService(
             Code = department.Code,
             Description = department.Description,
             ParentDepartmentId = department.ParentDepartmentId,
-            DepartmentHeadId = department.DepartmentHeadId,
+            DepartmentHeadId = department.DepartmentHeadId.Value,
             DepartmentHeadName = department.DepartmentHead?.UserName,
             Level = department.Level,
             MaterializedPath = department.MaterializedPath,
