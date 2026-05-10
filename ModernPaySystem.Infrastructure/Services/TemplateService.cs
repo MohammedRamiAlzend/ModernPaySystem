@@ -223,6 +223,9 @@ public class TemplateService : ITemplateService
             existingTemplate.Value.ContentAsJson = template.ContentAsJson;
             existingTemplate.Value.TemplateName = template.TemplateName;
             existingTemplate.Value.TemplateDescription = template.TemplateDescription;
+            existingTemplate.Value.IsRequireAttachments = template.IsRequireAttachments;
+            existingTemplate.Value.DefaultReceiverDepartmentId = template.DefaultReceiverDepartmentId;
+
 
             await _unitOfWork.Templates.UpdateAsync(existingTemplate.Value);
             await _unitOfWork.SaveChangesAsync();

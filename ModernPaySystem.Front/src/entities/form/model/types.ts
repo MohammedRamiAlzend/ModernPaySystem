@@ -68,9 +68,12 @@ export interface FormSchema {
     id: string;
     title: string;
     description?: string;
+    isRequireAttachments?: boolean;
+    defaultReceiverDepartmentId?: string;
     fields: FormField[];
     logic?: LogicRule[];
 }
+
 
 // --- New Types for Backend ---
 
@@ -79,6 +82,8 @@ export interface CreateTemplateDto {
     templateName: string;
     templateDescription?: string | null;
     isExternal?: boolean;
+    isRequireAttachments?: boolean;
+    defaultReceiverDepartmentId?: string;
 }
 
 export interface Template {
@@ -86,6 +91,8 @@ export interface Template {
     contentAsJson: string;
     templateName: string;
     templateDescription: string | null;
+    isRequireAttachments: boolean;
+    defaultReceiverDepartmentId: string;
     createdByUserId: string | null;
     createdAt: string | null; // Date string
     updatedByUserId: string | null;
@@ -117,12 +124,12 @@ export interface CreateUserTemplateOwnershipDto {
 
 export interface CreateRequestDto {
     TemplateId: string;
-    RequesterId: string; // UUID
-    ApproverId?: string; // UUID
+    DepartmentId: string;
     ReadOnlyUsers?: string[]; // List of user IDs for CC/Read-only
     Content: string; // JSON content
     files?: File[]; // For multi-part file upload
 }
+
 
 /** Represents a file attachment from the API */
 export interface AttachmentDto {

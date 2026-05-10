@@ -9,14 +9,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
 import { DepartmentType, CreateDepartmentDto } from '@/entities/department/model/types';
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
+import { UserPicker } from '@/features/users/ui/UserPicker';
+
 
 const departmentFormSchema = z.object({
     name: z.string().min(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' }),
     code: z.string().optional(),
     description: z.string().optional(),
     parentDepartmentId: z.string().min(1, { message: 'يجب اختيار القسم الأب' }),
+    headedUserId: z.string().min(1, { message: 'يجب اختيار رئيس القسم' }),
     type: z.nativeEnum(DepartmentType),
 });
+
 
 type DepartmentFormValues = z.infer<typeof departmentFormSchema>;
 
@@ -42,7 +46,9 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
             code: initialData?.code || '',
             description: initialData?.description || '',
             parentDepartmentId: initialData?.parentDepartmentId || '',
+            headedUserId: initialData?.headedUserId || '',
             type: initialData?.type || DepartmentType.Office,
+
         },
     });
 
@@ -107,7 +113,28 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
 
                 <FormField
                     control={form.control}
+                    name="headedUserId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>رئيس القسم</FormLabel>
+                            <FormControl>
+                                <UserPicker
+                                    onUserSelect={field.onChange}
+                                    defaultValue={field.value}
+                                    label="اختر رئيس القسم"
+                                    className="!grid-cols-1"
+                                    showCurrentUser={true}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
                     name="parentDepartmentId"
+
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>القسم الأب</FormLabel>

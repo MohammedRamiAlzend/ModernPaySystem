@@ -1,36 +1,59 @@
-import { useRef, useState } from 'react';
-import { Shield, ImagePlus, FileText, X, Scan } from 'lucide-react';
+import { useRef, useState, useMemo } from 'react';
+import { Shield, ImagePlus, FileText, X, Scan, Building2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
-import { UserPicker } from '@/features/users/ui/UserPicker';
 import { SidebarSection } from '@/shared/ui/sidebar-section';
 import { cn } from '@/shared/lib/utils';
 import { ScannerModal } from '@/features/document-scanner';
 import type { ImageMeta } from '@/features/document-scanner';
+import { useDepartmentTree } from '@/features/department-management';
+import { SearchableSelect } from '@/shared/ui/searchable-select';
+
 
 interface RequestSubmissionSidebarProps {
-    approverId: string;
-    onApproverSelect: (id: string) => void;
+    departmentId: string;
+    onDepartmentSelect: (id: string) => void;
     readOnlyUsers: string[];
     onReadOnlyUsersChange: (ids: string[]) => void;
     files: File[];
     onFilesChange: (files: File[]) => void;
     showFiles?: boolean;
     className?: string;
-    approverLabel?: string;
+    departmentLabel?: string;
 }
 
+
 export const RequestSubmissionSidebar = ({
-    approverId,
-    onApproverSelect,
+    departmentId,
+    onDepartmentSelect,
     files,
     onFilesChange,
     showFiles = true,
     className,
-    approverLabel = "المرسل إليه"
+    departmentLabel = "القسم المستلم"
 }: RequestSubmissionSidebarProps) => {
+
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [scannedFiles, setScannedFiles] = useState<ImageMeta[]>([]);
+
+    const { data: departmentTree = [], isLoading: isDeptsLoading } = useDepartmentTree();
+
+    const departmentOptions = useMemo(() => {
+        const options: any[] = [];
+        const flatten = (nodes: any[]) => {
+            nodes.forEach(node => {
+                options.push({
+                    value: node.id,
+                    label: node.name,
+                    icon: <Building2 className="w-3.5 h-3.5 text-primary/60" />
+                });
+                if (node.children) flatten(node.children);
+            });
+        };
+        flatten(departmentTree);
+        return options;
+    }, [departmentTree]);
+
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -52,16 +75,17 @@ export const RequestSubmissionSidebar = ({
 
     return (
         <div className={cn("space-y-6 sticky top-8", className)}>
-            {/* Approver Selection (single) */}
-            <SidebarSection title={approverLabel} icon={Shield}>
-                <UserPicker
-                    onUserSelect={onApproverSelect}
-                    className="!grid-cols-1"
-                    label={approverLabel}
-                    defaultValue={approverId}
-                    showCurrentUser={false}
+            {/* Department Selection (single) */}
+            <SidebarSection title={departmentLabel} icon={Shield}>
+                <SearchableSelect
+                    options={departmentOptions}
+                    value={departmentId}
+                    onValueChange={onDepartmentSelect}
+                    placeholder="اختر القسم..."
+                    isLoading={isDeptsLoading}
                 />
             </SidebarSection>
+
 
             {/* ReadOnly (CC) Users Selection (multi) */}
             {/* تم تعليق حاليا حتى يتم اكمال المنطق البرمجي في باك ايند */}

@@ -74,7 +74,7 @@ public class DepartmentService(
     {
         try
         {
-            var result = await unitOfWork.Departments.GetByIdAsync(id);
+            var result = await unitOfWork.Departments.GetAsync(x => x.Id == id, i => i.Include(x => x.DepartmentHead).Include(x => x.Users).Include(x => x.ChildDepartments));
             if (result.IsError)
                 return result.Errors;
 
@@ -82,6 +82,7 @@ public class DepartmentService(
                 return null!;
 
             return MapToDto(result.Value);
+
         }
         catch (Exception ex)
         {
@@ -173,7 +174,7 @@ public class DepartmentService(
     {
         try
         {
-            var roots = await unitOfWork.Departments.GetRootDepartmentsAsync();
+            var roots = await unitOfWork.Departments.GetAllAsync(d => d.ParentDepartmentId == null, i => i.Include(x => x.DepartmentHead).Include(x => x.ChildDepartments));
             if (roots.IsError)
                 return roots.Errors;
 
@@ -184,6 +185,7 @@ public class DepartmentService(
                 await BuildTreeRecursive(root.Id, rootNode);
                 tree.Add(rootNode);
             }
+
 
             return tree;
         }
@@ -198,7 +200,7 @@ public class DepartmentService(
     {
         try
         {
-            var deptResult = await unitOfWork.Departments.GetByIdAsync(departmentId);
+            var deptResult = await unitOfWork.Departments.GetAsync(x => x.Id == departmentId, i => i.Include(x => x.DepartmentHead).Include(x => x.ChildDepartments));
             if (deptResult.IsError || deptResult.Value == null)
                 return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
 
@@ -206,6 +208,7 @@ public class DepartmentService(
             await BuildTreeRecursive(departmentId, rootNode);
 
             return new List<DepartmentTreeDto> { rootNode };
+
         }
         catch (Exception ex)
         {
@@ -256,9 +259,10 @@ public class DepartmentService(
     {
         try
         {
-            var allDepts = await unitOfWork.Departments.GetAllAsync();
+            var allDepts = await unitOfWork.Departments.GetAllAsync(null, i => i.Include(x => x.DepartmentHead).Include(x => x.Users).Include(x => x.ChildDepartments));
             if (allDepts.IsError)
                 return allDepts.Errors;
+
 
             var filtered = allDepts.Value!.AsEnumerable();
 
@@ -284,11 +288,12 @@ public class DepartmentService(
     {
         try
         {
-            var allDepts = await unitOfWork.Departments.GetAllAsync();
+            var allDepts = await unitOfWork.Departments.GetAllAsync(d => d.Level == level, i => i.Include(x => x.DepartmentHead).Include(x => x.Users).Include(x => x.ChildDepartments));
             if (allDepts.IsError)
                 return allDepts.Errors;
 
-            var filtered = allDepts.Value!.Where(d => d.Level == level).ToList();
+            var filtered = allDepts.Value!.ToList();
+
             return filtered.Select(MapToDto).ToList();
         }
         catch (Exception ex)
@@ -418,7 +423,7 @@ public class DepartmentService(
 
     private async Task BuildTreeRecursive(Guid parentId, DepartmentTreeDto parentNode)
     {
-        var children = await unitOfWork.Departments.GetChildrenAsync(parentId);
+        var children = await unitOfWork.Departments.GetAllAsync(d => d.ParentDepartmentId == parentId, i => i.Include(x => x.DepartmentHead).Include(x => x.ChildDepartments));
         if (children.IsError || children.Value == null || !children.Value.Any())
             return;
 
@@ -430,6 +435,7 @@ public class DepartmentService(
         }
     }
 
+
     private DepartmentDto MapToDto(Department department)
     {
         return new DepartmentDto
@@ -439,14 +445,17 @@ public class DepartmentService(
             Code = department.Code,
             Description = department.Description,
             ParentDepartmentId = department.ParentDepartmentId,
+            DepartmentHeadId = department.DepartmentHeadId,
+            DepartmentHeadName = department.DepartmentHead?.UserName,
             Level = department.Level,
             MaterializedPath = department.MaterializedPath,
             Type = department.Type,
-            ChildrenCount = 0,
+            ChildrenCount = department.ChildDepartments?.Count ?? 0,
             UsersCount = department.Users?.Count ?? 0,
             CreatedAt = department.CreatedAt
         };
     }
+
 
     private DepartmentTreeDto MapToTreeDto(Department department)
     {
@@ -455,11 +464,14 @@ public class DepartmentService(
             Id = department.Id,
             Name = department.Name,
             Code = department.Code,
+            DepartmentHeadName = department.DepartmentHead?.UserName,
             Level = department.Level,
             Type = department.Type,
+            ChildrenCount = department.ChildDepartments?.Count ?? 0,
             Children = new List<DepartmentTreeDto>()
         };
     }
+
 
     private static string GetShortId(Guid id)
     {

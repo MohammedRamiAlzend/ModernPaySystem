@@ -1,4 +1,4 @@
-﻿namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public class Template : Entity<Guid>, IAuditableEntity
 {
@@ -28,6 +28,8 @@ public class Template : Entity<Guid>, IAuditableEntity
             ContentAsJson = this.ContentAsJson,
             TemplateName = this.TemplateName,
             TemplateDescription = this.TemplateDescription,
+            IsRequireAttachments = this.IsRequireAttachments,
+            DefaultReceiverDepartmentId = this.DefaultReceiverDepartmentId,
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
@@ -43,6 +45,8 @@ public class TemplateDto
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
+    public bool IsRequireAttachments { get; set; }
+    public Guid DefaultReceiverDepartmentId { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -67,6 +71,8 @@ public class UpdateTemplateDto
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
+    public bool IsRequireAttachments { get; set; }
+    public Guid DefaultReceiverDepartmentId { get; set; }
 }
 
-#endregion
+#endregion

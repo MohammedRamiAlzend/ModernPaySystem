@@ -25,9 +25,10 @@ export const RequestPage = () => {
 
     // Get templateId directly from URL (Single source of truth to avoid infinite loops)
     const selectedTemplateId = searchParams.get('templateId') || '';
-    const [approverId, setApproverId] = useState<string>('');
+    const [departmentId, setDepartmentId] = useState<string>('');
     const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
+
     
     const currentUser = useAuthStore((state) => state.user);
 
@@ -35,6 +36,14 @@ export const RequestPage = () => {
         templates.find(t => t.id === selectedTemplateId),
         [templates, selectedTemplateId]
     );
+
+    // Set default department from template if available
+    useMemo(() => {
+        if (selectedTemplate?.defaultReceiverDepartmentId) {
+            setDepartmentId(selectedTemplate.defaultReceiverDepartmentId);
+        }
+    }, [selectedTemplate]);
+
 
     const submitMutation = useMutation({
         mutationFn: formEndpoints.createRequest,
@@ -61,23 +70,33 @@ export const RequestPage = () => {
     const handleSubmit = async (formData: any) => {
         if (!selectedTemplate || !currentUser) return;
 
-        if (!approverId) {
+        if (!departmentId) {
             showStatus({
                 type: 'warning',
                 title: 'تنبيه',
-                message: 'يرجى اختيار المرسل اليه أولاً'
+                message: 'يرجى اختيار القسم المستلم أولاً'
             });
             return;
         }
 
+        if (selectedTemplate.isRequireAttachments && files.length === 0) {
+            showStatus({
+                type: 'warning',
+                title: 'مرفقات مطلوبة',
+                message: 'هذا النموذج يتطلب إرفاق ملفات (مثل صورة الهوية أو طلب موقع) للمتابعة'
+            });
+            return;
+        }
+
+
         const payload: CreateRequestDto = {
             TemplateId: selectedTemplate.id,
-            RequesterId: currentUser.id,
-            ApproverId: approverId,
+            DepartmentId: departmentId,
             ReadOnlyUsers: readOnlyUsers,
             Content: JSON.stringify(formData),
             files: files
         };
+
 
         submitMutation.mutate(payload);
     };
@@ -118,15 +137,16 @@ export const RequestPage = () => {
                 </div>
 
                 <RequestSubmissionSidebar
-                    approverId={approverId}
-                    onApproverSelect={setApproverId}
+                    departmentId={departmentId}
+                    onDepartmentSelect={setDepartmentId}
                     readOnlyUsers={readOnlyUsers}
                     onReadOnlyUsersChange={setReadOnlyUsers}
                     files={files}
                     onFilesChange={setFiles}
                     showFiles={!!selectedTemplate}
-                    approverLabel="مستلم الطلب (المرسل إليه)"
+                    departmentLabel="القسم المستلم"
                 />
+
             </div>
 
             {/* Bottom Section: File Previews */}

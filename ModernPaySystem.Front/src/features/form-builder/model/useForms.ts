@@ -40,7 +40,10 @@ export const useForms = (showAll: boolean = false) => {
                     schema.id = t.id;
                     schema.title = t.templateName;
                     schema.description = t.templateDescription || '';
+                    schema.isRequireAttachments = t.isRequireAttachments;
+                    schema.defaultReceiverDepartmentId = t.defaultReceiverDepartmentId;
                     return schema;
+
                 } catch {
                     console.error('Failed to parse template content', t);
                     return null;
@@ -86,9 +89,12 @@ export const useSaveForm = () => {
             const dto: CreateTemplateDto = {
                 contentAsJson: JSON.stringify(form),
                 templateName: form.title,
-                templateDescription: form.description
+                templateDescription: form.description,
+                isRequireAttachments: form.isRequireAttachments,
+                defaultReceiverDepartmentId: form.defaultReceiverDepartmentId
             };
             return formEndpoints.createTemplate(dto);
+
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
@@ -108,9 +114,12 @@ export const useUpdateForm = () => {
             const dto: CreateTemplateDto = {
                 contentAsJson: JSON.stringify(form),
                 templateName: form.title,
-                templateDescription: form.description
+                templateDescription: form.description,
+                isRequireAttachments: form.isRequireAttachments,
+                defaultReceiverDepartmentId: form.defaultReceiverDepartmentId
             };
             return formEndpoints.updateTemplate(id, dto);
+
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.form.all });

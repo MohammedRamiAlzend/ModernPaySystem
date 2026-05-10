@@ -8,12 +8,20 @@ export const useFormEditor = (initialForm?: FormSchema) => {
         id: v4(),
         title: 'New Form',
         fields: [],
-        logic: []
+        logic: [],
+        isRequireAttachments: false,
+        defaultReceiverDepartmentId: ''
     });
+
 
     const updateFormTitle = (title: string) => {
         setForm(prev => ({ ...prev, title }));
     };
+
+    const updateFormSettings = (updates: Partial<Pick<FormSchema, 'isRequireAttachments' | 'defaultReceiverDepartmentId'>>) => {
+        setForm(prev => ({ ...prev, ...updates }));
+    };
+
 
     const addField = (type: FormField['type'], lookUpFieldId?: string, customLabel?: string) => {
         const newField: FormField = {
@@ -130,7 +138,9 @@ export const useFormEditor = (initialForm?: FormSchema) => {
         addLogicRule,
         updateLogicRule,
         deleteLogicRule,
+        updateFormSettings,
         saveForm,
+
         isLoading: isSavingNew || isUpdating
     };
 };
