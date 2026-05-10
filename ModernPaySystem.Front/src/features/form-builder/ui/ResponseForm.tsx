@@ -114,7 +114,8 @@ export const ResponseForm = ({
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between sticky top-0 bg-background/95 backdrop-blur z-10 py-1">
-                            <Label className="text-sm font-bold border-r-4 border-primary pr-2">نص الرد / القرار</Label>
+                            <Label className="text-sm font-bold border-r-4 border-primary pr-2">نص الرد / القرار <span className="text-destructive">*</span></Label>
+
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -195,7 +196,8 @@ export const ResponseForm = ({
                 <div className="p-5 border-t bg-muted/20 shrink-0">
                     <Button
                         onClick={onSubmit}
-                        disabled={!requestId || isPending || (submissionMode === 'referral' && !targetUserId)}
+                        disabled={!requestId || isPending || !comment.trim() || (submissionMode === 'referral' && !targetUserId)}
+
                         className="w-full h-12 text-md font-black shadow-xl shadow-primary/10 rounded-xl transition-all hover:scale-[1.01] active:scale-95"
                     >
                         {isPending ? 'جاري الإرسال...' : submissionMode === 'submit' ? 'إرسال الرد النهائي' : 'تأكيد الإحالة'}
