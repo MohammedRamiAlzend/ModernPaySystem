@@ -211,18 +211,22 @@ public class RequestService(
             if (request == null)
                 return ApplicationErrors.InvalidInput;
 
-            if (request.TemplateId == Guid.Empty || request.ApproverId == Guid.Empty)
+            if (request.TemplateId == Guid.Empty || request.DepartmentId == Guid.Empty)
                 return ApplicationErrors.InvalidInput;
             var usersResult = await unitOfWork.Users.GetAllAsync(x => request.ReadOnlyUsers.Contains(x.Id));
             if (usersResult.IsError)
                 return usersResult.Errors;
 
             logger.LogInformation("Creating new request for requester: {RequesterId}", httpContextServiceManager.GetCurrentUserId());
+            var getDepartmentResult = await unitOfWork.Departments.GetAsync(x => x.Id == request.DepartmentId, i => i.Include(x => x.DepartmentHead));
+            if (getDepartmentResult.IsError)
+                return getDepartmentResult.Errors;
+
             var requestEntity = new Request
             {
                 TemplateId = request.TemplateId,
                 RequesterId = httpContextServiceManager.GetCurrentUserId(),
-                ApproverId = request.ApproverId,
+                ApproverId = getDepartmentResult.Value!.DepartmentHeadId,
                 ContentAsJson = request.Content,
                 ReadOnlyUsers = usersResult.Value
             };

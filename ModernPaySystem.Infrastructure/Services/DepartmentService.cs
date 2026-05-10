@@ -48,6 +48,7 @@ public class DepartmentService(
                 Level = level,
                 MaterializedPath = materializedPath,
                 Type = dto.Type,
+                DepartmentHeadId = dto.HeadedUserId,
                 CreatedByUserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -122,6 +123,7 @@ public class DepartmentService(
             department.Description = dto.Description ?? department.Description;
             department.ParentDepartmentId = dto.ParentDepartmentId;
             department.Type = dto.Type ?? department.Type;
+            department.DepartmentHeadId = dto.HeadedUserId ?? department.DepartmentHeadId;
             department.UpdatedByUserId = userId;
             department.UpdatedAt = DateTime.UtcNow;
 

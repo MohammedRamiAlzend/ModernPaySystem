@@ -1,4 +1,5 @@
 using ModernPaySystem.Domain.Entities.SharedEntities;
+using Microsoft.EntityFrameworkCore;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 
@@ -90,6 +91,27 @@ public class DepartmentSeeder : EntitySeederBase<Department>
             doumaMunicipality,
             technicalOffice
         );
+
+        await context.SaveChangesAsync();
+
+        // Assign unique department heads
+        var departments = new[] { syria, rifDimashq, ghouta, doumaMunicipality, technicalOffice };
+        var availableUsers = await context.Users
+            .Where(u => !u.IsDepartmentHead)
+            .OrderBy(u => u.UserName)
+            .ToListAsync<User>();
+
+        int userIndex = 0;
+        foreach (var dept in departments)
+        {
+            if (userIndex >= availableUsers.Count)
+                break; // Not enough users, skip assignment
+            var user = availableUsers[userIndex++];
+            dept.DepartmentHeadId = user.Id;
+            dept.DepartmentHead = user;
+            user.IsDepartmentHead = true;
+            user.HeadedDepartmentId = dept.Id;
+        }
 
         await context.SaveChangesAsync();
     }

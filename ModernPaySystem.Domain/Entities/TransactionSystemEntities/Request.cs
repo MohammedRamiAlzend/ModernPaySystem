@@ -116,7 +116,7 @@ public class RequestDto
 public class CreateRequestDto
 {
     public required Guid TemplateId { get; set; }
-    public required Guid ApproverId { get; set; }
+    public required Guid DepartmentId { get; set; }
     public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
     public required string Content { get; set; }
     public List<IFormFile>? Files { get; set; } = [];

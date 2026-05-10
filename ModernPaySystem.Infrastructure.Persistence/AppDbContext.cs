@@ -236,6 +236,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(d => d.ParentDepartmentId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Department>()
+            .HasOne(d => d.DepartmentHead)
+            .WithOne(u => u.HeadedDepartment)
+            .HasForeignKey<Department>(d => d.DepartmentHeadId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Department-User relationship
         modelBuilder.Entity<User>()
             .HasOne(u => u.Department)

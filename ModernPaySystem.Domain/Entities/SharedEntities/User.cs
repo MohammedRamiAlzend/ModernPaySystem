@@ -16,7 +16,8 @@ public class User : Entity<Guid>, IAuditableEntity
 
     // Whether this user represents a department head
     public bool IsDepartmentHead { get; set; }
-
+    public Guid? HeadedDepartmentId { get; set; }
+    public Department HeadedDepartment { get; set; } = null!;
     public ICollection<Request> RequestsAsRequester { get; set; } = new List<Request>();
     public ICollection<Request> RequestsAsApprover { get; set; } = new List<Request>();
     public ICollection<Request>? MentionedRequests { get; set; } = new List<Request>();
