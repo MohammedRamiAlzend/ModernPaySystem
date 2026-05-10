@@ -1,4 +1,4 @@
-namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
+namespace ModernPaySystem.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
