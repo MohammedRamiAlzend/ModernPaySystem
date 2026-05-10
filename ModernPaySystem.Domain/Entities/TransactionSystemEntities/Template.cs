@@ -79,4 +79,4 @@ public class UpdateTemplateDto
     public Guid DefaultReceiverDepartmentId { get; set; }
 }
 
-#endregion
+#endregion
