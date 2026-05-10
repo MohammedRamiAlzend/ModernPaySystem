@@ -240,6 +240,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne(d => d.DepartmentHead)
             .WithOne(u => u.HeadedDepartment)
             .HasForeignKey<Department>(d => d.DepartmentHeadId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Department-User relationship

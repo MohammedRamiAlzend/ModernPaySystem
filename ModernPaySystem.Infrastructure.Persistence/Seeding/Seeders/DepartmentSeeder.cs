@@ -8,7 +8,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 /// </summary>
 public class DepartmentSeeder : EntitySeederBase<Department>
 {
-    public override int Order => 5; // Seed after roles and permissions, before users
+    public override int Order => 3; // Seed after roles and permissions, before users
 
     public override async Task SeedAsync(AppDbContext context, SeedingConfiguration configuration)
     {
@@ -94,25 +94,8 @@ public class DepartmentSeeder : EntitySeederBase<Department>
 
         await context.SaveChangesAsync();
 
-        // Assign unique department heads
-        var departments = new[] { syria, rifDimashq, ghouta, doumaMunicipality, technicalOffice };
-        var availableUsers = await context.Users
-            .Where(u => !u.IsDepartmentHead)
-            .OrderBy(u => u.UserName)
-            .ToListAsync<User>();
-
-        int userIndex = 0;
-        foreach (var dept in departments)
-        {
-            if (userIndex >= availableUsers.Count)
-                break; // Not enough users, skip assignment
-            var user = availableUsers[userIndex++];
-            dept.DepartmentHeadId = user.Id;
-            dept.DepartmentHead = user;
-            user.IsDepartmentHead = true;
-            user.HeadedDepartmentId = dept.Id;
-        }
-
-        await context.SaveChangesAsync();
+        // Do NOT assign department heads here. Department heads must be assigned after users are seeded.
+        // This is handled in a post-seeding step or by a separate process.
+        // If you want to automate this, implement a post-user-seeding update elsewhere.
     }
 }

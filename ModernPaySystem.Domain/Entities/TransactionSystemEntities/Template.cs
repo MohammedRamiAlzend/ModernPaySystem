@@ -32,6 +32,8 @@ public class Template : Entity<Guid>, IAuditableEntity
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
             UpdatedAt = this.UpdatedAt,
+            DepartmentId = this.DefaultReceiverDepartmentId,
+            IsRequireAttachments = this.IsRequireAttachments
         };
     }
 }
@@ -42,13 +44,15 @@ public class TemplateDto
     public Guid Id { get; set; }
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
+    public required Guid? DepartmentId { get; set; }
+    public bool IsRequireAttachments { get; set; }
+
     public string? TemplateDescription { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public Guid OwnerId { get; set; }
-    public Guid? DepartmentId { get; set; }
 }
 
 public class CreateTemplateDto
@@ -57,7 +61,7 @@ public class CreateTemplateDto
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
     public Guid OwnerId { get; set; }
-    public Guid? DepartmentId { get; set; }
+    public required Guid? DepartmentId { get; set; }
     public bool IsRequireAttachments { get; set; }
     public Guid DefaultReceiverDepartmentId { get; set; }
 }

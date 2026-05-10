@@ -221,6 +221,11 @@ public class RequestService(
             var getDepartmentResult = await unitOfWork.Departments.GetAsync(x => x.Id == request.DepartmentId, i => i.Include(x => x.DepartmentHead));
             if (getDepartmentResult.IsError)
                 return getDepartmentResult.Errors;
+
+            // Add null check for DepartmentHeadId
+            if (getDepartmentResult.Value?.DepartmentHeadId == null)
+                return ApplicationErrors.DepartmentHeadIsNotSet;
+
             var getTemplateResult = await unitOfWork.Templates.GetByIdAsync(request.TemplateId);
             if (getTemplateResult.IsError)
                 return getTemplateResult.Errors;
@@ -233,7 +238,7 @@ public class RequestService(
             {
                 TemplateId = request.TemplateId,
                 RequesterId = httpContextServiceManager.GetCurrentUserId(),
-                ApproverId = getDepartmentResult.Value!.DepartmentHeadId,
+                ApproverId = getDepartmentResult.Value!.DepartmentHeadId.Value,
                 ContentAsJson = request.Content,
                 ReadOnlyUsers = usersResult.Value
             };

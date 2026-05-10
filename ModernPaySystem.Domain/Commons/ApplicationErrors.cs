@@ -85,6 +85,7 @@ public static class ApplicationErrors
     public static readonly Error ResponseAlreadyHasTransaction = new("906", "Response Already Has Transaction", ErrorKind.NotFound, "يوجد احالة مسبقا");
     public static readonly Error RequestTransactionNotFound = new("907", "The specified request transaction was not found.", ErrorKind.NotFound, "لم يتم العثور على معاملة الطلب المحددة.");
     public static readonly Error RequestAlreadyHasTransaction = new("908", "Request Already Has Transaction", ErrorKind.NotFound, "يوجد طلب احالة مسبقا");
+    public static readonly Error DepartmentHeadIsNotSet = new("909", "DepartmentHeadIsNotSet", ErrorKind.Validation, "DepartmentHeadIsNotSet.");
 
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");

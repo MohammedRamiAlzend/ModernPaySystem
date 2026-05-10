@@ -123,7 +123,8 @@ public class DepartmentService(
             department.Description = dto.Description ?? department.Description;
             department.ParentDepartmentId = dto.ParentDepartmentId;
             department.Type = dto.Type ?? department.Type;
-            department.DepartmentHeadId = dto.HeadedUserId ?? department.DepartmentHeadId;
+            if (dto.HeadedUserId.HasValue)
+                department.DepartmentHeadId = dto.HeadedUserId.Value;
             department.UpdatedByUserId = userId;
             department.UpdatedAt = DateTime.UtcNow;
 

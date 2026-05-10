@@ -12,8 +12,8 @@ public class Department : Entity<Guid>, IAuditableEntity
     public Guid? ParentDepartmentId { get; set; }
     public Department? ParentDepartment { get; set; }
 
-    public Guid DepartmentHeadId { get; set; }
-    public User DepartmentHead { get; set; } = null!;
+    public Guid? DepartmentHeadId { get; set; }
+    public User? DepartmentHead { get; set; }
 
     public int Level { get; set; }
     public string? MaterializedPath { get; set; }
