@@ -27,6 +27,7 @@ export const useLogin = () => {
                 subsystem: decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/system"] || '',
                 permissions: decoded.permission || [],
                 roles: roles,
+                isDepartmentHead: decoded.IsDepartmentHead === 'True',
             };
 
             loginSuccessState(user, token);

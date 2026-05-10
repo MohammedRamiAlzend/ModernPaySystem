@@ -82,8 +82,7 @@ export const formEndpoints = {
     createRequest: async (data: CreateRequestDto): Promise<{ data: TemplateRequest }> => {
         const formData = new FormData();
         formData.append('TemplateId', data.TemplateId);
-        formData.append('RequesterId', data.RequesterId);
-        if (data.ApproverId) formData.append('ApproverId', data.ApproverId);
+        formData.append('DepartmentId', data.DepartmentId);
         formData.append('Content', data.Content);
         
         if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
@@ -94,7 +93,7 @@ export const formEndpoints = {
 
         if (data.files && data.files.length > 0) {
             data.files.forEach((file) => {
-                formData.append('files', file);
+                formData.append('Files', file);
             });
         }
 
@@ -105,6 +104,7 @@ export const formEndpoints = {
         });
         return response.data;
     },
+
 
     getRequests: async (): Promise<{ data: TemplateRequest[] }> => {
         const response = await api.get('/Requests');

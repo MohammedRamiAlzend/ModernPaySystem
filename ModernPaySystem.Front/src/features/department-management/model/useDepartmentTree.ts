@@ -54,8 +54,11 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
     const traverse = (node: DepartmentTree, parentId?: string) => {
         const nodeId = node.id.replace(/-/g, '_');
         const safeName = node.name.replace(/[[](){}]/g, '');
+        const headInfo = node.departmentHeadName ? `\\n👤 ${node.departmentHeadName}` : '';
+        const countInfo = node.children && node.children.length > 0 ? `\\n📂 (${node.children.length})` : '';
         
-        mermaidText += `    ${nodeId}["${safeName}"]\n`;
+        mermaidText += `    ${nodeId}["${safeName}${headInfo}${countInfo}"]\n`;
+
         
         if (parentId) {
             const safeParentId = parentId.replace(/-/g, '_');

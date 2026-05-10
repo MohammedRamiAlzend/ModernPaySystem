@@ -4,6 +4,7 @@ export interface DecodedToken {
     "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/system": string;
     permission: string[];
     role: string | string[];
+    IsDepartmentHead?: string;
     exp: number;
     iss?: string;
     aud?: string;

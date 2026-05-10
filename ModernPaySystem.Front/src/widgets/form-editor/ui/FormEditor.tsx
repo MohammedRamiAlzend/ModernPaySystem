@@ -1,17 +1,22 @@
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef, useMemo } from 'react';
 import { useFormEditor } from '@/features/form-builder/model/use-form-editor';
 import type { FormSchema } from '@/entities/form/model/types';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { Card } from '@/shared/ui/card';
-import { ChevronDown, Settings2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/shared/ui/card';
+import { ChevronDown, Settings2, Building2, Building as BuildingIcon, Trash2, Plus, GitBranch, GitPullRequest, Layers, RefreshCw, UserPlus, Users as UsersIcon, FileStack } from 'lucide-react';
+import { Switch } from '@/shared/ui/switch';
+import { Label } from '@/shared/ui/label';
+import { SearchableSelect } from '@/shared/ui/searchable-select';
 import { PropertiesPanel } from './PropertiesPanel';
 import { LogicEditor } from './LogicEditor';
 import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import gsap from 'gsap';
 import { useLookUpFields } from '@/features/lookup-management/api/lookupApi';
+import { useDepartmentTree } from '@/features/department-management';
 import { cn } from '@/shared/lib/utils';
+
 
 interface FormEditorProps {
     initialForm?: FormSchema;
@@ -31,8 +36,29 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
         updateLogicRule,
         deleteLogicRule,
         saveForm,
-        isLoading
+        isLoading,
+        updateFormSettings
     } = useFormEditor(initialForm);
+
+    const { data: departmentTree = [], isLoading: isDeptsLoading } = useDepartmentTree();
+
+    // Flatten tree for select options
+    const departmentOptions = useMemo(() => {
+        const options: any[] = [];
+        const flatten = (nodes: any[]) => {
+            nodes.forEach(node => {
+                options.push({
+                    value: node.id,
+                    label: node.name,
+                    icon: <Building2 className="w-3.5 h-3.5 text-primary/60" />
+                });
+                if (node.children) flatten(node.children);
+            });
+        };
+        flatten(departmentTree);
+        return options;
+    }, [departmentTree]);
+
 
     const { data: lookupFields = [], isLoading: isLoadingLookups } = useLookUpFields();
 
@@ -146,6 +172,37 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                     <Button variant="ghost" onClick={onCancel}>إلغاء</Button>
                 </div>
             </div>
+
+            {/* Global Settings Section */}
+            <Card className="p-4 border-primary/10 bg-primary/5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div className="flex items-center space-x-2 space-x-reverse">
+                        <Switch
+                            id="require-attachments"
+                            checked={form.isRequireAttachments}
+                            onCheckedChange={(checked) => updateFormSettings({ isRequireAttachments: checked })}
+                        />
+                        <Label htmlFor="require-attachments" className="font-semibold cursor-pointer">
+                            المرفقات إجبارية لهذا النموذج
+                        </Label>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                            <Building2 className="w-3 h-3" />
+                            القسم المستلم الافتراضي
+                        </Label>
+                        <SearchableSelect
+                            options={departmentOptions}
+                            value={form.defaultReceiverDepartmentId || ''}
+                            onValueChange={(val) => updateFormSettings({ defaultReceiverDepartmentId: val })}
+                            placeholder="اختر القسم الذي سيستلم الطلبات تلقائياً..."
+                            isLoading={isDeptsLoading}
+                        />
+                    </div>
+                </div>
+            </Card>
+
 
             {/* Navigation Tabs */}
             <div className="flex space-x-4 space-x-reverse border-b">

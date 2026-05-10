@@ -14,6 +14,8 @@ export interface Department {
     description?: string;
     parentDepartmentId?: string;
     parentDepartmentName?: string;
+    departmentHeadId?: string;
+    departmentHeadName?: string;
     level: number;
     materializedPath?: string;
     type: DepartmentType;
@@ -26,6 +28,7 @@ export interface DepartmentTree {
     id: string;
     name: string;
     code?: string;
+    departmentHeadName?: string;
     level: number;
     type: DepartmentType;
     children: DepartmentTree[];
@@ -36,6 +39,7 @@ export interface CreateDepartmentDto {
     code?: string;
     description?: string;
     parentDepartmentId?: string;
+    headedUserId: string;
     type: DepartmentType;
 }
 
@@ -44,5 +48,7 @@ export interface UpdateDepartmentDto {
     code?: string;
     description?: string;
     parentDepartmentId?: string;
+    headedUserId?: string;
     type?: DepartmentType;
 }
+
