@@ -33,6 +33,9 @@ public class UserSeeder : EntitySeederBase<User>
         // Assign roles to users
         await AssignRolesToUsers(context, users, roles);
 
+        // Ensure user "1" is SuperAdmin
+        await EnsureSuperAdminRole(context, users, roles);
+
         // Enroll users in subsystems
         await EnrollUsersInSubsystems(context, users);
     }
@@ -42,12 +45,49 @@ public class UserSeeder : EntitySeederBase<User>
     /// </summary>
     private List<User> GenerateUsers(int count, List<Role> roles)
     {
-        var faker = new Faker<User>()
-            .RuleFor(u => u.Id, f => Guid.NewGuid())
-            .RuleFor(u => u.UserName, f => f.Internet.UserName())
-            .RuleFor(u => u.HashedPassword, f => _passwordHasher.HashPassword("123456"));
+        var users = new List<User>();
+        int transactionUserCount = count / 2;
+        int diwanUserCount = count - transactionUserCount;
 
-        return faker.Generate(count);
+        // TransactionSystem users: username/password = "1", "2", ...
+        for (int i = 1; i <= transactionUserCount; i++)
+        {
+            users.Add(new User
+            {
+                Id = Guid.NewGuid(),
+                UserName = i.ToString(),
+                HashedPassword = _passwordHasher.HashPassword(i.ToString()),
+                Roles = new List<Role>()
+            });
+        }
+
+        // Diwan users: username/password = "11", "22", ...
+        for (int i = 1; i <= diwanUserCount; i++)
+        {
+            string val = (i * 11).ToString();
+            users.Add(new User
+            {
+                Id = Guid.NewGuid(),
+                UserName = val,
+                HashedPassword = _passwordHasher.HashPassword(val),
+                Roles = new List<Role>()
+            });
+        }
+
+        return users;
+    }
+
+    // Ensure SuperAdmin role is assigned to user "1"
+    private async Task EnsureSuperAdminRole(AppDbContext context, List<User> users, List<Role> roles)
+    {
+        var superAdminRole = roles.FirstOrDefault(r => r.Name == "SuperAdmin");
+        if (superAdminRole == null) return;
+        var user1 = users.FirstOrDefault(u => u.UserName == "1");
+        if (user1 != null && !user1.Roles.Any(r => r.Name == "SuperAdmin"))
+        {
+            user1.Roles.Add(superAdminRole);
+            await context.SaveChangesAsync();
+        }
     }
 
     /// <summary>
@@ -81,24 +121,22 @@ public class UserSeeder : EntitySeederBase<User>
     /// </summary>
     private async Task EnrollUsersInSubsystems(AppDbContext context, List<User> users)
     {
-        var random = new Random();
         var subsystemUsers = new List<SubSystemUser>();
+        int transactionUserCount = users.Count / 2;
 
-        foreach (var user in users)
+        for (int i = 0; i < users.Count; i++)
         {
-            // For each user, assign them to one subsystem
-            // In this example, we'll randomly assign each user to one of the available subsystems
-            // You could modify this logic to assign users to specific subsystems based on your business rules
-
-            var availableSubsystems = Enum.GetValues(typeof(SubSystem)).Cast<SubSystem>().ToList();
-
-            // Randomly pick one subsystem for this user (since it's a one-to-one relationship)
-            var selectedSubsystem = availableSubsystems[random.Next(availableSubsystems.Count)];
+            var user = users[i];
+            SubSystem subSystem;
+            if (i < transactionUserCount)
+                subSystem = SubSystem.TransactionSystem;
+            else
+                subSystem = SubSystem.Diwan;
 
             var subsystemUser = new SubSystemUser
             {
                 Id = Guid.NewGuid(),
-                SubSystem = selectedSubsystem,
+                SubSystem = subSystem,
                 UserId = user.Id
             };
 
