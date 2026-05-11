@@ -58,6 +58,17 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
     const { data: templates } = useTemplates();
     const navItems = useMemo(() => {
         return NAVIGATION_ITEMS.map(item => {
+            let children = item.children || [];
+            // تعطيل مؤقت لشرط
+            // تصفية العناصر بناءً على صلاحية رئيس القسم
+            console.log('user', user);
+            if (!user?.isDepartmentHead) {
+                children = children.filter(child =>
+                    child.title !== "الرد على الطلبات" &&
+                    child.title !== "الردود الواردة"
+                );
+            }
+
             if (item.title === "منصة خدمات ريف دمشق") {
                 const templateChildren = templates
                     ?.filter(t => !t.isExternal && !t.templateName.toLowerCase().includes("delphi"))
@@ -76,13 +87,17 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                             icon: <FileText className="h-4 w-4 text-primary" />,
                             children: templateChildren
                         },
-                        ...(item.children || [])
+                        ...children
                     ]
                 };
             }
-            return item;
+
+            return {
+                ...item,
+                children
+            };
         });
-    }, [templates]);
+    }, [templates, user?.isDepartmentHead]);
 
     // AUTO-EXPAND Logic: Synchronize state with URL during render
     const fullPath = location.pathname + location.search;
@@ -90,7 +105,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
 
     if (prevPath !== fullPath) {
         setPrevPath(fullPath);
-        
+
         let hasChanges = false;
         const newExpanded = { ...expandedItems };
 
@@ -196,7 +211,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                                             <div key={child.path} className="flex flex-col">
                                                                 {hasGrandChildren ? (
                                                                     <>
-                                                                        <button 
+                                                                        <button
                                                                             onClick={(e) => {
                                                                                 e.preventDefault();
                                                                                 e.stopPropagation();
@@ -211,17 +226,17 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                                                             <span className="flex-1 text-right">{child.title}</span>
                                                                             <ChevronDown className={cn("h-3 w-3 opacity-50 transition-transform", isChildExpanded ? "rotate-0" : "-rotate-90")} />
                                                                         </button>
-                                                                        
+
                                                                         {isChildExpanded && (
                                                                             <div className="flex flex-col mt-0.5 mr-3 border-r border-border/30 pr-1 animate-in slide-in-from-top-1 duration-200">
                                                                                 {child.children!.map(grand => (
-                                                                                    <Link 
-                                                                                        key={grand.path} 
-                                                                                        to={grand.path} 
+                                                                                    <Link
+                                                                                        key={grand.path}
+                                                                                        to={grand.path}
                                                                                         className={cn(
                                                                                             "text-[10px] font-bold px-3 py-1.5 rounded hover:bg-primary/5 transition-all flex items-center gap-2",
-                                                                                            (location.pathname + location.search) === grand.path 
-                                                                                                ? "text-primary bg-primary/5" 
+                                                                                            (location.pathname + location.search) === grand.path
+                                                                                                ? "text-primary bg-primary/5"
                                                                                                 : "text-muted-foreground hover:text-primary"
                                                                                         )}
                                                                                     >
@@ -233,8 +248,8 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                                                         )}
                                                                     </>
                                                                 ) : (
-                                                                    <Link 
-                                                                        to={child.path} 
+                                                                    <Link
+                                                                        to={child.path}
                                                                         className={cn(
                                                                             "flex items-center gap-2 px-3 py-2 rounded-md text-[11px] transition-all",
                                                                             location.pathname === child.path
