@@ -91,11 +91,13 @@ export const useSaveForm = () => {
                 templateName: form.title,
                 templateDescription: form.description,
                 isRequireAttachments: form.isRequireAttachments,
-                defaultReceiverDepartmentId: form.defaultReceiverDepartmentId
+                defaultReceiverDepartmentId: form.defaultReceiverDepartmentId,
+                departmentId: form.defaultReceiverDepartmentId // Default owner department to receiver department if needed, or just leave undefined
             };
             return formEndpoints.createTemplate(dto);
 
         },
+
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.template.all });

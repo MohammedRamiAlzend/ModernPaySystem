@@ -84,7 +84,10 @@ export interface CreateTemplateDto {
     isExternal?: boolean;
     isRequireAttachments?: boolean;
     defaultReceiverDepartmentId?: string;
+    ownerId?: string;
+    departmentId?: string;
 }
+
 
 export interface Template {
     id: string;

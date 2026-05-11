@@ -61,11 +61,12 @@ public class CreateTemplateDto
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
-    public Guid OwnerId { get; set; }
-    public required Guid? DepartmentId { get; set; }
+    public Guid? OwnerId { get; set; }
+    public Guid? DepartmentId { get; set; }
     public bool IsRequireAttachments { get; set; }
     public Guid DefaultReceiverDepartmentId { get; set; }
 }
+
 
 public class UpdateTemplateDto
 {
