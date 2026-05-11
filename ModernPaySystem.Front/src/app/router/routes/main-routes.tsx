@@ -1,29 +1,21 @@
 import { Suspense } from 'react';
-import { type RouteObject, Outlet, Navigate } from 'react-router-dom';
+import { type RouteObject, Outlet } from 'react-router-dom';
 import { ErrorBoundary } from '@/shared/ui/common/error-boundary';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { RoutePermissions } from '../route-permissions';
-import { useAuthStore } from '@/app/store/authStore';
 import { MainLayout } from '../../layouts/main-layout';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { ErrorPage } from '@/pages/error-page';
 import { formBuilderRoutes } from './form-builder-routes';
+import { RootRedirect } from './components/RootRedirect';
 
 const ContractsPage = lazyWithPreload(() => import('@/pages/contracts-page'));
 const ContractFormPage = lazyWithPreload(() => import('@/pages/contract-form-page'));
 const ProcessFormPage = lazyWithPreload(() => import('@/pages/process-form-page'));
 const SettingsPage = lazyWithPreload(() => import('@/pages/settings/settings-page'));
 
-// Helper component for conditional root redirection
-const RootRedirect = () => {
-  const user = useAuthStore((state) => state.user);
-  const targetPath = user?.isDepartmentHead 
-    ? "/form-builder/responses" 
-    : "/form-builder/referrals/pending";
-  
-  return <Navigate to={targetPath} replace />;
-};
+
 
 export const mainRoutes: RouteObject = {
   path: '/',

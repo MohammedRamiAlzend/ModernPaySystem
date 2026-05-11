@@ -97,7 +97,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                 children
             };
         });
-    }, [templates, user?.isDepartmentHead]);
+    }, [templates, user]);
 
     // AUTO-EXPAND Logic: Synchronize state with URL during render
     const fullPath = location.pathname + location.search;

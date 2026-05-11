@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
@@ -38,7 +38,7 @@ export const RequestPage = () => {
     );
 
     // Set default department from template if available
-    useMemo(() => {
+    useEffect(() => {
         if (selectedTemplate?.defaultReceiverDepartmentId) {
             setDepartmentId(selectedTemplate.defaultReceiverDepartmentId);
         }
