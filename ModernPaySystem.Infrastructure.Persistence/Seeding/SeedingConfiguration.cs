@@ -97,7 +97,7 @@ public class SeedingQuantities
             // Production uses minimal data
             RoleCount = 3;
             PermissionCount = 10;
-            UserCount = 5;
+            UserCount = 10;
             SubSystemCount = 1;
             TemplateCount = 2;
             RequestCount = 5;

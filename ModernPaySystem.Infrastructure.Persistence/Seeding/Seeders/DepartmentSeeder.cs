@@ -8,7 +8,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 /// </summary>
 public class DepartmentSeeder : EntitySeederBase<Department>
 {
-    public override int Order => 3; // Seed after roles and permissions, before users
+    public override int Order => 4; // Seed after users so department heads can be assigned
 
     public override async Task SeedAsync(AppDbContext context, SeedingConfiguration configuration)
     {
@@ -92,10 +92,31 @@ public class DepartmentSeeder : EntitySeederBase<Department>
             technicalOffice
         );
 
-        await context.SaveChangesAsync();
+        var departments = new[] { syria, rifDimashq, ghouta, doumaMunicipality, technicalOffice };
+        var transactionUsers = await context.Users
+            .Include(u => u.SubSystemUser)
+            .Where(u => u.SubSystemUser != null && u.SubSystemUser.SubSystem == SubSystem.TransactionSystem)
+            .ToListAsync();
 
-        // Do NOT assign department heads here. Department heads must be assigned after users are seeded.
-        // This is handled in a post-seeding step or by a separate process.
-        // If you want to automate this, implement a post-user-seeding update elsewhere.
+        var orderedTransactionUsers = transactionUsers
+            .OrderBy(u => int.TryParse(u.UserName, out var numericUserName) ? numericUserName : int.MaxValue)
+            .ThenBy(u => u.UserName)
+            .ToList();
+
+        if (orderedTransactionUsers.Count < departments.Length)
+            throw new InvalidOperationException("Not enough transaction users exist to seed department heads.");
+
+        for (int i = 0; i < departments.Length; i++)
+        {
+            var department = departments[i];
+            var headUser = orderedTransactionUsers[i];
+
+            department.DepartmentHeadId = headUser.Id;
+            headUser.IsDepartmentHead = true;
+            headUser.HeadedDepartmentId = department.Id;
+            headUser.DepartmentId = department.Id;
+        }
+
+        await context.SaveChangesAsync();
     }
 }

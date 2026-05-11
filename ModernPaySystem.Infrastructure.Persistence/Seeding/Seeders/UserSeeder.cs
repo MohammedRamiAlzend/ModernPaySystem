@@ -18,7 +18,7 @@ public class UserSeeder : EntitySeederBase<User>
         _passwordHasher = passwordHasher;
     }
 
-    public override int Order => 4;
+    public override int Order => 3;
 
     public override async Task SeedAsync(AppDbContext context, SeedingConfiguration configuration)
     {

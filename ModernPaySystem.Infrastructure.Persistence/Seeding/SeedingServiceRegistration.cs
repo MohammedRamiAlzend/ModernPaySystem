@@ -39,5 +39,6 @@ public static class SeedingServiceRegistration
         services.AddScoped<IEntitySeeder, RoleSeeder>();
         services.AddScoped<IEntitySeeder, UserSeeder>();
         services.AddScoped<IEntitySeeder, DepartmentSeeder>();
+        services.AddScoped<IEntitySeeder, DepartmentUserLinkSeeder>();
     }
 }
