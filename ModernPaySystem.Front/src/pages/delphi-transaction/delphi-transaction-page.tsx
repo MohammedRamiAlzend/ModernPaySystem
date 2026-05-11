@@ -18,7 +18,7 @@ export const DelphiTransactionPage = () => {
     const showStatus = useUIStore(state => state.showStatus);
     const { user } = useAuthStore();
     const [rawInput, setRawInput] = useState("");
-    const [approverId, setApproverId] = useState<string>("");
+    const [receiverDepartmentId, setReceiverDepartmentId] = useState<string>("");
     const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
 
@@ -50,11 +50,11 @@ export const DelphiTransactionPage = () => {
     const handleSubmit = async (formData: Record<string, any>) => {
         if (!template?.id || !user?.id) return;
 
-        if (!approverId) {
+        if (!receiverDepartmentId) {
             showStatus({
                 type: 'warning',
                 title: 'تنبيه',
-                message: 'يرجى اختيار المرسل إليه أولاً'
+                message: 'يرجى اختيار القسم المستلم أولاً'
             });
             return;
         }
@@ -62,8 +62,7 @@ export const DelphiTransactionPage = () => {
         try {
             const payload: CreateRequestDto = {
                 TemplateId: template.id,
-                RequesterId: user.id,
-                ApproverId: approverId,
+                DepartmentId: receiverDepartmentId,
                 ReadOnlyUsers: readOnlyUsers,
                 Content: JSON.stringify(formData),
                 files: files
@@ -131,8 +130,8 @@ export const DelphiTransactionPage = () => {
                 />
 
                 <RequestSubmissionSidebar
-                    approverId={approverId}
-                    onApproverSelect={setApproverId}
+                    departmentId={receiverDepartmentId}
+                    onDepartmentSelect={setReceiverDepartmentId}
                     readOnlyUsers={readOnlyUsers}
                     onReadOnlyUsersChange={setReadOnlyUsers}
                     files={files}
