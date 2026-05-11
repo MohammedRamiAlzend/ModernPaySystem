@@ -9,7 +9,7 @@ import {
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2 } from 'lucide-react';
+import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/constants/query-keys';
@@ -40,7 +40,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
     const { showConfirm, showStatus } = useUIStore();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const { createDepartment, deleteDepartment, isLoading: isActionLoading } = useDepartmentActions();
+    const { createDepartment, deleteDepartment, assignDepartmentHead, isLoading: isActionLoading } = useDepartmentActions();
 
     // Fetch all departments for selection
     const { data: allDepartments, isLoading: isAllLoading } = useQuery({
@@ -90,6 +90,13 @@ export const DepartmentDashboardWidget: React.FC = () => {
     const { data: deptUsers, isLoading: isUsersLoading } = useQuery({
         queryKey: ['department-users', selectedDeptForUsers],
         queryFn: () => selectedDeptForUsers ? departmentApi.getUsers(selectedDeptForUsers) : [],
+        enabled: !!selectedDeptForUsers
+    });
+
+    // Fetch department details to know the current head
+    const { data: currentDepartment } = useQuery({
+        queryKey: ['department', selectedDeptForUsers],
+        queryFn: () => selectedDeptForUsers ? departmentApi.getById(selectedDeptForUsers) : null,
         enabled: !!selectedDeptForUsers
     });
 
@@ -371,10 +378,43 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <RefreshCw className="w-3 h-3" />
-                                                                ملف المستخدم
-                                                            </Button>
+                                                            <div className="flex items-center gap-2">
+                                                                <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <RefreshCw className="w-3 h-3" />
+                                                                    ملف المستخدم
+                                                                </Button>
+
+                                                            {currentDepartment?.departmentHeadId === user.id ? (
+                                                                <div className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded text-[10px] font-bold">
+                                                                    <Crown className="w-3 h-3" />
+                                                                    رئيس القسم
+                                                                </div>
+                                                            ) : (
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="sm" 
+                                                                    className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-amber-500 hover:bg-amber-500/10"
+                                                                    onClick={() => {
+                                                                        showConfirm({
+                                                                            title: 'تعيين رئيس قسم',
+                                                                            message: `هل أنت متأكد من تعيين "${user.userName}" رئيساً لقسم "${selectedDeptName}"؟`,
+                                                                            variant: 'warning',
+                                                                            confirmLabel: 'تعيين كرئيس',
+                                                                            onConfirm: async () => {
+                                                                                await assignDepartmentHead({
+                                                                                    departmentId: selectedDeptForUsers!,
+                                                                                    userId: user.id
+                                                                                });
+                                                                                queryClient.invalidateQueries({ queryKey: ['department', selectedDeptForUsers] });
+                                                                            }
+                                                                        });
+                                                                    }}
+                                                                >
+                                                                    <Crown className="w-3 h-3" />
+                                                                    تعيين كرئيس
+                                                                </Button>
+                                                            )}
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>

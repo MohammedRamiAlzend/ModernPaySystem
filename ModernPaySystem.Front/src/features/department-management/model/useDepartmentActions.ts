@@ -111,11 +111,37 @@ export const useDepartmentActions = () => {
         }
     });
 
+    const assignHeadMutation = useMutation({
+        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) => 
+            departmentActionsApi.assignHead(departmentId, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.department.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+            showStatus({
+                type: 'success',
+                title: 'تم تعيين المدير',
+                message: 'تم تعيين مدير القسم بنجاح'
+            });
+        },
+        onError: (error: any) => {
+            showStatus({
+                type: 'error',
+                title: 'خطأ في تعيين المدير',
+                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير القسم'
+            });
+        }
+    });
+
     return {
         createDepartment: createMutation.mutateAsync,
         updateDepartment: updateMutation.mutateAsync,
         deleteDepartment: deleteMutation.mutateAsync,
         assignUserToDepartment: assignUserMutation.mutateAsync,
-        isLoading: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || assignUserMutation.isPending
+        assignDepartmentHead: assignHeadMutation.mutateAsync,
+        isLoading: createMutation.isPending || 
+                  updateMutation.isPending || 
+                  deleteMutation.isPending || 
+                  assignUserMutation.isPending ||
+                  assignHeadMutation.isPending
     };
 };

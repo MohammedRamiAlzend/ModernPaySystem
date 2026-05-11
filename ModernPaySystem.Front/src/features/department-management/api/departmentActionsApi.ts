@@ -25,5 +25,10 @@ export const departmentActionsApi = {
     removeUser: async (departmentId: string, userId: string) => {
         const response = await api.delete<{ data: any }>(`/Departments/${departmentId}/remove-user/${userId}`);
         return response.data.data;
+    },
+
+    assignHead: async (departmentId: string, userId: string) => {
+        const response = await api.post<{ data: any }>(`/Departments/${departmentId}/assign-head`, { userId });
+        return response.data.data;
     }
 };
