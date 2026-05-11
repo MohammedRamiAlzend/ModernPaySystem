@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useForms } from '@/features/form-builder/model/useForms';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
@@ -37,12 +37,14 @@ export const RequestPage = () => {
         [templates, selectedTemplateId]
     );
 
-    // Set default department from template if available
-    useEffect(() => {
-        if (selectedTemplate?.defaultReceiverDepartmentId) {
+    // Sync departmentId when template changes (Avoiding useEffect to prevent cascading renders as per best practices)
+    const [prevTemplateId, setPrevTemplateId] = useState<string | null>(null);
+    if (selectedTemplate && selectedTemplate.id !== prevTemplateId) {
+        setPrevTemplateId(selectedTemplate.id);
+        if (selectedTemplate.defaultReceiverDepartmentId) {
             setDepartmentId(selectedTemplate.defaultReceiverDepartmentId);
         }
-    }, [selectedTemplate]);
+    }
 
 
     const submitMutation = useMutation({
