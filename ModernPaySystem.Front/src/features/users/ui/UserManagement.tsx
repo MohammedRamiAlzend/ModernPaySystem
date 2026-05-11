@@ -11,7 +11,8 @@ import {
     Users,
     Filter,
     Shield,
-    Building2
+    Building2,
+    Crown
 } from 'lucide-react';
 import {
     Dialog,
@@ -29,6 +30,7 @@ import {
 } from '@/shared/ui/select';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
+import { cn } from '@/shared/lib/utils';
 import { APP_CONFIG } from '@/shared/config/appConfig';
 import { AssignDepartmentDialog } from './AssignDepartmentDialog';
 import { useDepartments } from '@/entities/department/model/useDepartments';
@@ -36,16 +38,19 @@ import { SearchableSelect } from '@/shared/ui/searchable-select';
 import { UserForm, UserFormValues } from './UserForm';
 import { DepartmentMermaidTree } from '@/features/department-management/ui/DepartmentMermaidTree';
 import { useDepartmentTree } from '@/features/department-management/model/useDepartmentTree';
+import { useDepartmentActions } from '@/features/department-management/model/useDepartmentActions';
 import { UserTemplatesDialog } from './UserTemplatesDialog';
 
 export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
+    const { assignDepartmentHead } = useDepartmentActions();
     const currentUserSubsystem = useAuthStore((state) => state.user?.subsystem);
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('all');
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [assigningUser, setAssigningUser] = useState<User | null>(null);
+    const [isAssigningAsHead, setIsAssigningAsHead] = useState(false);
     const [managingTemplatesUser, setManagingTemplatesUser] = useState<User | null>(null);
 
     const { data: usersData = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
@@ -206,7 +211,15 @@ export const UserManagement = () => {
                                         <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
                                             <TableCell className="text-right font-mono text-muted-foreground">{index + 1}</TableCell>
                                             <TableCell className="text-right">
-                                                <span className="font-bold">{user.userName}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold">{user.userName}</span>
+                                                    {user.isDepartmentHead && (
+                                                        <div className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded text-[10px] font-bold border border-amber-500/20">
+                                                            <Crown className="w-2.5 h-2.5" />
+                                                            رئيس قسم
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 {user.departmentName ? (
@@ -245,6 +258,47 @@ export const UserManagement = () => {
                                                         onClick={() => setAssigningUser(user)}
                                                     >
                                                         <Building2 className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className={cn(
+                                                            "h-8 w-8 rounded-lg transition-colors",
+                                                            user.isDepartmentHead 
+                                                                ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20" 
+                                                                : "hover:bg-amber-500/10 hover:text-amber-500"
+                                                        )}
+                                                        title={user.isDepartmentHead ? "مدير القسم حالياً" : "تعيين كمدير للقسم"}
+                                                        disabled={user.isDepartmentHead}
+                                                        onClick={() => {
+                                                            if (user.departmentId) {
+                                                                showConfirm({
+                                                                    title: 'تأكيد تعيين مدير',
+                                                                    message: `هل أنت متأكد من تعيين "${user.userName}" مديراً لقسم "${user.departmentName}"؟`,
+                                                                    variant: 'warning',
+                                                                    confirmLabel: 'تعيين كمدير',
+                                                                    onConfirm: async () => {
+                                                                        await assignDepartmentHead({
+                                                                            departmentId: user.departmentId!,
+                                                                            userId: user.id
+                                                                        });
+                                                                    }
+                                                                });
+                                                            } else {
+                                                                showConfirm({
+                                                                    title: 'تعيين مدير قسم',
+                                                                    message: `المستخدم "${user.userName}" غير معين لأي قسم حالياً. يجب تعيينه لقسم أولاً ثم تعيينه مديراً له. هل تود المتابعة لاختيار القسم؟`,
+                                                                    variant: 'primary',
+                                                                    confirmLabel: 'اختيار القسم والمتابعة',
+                                                                    onConfirm: () => {
+                                                                        setIsAssigningAsHead(true);
+                                                                        setAssigningUser(user);
+                                                                    }
+                                                                });
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Crown className="w-4 h-4" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
@@ -318,10 +372,15 @@ export const UserManagement = () => {
 
             <AssignDepartmentDialog
                 isOpen={!!assigningUser}
-                onClose={() => setAssigningUser(null)}
+                onClose={() => {
+                    setAssigningUser(null);
+                    setIsAssigningAsHead(false);
+                }}
                 userId={assigningUser?.id || ''}
                 userName={assigningUser?.userName || ''}
-                initialDepartmentId={assigningUser?.departmentId || ''}
+                initialDepartmentId={assigningUser?.departmentId || undefined}
+                isDepartmentHead={assigningUser?.isDepartmentHead}
+                assignAsHead={isAssigningAsHead}
             />
 
             <UserTemplatesDialog

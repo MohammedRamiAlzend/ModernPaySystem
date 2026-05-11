@@ -15,6 +15,7 @@ import {
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { Building2, Loader2 } from 'lucide-react';
+import { useUIStore } from '@/app/store/uiStore';
 
 interface AssignDepartmentDialogProps {
     isOpen: boolean;
@@ -22,6 +23,8 @@ interface AssignDepartmentDialogProps {
     userId: string;
     userName: string;
     initialDepartmentId?: string;
+    isDepartmentHead?: boolean;
+    assignAsHead?: boolean;
 }
 
 export const AssignDepartmentDialog: React.FC<AssignDepartmentDialogProps> = ({
@@ -29,10 +32,17 @@ export const AssignDepartmentDialog: React.FC<AssignDepartmentDialogProps> = ({
     onClose,
     userId,
     userName,
-    initialDepartmentId
+    initialDepartmentId,
+    isDepartmentHead = false,
+    assignAsHead = false
 }) => {
     const [selectedDepartmentId, setSelectedDepartmentId] = React.useState<string>(initialDepartmentId || '');
-    const { assignUserToDepartment, isLoading } = useDepartmentActions();
+    const { assignUserToDepartment, assignDepartmentHead, isLoading: isAssigningUser } = useDepartmentActions();
+    const { showStatus } = useUIStore();
+    
+    // We need to track total loading state correctly since we might do two calls
+    const [isProcessing, setIsProcessing] = React.useState(false);
+    const isLoading = isAssigningUser || isProcessing;
 
     // Reset selection when dialog opens with new user - sync during render
     const [prevInitialId, setPrevInitialId] = React.useState(initialDepartmentId);
@@ -68,15 +78,38 @@ export const AssignDepartmentDialog: React.FC<AssignDepartmentDialogProps> = ({
 
     const handleAssign = async () => {
         if (!selectedDepartmentId) return;
+
+        // Validation: Cannot move a department head to another department
+        if (isDepartmentHead && initialDepartmentId && selectedDepartmentId !== initialDepartmentId) {
+            showStatus({
+                type: 'error',
+                title: 'تنبيه',
+                message: 'لا يمكن نقل المستخدم إلى قسم آخر لأنه رئيس القسم الحالي. يجب تعيين رئيس جديد للقسم أولاً أو إزالته من رئاسة القسم قبل نقله.'
+            });
+            return;
+        }
         
+        setIsProcessing(true);
         try {
+            // 1. Assign to department
             await assignUserToDepartment({ 
                 departmentId: selectedDepartmentId, 
                 userId 
             });
+
+            // 2. If assignAsHead is true, assign as department head
+            if (assignAsHead) {
+                await assignDepartmentHead({
+                    departmentId: selectedDepartmentId,
+                    userId
+                });
+            }
+
             onClose();
         } catch {
             // Error handled in hook
+        } finally {
+            setIsProcessing(false);
         }
     };
 
