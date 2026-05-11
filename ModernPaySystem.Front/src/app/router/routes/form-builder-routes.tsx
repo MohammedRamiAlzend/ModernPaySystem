@@ -113,7 +113,7 @@ export const formBuilderRoutes: RouteObject = {
         </Suspense>
       ),
       handle: {
-        crumb: () => 'الردود الواردة',
+        crumb: () => 'الطلبات التي تم الرد عليها',
         permission: RoutePermissions.AUTHENTICATED,
         preload: () => MyResponsesPage.preload(),
       },

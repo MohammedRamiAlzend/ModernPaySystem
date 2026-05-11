@@ -66,7 +66,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                 children = children.filter(child =>
                     child.title !== "الرد على الطلبات" &&
                     child.title !== "الردود الصادرة"
-                    // child.title !== "الردود الواردة" &&
+                    // child.title !== "الطلبات التي تم الرد عليها" &&
                 );
             }
 

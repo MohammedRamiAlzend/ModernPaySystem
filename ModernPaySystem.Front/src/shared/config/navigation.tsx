@@ -49,7 +49,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             },
 
             {
-                title: "الردود الواردة",
+                title: "الطلبات التي تم الرد عليها",
                 path: "/form-builder/my-responses",
                 icon: <FileCheck className="h-4 w-4" />,
             },
