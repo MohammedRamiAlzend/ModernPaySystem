@@ -24,7 +24,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: x => x.Include(x => x.Request).ThenInclude(r => r!.RequestAttachments),
+                transform: x => x.Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.ByRespondedByUserId(currentUserId) });
 
             if (pagedResponses.IsError)
@@ -51,7 +51,7 @@ public class ResponseService(
             var response = await unitOfWork.Responses.GetAsync(
                 filter: r => r.Id == id,
                 transform: x => x.Include(x => x.Request)
-                                 .ThenInclude(r => r!.RequestAttachments)
+                                 .ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
                                  .Include(x => x.ResponseAttachments),
                 additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanReadByUserId(currentUserId) });
 
@@ -84,7 +84,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments),
+                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: ResponseExpressions.ByRequestIdWithIncludes(requestId));
 
             if (pagedResponses.IsError)
@@ -114,7 +114,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments),
+                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: ResponseExpressions.ByRespondedByUserIdWithIncludes(responderId));
 
             if (pagedResponses.IsError)
@@ -143,7 +143,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.Request).ThenInclude(r => r!.RequestAttachments),
+                transform: i => i.Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: ResponseExpressions.ByRequesterIdWithIncludes(requesterId));
 
             if (pagedResponses.IsError)
@@ -244,7 +244,7 @@ public class ResponseService(
 
             var existingResponse = await unitOfWork.Responses.GetAsync(
                 filter: r => r.Id == id,
-                transform: x => x.Include(x => x.ResponseAttachments),
+                transform: x => x.Include(x => x.ResponseAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanMakeUpdateByUserId(currentUserId) });
 
             if (existingResponse.IsError)

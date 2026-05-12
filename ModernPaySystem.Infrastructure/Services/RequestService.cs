@@ -75,7 +75,7 @@ public class RequestService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize);
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, transform: i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template));
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
 
@@ -99,7 +99,7 @@ public class RequestService(
 
             var request = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == id,
-                transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments),
@@ -134,7 +134,8 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments),
+                transform: i => i.Include(r => r.RequestAttachments)
+                                .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: RequestExpressions.ByRequesterIdWithIncludes(requesterId));
 
             if (pagedRequests.IsError)
@@ -164,7 +165,7 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments),
+                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.ByApproverId(approverId) });
 
             if (pagedRequests.IsError)
@@ -194,7 +195,7 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments),
+                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: RequestExpressions.ByTemplateIdWithIncludes(templateId));
 
             if (pagedRequests.IsError)
@@ -388,7 +389,7 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!,
+                transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!.Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId(), hasResponse),
                 logicalOperator: ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or);
 
