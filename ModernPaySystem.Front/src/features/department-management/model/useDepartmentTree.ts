@@ -37,7 +37,7 @@ export const useDepartmentTree = (rootId?: string, mode: 'full' | 'subtree' | 'c
 
 export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, isDark: boolean = false) => {
     let mermaidText = 'graph TD\n';
-    
+
     // Define styles based on theme
     if (isDark) {
         mermaidText += '    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#f3f4f6;\n';
@@ -54,12 +54,13 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
     const traverse = (node: DepartmentTree, parentId?: string) => {
         const nodeId = node.id.replace(/-/g, '_');
         const safeName = node.name.replace(/[[](){}]/g, '');
-        const headInfo = node.departmentHeadName ? `\\n👤 ${node.departmentHeadName}` : '';
-        const countInfo = node.children && node.children.length > 0 ? `\\n📂 (${node.children.length})` : '';
-        
+        const headInfo = node.departmentHeadName ? `\\n ${node.departmentHeadName}` : '';
+        // const countInfo = node.children && node.children.length > 0 ? `\\n (${node.children.length})` : '';
+        const countInfo = '';
+
         mermaidText += `    ${nodeId}["${safeName}${headInfo}${countInfo}"]\n`;
 
-        
+
         if (parentId) {
             const safeParentId = parentId.replace(/-/g, '_');
             mermaidText += `    ${safeParentId} --> ${nodeId}\n`;
