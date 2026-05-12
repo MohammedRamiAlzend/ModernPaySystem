@@ -22,7 +22,7 @@ public class RequestService(
             logger.LogInformation("Fetching all requests");
             var requests = await unitOfWork.Requests.GetAllAsync(
                 null,
-                x => x.Include(x => x.Template)
+                x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
                      .Include(x => x.Approver)
                      .Include(x => x.Requester)
                      .Include(x => x.RequestAttachments));
@@ -99,7 +99,7 @@ public class RequestService(
 
             var request = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == id,
-                transform: x => x.Include(x => x.Template)
+                transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments),
@@ -242,12 +242,26 @@ public class RequestService(
             }
             var requestEntity = new Request
             {
-                TemplateId = request.TemplateId,
+                Id = Guid.NewGuid(),
                 RequesterId = httpContextServiceManager.GetCurrentUserId(),
                 ApproverId = getDepartmentResult.Value!.DepartmentHeadId.Value,
-                ContentAsJson = request.Content,
-                ReadOnlyUsers = usersResult.Value
+                ReadOnlyUsers = usersResult.Value,
             };
+
+            var newRequestTemplateValues = new RequestTemplateValues
+            {
+                Id = Guid.NewGuid(),
+                TemplateId = request.TemplateId,
+                RequestId = requestEntity.Id,
+                InputValues = request.Content.Select(iv => new InputValue { Key = iv.Key, Value = iv.Value }).ToList()
+            };
+
+            // link the template values to the request entity
+            requestEntity.RequestTemplateValuesId = newRequestTemplateValues.Id;
+
+            var addRequestTemplateValuesResult = await unitOfWork.RequestTemplateValues.AddAsync(newRequestTemplateValues);
+            if (addRequestTemplateValuesResult.IsError)
+                return addRequestTemplateValuesResult.Errors;
 
             var addResult = await unitOfWork.Requests.AddAsync(requestEntity);
             if (addResult.IsError)
@@ -345,7 +359,7 @@ public class RequestService(
 
             var updatedRequest = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == requestId,
-                transform: x => x.Include(x => x.Template)
+                transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments));
@@ -413,7 +427,7 @@ public class RequestService(
                 page,
                 pageSize,
                 expression,
-                i => i.Include(x => x.Template)
+                i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
                       .Include(x => x.Approver)
                       .Include(x => x.Requester)
                       .Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);

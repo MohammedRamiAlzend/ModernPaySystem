@@ -11,10 +11,12 @@ public enum RequestStatus
     Managed = 3,
 }
 
+
 public class Request : Entity<Guid>, IAuditableEntity
 {
-    public required Guid TemplateId { get; set; }
-    public Template? Template { get; set; }
+    public Guid RequestTemplateValuesId { get; set; }
+    public RequestTemplateValues? RequestTemplateValues { get; set; }
+
 
     public required Guid RequesterId { get; set; }
     public User? Requester { get; set; }
@@ -32,8 +34,6 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public Guid? CurrentTransactionId { get; set; }
     public RequestTransaction? CurrentTransaction { get; set; }
-
-    public required string ContentAsJson { get; set; }
 
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = [];
     public required ICollection<User>? ReadOnlyUsers { get; set; } = [];
@@ -69,13 +69,17 @@ public class Request : Entity<Guid>, IAuditableEntity
         return new RequestDto
         {
             Id = this.Id,
-            TemplateId = this.TemplateId,
+            TemplateId = this.RequestTemplateValues?.TemplateId ?? throw new Exception("RequestTemplateValues is null"),
             RequesterId = this.RequesterId,
             ApproverId = this.ApproverId,
-            Content = this.ContentAsJson,
+            Content = this.RequestTemplateValues?.InputValues.Select(iv => new InputValueDto
+            {
+                Key = iv.Key,
+                Value = iv.Value
+            }).ToList() ?? throw new InvalidOperationException("RequestTemplateValues is null"),
             Status = this.Status,
             RequestAttachmentDtos = [.. this.RequestAttachments.Select(ra => ra.ToDto())],
-            Template = this.Template?.ToDto(),
+            Template = this.RequestTemplateValues?.Template?.ToDto(),
             Requester = this.Requester?.ToDto(),
             Approver = this.Approver?.ToDto(),
             CreatedByUserId = this.CreatedByUserId,
@@ -100,7 +104,7 @@ public class RequestDto
     public Guid? FirstTransactionId { get; set; }
     public Guid? CurrentTransactionId { get; set; }
     public RequestStatus Status { get; set; }
-    public required string Content { get; set; }
+    public required ICollection<InputValueDto> Content { get; set; } = [];
     public List<RequestAttachmentDto> RequestAttachmentDtos { get; set; } = [];
     public TemplateDto? Template { get; set; }
     public UserDto? Requester { get; set; }
@@ -118,6 +122,6 @@ public class CreateRequestDto
     public required Guid TemplateId { get; set; }
     public required Guid DepartmentId { get; set; }
     public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
-    public required string Content { get; set; }
+    public required List<InputValueDto> Content { get; set; } = [];
     public List<IFormFile>? Files { get; set; } = [];
 }

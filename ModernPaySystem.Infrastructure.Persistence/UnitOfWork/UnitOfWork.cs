@@ -31,6 +31,7 @@ public class UnitOfWork(
     private IRepositoryBase<Attachment, Guid>? _attachments;
     private IRepositoryBase<Template, Guid>? _templates;
     private IRepositoryBase<Request, Guid>? _requests;
+    private IRepositoryBase<RequestTemplateValues, Guid>? _requestTemplateValues;
     private IRepositoryBase<Response, Guid>? _responses;
     private IRepositoryBase<TemplateDepartmentOwnership, Guid>? _templateOwnerships;
     private IRepositoryBase<UserTemplateOwnership, Guid>? _userTemplateOwnerships;
@@ -62,6 +63,8 @@ public class UnitOfWork(
 
     public IRepositoryBase<Request, Guid> Requests =>
         _requests ??= new RepositoryBase<Request, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Request, Guid>>(), _httpContextServiceManager);
+    public IRepositoryBase<RequestTemplateValues, Guid> RequestTemplateValues =>
+        _requestTemplateValues ??= new RepositoryBase<RequestTemplateValues, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<RequestTemplateValues, Guid>>(), _httpContextServiceManager);
 
     public IRepositoryBase<Response, Guid> Responses =>
         _responses ??= new RepositoryBase<Response, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Response, Guid>>(), _httpContextServiceManager);

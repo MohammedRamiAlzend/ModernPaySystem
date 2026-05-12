@@ -43,17 +43,28 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<RequestAttachment>()
             .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
 
+        //modelBuilder.Entity<Request>()
+        //    .HasOne(r => r.Template)
+        //    .WithMany(t => t.Requests)
+        //    .HasForeignKey(r => r.TemplateId)
+        //    .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<Request>()
-            .HasOne(r => r.Template)
-            .WithMany(t => t.Requests)
-            .HasForeignKey(r => r.TemplateId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasOne(r => r.RequestTemplateValues)
+            .WithOne(rt => rt.Request)
+            .HasForeignKey<RequestTemplateValues>(rt => rt.RequestId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Request>()
             .HasOne(r => r.Requester)
             .WithMany(u => u.RequestsAsRequester)
             .HasForeignKey(r => r.RequesterId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<RequestTemplateValues>().HasMany(rt => rt.InputValues)
+            .WithOne(iv => iv.RequestTemplateValues)
+            .HasForeignKey(iv => iv.RequestTemplateValuesId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Request>()
             .HasOne(r => r.Approver)

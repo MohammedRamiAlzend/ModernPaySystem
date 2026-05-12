@@ -14,7 +14,7 @@ public static class RequestExpressions
         r => r.ApproverId == approverId;
 
     public static Expression<Func<Request, bool>> ByTemplateId(Guid templateId) =>
-        r => r.TemplateId == templateId;
+        r => r.RequestTemplateValues!.TemplateId == templateId;
 
     public static Expression<Func<Request, bool>> HasResponse() =>
         r => r.ResponseId.HasValue;
