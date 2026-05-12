@@ -16,6 +16,7 @@ import gsap from 'gsap';
 import { useLookUpFields } from '@/features/lookup-management/api/lookupApi';
 import { useDepartmentTree } from '@/features/department-management';
 import { cn } from '@/shared/lib/utils';
+import { useUIStore } from '@/app/store/uiStore';
 
 
 interface FormEditorProps {
@@ -130,7 +131,19 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
         });
     }, [form.fields, activeTab, mode]); // Triggered when fields order/content changes or tab/mode switches
 
+    const showStatus = useUIStore(state => state.showStatus);
+
     const handleSave = async () => {
+        const department = form.defaultReceiverDepartmentId || '';
+        if (department === '0' || department === '') {
+            showStatus({
+                type: 'error',
+                title: 'خطأ',
+                message: 'يرجى اختيار القسم المستلم الافتراضي قبل الحفظ.'
+            });
+            return;
+        }
+
         const success = await saveForm();
         if (success && onSave) {
             onSave();
@@ -190,7 +203,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({ initialForm, onSave, onC
                     <div className="space-y-2">
                         <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                             <Building2 className="w-3 h-3" />
-                            القسم المستلم الافتراضي
+                            القسم المستلم الافتراضي <span className="text-red-500 ml-1">*</span>
                         </Label>
                         <SearchableSelect
                             options={departmentOptions}
