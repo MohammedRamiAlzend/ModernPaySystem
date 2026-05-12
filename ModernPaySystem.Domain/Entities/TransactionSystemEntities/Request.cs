@@ -85,7 +85,7 @@ public class Request : Entity<Guid>, IAuditableEntity
             ResponseId = this.ResponseId,
             FirstTransactionId = this.FirstTransactionId,
             CurrentTransactionId = this.CurrentTransactionId,
-            ReadOnlyUsers = [.. this.ReadOnlyUsers.Select(u => u.Id)]
+            ReadOnlyUsers = [.. this.ReadOnlyUsers!.Select(u => u.Id)]
         };
     }
 }

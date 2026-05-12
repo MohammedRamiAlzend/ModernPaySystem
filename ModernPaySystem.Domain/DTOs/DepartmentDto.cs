@@ -9,7 +9,7 @@ public class CreateDepartmentDto
     public string? Code { get; set; }
     public string? Description { get; set; }
     public Guid? ParentDepartmentId { get; set; }
-    public Guid? HeadedUserId { get; set; }
+    public Guid HeadedUserId { get; set; }
     public DepartmentType Type { get; set; }
 }
 

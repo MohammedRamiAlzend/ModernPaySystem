@@ -42,7 +42,7 @@ public class DepartmentService(
                 materializedPath = GetShortId(Guid.NewGuid());
             }
 
-            var userResult = await unitOfWork.Users.GetAsync(x => x.Id == dto.HeadedUserId.Value, i => i.Include(x => x.HeadedDepartment));
+            var userResult = await unitOfWork.Users.GetAsync(x => x.Id == dto.HeadedUserId!.Value, i => i.Include(x => x.HeadedDepartment));
             if (userResult.IsError)
                 return userResult.Errors;
             if (userResult.Value!.HeadedDepartmentId.HasValue)
