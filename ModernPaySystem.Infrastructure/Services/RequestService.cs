@@ -23,6 +23,7 @@ public class RequestService(
             var requests = await unitOfWork.Requests.GetAllAsync(
                 null,
                 x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                        .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
                      .Include(x => x.Approver)
                      .Include(x => x.Requester)
                      .Include(x => x.RequestAttachments));
@@ -75,7 +76,10 @@ public class RequestService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, transform: i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template));
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, transform: i =>
+            i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+            );
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
 
@@ -100,6 +104,7 @@ public class RequestService(
             var request = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == id,
                 transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments),
@@ -135,6 +140,7 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(r => r.RequestAttachments)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
                                 .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: RequestExpressions.ByRequesterIdWithIncludes(requesterId));
 
@@ -165,7 +171,9 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                transform: i => i.Include(r => r.RequestAttachments)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.ByApproverId(approverId) });
 
             if (pagedRequests.IsError)
@@ -195,7 +203,7 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues),
                 additionalFilters: RequestExpressions.ByTemplateIdWithIncludes(templateId));
 
             if (pagedRequests.IsError)
@@ -361,6 +369,7 @@ public class RequestService(
             var updatedRequest = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == requestId,
                 transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments));
@@ -389,7 +398,8 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!.Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!.Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues),
                 additionalFilters: RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId(), hasResponse),
                 logicalOperator: ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or);
 
@@ -429,6 +439,8 @@ public class RequestService(
                 pageSize,
                 expression,
                 i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+
                       .Include(x => x.Approver)
                       .Include(x => x.Requester)
                       .Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);

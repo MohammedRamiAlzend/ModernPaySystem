@@ -24,8 +24,10 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: x => x.Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
-                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.ByRespondedByUserId(currentUserId) });
+                transform: x => x
+                .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                additionalFilters: [ResponseExpressions.ByRespondedByUserId(currentUserId)]);
 
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;
@@ -50,10 +52,11 @@ public class ResponseService(
 
             var response = await unitOfWork.Responses.GetAsync(
                 filter: r => r.Id == id,
-                transform: x => x.Include(x => x.Request)
-                                 .ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                 .Include(x => x.ResponseAttachments),
-                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanReadByUserId(currentUserId) });
+                transform: x => x
+                .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                .Include(x => x.ResponseAttachments),
+                additionalFilters: [ResponseExpressions.CanReadByUserId(currentUserId)]);
 
             if (response.IsError)
                 return response.Errors;
@@ -84,7 +87,10 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                transform: i =>
+                i.Include(r => r.ResponseAttachments)
+                .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues),
                 additionalFilters: ResponseExpressions.ByRequestIdWithIncludes(requestId));
 
             if (pagedResponses.IsError)
@@ -114,7 +120,9 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.ResponseAttachments).Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                transform: i => i.Include(r => r.ResponseAttachments)
+                .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues),
                 additionalFilters: ResponseExpressions.ByRespondedByUserIdWithIncludes(responderId));
 
             if (pagedResponses.IsError)
@@ -143,7 +151,10 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                transform: i => i.Include(r => r.Request).ThenInclude(r => r!.RequestAttachments)
+                .Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                .Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                ,
                 additionalFilters: ResponseExpressions.ByRequesterIdWithIncludes(requesterId));
 
             if (pagedResponses.IsError)
@@ -244,8 +255,10 @@ public class ResponseService(
 
             var existingResponse = await unitOfWork.Responses.GetAsync(
                 filter: r => r.Id == id,
-                transform: x => x.Include(x => x.ResponseAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
-                additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanMakeUpdateByUserId(currentUserId) });
+                transform: x => x
+                .Include(x => x.ResponseAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                .Include(x => x.ResponseAttachments).Include(x => x.Request).ThenInclude(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                , additionalFilters: [ResponseExpressions.CanMakeUpdateByUserId(currentUserId)]);
 
             if (existingResponse.IsError)
                 return existingResponse.Errors;
