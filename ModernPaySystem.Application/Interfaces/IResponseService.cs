@@ -14,7 +14,7 @@ public interface IResponseService
 
     Task<Result<PagedList<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, int page, int pageSize);
 
-    Task<Result<ResponseDto>> CreateAsync(CreateResponseDto response);
+    Task<Result<Success>> CreateAsync(CreateResponseDto response);
 
     Task<Result<ResponseDto>> UpdateAsync(Guid id, UpdateResponseDto response);
 

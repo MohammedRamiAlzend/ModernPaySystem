@@ -180,7 +180,7 @@ public class ResponseService(
         return checkIfRequestHasResponse.Value!.Response is not null;
     }
 
-    public async Task<Result<ResponseDto>> CreateAsync(CreateResponseDto response)
+    public async Task<Result<Success>> CreateAsync(CreateResponseDto response)
     {
         try
         {
@@ -235,7 +235,7 @@ public class ResponseService(
             }
             logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
             await unitOfWork.SaveChangesAsync();
-            return responseEntity.ToDto();
+            return Result.Success;
         }
         catch (Exception ex)
         {
