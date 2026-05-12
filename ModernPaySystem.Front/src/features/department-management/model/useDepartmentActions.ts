@@ -26,6 +26,12 @@ export const useDepartmentActions = () => {
                 const firstError = backendErrors[0];
                 if (firstError.code === 'CIRCULAR_REFERENCE') {
                     errorMessage = 'لا يمكن إنشاء علاقة دائرية (لا يمكن للقسم أن يكون أب لنفسه أو لأحد أبنائه)';
+                } else if (firstError.code === '311') {
+                    const departmentMatch = firstError.description?.match(/,\s*([^)]+)\)/);
+                    const departmentName = departmentMatch ? departmentMatch[1] : '';
+                    errorMessage = departmentName
+                        ? `هذا المستخدم هو رئيس لقسم (${departmentName}) مسبقاً، يرجى تغيير تعيين المستخدم أولاً.`
+                        : "رئيس القسم هو رئيس لقسم اخر قم بتغير تعيين المستخدم ";
                 } else {
                     errorMessage = firstError.description || errorMessage;
                 }
@@ -40,7 +46,7 @@ export const useDepartmentActions = () => {
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, dto }: { id: string, dto: UpdateDepartmentDto }) => 
+        mutationFn: ({ id, dto }: { id: string, dto: UpdateDepartmentDto }) =>
             departmentActionsApi.update(id, dto),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.department.all });
@@ -91,7 +97,7 @@ export const useDepartmentActions = () => {
     });
 
     const assignUserMutation = useMutation({
-        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) => 
+        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) =>
             departmentActionsApi.assignUser(departmentId, userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.department.all });
@@ -112,7 +118,7 @@ export const useDepartmentActions = () => {
     });
 
     const assignHeadMutation = useMutation({
-        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) => 
+        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) =>
             departmentActionsApi.assignHead(departmentId, userId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.department.all });
@@ -138,10 +144,10 @@ export const useDepartmentActions = () => {
         deleteDepartment: deleteMutation.mutateAsync,
         assignUserToDepartment: assignUserMutation.mutateAsync,
         assignDepartmentHead: assignHeadMutation.mutateAsync,
-        isLoading: createMutation.isPending || 
-                  updateMutation.isPending || 
-                  deleteMutation.isPending || 
-                  assignUserMutation.isPending ||
-                  assignHeadMutation.isPending
+        isLoading: createMutation.isPending ||
+            updateMutation.isPending ||
+            deleteMutation.isPending ||
+            assignUserMutation.isPending ||
+            assignHeadMutation.isPending
     };
 };
