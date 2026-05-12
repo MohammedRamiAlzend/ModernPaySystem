@@ -216,6 +216,7 @@ public class ResponseService(
             }
 
             getRequest.Value!.ResponseId = responseEntity.Id;
+            getRequest.Value.Status = RequestStatus.Managed;
             var updateResult = await unitOfWork.Requests.UpdateAsync(getRequest.Value);
             if (updateResult.IsError)
             {

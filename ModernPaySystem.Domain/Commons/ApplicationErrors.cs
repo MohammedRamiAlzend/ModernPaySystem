@@ -34,6 +34,7 @@ public static class ApplicationErrors
 
     // Department Errors (310-319)
     public static readonly Error DepartmentNotFound = new("310", "The specified department was not found.", ErrorKind.NotFound, "لم يتم العثور على القسم المحدد.");
+    public static Error UserAlreadyDepartmentHeader(Guid id, string departmentName) => new("311", $"user already department header for this id :({id},{departmentName})", ErrorKind.NotFound, "");
 
     // Request Errors (400-499)
     public static readonly Error RequestNotFound = new("400", "The specified request was not found.", ErrorKind.NotFound, "لم يتم العثور على الطلب المحدد.");

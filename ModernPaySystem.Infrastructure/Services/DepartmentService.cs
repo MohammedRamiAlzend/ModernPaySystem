@@ -42,13 +42,14 @@ public class DepartmentService(
                 materializedPath = GetShortId(Guid.NewGuid());
             }
 
-            var userResult = await unitOfWork.Users.GetByIdAsync(dto.HeadedUserId.Value);
+            var userResult = await unitOfWork.Users.GetAsync(x => x.Id == dto.HeadedUserId.Value, i => i.Include(x => x.HeadedDepartment));
             if (userResult.IsError)
                 return userResult.Errors;
-
+            if (userResult.Value!.HeadedDepartmentId.HasValue)
+            {
+                return ApplicationErrors.UserAlreadyDepartmentHeader(userResult.Value.HeadedDepartmentId.Value, userResult.Value.HeadedDepartment.Name);
+            }
             userResult.Value.IsDepartmentHead = true;
-            var userUpdateResult = await unitOfWork.Users.UpdateAsync(userResult.Value);
-
             var department = new Department
             {
                 Name = dto.Name,
@@ -66,6 +67,9 @@ public class DepartmentService(
             var addResult = await unitOfWork.Departments.AddAsync(department);
             if (addResult.IsError)
                 return addResult.Errors;
+
+            userResult.Value.DepartmentId = department.Id;
+            var userUpdateResult = await unitOfWork.Users.UpdateAsync(userResult.Value);
 
             await unitOfWork.SaveChangesAsync();
 
