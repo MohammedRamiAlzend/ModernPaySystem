@@ -28,7 +28,6 @@ export const useDepartmentActions = () => {
                     errorMessage = 'لا يمكن إنشاء علاقة دائرية (لا يمكن للقسم أن يكون أب لنفسه أو لأحد أبنائه)';
                 } else if (firstError.code === '311') {
                     const departmentMatch = firstError.description?.match(/,\s*([^)]+)\)/);
-                    console.log(departmentMatch);
                     const departmentName = departmentMatch ? departmentMatch[1] : '';
                     errorMessage = departmentName
                         ? `هذا المستخدم هو رئيس لقسم (${departmentName}) مسبقاً، يرجى تغيير تعيين المستخدم أولاً.`
