@@ -19,12 +19,12 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    [HttpGet("by-requester/{requesterId}")]
+    [HttpPost("by-requester/{requesterId}")]
     [EndpointPermission("requests.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromBody] RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
-        var result = await requestService.GetByRequesterIdAsync(requesterId, page, pageSize);
+        logger.LogInformation("Getting paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
+        var result = await requestService.GetByRequesterIdAsync(requesterId, filterDto);
         return result.ToActionResult();
     }
 

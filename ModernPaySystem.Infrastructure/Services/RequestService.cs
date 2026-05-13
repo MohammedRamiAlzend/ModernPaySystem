@@ -15,56 +15,6 @@ public class RequestService(
     IWebAttachmentService webAttachmentService,
     IHttpContextServiceManager httpContextServiceManager) : IRequestService
 {
-    public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync()
-    {
-        try
-        {
-            logger.LogInformation("Fetching all requests");
-            var requests = await unitOfWork.Requests.GetAllAsync(
-                null,
-                x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
-                        .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                     .Include(x => x.Approver)
-                     .Include(x => x.Requester)
-                     .Include(x => x.RequestAttachments));
-            if (requests.IsError)
-                return requests.Errors;
-
-            var requestDtos = requests.Value!.Select(r => r.ToDto()).ToList();
-            return requestDtos;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error fetching all requests");
-            return ApplicationErrors.InternalServerError;
-        }
-    }
-
-    //public async Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse)
-    //{
-    //    try
-    //    {
-    //        logger.LogInformation("Fetching all requests");
-    //        var requests = await unitOfWork.Requests.GetAllAsync(
-    //            transform: x => x.Include(x => x.Template)
-    //                  .Include(x => x.Response)
-    //                 .Include(x => x.Approver)
-    //                 .Include(x => x.Requester)
-    //                 .Include(x => x.RequestAttachments),
-    //            additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.HasResponse(hasResponse) });
-
-    //        if (requests.IsError)
-    //            return requests.Errors;
-
-    //        return requests.Value!.ConvertAll(r => r.ToDto());
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        logger.LogError(ex, "Error fetching all requests");
-    //        return ApplicationErrors.InternalServerError;
-    //    }
-    //}
-
     public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(RequestPagedFilterDto? filterDto = null)
     {
         try
@@ -156,34 +106,58 @@ public class RequestService(
         }
     }
 
-    public async Task<Result<PagedList<RequestDto>>> GetByRequesterIdAsync(Guid requesterId, int page, int pageSize)
+    public async Task<Result<PagedList<RequestDto>>> GetByRequesterIdAsync(Guid requesterId, RequestPagedFilterDto filterDto)
     {
         try
         {
-            logger.LogInformation("Fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
-
-            if (page <= 0)
+            logger.LogInformation("Fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
+            if (filterDto.Page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100)
+            if (filterDto.PageSize <= 0 || filterDto.PageSize > 100)
                 return ApplicationErrors.InvalidInput;
-
+            // Build filter expressions
+            List<Expression<Func<Request, bool>>> filters = new();
+            if (filterDto != null)
+            {
+                if (filterDto.FromDate.HasValue)
+                    filters.Add(r => r.CreatedAt >= filterDto.FromDate);
+                if (filterDto.ToDate.HasValue)
+                    filters.Add(r => r.CreatedAt <= filterDto.ToDate);
+                if (filterDto.InputValueFilters != null && filterDto.InputValueFilters.Count != 0)
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                            //filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key == ivf.Key && iv.Value == ivf.Value));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
+                            //filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key == ivf.Key));
+                        }
+                    }
+                }
+            }
+            filters.AddRange(RequestExpressions.ByRequesterIdWithIncludes(requesterId));
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
-                page,
-                pageSize,
+                filterDto!.Page,
+                filterDto.PageSize,
                 transform: i => i.Include(r => r.RequestAttachments)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                 .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
-                additionalFilters: RequestExpressions.ByRequesterIdWithIncludes(requesterId));
+                additionalFilters: filters);
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
 
             var requestDtos = pagedRequests.Value!.Items.Select(r => r.ToDto()).ToList();
-            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, page, pageSize);
+            return new PagedList<RequestDto>(requestDtos, pagedRequests.Value.TotalItems, filterDto.Page, filterDto.PageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
+            logger.LogError(ex, "Error fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
             return ApplicationErrors.InternalServerError;
         }
     }

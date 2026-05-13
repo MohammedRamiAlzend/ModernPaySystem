@@ -14,7 +14,7 @@ public interface IRequestService
 
     Task<Result<RequestDto>> GetByIdAsync(Guid id);
 
-    Task<Result<PagedList<RequestDto>>> GetByRequesterIdAsync(Guid requesterId, int page, int pageSize);
+    Task<Result<PagedList<RequestDto>>> GetByRequesterIdAsync(Guid requesterId, RequestPagedFilterDto filterDto);
 
     Task<Result<PagedList<RequestDto>>> GetByApproverIdAsync(Guid approverId, int page, int pageSize);
 
