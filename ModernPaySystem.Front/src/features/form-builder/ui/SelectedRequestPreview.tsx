@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from '@/shared/ui/card';
 import { FileText, Loader2, Printer, Download, FileDown } from 'lucide-react';
 import type { FormSchema, TemplateRequest, FormResponse } from '@/entities/form/model/types';
 import { getVisibleFields } from '@/shared/lib/form-engine/response-evaluator';
 import { ResponseDetailsData } from '@/widgets/form-editor/ui/response-details/ResponseDetailsData';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
-import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
+import { formEndpoints, useRequestResponses, useRequestTransactionsHistory } from '@/features/form-builder/api/formEndpoints';
 import { imagesToPdf } from '@/shared/utils/zip-handler';
-import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
+import { printFormResponse, generateFormPDF, type PrintOptions } from '@/shared/lib/pdf-generator';
 import { prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
 import { Button } from '@/shared/ui/button';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAttachments } from '@/features/form-builder/model/useAttachments';
 import { AttachmentsGallery } from '@/features/form-builder/ui/AttachmentsGallery';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
 import { RequestTransactionsHistory } from './RequestTransactionsHistory';
@@ -27,11 +28,22 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
     const [isGeneratingImagesPDF, setIsGeneratingImagesPDF] = useState(false);
 
-    const { 
-        zipImages, 
-        isLoading: isLoadingImages, 
-        isAllImages, 
-        totalFiles 
+    // Print options state with localStorage persistence
+    const [includeResponses, setIncludeResponses] = useState(() =>
+        localStorage.getItem('print_include_responses') !== 'false'
+    );
+    const [includeReferrals, setIncludeReferrals] = useState(() =>
+        localStorage.getItem('print_include_referrals') !== 'false'
+    );
+
+    const { data: responses = [] } = useRequestResponses(request?.id || null);
+    const { data: transactions = [] } = useRequestTransactionsHistory(request?.id || null);
+
+    const {
+        zipImages,
+        isLoading: isLoadingImages,
+        isAllImages,
+        totalFiles
     } = useAttachments(
         request?.id && request.requestAttachmentDtos && request.requestAttachmentDtos.length > 0
             ? () => formEndpoints.fetchRequestAttachmentsBlob(request.id)
@@ -64,7 +76,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
     const pseudoResponse: FormResponse = {
         ...request,
         id: request.id,
-        formId: request.templateId, 
+        formId: request.templateId,
         submittedAt: request.createdAt || '',
         data: parsedData as Record<string, any>,
         schema: template
@@ -72,14 +84,64 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
 
     const visibleFields = getVisibleFields(pseudoResponse);
 
-    const handlePrint = () => {
+    const getPrintOptions = async (): Promise<PrintOptions> => {
+        const userIdsToResolve = new Set<string>();
+
+        if (includeResponses) {
+            responses.forEach((r: any) => {
+                if (r.respondedByUserId) userIdsToResolve.add(r.respondedByUserId);
+            });
+        }
+
+        if (includeReferrals) {
+            transactions.forEach((t: any) => {
+                if (t.createdByUserId) userIdsToResolve.add(t.createdByUserId);
+            });
+        }
+
+        const userNamesMap = await resolveUserNames(Array.from(userIdsToResolve));
+
+        const printOptions: PrintOptions = {
+            direction: 'rtl'
+        };
+
+        if (includeResponses && responses.length > 0) {
+            const sortedResponses = [...responses].sort((a, b) =>
+                new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+            );
+
+            printOptions.responses = sortedResponses.map(r => ({
+                userName: userNamesMap.get(r.respondedByUserId!) || r.respondedByUserId!,
+                content: r.comment || '',
+                date: new Date(r.createdAt || '').toLocaleString('ar-EG'),
+                type: 'response'
+            }));
+
+            printOptions.finalResponse = printOptions.responses[printOptions.responses.length - 1];
+        }
+
+        if (includeReferrals && transactions.length > 0) {
+            printOptions.referrals = transactions.map(t => ({
+                userName: userNamesMap.get(t.createdByUserId!) || t.createdByUserId!,
+                content: t.notes || 'إحالة بدون ملاحظات',
+                date: new Date(t.createdAt || '').toLocaleString('ar-EG'),
+                type: 'referral'
+            }));
+        }
+
+        return printOptions;
+    };
+
+    const handlePrint = async () => {
         if (!template) return;
         const printFields = prepareFieldsForPrint(pseudoResponse);
+        const options = await getPrintOptions();
+
         printFormResponse(
             template.title,
             new Date(request.createdAt || '').toLocaleString('ar-EG'),
             printFields,
-            'rtl'
+            options
         );
     };
 
@@ -88,11 +150,13 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
         setIsGeneratingPDF(true);
         try {
             const printFields = prepareFieldsForPrint(pseudoResponse);
+            const options = await getPrintOptions();
+
             await generateFormPDF(
                 template.title,
                 new Date(request.createdAt || '').toLocaleString('ar-EG'),
                 printFields,
-                'rtl'
+                options
             );
         } catch (error) {
             console.error('Error generating PDF:', error);
@@ -113,6 +177,18 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
         } finally {
             setIsGeneratingImagesPDF(false);
         }
+    };
+
+    const handleIncludeResponsesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.checked;
+        setIncludeResponses(val);
+        localStorage.setItem('print_include_responses', String(val));
+    };
+
+    const handleIncludeReferralsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.checked;
+        setIncludeReferrals(val);
+        localStorage.setItem('print_include_referrals', String(val));
     };
 
     return (
@@ -167,30 +243,51 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                 </div>
             </div>
 
+            <div className="flex items-center justify-center gap-6 py-2 px-4 border-b border-primary/10 bg-muted/10 shrink-0">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                        type="checkbox"
+                        checked={includeResponses}
+                        onChange={handleIncludeResponsesChange}
+                        className="w-3.5 h-3.5 rounded border-primary/20 text-primary focus:ring-primary/20"
+                    />
+                    <span className="text-[11px] font-bold text-muted-foreground group-hover:text-primary transition-colors">تضمين الرد النهائي</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer group">
+                    <input
+                        type="checkbox"
+                        checked={includeReferrals}
+                        onChange={handleIncludeReferralsChange}
+                        className="w-3.5 h-3.5 rounded border-primary/20 text-primary focus:ring-primary/20"
+                    />
+                    <span className="text-[11px] font-bold text-muted-foreground group-hover:text-primary transition-colors">تضمين الإحالات</span>
+                </label>
+            </div>
+
             <div className="flex-1 overflow-hidden flex flex-col p-4" dir="rtl">
                 <Tabs defaultValue="details" className="flex-1 flex flex-col overflow-hidden">
                     <TabsList className="w-full justify-start border-b border-primary/10 rounded-none p-0 h-auto bg-transparent mb-4 shrink-0">
-                        <TabsTrigger 
-                            value="details" 
+                        <TabsTrigger
+                            value="details"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold"
                         >
                             بيانات الطلب
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="referrals" 
+                        <TabsTrigger
+                            value="referrals"
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold"
                         >
                             متابعة الإحالات
                         </TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent value="details" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
                         <div className="space-y-6">
                             <div className="bg-background/80 p-4 rounded-xl shadow-sm border">
                                 <ResponseDetailsData hideTabs={true} visibleFields={visibleFields} />
                             </div>
-                            
-                            <AttachmentsGallery 
+
+                            <AttachmentsGallery
                                 images={zipImages}
                                 isLoading={isLoadingImages}
                                 isAllImages={isAllImages}
@@ -201,7 +298,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                             />
                         </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="referrals" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
                         <RequestTransactionsHistory requestId={request.id} />
                     </TabsContent>

@@ -68,19 +68,16 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
         return templates.find(t => t.id === templateId)?.title || 'نموذج غير معروف';
     };
 
-    const getTemplate = (templateId: string) => {
-        return templates.find(t => t.id === templateId) || null;
-    };
-
     const pseudoResponse: FormResponse | null = React.useMemo(() => {
-        if (!referral.request) return null;
+        const req = referral.request;
+        if (!req) return null;
         
-        const template = getTemplate(referral.request.templateId);
+        const template = templates.find(t => t.id === req.templateId) || null;
         
         // Convert InputValueDto[] to Record
         let parsedData = {};
         try {
-            parsedData = (referral.request.content || []).reduce((acc, curr) => {
+            parsedData = (req.content || []).reduce((acc, curr) => {
                 acc[curr.key] = curr.value;
                 return acc;
             }, {} as Record<string, any>);
@@ -89,12 +86,12 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
         }
 
         return {
-            ...referral.request,
-            id: referral.request.id,
-            formId: referral.request.templateId,
-            submittedAt: referral.request.createdAt || '',
+            ...req,
+            id: req.id,
+            formId: req.templateId,
+            submittedAt: req.createdAt || '',
             data: parsedData as Record<string, any>,
-            schema: template || { id: referral.request.templateId, title: '...', fields: [], settings: {} as any } as any
+            schema: template || { id: req.templateId, title: '...', fields: [], settings: {} as any } as any
         };
     }, [referral.request, templates]);
 

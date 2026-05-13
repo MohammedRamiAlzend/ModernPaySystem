@@ -2,6 +2,7 @@ import React from 'react';
 import { FileArchive, History } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
 import { RequestTransactionsHistory } from '@/features/form-builder/ui/RequestTransactionsHistory';
+import { CurrentLocationBadge } from '@/features/form-builder/ui/CurrentLocationBadge';
 
 interface ResponseDetailsDataProps {
     requestId?: string;
@@ -12,7 +13,11 @@ interface ResponseDetailsDataProps {
     }>;
 }
 
-export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({ requestId, hideTabs = false, visibleFields }) => {
+export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({
+    requestId,
+    hideTabs = false,
+    visibleFields
+}) => {
     const showTabs = requestId && !hideTabs;
 
     // Logic for rendering fields extracted to avoid duplication
@@ -56,24 +61,37 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({ reques
         <div className="bg-muted/10 rounded-3xl p-6 border border-muted-foreground/10">
             {showTabs ? (
                 <Tabs defaultValue="data" className="w-full">
-                    <TabsList className="w-full justify-start border-b border-muted-foreground/10 rounded-none p-0 h-auto bg-transparent mb-6">
-                        <TabsTrigger 
-                            value="data" 
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold flex items-center gap-2"
-                        >
-                            <FileArchive className="w-4 h-4" />
-                            بيانات النموذج
-                        </TabsTrigger>
-                        <TabsTrigger 
-                            value="referrals" 
-                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold flex items-center gap-2"
-                        >
-                            <History className="w-4 h-4" />
-                            متابعة الإحالات
-                        </TabsTrigger>
+                    <TabsList className="w-full justify-between border-b border-muted-foreground/10 rounded-none p-0 h-auto bg-transparent mb-6">
+                        <div className="flex">
+                            <TabsTrigger
+                                value="data"
+                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold flex items-center gap-2"
+                            >
+                                <FileArchive className="w-4 h-4" />
+                                بيانات النموذج
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="referrals"
+                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold flex items-center gap-2"
+                            >
+                                <History className="w-4 h-4" />
+                                متابعة الإحالات
+                            </TabsTrigger>
+                        </div>
+
+                        <CurrentLocationBadge
+                            name={null}
+                            department={null}
+                            className="mb-1"
+                        />
                     </TabsList>
 
                     <TabsContent value="data" className="mt-0 outline-none">
+                        <CurrentLocationBadge
+                            name={null}
+                            department={null}
+                            className="mb-1"
+                        />
                         {renderFieldsGrid()}
                     </TabsContent>
 
@@ -83,10 +101,13 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({ reques
                 </Tabs>
             ) : (
                 <>
-                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-primary">
-                        <FileArchive className="w-5 h-5" />
-                        بيانات النموذج
-                    </h3>
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-bold flex items-center gap-2 text-primary">
+                            <FileArchive className="w-5 h-5" />
+                            بيانات النموذج
+                        </h3>
+
+                    </div>
                     {renderFieldsGrid()}
                 </>
             )}
