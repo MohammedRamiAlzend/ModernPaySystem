@@ -73,12 +73,12 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    [HttpGet("GetPagedRequestsNeedAction/{hasResponse}")]
+    [HttpPost("GetPagedRequestsNeedAction/{hasResponse}")]
     [EndpointPermission("requests.get-paged-need-action", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetPagedRequestsNeedAction(bool hasResponse, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPagedRequestsNeedAction(bool hasResponse, RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged requests need action, hasResponse: {HasResponse}, page: {Page}, size: {PageSize}", hasResponse, page, pageSize);
-        var result = await requestService.GetAllRequestNeedActionPagedAsync(page, pageSize, hasResponse);
+        logger.LogInformation("Getting paged requests need action, hasResponse: {HasResponse}, page: {Page}, size: {PageSize}", hasResponse, filterDto.Page, filterDto.PageSize);
+        var result = await requestService.GetAllRequestNeedActionPagedAsync(filterDto, hasResponse);
         return result.ToActionResult();
     }
 
