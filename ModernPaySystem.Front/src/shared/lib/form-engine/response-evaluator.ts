@@ -77,38 +77,54 @@ const getDisplayValue = (field: FormField, value: any): string => {
         return '-';
     }
 
+    // Smart parsing for JSON strings (arrays or objects stored as strings)
+    let processedValue = value;
+    if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
+        try {
+            processedValue = JSON.parse(value);
+        } catch {
+            processedValue = value;
+        }
+    }
+
     // Handle Checkbox - Can be multiple values (array) or single boolean
     if (field.type === 'checkbox') {
-        if (Array.isArray(value)) {
-            if (value.length === 0) return '-';
-            // Join array values. If it's a LookUp, the values themselves are the 'desc' (labels)
-            return value.join(' ، ');
+        if (Array.isArray(processedValue)) {
+            if (processedValue.length === 0) return '-';
+            return processedValue.join(' ، ');
         }
-        return value ? 'نعم' : 'لا';
+        return processedValue.split(",").join(" ، ") ?? "";
     }
 
     // Handle select/radio - check if we can find a label in static options
     if ((field.type === 'select' || field.type === 'radio') && field.dataSource?.options) {
-        const option = field.dataSource.options.find(opt => opt.value === value);
+        const option = field.dataSource.options.find(opt => opt.value === processedValue);
         if (option) return option.label;
     }
 
-    // If it's a LookUp field, the stored value is already the 'desc' (as per implementation in SelectField/RadioField)
-    // So if we didn't find it in options (which might be empty in the saved schema), just return the value
+    // If it's a LookUp field or generic
     if (field.dataSource?.type === 'lookup') {
-        return String(value);
+        if (Array.isArray(processedValue)) {
+            return processedValue.join(' ، ');
+        }
+        return String(processedValue);
     }
 
     // Handle date
-    if (field.type === 'date' && value) {
+    if (field.type === 'date' && processedValue) {
         try {
-            return new Date(value).toLocaleDateString('ar-EG');
+            return new Date(processedValue).toLocaleDateString('ar-EG');
         } catch {
-            return String(value);
+            return String(processedValue);
         }
     }
 
-    return String(value);
+    // Handle multiple items in general
+    if (Array.isArray(processedValue)) {
+        return processedValue.join(' ، ');
+    }
+
+    return String(processedValue);
 };
 
 /**

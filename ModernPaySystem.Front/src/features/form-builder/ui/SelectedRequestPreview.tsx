@@ -65,7 +65,16 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
     let parsedData = {};
     try {
         parsedData = (request.content || []).reduce((acc, curr) => {
-            acc[curr.key] = curr.value;
+            let val = curr.value;
+            // Smart parsing for JSON strings
+            if (typeof val === 'string' && (val.startsWith('[') || val.startsWith('{'))) {
+                try {
+                    val = JSON.parse(val);
+                } catch {
+                    val = curr.value;
+                }
+            }
+            acc[curr.key] = val;
             return acc;
         }, {} as Record<string, any>);
     } catch (e) {
