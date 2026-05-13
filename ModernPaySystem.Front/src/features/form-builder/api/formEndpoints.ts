@@ -87,7 +87,13 @@ export const formEndpoints = {
         // Handle structured content for model binding
         data.Content.forEach((item, index) => {
             formData.append(`Content[${index}].Key`, item.key);
-            formData.append(`Content[${index}].Value`, item.value);
+            
+            // Handle complex types (arrays, objects) by stringifying them
+            const valueToAppend = (typeof item.value === 'object' && item.value !== null) 
+                ? JSON.stringify(item.value) 
+                : String(item.value ?? '');
+                
+            formData.append(`Content[${index}].Value`, valueToAppend);
         });
         
         if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
