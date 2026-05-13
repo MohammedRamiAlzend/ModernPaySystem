@@ -5,7 +5,8 @@ import {
     Calendar,
     Forward,
     MessageSquare,
-    ArrowRight
+    ArrowRight,
+    Eye
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
@@ -14,8 +15,10 @@ import { TemplateTitle } from './TemplateTitle';
 import { AttachmentsGallery } from './AttachmentsGallery';
 import { useAttachments } from '../model/useAttachments';
 import { formEndpoints } from '../api/formEndpoints';
-import type { RequestTransactionDto } from '@/entities/form/model/types';
+import type { RequestTransactionDto, FormResponse } from '@/entities/form/model/types';
 import { useForms } from '../model/useForms';
+import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
+import React from 'react';
 
 interface ReferralCardProps {
     referral: RequestTransactionDto;
@@ -55,6 +58,8 @@ const ReferralAttachments = ({ referral }: { referral: RequestTransactionDto }) 
 export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProps) => {
     const { data: templates = [] } = useForms(true);
 
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
+
     const getTemplateFields = (templateId: string) => {
         return templates.find(t => t.id === templateId)?.fields || [];
     };
@@ -62,6 +67,36 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
     const getTemplateTitleFallback = (templateId: string) => {
         return templates.find(t => t.id === templateId)?.title || 'نموذج غير معروف';
     };
+
+    const getTemplate = (templateId: string) => {
+        return templates.find(t => t.id === templateId) || null;
+    };
+
+    const pseudoResponse: FormResponse | null = React.useMemo(() => {
+        if (!referral.request) return null;
+        
+        const template = getTemplate(referral.request.templateId);
+        
+        // Convert InputValueDto[] to Record
+        let parsedData = {};
+        try {
+            parsedData = (referral.request.content || []).reduce((acc, curr) => {
+                acc[curr.key] = curr.value;
+                return acc;
+            }, {} as Record<string, any>);
+        } catch (e) {
+            console.error("Failed to map request content", e);
+        }
+
+        return {
+            ...referral.request,
+            id: referral.request.id,
+            formId: referral.request.templateId,
+            submittedAt: referral.request.createdAt || '',
+            data: parsedData as Record<string, any>,
+            schema: template || { id: referral.request.templateId, title: '...', fields: [], settings: {} as any } as any
+        };
+    }, [referral.request, templates]);
 
     return (
         <Card className="group overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 bg-card/50 backdrop-blur-sm">
@@ -109,15 +144,25 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
                         )}
                     </div>
 
-                    {isPending && onAction && (
+                    <div className="mt-auto space-y-2">
+                        {isPending && onAction && (
+                            <Button
+                                className="w-full h-12 rounded-2xl font-black bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-[1.02] transition-transform"
+                                onClick={() => onAction(referral)}
+                            >
+                                اتخاذ إجراء
+                                <ArrowRight className="w-4 h-4 mr-2" />
+                            </Button>
+                        )}
                         <Button
-                            className="mt-auto w-full h-12 rounded-2xl font-black bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-[1.02] transition-transform"
-                            onClick={() => onAction(referral)}
+                            variant="outline"
+                            className="w-full h-10 rounded-xl font-bold border-primary/20 hover:bg-primary/5 text-primary"
+                            onClick={() => setIsDetailsModalOpen(true)}
                         >
-                            اتخاذ إجراء
-                            <ArrowRight className="w-4 h-4 mr-2" />
+                            <Eye className="w-4 h-4 ml-2" />
+                            عرض التفاصيل
                         </Button>
-                    )}
+                    </div>
                 </div>
 
                 {/* Main content panel */}
@@ -172,6 +217,15 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
                     </div>
                 </div>
             </div>
+
+            {pseudoResponse && (
+                <ResponseDetailsModal
+                    isOpen={isDetailsModalOpen}
+                    onClose={() => setIsDetailsModalOpen(false)}
+                    response={pseudoResponse}
+                    schema={pseudoResponse.schema}
+                />
+            )}
         </Card>
     );
 };
