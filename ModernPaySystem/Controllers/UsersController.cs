@@ -1,3 +1,5 @@
+using ModernPaySystem.Application.Services;
+
 namespace ModernPaySystem.Controllers;
 
 [ApiController]
@@ -7,11 +9,13 @@ public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
     private readonly ILogger<UsersController> _logger;
+    private readonly IHttpContextServiceManager _httpContextServiceManager;
 
-    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    public UsersController(IUserService userService, ILogger<UsersController> logger, IHttpContextServiceManager httpContextServiceManager)
     {
         _userService = userService;
         _logger = logger;
+        _httpContextServiceManager = httpContextServiceManager;
     }
 
     [HttpGet]
@@ -74,6 +78,16 @@ public class UsersController : ControllerBase
     {
         _logger.LogInformation("Getting all subsystems");
         var result = await _userService.GetSubSystemsAsync();
+        return result.ToActionResult();
+    }
+
+    [HttpGet("visited-templates")]
+    [EndpointPermission("users.get-visited-templates", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetVisitedTemplates()
+    {
+        _logger.LogInformation("Getting visited templates for current user");
+        var currentUserId = _httpContextServiceManager.GetCurrentUserId();
+        var result = await _userService.GetVisitedTemplatesAsync(currentUserId);
         return result.ToActionResult();
     }
 

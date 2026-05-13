@@ -220,11 +220,15 @@ public class ResponseService(
                 }
             }
 
-            var getRequest = await unitOfWork.Requests.GetAsync(x => x.Id == response.RequestId);
+            var getRequest = await unitOfWork.Requests.GetAsync(x => x.Id == response.RequestId,
+                transform: q => q.Include(r => r.RequestTemplateValues).ThenInclude(rt => rt!.Template));
             if (getRequest.IsError)
             {
                 return getRequest.Errors;
             }
+
+            if (getRequest.Value == null)
+                return ApplicationErrors.RequestNotFound;
 
             getRequest.Value!.ResponseId = responseEntity.Id;
             getRequest.Value.Status = RequestStatus.Managed;
@@ -233,6 +237,36 @@ public class ResponseService(
             {
                 return updateResult.Errors;
             }
+
+            // Mark template as visited by the responding user
+            try
+            {
+                var templateId = getRequest.Value.RequestTemplateValues?.TemplateId;
+                if (templateId.HasValue)
+                {
+                    var getUser = await unitOfWork.Users.GetAsync(u => u.Id == response.RespondedByUserId,
+                        transform: q => q.Include(u => u.VisitedTemplates));
+                    if (!getUser.IsError && getUser.Value != null)
+                    {
+                        var alreadyVisited = getUser.Value.VisitedTemplates.Any(t => t.Id == templateId.Value);
+                        if (!alreadyVisited)
+                        {
+                            var templateEntity = getRequest.Value.RequestTemplateValues?.Template ?? (await unitOfWork.Templates.GetByIdAsync(templateId.Value)).Value!;
+                            getUser.Value.VisitedTemplates.Add(templateEntity);
+                            var updateUser = await unitOfWork.Users.UpdateAsync(getUser.Value);
+                            if (updateUser.IsError)
+                            {
+                                logger.LogError("Failed to update user's visited templates: {Errors}", updateUser.Errors);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error marking template as visited");
+            }
+
             logger.LogInformation("Successfully created response: {ResponseId}", responseEntity.Id);
             await unitOfWork.SaveChangesAsync();
             return Result.Success;

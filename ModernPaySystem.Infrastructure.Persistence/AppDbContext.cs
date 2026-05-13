@@ -40,6 +40,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(modelBuilder);
 
+        // User <-> VisitedTemplates (many-to-many)
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.VisitedTemplates)
+            .WithMany(t => t.VisitedByUsers)
+            .UsingEntity(j => j.ToTable("UserVisitedTemplates"));
+
         modelBuilder.Entity<RequestAttachment>()
             .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
 

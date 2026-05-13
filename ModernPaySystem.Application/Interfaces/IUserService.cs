@@ -47,5 +47,7 @@ public interface IUserService
     /// </summary>
     Task<Result<UserDto>> UpdateAsync(Guid id, CreateUserDto user);
 
+    Task<Result<IEnumerable<TemplateDto>>> GetVisitedTemplatesAsync(Guid userId);
+
     Task<Result<List<SubSystemDto>>> GetSubSystemsAsync();
 }

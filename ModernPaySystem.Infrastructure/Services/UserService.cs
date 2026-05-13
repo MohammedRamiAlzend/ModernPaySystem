@@ -273,6 +273,26 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         }
     }
 
+    public async Task<Result<IEnumerable<TemplateDto>>> GetVisitedTemplatesAsync(Guid userId)
+    {
+        try
+        {
+            logger.LogInformation("Fetching visited templates for user: {UserId}", userId);
+            var user = await unitOfWork.Users.GetAsync(filter: u => u.Id == userId, transform: q => q.Include(u => u.VisitedTemplates));
+            if (user.IsError)
+                return user.Errors;
+            if (user.Value == null)
+                return ApplicationErrors.OperationFailed;
+            var templates = user.Value.VisitedTemplates.Select(t => t.ToDto()).ToList();
+            return templates;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching visited templates for user: {UserId}", userId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
     public async Task<Result<List<SubSystemDto>>> GetSubSystemsAsync()
     {
         try

@@ -4,6 +4,7 @@ namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
 public class User : Entity<Guid>, IAuditableEntity
 {
+    public ICollection<Template> VisitedTemplates { get; set; } = new List<Template>();
     public required string UserName { get; set; }
     public required string HashedPassword { get; set; }
 
