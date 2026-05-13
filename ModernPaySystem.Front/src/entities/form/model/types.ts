@@ -125,11 +125,16 @@ export interface CreateUserTemplateOwnershipDto {
     userId: string;
 }
 
+export interface InputValueDto {
+    key: string;
+    value: string;
+}
+
 export interface CreateRequestDto {
     TemplateId: string;
     DepartmentId: string;
     ReadOnlyUsers?: string[]; // List of user IDs for CC/Read-only
-    Content: string; // JSON content
+    Content: InputValueDto[]; // Updated to use structured content
     files?: File[]; // For multi-part file upload
 }
 
@@ -165,7 +170,7 @@ export interface TemplateRequest {
     templateId: string;
     requesterId: string;
     approverId: string;
-    content: string;
+    content: InputValueDto[];
     status: number; // RequestStatus
     currentTransactionId?: string | null;
     firstTransactionId?: string | null;

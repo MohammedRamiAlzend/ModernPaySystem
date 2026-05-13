@@ -95,7 +95,10 @@ export const RequestPage = () => {
             TemplateId: selectedTemplate.id,
             DepartmentId: departmentId,
             ReadOnlyUsers: readOnlyUsers,
-            Content: JSON.stringify(formData),
+            Content: Object.entries(formData).map(([key, value]) => ({
+                key,
+                value: String(value)
+            })),
             files: files
         };
 

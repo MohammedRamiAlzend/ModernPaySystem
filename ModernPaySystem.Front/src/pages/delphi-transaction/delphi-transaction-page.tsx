@@ -64,7 +64,10 @@ export const DelphiTransactionPage = () => {
                 TemplateId: template.id,
                 DepartmentId: receiverDepartmentId,
                 ReadOnlyUsers: readOnlyUsers,
-                Content: JSON.stringify(formData),
+                Content: Object.entries(formData).map(([key, value]) => ({
+                    key,
+                    value: String(value)
+                })),
                 files: files
             };
 

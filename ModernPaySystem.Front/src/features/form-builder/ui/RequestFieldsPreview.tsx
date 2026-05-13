@@ -1,10 +1,10 @@
 import React from 'react';
-import type { FormField } from '@/entities/form/model/types';
+import type { FormField, InputValueDto } from '@/entities/form/model/types';
 import { useTemplateById } from '../api/formEndpoints';
 
 interface RequestFieldsPreviewProps {
-    /** Raw JSON content string from the request */
-    content: string;
+    /** Structured content from the request */
+    content: InputValueDto[] | string | any;
     /** Fields from the template schema (optional if templateId is provided) */
     fields?: FormField[];
     /** The ID of the template to fetch fields from if 'fields' is not provided */
@@ -39,7 +39,15 @@ export const RequestFieldsPreview = ({
 
     const data = React.useMemo(() => {
         try {
-            return JSON.parse(content) as Record<string, unknown>;
+            if (Array.isArray(content)) {
+                return content.reduce((acc, curr) => {
+                    acc[curr.key] = curr.value;
+                    return acc;
+                }, {} as Record<string, any>);
+            } else if (typeof content === 'string') {
+                return JSON.parse(content) as Record<string, unknown>;
+            }
+            return content as Record<string, unknown>;
         } catch {
             return null;
         }

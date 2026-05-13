@@ -17,12 +17,15 @@ export const useRequestDetails = () => {
                 id: activeRequest.id,
                 formId: activeRequest.templateId,
                 submittedAt: activeRequest.createdAt || new Date().toISOString(),
-                data: JSON.parse(activeRequest.content),
+                data: (activeRequest.content || []).reduce((acc, curr) => {
+                    acc[curr.key] = curr.value;
+                    return acc;
+                }, {} as Record<string, any>),
                 schema: fetchedTemplate,
                 attachments: activeRequest.requestAttachmentDtos
             } as FormResponse;
         } catch (e) {
-            console.error('Failed to parse request content', e);
+            console.error('Failed to map request content', e);
             return null;
         }
     }, [activeRequest, fetchedTemplate]);

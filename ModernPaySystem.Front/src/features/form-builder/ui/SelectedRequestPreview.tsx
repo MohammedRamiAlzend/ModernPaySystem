@@ -49,12 +49,15 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
         );
     }
 
-    // Parse content JSON string to Record
+    // Convert InputValueDto[] to Record
     let parsedData = {};
     try {
-        parsedData = JSON.parse(request.content);
+        parsedData = (request.content || []).reduce((acc, curr) => {
+            acc[curr.key] = curr.value;
+            return acc;
+        }, {} as Record<string, any>);
     } catch (e) {
-        console.error("Failed to parse request content", e);
+        console.error("Failed to map request content", e);
     }
 
     // Adapt TemplateRequest to FormResponse for evaluator

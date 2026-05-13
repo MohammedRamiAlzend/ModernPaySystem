@@ -83,7 +83,12 @@ export const formEndpoints = {
         const formData = new FormData();
         formData.append('TemplateId', data.TemplateId);
         formData.append('DepartmentId', data.DepartmentId);
-        formData.append('Content', data.Content);
+        
+        // Handle structured content for model binding
+        data.Content.forEach((item, index) => {
+            formData.append(`Content[${index}].Key`, item.key);
+            formData.append(`Content[${index}].Value`, item.value);
+        });
         
         if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
             data.ReadOnlyUsers.forEach((userId) => {
