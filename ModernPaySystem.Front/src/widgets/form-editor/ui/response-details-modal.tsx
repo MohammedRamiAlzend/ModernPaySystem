@@ -174,7 +174,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                     totalCount={schema.fields.length}
                 />
 
-                <ResponseDetailsData visibleFields={visibleFields} />
+                <ResponseDetailsData requestId={response.id} visibleFields={visibleFields} />
 
                 <ResponseDetailsAttachments
                     attachmentsCount={response.attachments?.length || 0}

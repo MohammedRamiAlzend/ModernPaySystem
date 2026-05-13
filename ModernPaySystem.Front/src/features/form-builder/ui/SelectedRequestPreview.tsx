@@ -187,7 +187,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                     <TabsContent value="details" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
                         <div className="space-y-6">
                             <div className="bg-background/80 p-4 rounded-xl shadow-sm border">
-                                <ResponseDetailsData visibleFields={visibleFields} />
+                                <ResponseDetailsData hideTabs={true} visibleFields={visibleFields} />
                             </div>
                             
                             <AttachmentsGallery 
