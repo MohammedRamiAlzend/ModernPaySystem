@@ -1,5 +1,6 @@
 global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.DTOs;
 
 namespace ModernPaySystem.Application.Interfaces;
 
@@ -9,7 +10,7 @@ public interface IRequestService
 
     //Task<Result<IEnumerable<RequestDto>>> GetAllAsync(bool hasResponse);
 
-    Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize);
+    Task<Result<PagedList<RequestDto>>> GetPagedAsync(RequestPagedFilterDto filterDto);
 
     Task<Result<RequestDto>> GetByIdAsync(Guid id);
 
