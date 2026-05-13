@@ -260,5 +260,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(d => d.Users)
             .HasForeignKey(u => u.DepartmentId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        // Index on InputValue
+        modelBuilder.Entity<InputValue>()
+            .HasIndex(e => new { e.RequestTemplateValuesId, e.Key, e.Value })
+            .HasDatabaseName("IX_InputValue_Lookup");
+
+        // Index on RequestTemplateValues
+        modelBuilder.Entity<RequestTemplateValues>()
+            .HasIndex(e => e.RequestId)
+            .HasDatabaseName("IX_RequestTemplateValues_RequestId");
     }
 }

@@ -22,8 +22,8 @@ public class RequestService(
             logger.LogInformation("Fetching all requests");
             var requests = await unitOfWork.Requests.GetAllAsync(
                 null,
-                x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
-                        .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                        .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                      .Include(x => x.Approver)
                      .Include(x => x.Requester)
                      .Include(x => x.RequestAttachments));
@@ -65,10 +65,13 @@ public class RequestService(
     //    }
     //}
 
-    public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(int page, int pageSize)
+    public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(RequestPagedFilterDto? filterDto = null)
     {
         try
         {
+            var page = filterDto?.Page ?? 1;
+            var pageSize = filterDto?.PageSize ?? 10;
+
             logger.LogInformation("Fetching paged requests, page: {Page}, size: {PageSize}", page, pageSize);
 
             if (page <= 0)
@@ -76,9 +79,37 @@ public class RequestService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(page, pageSize, transform: i =>
-            i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
-                .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+            // Build filter expressions
+            List<Expression<Func<Request, bool>>> filters = new();
+            if (filterDto != null)
+            {
+                if (filterDto.FromDate.HasValue)
+                    filters.Add(r => r.CreatedAt >= filterDto.FromDate);
+                if (filterDto.ToDate.HasValue)
+                    filters.Add(r => r.CreatedAt <= filterDto.ToDate);
+                if (filterDto.InputValueFilters != null && filterDto.InputValueFilters.Count != 0)
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                            //filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key == ivf.Key && iv.Value == ivf.Value));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
+                            //filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key == ivf.Key));
+                        }
+                    }
+                }
+            }
+            var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
+                page, pageSize,
+                transform: i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                additionalFilters: filters
+            //logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or ? LogicalOperator.Or : LogicalOperator.And
             );
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -88,7 +119,7 @@ public class RequestService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching paged requests, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogError(ex, "Error fetching paged requests, page: {Page}, size: {PageSize}", filterDto?.Page, filterDto?.PageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -104,7 +135,7 @@ public class RequestService(
             var request = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == id,
                 transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments),
@@ -140,7 +171,7 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(r => r.RequestAttachments)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                 .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: RequestExpressions.ByRequesterIdWithIncludes(requesterId));
 
@@ -172,7 +203,7 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(r => r.RequestAttachments)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                 .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
                 additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.ByApproverId(approverId) });
 
@@ -368,8 +399,8 @@ public class RequestService(
 
             var updatedRequest = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == requestId,
-                transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments));
@@ -386,22 +417,50 @@ public class RequestService(
         }
     }
 
-    public async Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(int page, int pageSize, bool hasResponse)
+    public async Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(RequestPagedFilterDto? filterDto, bool hasResponse)
     {
         try
         {
+            var page = filterDto?.Page ?? 1;
+            var pageSize = filterDto?.PageSize ?? 10;
             logger.LogInformation("Fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", page, pageSize, hasResponse);
 
             if (page <= 0)
                 return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
 
+            // Build filter expressions
+            List<Expression<Func<Request, bool>>> filters = new();
+            filters.AddRange(RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId(), hasResponse));
+            if (filterDto != null)
+            {
+                if (filterDto.FromDate.HasValue)
+                    filters.Add(r => r.CreatedAt >= filterDto.FromDate);
+                if (filterDto.ToDate.HasValue)
+                    filters.Add(r => r.CreatedAt <= filterDto.ToDate);
+                if (filterDto.InputValueFilters != null && filterDto.InputValueFilters.Count != 0)
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
+                        }
+                    }
+                }
+            }
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
                 transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!.Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues),
-                additionalFilters: RequestExpressions.RequestsNeedAction(httpContextServiceManager.GetCurrentUserId(), hasResponse),
-                logicalOperator: ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or);
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                additionalFilters: filters,
+                logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or ? ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or : ExpressionBuilderLib.src.Core.Enums.LogicalOperator.And);
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -413,7 +472,7 @@ public class RequestService(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", page, pageSize, hasResponse);
+            logger.LogError(ex, "Error fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", filterDto?.Page, filterDto?.PageSize, hasResponse);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -438,8 +497,8 @@ public class RequestService(
                 page,
                 pageSize,
                 expression,
-                i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
 
                       .Include(x => x.Approver)
                       .Include(x => x.Requester)

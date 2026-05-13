@@ -1,3 +1,4 @@
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Services;
 using System.Runtime.Versioning;
@@ -50,7 +51,7 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     [EndpointPermission("requests.create", SubSystem.TransactionSystem, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromForm] CreateRequestDto request)
     {
-        var result = await requestService.CreateAsync(request, request.Files);
+        var result = await requestService.CreateAsync(request, request.Files!);
         return result.ToActionResult();
     }
 
@@ -63,12 +64,12 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
-    [HttpGet("paged")]
+    [HttpPost("paged")]
     [EndpointPermission("requests.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPaged(RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged requests, page: {Page}, size: {PageSize}", page, pageSize);
-        var result = await requestService.GetPagedAsync(page, pageSize);
+        logger.LogInformation("Getting paged requests, page: {Page}, size: {PageSize}", filterDto.Page, filterDto.PageSize);
+        var result = await requestService.GetPagedAsync(filterDto);
         return result.ToActionResult();
     }
 
