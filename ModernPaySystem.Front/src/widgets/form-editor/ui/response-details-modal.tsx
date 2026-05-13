@@ -4,9 +4,11 @@ import type { FormSchema, FormResponse, TemplateResponse } from '@/entities/form
 import { MessageSquare } from 'lucide-react';
 import { printFormResponse, generateFormPDF } from '@/shared/lib/pdf-generator';
 import { getVisibleFields, prepareFieldsForPrint } from '@/shared/lib/form-engine/response-evaluator';
-import { formEndpoints, useRequestResponses } from '@/features/form-builder/api/formEndpoints';
+import { formEndpoints, useRequestResponses, useRequestTransactionsHistory } from '@/features/form-builder/api/formEndpoints';
 import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
 import { useUIStore } from '@/app/store/uiStore';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
+import type { PrintOptions } from '@/shared/lib/pdf-generator';
 
 // Sub-components
 import { ResponseItem } from './response-details/ResponseItem';
@@ -38,7 +40,16 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
     const [isGeneratingImagesPDF, setIsGeneratingImagesPDF] = useState(false);
     const [selectedImage, setSelectedImage] = useState<ZipImage | null>(null);
 
+    // Print options state with localStorage persistence
+    const [includeResponses, setIncludeResponses] = useState(() =>
+        localStorage.getItem('print_include_responses') !== 'false'
+    );
+    const [includeReferrals, setIncludeReferrals] = useState(() =>
+        localStorage.getItem('print_include_referrals') !== 'false'
+    );
+
     const { data: responses = [] } = useRequestResponses(response?.id || null);
+    const { data: transactions = [] } = useRequestTransactionsHistory(response?.id || null);
 
     // Load images from ZIP when modal opens
     useEffect(() => {
@@ -80,13 +91,64 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
         schema // ensure we're using the correct schema
     });
 
-    const handlePrint = () => {
+    const getPrintOptions = async (): Promise<PrintOptions> => {
+        const userIdsToResolve = new Set<string>();
+
+        if (includeResponses) {
+            responses.forEach((r: any) => {
+                if (r.respondedByUserId) userIdsToResolve.add(r.respondedByUserId);
+            });
+        }
+
+        if (includeReferrals) {
+            transactions.forEach(t => {
+                if (t.createdByUserId) userIdsToResolve.add(t.createdByUserId);
+            });
+        }
+
+        const userNamesMap = await resolveUserNames(Array.from(userIdsToResolve));
+
+        const printOptions: PrintOptions = {
+            direction: 'rtl'
+        };
+
+        if (includeResponses && responses.length > 0) {
+            const sortedResponses = [...responses].sort((a, b) =>
+                new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
+            );
+
+            printOptions.responses = sortedResponses.map(r => ({
+                userName: userNamesMap.get(r.respondedByUserId!) || r.respondedByUserId!,
+                content: r.comment || '',
+                date: new Date(r.createdAt || '').toLocaleString('ar-EG'),
+                type: 'response'
+            }));
+
+            // Last response is the final one
+            printOptions.finalResponse = printOptions.responses[printOptions.responses.length - 1];
+        }
+
+        if (includeReferrals && transactions.length > 0) {
+            printOptions.referrals = transactions.map(t => ({
+                userName: userNamesMap.get(t.createdByUserId!) || t.createdByUserId!,
+                content: t.notes || 'إحالة بدون ملاحظات',
+                date: new Date(t.createdAt || '').toLocaleString('ar-EG'),
+                type: 'referral'
+            }));
+        }
+
+        return printOptions;
+    };
+
+    const handlePrint = async () => {
         const printFields = prepareFieldsForPrint({ ...response, schema });
+        const options = await getPrintOptions();
+
         printFormResponse(
             schema.title,
             new Date(response.submittedAt).toLocaleString('ar-EG'),
             printFields,
-            'rtl'
+            options
         );
     };
 
@@ -94,11 +156,13 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
         setIsGeneratingPDF(true);
         try {
             const printFields = prepareFieldsForPrint({ ...response, schema });
+            const options = await getPrintOptions();
+
             await generateFormPDF(
                 schema.title,
                 new Date(response.submittedAt).toLocaleString('ar-EG'),
                 printFields,
-                'rtl'
+                options
             );
         } catch (error) {
             console.error('Error generating PDF:', error);
@@ -163,6 +227,10 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                     attachmentsCount={response.attachments?.length || 0}
                     isAllImages={isAllImages}
                     hasZipImages={zipImages.length > 0}
+                    includeResponses={includeResponses}
+                    setIncludeResponses={setIncludeResponses}
+                    includeReferrals={includeReferrals}
+                    setIncludeReferrals={setIncludeReferrals}
                 />
             }
         >
