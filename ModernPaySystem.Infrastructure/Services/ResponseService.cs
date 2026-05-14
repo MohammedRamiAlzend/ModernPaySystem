@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.DTOs;
 using System.Linq.Expressions;
 
 namespace ModernPaySystem.Infrastructure.Services;
@@ -73,25 +74,47 @@ public class ResponseService(
         }
     }
 
-    public async Task<Result<PagedList<ResponseDto>>> GetByRequestIdAsync(Guid requestId, int page, int pageSize)
+    public async Task<Result<PagedList<ResponseDto>>> GetByRequestIdAsync(Guid requestId, RequestPagedFilterDto filterDto)
     {
         try
         {
-            logger.LogInformation("Fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, page, pageSize);
-
-            if (page <= 0)
+            logger.LogInformation("Fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, filterDto.Page, filterDto.PageSize);
+            if (filterDto.Page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100)
+            if (filterDto.PageSize <= 0 || filterDto.PageSize > 100)
                 return ApplicationErrors.InvalidInput;
+            List<Expression<Func<Response, bool>>> filters = [];
 
+            if (filterDto != null)
+            {
+                if (filterDto.FromDate.HasValue)
+                    filters.Add(r => r.CreatedAt >= filterDto.FromDate);
+                if (filterDto.ToDate.HasValue)
+                    filters.Add(r => r.CreatedAt <= filterDto.ToDate);
+                if (filterDto.InputValueFilters != null && filterDto.InputValueFilters.Count != 0)
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
+                        }
+                    }
+                }
+            }
+            filters.AddRange(filters);
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
-                page,
-                pageSize,
+                filterDto!.Page,
+                filterDto.PageSize,
                 transform: i =>
                 i.Include(r => r.ResponseAttachments)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues),
-                additionalFilters: ResponseExpressions.ByRequestIdWithIncludes(requestId));
+                additionalFilters: filters);
 
             if (pagedResponses.IsError)
                 return pagedResponses.Errors;

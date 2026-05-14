@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.DTOs;
 
 namespace ModernPaySystem.Application.Interfaces;
 
@@ -8,7 +9,7 @@ public interface IResponseService
 
     Task<Result<ResponseDto>> GetByIdAsync(Guid id);
 
-    Task<Result<PagedList<ResponseDto>>> GetByRequestIdAsync(Guid requestId, int page, int pageSize);
+    Task<Result<PagedList<ResponseDto>>> GetByRequestIdAsync(Guid requestId, RequestPagedFilterDto filterDto);
 
     Task<Result<PagedList<ResponseDto>>> GetByResponderIdAsync(Guid responderId, int page, int pageSize);
 

@@ -1,3 +1,4 @@
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
@@ -17,12 +18,12 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    [HttpGet("by-request/{requestId}")]
+    [HttpPost("by-request/{requestId}")]
     [EndpointPermission("responses.get-by-request-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByRequestId(Guid requestId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetByRequestId(Guid requestId, [FromBody] RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, page, pageSize);
-        var result = await responseService.GetByRequestIdAsync(requestId, page, pageSize);
+        logger.LogInformation("Getting paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, filterDto.Page, filterDto.PageSize);
+        var result = await responseService.GetByRequestIdAsync(requestId, filterDto);
         return result.ToActionResult();
     }
 
