@@ -16,7 +16,6 @@ import type {
     RequestTransactionDto,
     TemplateOwnershipDto,
     UserTemplateOwnershipDto,
-    InputValueFilterDto,
     RequestPagedFilterDto
 } from '@/entities/form/model/types';
 
@@ -24,7 +23,6 @@ import type {
 
 export const formEndpoints = {
     // Templates 
-    // هون استدعيت  متل العادة 
     createTemplate: async (data: CreateTemplateDto): Promise<{ data: Template }> => {
         const response = await api.post('/Templates', data);
         return response.data;
@@ -85,19 +83,19 @@ export const formEndpoints = {
         const formData = new FormData();
         formData.append('TemplateId', data.TemplateId);
         formData.append('DepartmentId', data.DepartmentId);
-        
+
         // Handle structured content for model binding
         data.Content.forEach((item, index) => {
             formData.append(`Content[${index}].Key`, item.key);
-            
+
             // Handle complex types (arrays, objects) by stringifying them
-            const valueToAppend = (typeof item.value === 'object' && item.value !== null) 
-                ? JSON.stringify(item.value) 
+            const valueToAppend = (typeof item.value === 'object' && item.value !== null)
+                ? JSON.stringify(item.value)
                 : String(item.value ?? '');
-                
+
             formData.append(`Content[${index}].Value`, valueToAppend);
         });
-        
+
         if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
             data.ReadOnlyUsers.forEach((userId) => {
                 formData.append('ReadOnlyUsers', userId);
@@ -231,7 +229,7 @@ export const formEndpoints = {
         if (data.notes) formData.append('Notes', data.notes);
         if (data.parentTransactionId) formData.append('ParentTransactionId', data.parentTransactionId);
         formData.append('CurrentUserHolderId', data.targetUserId);
-        
+
         if (data.files && data.files.length > 0) {
             data.files.forEach((file) => {
                 formData.append('Files', file);
@@ -268,8 +266,8 @@ export const formEndpoints = {
 // --- Hooks ---
 
 export const useRequests = (hasResponse: boolean = false, filterOrPage: RequestPagedFilterDto | number = 1, pageSize: number = 15) => {
-    const filter = typeof filterOrPage === 'object' 
-        ? filterOrPage 
+    const filter = typeof filterOrPage === 'object'
+        ? filterOrPage
         : { page: filterOrPage, pageSize };
 
     return useQuery({
@@ -301,9 +299,9 @@ export const useTemplates = (showExternal: boolean = false) => {
         queryFn: async (): Promise<Template[]> => {
             const res = await formEndpoints.getTemplates();
             const filterFn = (t: Template) => showExternal || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"));
-            
+
             if (Array.isArray(res)) return res.filter(filterFn);
-            
+
             // Handle if data is wrapped in { data: [] }
             if (res && !Array.isArray(res) && 'data' in res && Array.isArray(res.data)) {
                 return (res.data as Template[]).filter(filterFn);
@@ -394,16 +392,16 @@ export const useRequestResponses = (requestId: string | null) => {
         queryFn: async () => {
             if (!requestId) return [];
             const res = await formEndpoints.getResponsesByRequestId(requestId);
-            
+
             // Handle PagedResult wrapping: { data: { items: [...] } }
             if (res && typeof res === 'object' && 'data' in res) {
                 const inner = res.data as any;
                 if (Array.isArray(inner)) return inner;
                 if (inner && Array.isArray(inner.items)) return inner.items;
             }
-            
+
             if (Array.isArray(res)) return res as TemplateResponse[];
-            
+
             return [] as TemplateResponse[];
         },
         enabled: !!requestId,

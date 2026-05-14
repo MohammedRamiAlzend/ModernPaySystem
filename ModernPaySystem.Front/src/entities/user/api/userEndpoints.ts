@@ -2,7 +2,7 @@ import api from '@/shared/api/baseApi';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 import { queryKeys } from '@/shared/constants/query-keys';
-import type { UserReference } from '@/entities/form/model/types';
+import type { UserReference, Template } from '@/entities/form/model/types';
 
 export const userEndpoints = {
     getAllUsers: async (): Promise<{ data: UserReference[] }> => {

@@ -10,13 +10,13 @@ export const useVisitedTemplates = () => {
         queryFn: async () => {
             const res = await userEndpoints.getVisitedTemplates();
             const templates = res.data || [];
-            
+
             return templates.map(t => {
                 try {
                     const parsed = JSON.parse(t.contentAsJson);
                     const baseSchema = Array.isArray(parsed) ? parsed[0] : parsed;
                     if (!baseSchema || typeof baseSchema !== 'object') return null;
-                    
+
                     const schema = baseSchema as FormSchema;
                     schema.id = t.id;
                     schema.title = t.templateName;

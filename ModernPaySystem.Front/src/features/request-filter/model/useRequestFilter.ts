@@ -1,12 +1,24 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
 import { useVisitedTemplates } from '../api/useVisitedTemplates';
-import type { RequestPagedFilterDto, InputValueFilterDto, FormSchema } from '@/entities/form/model/types';
+import { useQueryState, parseAsInteger } from 'nuqs';
+import type { RequestPagedFilterDto, InputValueFilterDto } from '@/entities/form/model/types';
 
 interface FilterPreference {
     templateId: string;
     fieldKeys: string[];
 }
+
+const getStoredPrefs = (key: string): FilterPreference | null => {
+    if (typeof window === 'undefined') return null;
+    const saved = localStorage.getItem(key);
+    if (!saved) return null;
+    try {
+        return JSON.parse(saved);
+    } catch {
+        return null;
+    }
+};
 
 export const useRequestFilter = (pageKey: string) => {
     const user = useAuthStore(state => state.user);
@@ -14,24 +26,22 @@ export const useRequestFilter = (pageKey: string) => {
     
     const prefKey = useMemo(() => `filter_prefs_${user?.id}_${pageKey}`, [user?.id, pageKey]);
     
-    const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
-    const [selectedFieldKeys, setSelectedFieldKeys] = useState<string[]>([]);
+    const [selectedTemplateId, setSelectedTemplateId] = useState<string>(() => {
+        const prefs = getStoredPrefs(`filter_prefs_${user?.id}_${pageKey}`);
+        return prefs?.templateId || '';
+    });
+
+    const [selectedFieldKeys, setSelectedFieldKeys] = useState<string[]>(() => {
+        const prefs = getStoredPrefs(`filter_prefs_${user?.id}_${pageKey}`);
+        return prefs?.fieldKeys || [];
+    });
+
     const [filterValues, setFilterValues] = useState<Record<string, string>>({});
     const [appliedFilters, setAppliedFilters] = useState<Record<string, string>>({});
-    
-    // Load preferences from localStorage
-    useEffect(() => {
-        const saved = localStorage.getItem(prefKey);
-        if (saved) {
-            try {
-                const parsed: FilterPreference = JSON.parse(saved);
-                setSelectedTemplateId(parsed.templateId || '');
-                setSelectedFieldKeys(parsed.fieldKeys || []);
-            } catch (e) {
-                console.error('Failed to parse filter preferences', e);
-            }
-        }
-    }, [prefKey]);
+
+    // Pagination state
+    const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
+    const pageSize = 15;
     
     // Save preferences to localStorage
     useEffect(() => {
@@ -51,7 +61,7 @@ export const useRequestFilter = (pageKey: string) => {
     const availableFields = useMemo(() => 
         selectedTemplate?.fields || [],
     [selectedTemplate]);
-
+    
     const handleTemplateChange = (templateId: string) => {
         setSelectedTemplateId(templateId);
         setSelectedFieldKeys([]);
@@ -76,24 +86,26 @@ export const useRequestFilter = (pageKey: string) => {
 
     const applyFilters = () => {
         setAppliedFilters({ ...filterValues });
+        setPage(1); // Reset to page 1 when applying filters
     };
 
     const resetFilters = () => {
         setFilterValues({});
         setAppliedFilters({});
+        setPage(1);
     };
 
     const filterParams = useMemo((): RequestPagedFilterDto => {
         const inputValueFilters: InputValueFilterDto[] = Object.entries(appliedFilters)
-            .filter(([_, value]) => value.trim() !== '')
+            .filter(([, value]) => value.trim() !== '')
             .map(([key, value]) => ({ key, value }));
 
         return {
-            page: 1, // Reset to page 1 on filter
-            pageSize: 15,
+            page: page,
+            pageSize: pageSize,
             inputValueFilters: inputValueFilters.length > 0 ? inputValueFilters : undefined
         };
-    }, [appliedFilters]);
+    }, [appliedFilters, page, pageSize]);
 
     return {
         visitedTemplates,
@@ -103,6 +115,8 @@ export const useRequestFilter = (pageKey: string) => {
         availableFields,
         selectedFieldKeys,
         filterValues,
+        page,
+        setPage,
         handleTemplateChange,
         handleFieldSelectionChange,
         handleFilterValueChange,
