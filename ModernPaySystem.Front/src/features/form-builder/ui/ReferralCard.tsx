@@ -15,10 +15,10 @@ import { TemplateTitle } from './TemplateTitle';
 import { AttachmentsGallery } from './AttachmentsGallery';
 import { useAttachments } from '../model/useAttachments';
 import { formEndpoints } from '../api/formEndpoints';
-import type { RequestTransactionDto, FormResponse } from '@/entities/form/model/types';
+import type { RequestTransactionDto } from '@/entities/form/model/types';
 import { useForms } from '../model/useForms';
+import { useRequestDetails } from '../model/useRequestDetails';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
-import React from 'react';
 
 interface ReferralCardProps {
     referral: RequestTransactionDto;
@@ -57,8 +57,7 @@ const ReferralAttachments = ({ referral }: { referral: RequestTransactionDto }) 
 
 export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProps) => {
     const { data: templates = [] } = useForms(true);
-
-    const [isDetailsModalOpen, setIsDetailsModalOpen] = React.useState(false);
+    const { isModalOpen, setIsModalOpen, viewingResponse, handleViewRequest, isTemplateLoading } = useRequestDetails();
 
     const getTemplateFields = (templateId: string) => {
         return templates.find(t => t.id === templateId)?.fields || [];
@@ -68,35 +67,16 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
         return templates.find(t => t.id === templateId)?.title || 'خدمة غير معروف';
     };
 
-    const pseudoResponse: FormResponse | null = React.useMemo(() => {
-        const req = referral.request;
-        if (!req) return null;
-
-        const template = templates.find(t => t.id === req.templateId) || null;
-
-        // Convert InputValueDto[] to Record
-        let parsedData = {};
-        try {
-            parsedData = (req.content || []).reduce((acc, curr) => {
-                acc[curr.key] = curr.value;
-                return acc;
-            }, {} as Record<string, any>);
-        } catch (e) {
-            console.error("Failed to map request content", e);
-        }
-
-        return {
-            ...req,
-            id: req.id,
-            formId: req.templateId,
-            submittedAt: req.createdAt || '',
-            data: parsedData as Record<string, any>,
-            schema: template || { id: req.templateId, title: '...', fields: [], settings: {} as any } as any
-        };
-    }, [referral.request, templates]);
-
     return (
-        <Card className="group overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 bg-card/50 backdrop-blur-sm">
+        <Card className="group overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 bg-card/50 backdrop-blur-sm relative">
+            {isTemplateLoading && (
+                <div className="absolute inset-0 z-50 bg-background/50 backdrop-blur-[2px] flex items-center justify-center rounded-2xl">
+                    <div className="bg-white p-3 rounded-2xl shadow-xl flex items-center gap-3 border animate-in zoom-in">
+                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs font-bold text-primary">جاري جلب البيانات...</span>
+                    </div>
+                </div>
+            )}
             <div className="flex flex-col lg:flex-row">
                 {/* Side info panel */}
                 <div className={`lg:w-72 p-6 flex flex-col gap-4 border-l border-primary/5 ${isPending ? 'bg-amber-500/5' : 'bg-sky-500/5'}`}>
@@ -154,7 +134,11 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
                         <Button
                             variant="outline"
                             className="w-full h-10 rounded-xl font-bold border-primary/20 hover:bg-primary/5 text-primary"
-                            onClick={() => setIsDetailsModalOpen(true)}
+                            onClick={() => {
+                                if (referral.request) {
+                                    handleViewRequest(referral.request);
+                                }
+                            }}
                         >
                             <Eye className="w-4 h-4 ml-2" />
                             عرض التفاصيل
@@ -215,12 +199,12 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
                 </div>
             </div>
 
-            {pseudoResponse && (
+            {viewingResponse && (
                 <ResponseDetailsModal
-                    isOpen={isDetailsModalOpen}
-                    onClose={() => setIsDetailsModalOpen(false)}
-                    response={pseudoResponse}
-                    schema={pseudoResponse.schema}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    response={viewingResponse}
+                    schema={viewingResponse.schema}
                 />
             )}
         </Card>
