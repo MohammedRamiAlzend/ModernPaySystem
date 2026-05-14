@@ -56,7 +56,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
             <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-8 border-2 border-dashed rounded-xl bg-muted/5">
                 <FileText className="w-12 h-12 mb-4 opacity-20" />
                 <p className="text-center font-bold">يرجى اختيار طلب من القائمة لمشاهدة التفاصيل</p>
-                <p className="text-xs text-center mt-2 opacity-60 px-8">سيتم عرض كافة المعلومات والبيانات الخاصة بالطلب المختار بجانب نموذج الرد لتسهيل العملية</p>
+                <p className="text-xs text-center mt-2 opacity-60 px-8">سيتم عرض كافة المعلومات والبيانات الخاصة بالطلب المختار بجانب الخدمة الرد لتسهيل العملية</p>
             </div>
         );
     }

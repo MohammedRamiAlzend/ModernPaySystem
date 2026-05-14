@@ -68,12 +68,12 @@ export const UserTemplatesDialog: React.FC<UserTemplatesDialogProps> = ({ user, 
                 <div className="space-y-6 py-4">
                     <div className="flex gap-2 items-end">
                         <div className="flex-1">
-                            <label className="text-sm font-medium mb-1 block">منح صلاحية وصول لنموذج جديد</label>
+                            <label className="text-sm font-medium mb-1 block">منح صلاحية وصول الخدمة جديد</label>
                             <SearchableSelect
                                 options={templateOptions}
                                 value={selectedTemplate}
                                 onValueChange={setSelectedTemplate}
-                                placeholder="ابحث عن نموذج..."
+                                placeholder="ابحث عن الخدمة..."
                             />
                         </div>
                         <Button

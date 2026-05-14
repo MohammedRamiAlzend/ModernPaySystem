@@ -55,7 +55,7 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
     const handleRemoveDepartment = (departmentId: string, departmentName: string) => {
         showConfirm({
             title: 'إزالة الصلاحية',
-            message: `هل أنت متأكد من إزالة صلاحية القسم (${departmentName}) من هذا النموذج؟`,
+            message: `هل أنت متأكد من إزالة صلاحية القسم (${departmentName}) من هذه الخدمة `,
             variant: 'destructive',
             confirmLabel: 'إزالة',
             onConfirm: () => removeDeptMut.mutate({ templateId, departmentId })
@@ -72,7 +72,7 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
     const handleRemoveUser = (userId: string, userName: string) => {
         showConfirm({
             title: 'إزالة الصلاحية',
-            message: `هل أنت متأكد من إزالة الصلاحية المباشرة للمستخدم (${userName}) من هذا النموذج؟`,
+            message: `هل أنت متأكد من إزالة الصلاحية المباشرة للمستخدم (${userName}) من هذه الخدمة `,
             variant: 'destructive',
             confirmLabel: 'إزالة',
             onConfirm: () => removeUserMut.mutate({ templateId, userId })
@@ -83,8 +83,8 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
         <BaseModal
             isOpen={isOpen}
             onClose={onClose}
-            title="إدارة صلاحيات النموذج"
-            description="حدد الأقسام والمستخدمين المصرح لهم باستخدام هذا النموذج"
+            title="إدارة صلاحيات الخدمة "
+            description="حدد الأقسام والمستخدمين المصرح لهم باستخدام هذا الخدمة "
             maxWidth="xl"
             maxHeight="xl"
         >

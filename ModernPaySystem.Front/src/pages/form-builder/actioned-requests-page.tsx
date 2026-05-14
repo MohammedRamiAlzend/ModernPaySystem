@@ -34,7 +34,7 @@ export const ActionedRequestsPage = () => {
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold">أرشيف الطلبات المستجاب لها</h1>
+            <h1 className="text-3xl font-bold"> الطلبات المستجاب لها</h1>
 
             <RequestFilterPanel filter={filter} />
 
@@ -42,7 +42,7 @@ export const ActionedRequestsPage = () => {
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-semibold flex items-center gap-2 text-primary">
                         <History className="w-5 h-5" />
-                        الطلبات المؤرشفة
+                        الطلبات
                     </h2>
                     <div className="flex items-center gap-4">
                         <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
@@ -61,9 +61,9 @@ export const ActionedRequestsPage = () => {
                     <table className="w-full text-right border-collapse" dir="rtl">
                         <thead className="bg-muted/30 sticky top-0 z-10 backdrop-blur-md">
                             <tr>
-                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم النموذج (Form)</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم الخدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">البيانات المقدمة</th>
-                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم (Requester)</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ التقديم</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">الإجراءات</th>
                             </tr>
@@ -86,9 +86,9 @@ export const ActionedRequestsPage = () => {
                                                     <FileText className="w-4 h-4 text-primary" />
                                                 </div>
                                                 <span className="font-bold text-sm">
-                                                    <TemplateTitle 
-                                                        templateId={request.templateId} 
-                                                        fallbackTitle={templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"} 
+                                                    <TemplateTitle
+                                                        templateId={request.templateId}
+                                                        fallbackTitle={templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
                                                     />
                                                 </span>
                                             </div>

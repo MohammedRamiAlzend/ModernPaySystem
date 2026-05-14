@@ -65,15 +65,15 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
     };
 
     const getTemplateTitleFallback = (templateId: string) => {
-        return templates.find(t => t.id === templateId)?.title || 'نموذج غير معروف';
+        return templates.find(t => t.id === templateId)?.title || 'خدمة غير معروف';
     };
 
     const pseudoResponse: FormResponse | null = React.useMemo(() => {
         const req = referral.request;
         if (!req) return null;
-        
+
         const template = templates.find(t => t.id === req.templateId) || null;
-        
+
         // Convert InputValueDto[] to Record
         let parsedData = {};
         try {

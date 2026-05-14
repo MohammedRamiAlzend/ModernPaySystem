@@ -19,7 +19,6 @@ export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProp
         visitedTemplates,
         isTemplatesLoading,
         selectedTemplateId,
-        selectedTemplate,
         availableFields,
         selectedFieldKeys,
         filterValues,
@@ -72,8 +71,8 @@ export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProp
                                 options={templateOptions}
                                 value={selectedTemplateId}
                                 onValueChange={handleTemplateChange}
-                                placeholder="اختر النموذج أولاً..."
-                                searchPlaceholder="ابحث عن نموذج..."
+                                placeholder="اختر الخدمة أولاً..."
+                                searchPlaceholder="ابحث عن الخدمة..."
                                 isLoading={isTemplatesLoading}
                             />
                         </div>

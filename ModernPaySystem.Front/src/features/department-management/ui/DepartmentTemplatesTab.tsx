@@ -13,18 +13,18 @@ interface DepartmentTemplatesTabProps {
 
 export const DepartmentTemplatesTab: React.FC<DepartmentTemplatesTabProps> = ({ departmentId, departmentName }) => {
     const { showConfirm } = useUIStore();
-    
+
     // Fetch assigned templates
     const { data: assignedTemplates = [], isLoading } = useTemplatesByDepartment(departmentId);
-    
+
     // Fetch all templates for assignment
     const { data: allTemplates = [] } = useForms();
-    
+
     const addMut = useAddTemplateOwnership();
     const removeMut = useRemoveTemplateOwnership();
-    
+
     const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-    
+
     const unassignedTemplates = allTemplates.filter(t => !assignedTemplates.some(at => at.id === t.id));
     const templateOptions = unassignedTemplates.map(t => ({ value: t.id, label: t.title }));
 
@@ -37,8 +37,8 @@ export const DepartmentTemplatesTab: React.FC<DepartmentTemplatesTabProps> = ({ 
 
     const handleRemove = (templateId: string, templateTitle: string) => {
         showConfirm({
-            title: 'إزالة النموذج',
-            message: `هل أنت متأكد من إزالة الصلاحية للنموذج (${templateTitle}) من قسم ${departmentName}؟`,
+            title: 'إزالة الخدمة ',
+            message: `هل أنت متأكد من إزالة الصلاحية للخدمة  (${templateTitle}) من قسم ${departmentName}؟`,
             variant: 'destructive',
             confirmLabel: 'إزالة',
             onConfirm: () => removeMut.mutate({ templateId, departmentId })
@@ -49,16 +49,16 @@ export const DepartmentTemplatesTab: React.FC<DepartmentTemplatesTabProps> = ({ 
         <div className="space-y-6">
             <div className="flex gap-2 items-end">
                 <div className="flex-1">
-                    <label className="text-sm font-medium mb-1 block">إسناد نموذج جديد للقسم</label>
+                    <label className="text-sm font-medium mb-1 block">إسناد خدمة جديد للقسم</label>
                     <SearchableSelect
                         options={templateOptions}
                         value={selectedTemplate}
                         onValueChange={setSelectedTemplate}
-                        placeholder="ابحث عن نموذج..."
+                        placeholder="ابحث عن خدمة..."
                     />
                 </div>
-                <Button 
-                    onClick={handleAssign} 
+                <Button
+                    onClick={handleAssign}
                     disabled={!selectedTemplate || addMut.isPending}
                     className="gap-2"
                 >
@@ -82,9 +82,9 @@ export const DepartmentTemplatesTab: React.FC<DepartmentTemplatesTabProps> = ({ 
                                     </div>
                                     <span className="font-medium">{template.title}</span>
                                 </div>
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                                     onClick={() => handleRemove(template.id, template.title)}
                                 >
