@@ -14,7 +14,7 @@ interface RequestFilterPanelProps {
 }
 
 export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProps) => {
-    const [isExpanded, setIsExpanded] = useState(true);
+    const [isExpanded, setIsExpanded] = useState(false);
     const {
         visitedTemplates,
         isTemplatesLoading,
