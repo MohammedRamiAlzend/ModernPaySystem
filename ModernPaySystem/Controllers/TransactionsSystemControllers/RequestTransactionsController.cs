@@ -1,3 +1,4 @@
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
@@ -76,10 +77,10 @@ public class RequestTransactionsController(IRequestTransactionService requestTra
 
     [HttpGet]
     [EndpointPermission("request-transactions.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetPaged([FromQuery] TransactionStatus status, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPaged([FromQuery] TransactionStatus status, RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged request transactions, page: {Page}, size: {PageSize}, status: {Status}", page, pageSize, status);
-        var result = await requestTransactionService.GetPagedAsync(page, pageSize, status);
+        logger.LogInformation("Getting paged request transactions, page: {Page}, size: {PageSize}, status: {Status}", filterDto.Page, filterDto.PageSize, status);
+        var result = await requestTransactionService.GetPagedAsync(filterDto, status);
         return result.ToActionResult();
     }
 

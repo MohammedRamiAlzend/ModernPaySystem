@@ -1,5 +1,6 @@
 using ExpressionBuilderLib.src.Core;
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.DTOs;
 using System.Linq.Expressions;
 
 namespace ModernPaySystem.Infrastructure.Services;
@@ -10,15 +11,15 @@ public class RequestTransactionService(
     IHttpContextServiceManager httpContextServiceManager,
     ILogger<RequestTransactionService> logger) : IRequestTransactionService
 {
-    public async Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(int page, int pageSize, TransactionStatus status)
+    public async Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(RequestPagedFilterDto filterDto, TransactionStatus status)
     {
         try
         {
-            logger.LogInformation("Fetching paged request transactions, page: {Page}, size: {PageSize}, status: {Status}", page, pageSize, status);
+            logger.LogInformation("Fetching paged request transactions, page: {Page}, size: {PageSize}, status: {Status}", filterDto.Page, filterDto.PageSize, status);
 
-            if (page <= 0)
+            if (filterDto.Page <= 0)
                 return ApplicationErrors.InvalidInput;
-            if (pageSize <= 0 || pageSize > 100)
+            if (filterDto.PageSize <= 0 || filterDto.PageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
@@ -32,14 +33,33 @@ public class RequestTransactionService(
             else
             {
                 filters.Add(RequestTransactionExpressions.CreatedByUserId(currentUserId.ToString()));
-                //filters.Add(RequestTransactionExpressions.TransferStatus(status));
             }
-
+            if (filterDto != null)
+            {
+                if (filterDto.FromDate.HasValue)
+                    filters.Add(r => r.CreatedAt >= filterDto.FromDate);
+                if (filterDto.ToDate.HasValue)
+                    filters.Add(r => r.CreatedAt <= filterDto.ToDate);
+                if (filterDto.InputValueFilters != null && filterDto.InputValueFilters.Count != 0)
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
+                        }
+                    }
+                }
+            }
             var combinedExp = ExpressionCombiner.AndAll(filters.ToArray());
 
             var pagedTransactions = await unitOfWork.RequestTransactions.GetPagedAsync(
-                page,
-                pageSize,
+                filterDto.Page,
+                filterDto.PageSize,
                 combinedExp,
                 transform: x => x.Include(x => x.ParentTransaction)
                                  .Include(x => x.RequestTransactionAttachments)
@@ -55,11 +75,11 @@ public class RequestTransactionService(
                 return pagedTransactions.Errors;
 
             var transactionDtos = pagedTransactions.Value!.Items.Select(t => t.ToDto()).ToList();
-            return new PagedList<RequestTransactionDto>(transactionDtos, pagedTransactions.Value.TotalItems, page, pageSize);
+            return new PagedList<RequestTransactionDto>(transactionDtos, pagedTransactions.Value.TotalItems, filterDto.Page, filterDto.PageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching paged request transactions, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogError(ex, "Error fetching paged request transactions, page: {Page}, size: {PageSize}", filterDto.Page, filterDto.PageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
