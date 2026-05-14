@@ -58,8 +58,8 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
         return NAVIGATION_ITEMS.map(item => {
             let children = item.children || [];
             // تعطيل مؤقت لشرط
+            // console.log('user', user);
             // تصفية العناصر بناءً على صلاحية رئيس القسم
-            console.log('user', user);
             if (!user?.isDepartmentHead) {
                 children = children.filter(child =>
                     child.title !== "الرد على الطلبات" &&
