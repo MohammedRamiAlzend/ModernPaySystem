@@ -120,11 +120,11 @@ public class ResponseService(
                 return pagedResponses.Errors;
 
             var responseDtos = pagedResponses.Value!.Items.Select(r => r.ToDto()).ToList();
-            return new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, page, pageSize);
+            return new PagedList<ResponseDto>(responseDtos, pagedResponses.Value.TotalItems, filterDto.Page, filterDto.PageSize);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, page, pageSize);
+            logger.LogError(ex, "Error fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, filterDto.Page, filterDto.PageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
