@@ -27,21 +27,21 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         return result.ToActionResult();
     }
 
-    [HttpGet("by-responder/{responderId}")]
+    [HttpPost("by-responder/{responderId}")]
     [EndpointPermission("responses.get-by-responder-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByResponderId(Guid responderId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetByResponderId(Guid responderId, [FromBody] RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged responses for responder: {ResponderId}, page: {Page}, size: {PageSize}", responderId, page, pageSize);
-        var result = await responseService.GetByResponderIdAsync(responderId, page, pageSize);
+        logger.LogInformation("Getting paged responses for responder: {ResponderId}, page: {Page}, size: {PageSize}", responderId, filterDto.Page, filterDto.PageSize);
+        var result = await responseService.GetByResponderIdAsync(responderId, filterDto);
         return result.ToActionResult();
     }
 
-    [HttpGet("by-requester/{requesterId}")]
+    [HttpPost("by-requester/{requesterId}")]
     [EndpointPermission("responses.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromBody] RequestPagedFilterDto filterDto)
     {
-        logger.LogInformation("Getting paged responses for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, page, pageSize);
-        var result = await responseService.GetResponsesByRequesterIdAsync(requesterId, page, pageSize);
+        logger.LogInformation("Getting paged responses for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
+        var result = await responseService.GetResponsesByRequesterIdAsync(requesterId, filterDto);
         return result.ToActionResult();
     }
 

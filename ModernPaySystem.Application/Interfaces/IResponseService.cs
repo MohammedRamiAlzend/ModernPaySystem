@@ -11,9 +11,9 @@ public interface IResponseService
 
     Task<Result<PagedList<ResponseDto>>> GetByRequestIdAsync(Guid requestId, RequestPagedFilterDto filterDto);
 
-    Task<Result<PagedList<ResponseDto>>> GetByResponderIdAsync(Guid responderId, int page, int pageSize);
+    Task<Result<PagedList<ResponseDto>>> GetByResponderIdAsync(Guid responderId, RequestPagedFilterDto filterDto);
 
-    Task<Result<PagedList<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, int page, int pageSize);
+    Task<Result<PagedList<ResponseDto>>> GetResponsesByRequesterIdAsync(Guid requesterId, RequestPagedFilterDto filterDto);
 
     Task<Result<Success>> CreateAsync(CreateResponseDto response);
 
