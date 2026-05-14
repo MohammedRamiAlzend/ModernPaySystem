@@ -56,7 +56,7 @@ export const MyResponsesPage = () => {
                     <table className="w-full text-right border-collapse" dir="rtl">
                         <thead className="bg-muted/30 sticky top-0 z-10 backdrop-blur-md">
                             <tr>
-                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم النموذج</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم الخدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">محتوى الطلب</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">الموافق/المسؤول</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ الرد</th>
