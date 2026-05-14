@@ -64,14 +64,14 @@ export const ResponsesPage = () => {
         <AnimatedContainer className="container mx-auto p-4 space-y-6">
             <div className="flex items-center justify-between pb-4 border-b">
                 <div>
-                     <h1 className="text-3xl font-black text-primary">الردود والطلبات الواردة</h1>
-                     <p className="text-muted-foreground text-sm mt-1">قم بمراجعة الطلبات واتخاذ القرارات اللازمة بشأنها</p>
+                    <h1 className="text-3xl font-black text-primary">الطلبات الواردة</h1>
+                    <p className="text-muted-foreground text-sm mt-1">قم بمراجعة الطلبات واتخاذ القرارات اللازمة بشأنها</p>
                 </div>
                 <div className="flex items-center gap-3">
-                     <span className="px-4 py-2 bg-primary/5 text-primary text-xs font-bold rounded-2xl border border-primary/10 flex items-center gap-2">
-                         <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                         {requests.length} طلبات متاحة للمعالجة
-                     </span>
+                    <span className="px-4 py-2 bg-primary/5 text-primary text-xs font-bold rounded-2xl border border-primary/10 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                        {requests.length} طلبات متاحة للمعالجة
+                    </span>
                 </div>
             </div>
 

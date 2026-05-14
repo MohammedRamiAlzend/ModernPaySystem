@@ -34,7 +34,7 @@ export const ActionedRequestsPage = () => {
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold"> الطلبات المستجاب لها</h1>
+            <h1 className="text-3xl font-bold">الطلبات التي قمت بالرد عليها</h1>
 
             <RequestFilterPanel filter={filter} />
 

@@ -105,7 +105,7 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
                             <FileText className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex flex-col overflow-hidden">
-                            <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">نوع الطلب</span>
+                            <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">نوع الخدمة</span>
                             <span className="text-sm font-black truncate">
                                 <TemplateTitle
                                     templateId={referral.request?.templateId || ''}
