@@ -129,8 +129,8 @@ export const formEndpoints = {
         return response.data;
     },
 
-    getRequestsByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
-        const response = await api.get(`/Requests/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
+    getRequestsByRequesterId: async (requesterId: string, filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.post(`/Requests/by-requester/${requesterId}`, filterDto);
         return response.data;
     },
 
@@ -220,8 +220,8 @@ export const formEndpoints = {
     },
 
 
-    getResponsesByRequesterId: async (requesterId: string, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateResponse> }> => {
-        const response = await api.get(`/Responses/by-requester/${requesterId}?page=${page}&pageSize=${pageSize}`);
+    getResponsesByRequesterId: async (requesterId: string, filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<TemplateResponse> }> => {
+        const response = await api.post(`/Responses/by-requester/${requesterId}`, filterDto);
         return response.data;
     },
 
@@ -247,9 +247,8 @@ export const formEndpoints = {
         return response.data;
     },
 
-    getRequestTransactions: async (status?: number, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<RequestTransactionDto> }> => {
-        const statusQuery = status !== undefined ? `&status=${status}` : '';
-        const response = await api.get(`/RequestTransactions?page=${page}&pageSize=${pageSize}${statusQuery}`);
+    getRequestTransactions: async (status: number, filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<RequestTransactionDto> }> => {
+        const response = await api.post(`/RequestTransactions/paged?status=${status}`, filterDto);
         return response.data;
     },
 
@@ -412,12 +411,12 @@ export const useRequestResponses = (requestId: string | null) => {
     });
 };
 
-export const useResponsesByRequester = (requesterId: string | null, page: number = 1, pageSize: number = 10) => {
+export const useResponsesByRequester = (requesterId: string | null, filter: RequestPagedFilterDto) => {
     return useQuery({
-        queryKey: queryKeys.form.list({ type: 'responses', requester: requesterId, page, pageSize }),
+        queryKey: queryKeys.form.list({ type: 'responses', requester: requesterId, ...filter }),
         queryFn: async () => {
             if (!requesterId) return null;
-            const res = await formEndpoints.getResponsesByRequesterId(requesterId, page, pageSize);
+            const res = await formEndpoints.getResponsesByRequesterId(requesterId, filter);
             return res.data;
         },
         enabled: !!requesterId,
@@ -425,12 +424,12 @@ export const useResponsesByRequester = (requesterId: string | null, page: number
     });
 };
 
-export const useRequestsByRequester = (requesterId: string | null, page: number = 1, pageSize: number = 10) => {
+export const useRequestsByRequester = (requesterId: string | null, filter: RequestPagedFilterDto) => {
     return useQuery({
-        queryKey: queryKeys.form.list({ requester: requesterId, page, pageSize }),
+        queryKey: queryKeys.form.list({ requester: requesterId, ...filter }),
         queryFn: async () => {
             if (!requesterId) return null;
-            const res = await formEndpoints.getRequestsByRequesterId(requesterId, page, pageSize);
+            const res = await formEndpoints.getRequestsByRequesterId(requesterId, filter);
             return res.data;
         },
         enabled: !!requesterId,
@@ -438,11 +437,11 @@ export const useRequestsByRequester = (requesterId: string | null, page: number 
     });
 };
 
-export const useRequestTransactions = (status?: number, page: number = 1, pageSize: number = 10) => {
+export const useRequestTransactions = (status: number, filter: RequestPagedFilterDto) => {
     return useQuery({
-        queryKey: queryKeys.process.list({ status, page, pageSize }),
+        queryKey: queryKeys.process.list({ status, ...filter }),
         queryFn: async () => {
-            const res = await formEndpoints.getRequestTransactions(status, page, pageSize);
+            const res = await formEndpoints.getRequestTransactions(status, filter);
             return res.data;
         },
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]

@@ -77,8 +77,9 @@ public class RequestTransactionsController(IRequestTransactionService requestTra
 
     [HttpPost("paged")]
     [EndpointPermission("request-transactions.get-paged", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetPaged([FromQuery] TransactionStatus status, [FromBody] RequestPagedFilterDto filterDto)
+    public async Task<IActionResult> GetPaged([FromQuery] TransactionStatus status, [FromBody] RequestPagedFilterDto? filterDto)
     {
+        filterDto ??= new RequestPagedFilterDto();
         logger.LogInformation("Getting paged request transactions, page: {Page}, size: {PageSize}, status: {Status}", filterDto.Page, filterDto.PageSize, status);
         var result = await requestTransactionService.GetPagedAsync(filterDto, status);
         return result.ToActionResult();

@@ -6,6 +6,7 @@ import { Pagination } from '@/shared/ui/common/pagination';
 import { ProcessRequestModal } from '@/features/form-builder/ui/ProcessRequestModal';
 import { useReferralsLogic } from '@/features/form-builder/model/useReferralsLogic';
 import { ReferralCard } from '@/features/form-builder/ui/ReferralCard';
+import { RequestFilterPanel } from '@/features/request-filter/ui/RequestFilterPanel';
 
 interface ReferralsPageProps {
     status: number; // 0 for PendingAction, 1 for Transferred
@@ -16,6 +17,7 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
     const {
         page,
         setPage,
+        filter,
         pagedData,
         isLoadingData,
         isProcessModalOpen,
@@ -67,6 +69,8 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
                     </div>
                 </div>
             </div>
+
+            <RequestFilterPanel filter={filter} />
 
             {/* Content Section */}
             <div className="grid grid-cols-1 gap-6">

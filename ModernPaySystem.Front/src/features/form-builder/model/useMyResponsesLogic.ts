@@ -1,5 +1,5 @@
-import { useQueryState, parseAsInteger } from 'nuqs';
 import { useResponsesByRequester } from '../api/formEndpoints';
+import { useRequestFilter } from '@/features/request-filter/model/useRequestFilter';
 import { useForms } from './useForms';
 import { useRequestDetails } from './useRequestDetails';
 import { useAuthStore } from '@/app/store/authStore';
@@ -9,8 +9,8 @@ const SEEN_RESPONSES_KEY = 'seen_responses_ids';
 
 export const useMyResponsesLogic = () => {
     const { user } = useAuthStore();
-    const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
-    const { data: pagedResponses, isLoading } = useResponsesByRequester(user?.id || null, page, 15);
+    const filter = useRequestFilter('my-responses');
+    const { data: pagedResponses, isLoading } = useResponsesByRequester(user?.id || null, filter.filterParams);
     
     // Load seen IDs from localStorage on mount
     const [seenIds, setSeenIds] = useState<string[]>(() => {
@@ -74,8 +74,9 @@ export const useMyResponsesLogic = () => {
         templates,
         totalItems,
         totalPages,
-        page,
-        setPage,
+        page: filter.page,
+        setPage: filter.setPage,
+        filter,
         isModalOpen: isDetailsOpen,
         setIsModalOpen,
         viewingResponse,

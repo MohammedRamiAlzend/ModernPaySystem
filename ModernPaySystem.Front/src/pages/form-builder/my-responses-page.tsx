@@ -9,6 +9,7 @@ import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPr
 import type { TemplateRequest } from '@/entities/form/model/types';
 import { useMyResponsesLogic } from '@/features/form-builder/model/useMyResponsesLogic';
 import { Pagination } from '@/shared/ui/common/pagination';
+import { RequestFilterPanel } from '@/features/request-filter/ui/RequestFilterPanel';
 
 export const MyResponsesPage = () => {
     const {
@@ -19,6 +20,7 @@ export const MyResponsesPage = () => {
         totalPages,
         page,
         setPage,
+        filter,
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
@@ -28,6 +30,8 @@ export const MyResponsesPage = () => {
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold">الطلبات التي تم الرد عليها</h1>
+
+            <RequestFilterPanel filter={filter} />
 
             <Card className="p-6 overflow-hidden flex flex-col min-h-[600px]">
                 <div className="flex items-center justify-between mb-6">

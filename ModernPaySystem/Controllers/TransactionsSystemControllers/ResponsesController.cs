@@ -29,8 +29,9 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
 
     [HttpPost("by-responder/{responderId}")]
     [EndpointPermission("responses.get-by-responder-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByResponderId(Guid responderId, [FromBody] RequestPagedFilterDto filterDto)
+    public async Task<IActionResult> GetByResponderId(Guid responderId, [FromBody] RequestPagedFilterDto? filterDto)
     {
+        filterDto ??= new RequestPagedFilterDto();
         logger.LogInformation("Getting paged responses for responder: {ResponderId}, page: {Page}, size: {PageSize}", responderId, filterDto.Page, filterDto.PageSize);
         var result = await responseService.GetByResponderIdAsync(responderId, filterDto);
         return result.ToActionResult();
@@ -38,8 +39,9 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
 
     [HttpPost("by-requester/{requesterId}")]
     [EndpointPermission("responses.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromBody] RequestPagedFilterDto filterDto)
+    public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromBody] RequestPagedFilterDto? filterDto)
     {
+        filterDto ??= new RequestPagedFilterDto();
         logger.LogInformation("Getting paged responses for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
         var result = await responseService.GetResponsesByRequesterIdAsync(requesterId, filterDto);
         return result.ToActionResult();

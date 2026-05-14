@@ -8,6 +8,7 @@ import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
 import { useMyRequestsLogic } from '@/features/form-builder/model/useMyRequestsLogic';
 import { Pagination } from '@/shared/ui/common/pagination';
+import { RequestFilterPanel } from '@/features/request-filter/ui/RequestFilterPanel';
 import type { TemplateRequest } from '@/entities/form/model/types';
 
 export const MyRequestsPage = () => {
@@ -19,6 +20,7 @@ export const MyRequestsPage = () => {
         totalPages,
         page,
         setPage,
+        filter,
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
@@ -28,6 +30,8 @@ export const MyRequestsPage = () => {
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold">طلباتي</h1>
+
+            <RequestFilterPanel filter={filter} />
 
             <Card className="p-6 overflow-hidden flex flex-col min-h-[600px]">
                 <div className="flex items-center justify-between mb-6">

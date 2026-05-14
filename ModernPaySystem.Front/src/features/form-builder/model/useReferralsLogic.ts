@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRequestTransactions, formEndpoints, useTemplateById } from '../api/formEndpoints';
+import { useRequestFilter } from '@/features/request-filter/model/useRequestFilter';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
 import type { TemplateRequest, RequestTransactionDto } from '@/entities/form/model/types';
 import { queryKeys } from '@/shared/constants/query-keys';
 
 export const useReferralsLogic = (status: number) => {
-    const [page, setPage] = useState(1);
-    const pageSize = 10;
+    const filter = useRequestFilter(`referrals-${status}`);
 
-    const { data: pagedData, isLoading: isLoadingData } = useRequestTransactions(status, page, pageSize);
+    const { data: pagedData, isLoading: isLoadingData } = useRequestTransactions(status, filter.filterParams);
     const currentUser = useAuthStore((state) => state.user);
     const { showStatus } = useUIStore();
     const queryClient = useQueryClient();
@@ -111,8 +111,9 @@ export const useReferralsLogic = (status: number) => {
     };
 
     return {
-        page,
-        setPage,
+        page: filter.page,
+        setPage: filter.setPage,
+        filter,
         pagedData,
         isLoadingData,
         isProcessModalOpen,

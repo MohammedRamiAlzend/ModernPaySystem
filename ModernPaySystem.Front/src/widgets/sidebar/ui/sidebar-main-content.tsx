@@ -29,19 +29,19 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
     const location = useLocation();
 
     // Badges fetching
-    const { data: pagedResponses } = useResponsesByRequester(user?.id || null, 1, 1);
+    const { data: pagedResponses } = useResponsesByRequester(user?.id || null, { page: 1, pageSize: 1 });
     const totalResponses = (pagedResponses as any)?.totalItems || 0;
     const incomingResponsesBadge = useBadgeCount(totalResponses, LAST_SEEN_RESPONSES_KEY, '/form-builder/my-responses');
 
-    const { data: pagedPending } = useRequests(false, 1, 1);
+    const { data: pagedPending } = useRequests(false, { page: 1, pageSize: 1 });
     const totalPending = pagedPending?.totalItems || 0;
     const pendingRequestsBadge = useBadgeCount(totalPending, LAST_SEEN_PENDING_KEY, '/form-builder/responses');
 
-    const { data: pagedPendingReferrals } = useRequestTransactions(0, 1, 1);
+    const { data: pagedPendingReferrals } = useRequestTransactions(0, { page: 1, pageSize: 1 });
     const totalPendingReferrals = pagedPendingReferrals?.totalItems || 0;
     const pendingReferralsBadge = useBadgeCount(totalPendingReferrals, 'last_seen_pending_referrals', '/form-builder/referrals/pending');
 
-    const { data: pagedSentReferrals } = useRequestTransactions(1, 1, 1);
+    const { data: pagedSentReferrals } = useRequestTransactions(1, { page: 1, pageSize: 1 });
     const totalSentReferrals = pagedSentReferrals?.totalItems || 0;
     const sentReferralsBadge = useBadgeCount(totalSentReferrals, 'last_seen_sent_referrals', '/form-builder/referrals/sent');
 

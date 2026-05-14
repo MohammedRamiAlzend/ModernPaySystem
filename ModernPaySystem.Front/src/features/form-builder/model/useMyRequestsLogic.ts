@@ -1,13 +1,13 @@
-import { useQueryState, parseAsInteger } from 'nuqs';
 import { useRequestsByRequester } from '../api/formEndpoints';
+import { useRequestFilter } from '@/features/request-filter/model/useRequestFilter';
 import { useForms } from './useForms';
 import { useRequestDetails } from './useRequestDetails';
 import { useAuthStore } from '@/app/store/authStore';
 
 export const useMyRequestsLogic = () => {
     const { user } = useAuthStore();
-    const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
-    const { data: pagedRequests, isLoading } = useRequestsByRequester(user?.id || null, page, 15);
+    const filter = useRequestFilter('my-requests');
+    const { data: pagedRequests, isLoading } = useRequestsByRequester(user?.id || null, filter.filterParams);
     
     const requests = pagedRequests?.items || [];
     const totalItems = pagedRequests?.totalItems || 0;
@@ -23,8 +23,9 @@ export const useMyRequestsLogic = () => {
         templates,
         totalItems,
         totalPages,
-        page,
-        setPage,
+        page: filter.page,
+        setPage: filter.setPage,
+        filter,
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
