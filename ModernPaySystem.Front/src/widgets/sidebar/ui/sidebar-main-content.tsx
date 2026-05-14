@@ -19,8 +19,27 @@ const LAST_SEEN_RESPONSES_KEY = 'last_seen_total_responses';
 const LAST_SEEN_PENDING_KEY = 'last_seen_total_pending';
 
 /**
- * Main sidebar content — shows primary navigation, templates, and badges.
+ * Hook to manage sidebar badges count
  */
+const useSidebarBadges = (userId: string | null) => {
+    const { data: pagedResponses } = useResponsesByRequester(userId, { page: 1, pageSize: 1 });
+    const { data: pagedPending } = useRequests(false, { page: 1, pageSize: 1 });
+    const { data: pagedPendingReferrals } = useRequestTransactions(0, { page: 1, pageSize: 1 });
+    const { data: pagedSentReferrals } = useRequestTransactions(1, { page: 1, pageSize: 1 });
+
+    const incomingResponsesBadge = useBadgeCount((pagedResponses as any)?.totalItems || 0, LAST_SEEN_RESPONSES_KEY, '/form-builder/my-responses');
+    const pendingRequestsBadge = useBadgeCount(pagedPending?.totalItems || 0, LAST_SEEN_PENDING_KEY, '/form-builder/responses');
+    const pendingReferralsBadge = useBadgeCount(pagedPendingReferrals?.totalItems || 0, 'last_seen_pending_referrals', '/form-builder/referrals/pending');
+    const sentReferralsBadge = useBadgeCount(pagedSentReferrals?.totalItems || 0, 'last_seen_sent_referrals', '/form-builder/referrals/sent');
+
+    return useMemo(() => ({
+        '/form-builder/my-responses': incomingResponsesBadge,
+        '/form-builder/responses': pendingRequestsBadge,
+        '/form-builder/referrals/pending': pendingReferralsBadge,
+        '/form-builder/referrals/sent': sentReferralsBadge,
+    }), [incomingResponsesBadge, pendingRequestsBadge, pendingReferralsBadge, sentReferralsBadge]);
+};
+
 export const SidebarMainContent: React.FC<SidebarContentProps> = ({
     isCollapsed,
     onItemClick,
@@ -29,28 +48,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
     const location = useLocation();
 
     // Badges fetching
-    const { data: pagedResponses } = useResponsesByRequester(user?.id || null, { page: 1, pageSize: 1 });
-    const totalResponses = (pagedResponses as any)?.totalItems || 0;
-    const incomingResponsesBadge = useBadgeCount(totalResponses, LAST_SEEN_RESPONSES_KEY, '/form-builder/my-responses');
-
-    const { data: pagedPending } = useRequests(false, { page: 1, pageSize: 1 });
-    const totalPending = pagedPending?.totalItems || 0;
-    const pendingRequestsBadge = useBadgeCount(totalPending, LAST_SEEN_PENDING_KEY, '/form-builder/responses');
-
-    const { data: pagedPendingReferrals } = useRequestTransactions(0, { page: 1, pageSize: 1 });
-    const totalPendingReferrals = pagedPendingReferrals?.totalItems || 0;
-    const pendingReferralsBadge = useBadgeCount(totalPendingReferrals, 'last_seen_pending_referrals', '/form-builder/referrals/pending');
-
-    const { data: pagedSentReferrals } = useRequestTransactions(1, { page: 1, pageSize: 1 });
-    const totalSentReferrals = pagedSentReferrals?.totalItems || 0;
-    const sentReferralsBadge = useBadgeCount(totalSentReferrals, 'last_seen_sent_referrals', '/form-builder/referrals/sent');
-
-    const badges = useMemo(() => ({
-        '/form-builder/my-responses': incomingResponsesBadge,
-        '/form-builder/responses': pendingRequestsBadge,
-        '/form-builder/referrals/pending': pendingReferralsBadge,
-        '/form-builder/referrals/sent': sentReferralsBadge,
-    }), [incomingResponsesBadge, pendingRequestsBadge, pendingReferralsBadge, sentReferralsBadge]);
+    const badges = useSidebarBadges(user?.id || null);
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
