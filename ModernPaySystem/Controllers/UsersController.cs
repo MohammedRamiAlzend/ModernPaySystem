@@ -27,7 +27,7 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:guid}")]
     [EndpointPermission("users.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)
     {

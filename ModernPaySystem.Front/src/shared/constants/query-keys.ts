@@ -13,6 +13,7 @@ export const queryKeys = {
         list: (filters?: any) => [...queryKeys.user.lists(), filters] as const,
         details: () => [...queryKeys.user.all, 'detail'] as const,
         detail: (id: string | null) => [...queryKeys.user.details(), id] as const,
+        visitedTemplates: () => [...queryKeys.user.all, 'visited-templates'] as const,
     },
     template: {
         all: ['templates'] as const,

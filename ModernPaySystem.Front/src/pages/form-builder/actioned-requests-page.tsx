@@ -8,6 +8,13 @@ import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
 import { useActionedRequestsLogic } from '@/features/form-builder/model/useActionedRequestsLogic';
 import { Pagination } from '@/shared/ui/common/pagination';
+import { RequestFilterPanel } from '@/features/request-filter/ui/RequestFilterPanel';
+import { useTemplateById } from '@/features/form-builder/api/formEndpoints';
+
+const TemplateTitle = ({ templateId, fallbackTitle }: { templateId: string, fallbackTitle: string }) => {
+    const { data: template } = useTemplateById(templateId);
+    return <>{template?.title || fallbackTitle}</>;
+};
 
 export const ActionedRequestsPage = () => {
     const {
@@ -21,12 +28,15 @@ export const ActionedRequestsPage = () => {
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
-        handleViewRequest
+        handleViewRequest,
+        filter
     } = useActionedRequestsLogic();
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
             <h1 className="text-3xl font-bold">أرشيف الطلبات المستجاب لها</h1>
+
+            <RequestFilterPanel filter={filter} />
 
             <Card className="p-6 overflow-hidden flex flex-col min-h-[600px]">
                 <div className="flex items-center justify-between mb-6">
@@ -76,14 +86,18 @@ export const ActionedRequestsPage = () => {
                                                     <FileText className="w-4 h-4 text-primary" />
                                                 </div>
                                                 <span className="font-bold text-sm">
-                                                    {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
+                                                    <TemplateTitle 
+                                                        templateId={request.templateId} 
+                                                        fallbackTitle={templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"} 
+                                                    />
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <RequestFieldsPreview
                                                 content={request.content}
-                                                fields={templates.find(t => t.id === request.templateId)?.fields || []}
+                                                templateId={request.templateId}
+                                                maxFields={3}
                                                 variant="inline"
                                                 className="space-y-1.5 max-w-xs"
                                             />

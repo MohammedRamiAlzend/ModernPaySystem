@@ -15,7 +15,9 @@ import type {
     CreateRequestTransactionDto,
     RequestTransactionDto,
     TemplateOwnershipDto,
-    UserTemplateOwnershipDto
+    UserTemplateOwnershipDto,
+    InputValueFilterDto,
+    RequestPagedFilterDto
 } from '@/entities/form/model/types';
 
 // --- API Service ---
@@ -122,8 +124,8 @@ export const formEndpoints = {
         return response.data;
     },
 
-    getRequestsByActionStatus: async (hasResponse: boolean, page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
-        const response = await api.get(`/Requests/GetPagedRequestsNeedAction/${hasResponse}?page=${page}&pageSize=${pageSize}`);
+    getRequestsByActionStatus: async (hasResponse: boolean, filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.post(`/Requests/GetPagedRequestsNeedAction/${hasResponse}`, filterDto);
         return response.data;
     },
 
@@ -266,11 +268,17 @@ export const formEndpoints = {
 
 // --- Hooks ---
 
-export const useRequests = (hasResponse: boolean = false, page: number = 1, pageSize: number = 15) => {
+export const useRequests = (hasResponse: boolean = false, filterOrPage: RequestPagedFilterDto | number = 1, pageSize: number = 15) => {
+    const filter = typeof filterOrPage === 'object' 
+        ? filterOrPage 
+        : { page: filterOrPage, pageSize };
+
     return useQuery({
-        queryKey: queryKeys.form.list({ hasResponse, page, pageSize }),
+        queryKey: queryKeys.form.list({ hasResponse, ...filter }),
         queryFn: async () => {
-            const res = await formEndpoints.getRequestsByActionStatus(hasResponse, page, pageSize);
+            // Only send filter values if hasResponse is true
+            const filterToSend = hasResponse ? filter : { page: filter.page, pageSize: filter.pageSize };
+            const res = await formEndpoints.getRequestsByActionStatus(hasResponse, filterToSend);
             return res.data;
         },
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]

@@ -2,10 +2,12 @@ import { useQueryState, parseAsInteger } from 'nuqs';
 import { useRequests } from '../api/formEndpoints';
 import { useForms } from './useForms';
 import { useRequestDetails } from './useRequestDetails';
+import { useRequestFilter } from '@/features/request-filter/model/useRequestFilter';
 
 export const useActionedRequestsLogic = () => {
     const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
-    const { data: pagedRequests, isLoading } = useRequests(true, page, 15); // Fetch responded requests
+    const filter = useRequestFilter('actioned-requests');
+    const { data: pagedRequests, isLoading } = useRequests(true, { ...filter.filterParams, page, pageSize: 15 }); // Fetch responded requests
     const requests = pagedRequests?.items || [];
     const { data: templates = [] } = useForms(true);
 
@@ -22,6 +24,7 @@ export const useActionedRequestsLogic = () => {
         isModalOpen,
         setIsModalOpen,
         viewingResponse,
-        handleViewRequest
+        handleViewRequest,
+        filter
     };
 };

@@ -8,6 +8,10 @@ export const userEndpoints = {
     getAllUsers: async (): Promise<{ data: UserReference[] }> => {
         const response = await api.get('/Users');
         return response.data;
+    },
+    getVisitedTemplates: async (): Promise<{ data: Template[] }> => {
+        const response = await api.get('/Users/visited-templates');
+        return response.data;
     }
 };
 

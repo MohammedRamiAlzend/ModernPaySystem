@@ -260,3 +260,22 @@ export interface PagedResult<T> {
     pageSize: number;
     totalPages: number;
 }
+
+export interface InputValueFilterDto {
+    key: string;
+    value: string;
+}
+
+export enum FilterLogicalOperator {
+    And = 1,
+    Or = 2
+}
+
+export interface RequestPagedFilterDto {
+    page: number;
+    pageSize: number;
+    fromDate?: string;
+    toDate?: string;
+    inputValueFilters?: InputValueFilterDto[];
+    logicalOperator?: FilterLogicalOperator;
+}
