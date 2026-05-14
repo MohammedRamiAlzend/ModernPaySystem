@@ -308,6 +308,16 @@ public class RequestTransactionService(
             }
 
             await unitOfWork.Requests.UpdateAsync(getRequestResult.Value);
+
+            var getUserResult = await unitOfWork.Users.GetAsync(u => u.Id == dto.CurrentUserHolderId, i => i.Include(x => x.VisitedTemplates));
+            if (getUserResult.IsError)
+                return getUserResult.Errors;
+            if (getUserResult.Value!.VisitedTemplates.Any(x => x.Id == getRequestResult.Value.RequestTemplateValues!.TemplateId) is false)
+            {
+                getUserResult.Value.VisitedTemplates.Add(getRequestResult.Value!.RequestTemplateValues!.Template!);
+                await unitOfWork.Users.UpdateAsync(getUserResult.Value);
+            }
+
             await unitOfWork.SaveChangesAsync();
 
             if (dto.Files?.Any() == true)
@@ -344,8 +354,8 @@ public class RequestTransactionService(
                 x
                 .Include(x => x.ParentTransaction).ThenInclude(i => i!.Request).ThenInclude(i => i.CurrentTransaction)
                 .Include(x => x.ParentTransaction).ThenInclude(i => i!.Request).ThenInclude(i => i.FirstTransaction)
-                .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
-                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues));
+                .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues));
 
             if (parentTransaction.IsError)
                 return parentTransaction.Errors;
@@ -369,10 +379,19 @@ public class RequestTransactionService(
             request!.CurrentTransactionId = childTransaction.Id;
 
             await unitOfWork.Requests.UpdateAsync(request);
-            await unitOfWork.SaveChangesAsync();
 
             parentTransaction.Value.Status = TransactionStatus.Transferred;
             await unitOfWork.RequestTransactions.UpdateAsync(parentTransaction.Value);
+
+            var getUserResult = await unitOfWork.Users.GetAsync(u => u.Id == dto.CurrentUserHolderId, i => i.Include(x => x.VisitedTemplates));
+            if (getUserResult.IsError)
+                return getUserResult.Errors;
+            if (getUserResult.Value!.VisitedTemplates.Any(x => x.Id == request.RequestTemplateValues!.TemplateId) is false)
+            {
+                getUserResult.Value.VisitedTemplates.Add(request.RequestTemplateValues!.Template!);
+                await unitOfWork.Users.UpdateAsync(getUserResult.Value);
+            }
+
             await unitOfWork.SaveChangesAsync();
 
             if (dto.Files?.Any() == true)
