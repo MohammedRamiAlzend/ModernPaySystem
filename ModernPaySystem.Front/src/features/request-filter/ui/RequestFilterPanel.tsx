@@ -43,7 +43,7 @@ export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProp
 
     return (
         <Card className={cn("overflow-hidden border-primary/10 shadow-sm", className)}>
-            <div 
+            <div
                 className="p-4 bg-muted/30 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
@@ -67,7 +67,7 @@ export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProp
                 <div className="p-6 space-y-6 animate-in slide-in-from-top-2 duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold text-muted-foreground mr-1">اختيار النموذج (Template)</Label>
+                            <Label className="text-xs font-bold text-muted-foreground mr-1">اختيار الخدمة</Label>
                             <SearchableSelect
                                 options={templateOptions}
                                 value={selectedTemplateId}
@@ -113,7 +113,7 @@ export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProp
                                                 className="h-9 rounded-xl bg-background/50 border-primary/10 focus-visible:ring-primary/20 pr-8"
                                             />
                                             {filterValues[key] && (
-                                                <button 
+                                                <button
                                                     onClick={() => handleFilterValueChange(key, '')}
                                                     className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-destructive transition-colors"
                                                 >
@@ -128,17 +128,17 @@ export const RequestFilterPanel = ({ filter, className }: RequestFilterPanelProp
                     )}
 
                     <div className="flex items-center justify-end gap-3 pt-2">
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
+                        <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={resetFilters}
                             className="text-xs font-bold text-muted-foreground hover:text-destructive gap-2 rounded-xl"
                         >
                             <RefreshCw className="w-3 h-3" />
                             مسح الفلاتر
                         </Button>
-                        <Button 
-                            size="sm" 
+                        <Button
+                            size="sm"
                             onClick={applyFilters}
                             className="text-xs font-bold gap-2 rounded-xl px-6"
                             disabled={!selectedTemplateId || Object.values(filterValues).every(v => v.trim() === '')}
