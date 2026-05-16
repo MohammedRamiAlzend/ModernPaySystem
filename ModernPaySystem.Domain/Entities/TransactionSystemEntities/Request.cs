@@ -20,9 +20,10 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public required Guid RequesterId { get; set; }
     public User? Requester { get; set; }
-
+    public required Guid RequesterDepartmentId { get; set; }
     public required Guid ApproverId { get; set; }
     public User? Approver { get; set; }
+    public required Guid ApproverDepartmentId { get; set; }
 
     public Guid? ResponseId { get; set; }
     public Response? Response { get; set; }

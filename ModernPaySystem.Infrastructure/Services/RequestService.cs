@@ -254,12 +254,19 @@ public class RequestService(
                 if (files == null || files.Count == 0)
                     return ApplicationErrors.MissingRequiredField;
             }
+            var userResult = await unitOfWork.Users.GetByIdAsync(httpContextServiceManager.GetCurrentUserId());
+            if (userResult.IsError)
+            {
+                return userResult.Errors;
+            }
             var requestEntity = new Request
             {
                 Id = Guid.NewGuid(),
                 RequesterId = httpContextServiceManager.GetCurrentUserId(),
                 ApproverId = getDepartmentResult.Value!.DepartmentHeadId.Value,
                 ReadOnlyUsers = usersResult.Value,
+                ApproverDepartmentId = getDepartmentResult.Value.Id,
+                RequesterDepartmentId = userResult.Value!.DepartmentId!.Value
             };
 
             var newRequestTemplateValues = new RequestTemplateValues

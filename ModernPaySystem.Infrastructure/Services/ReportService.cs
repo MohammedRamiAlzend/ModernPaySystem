@@ -7,19 +7,19 @@ using System.Linq.Expressions;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
-public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger) : IReportService
+public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger, IHttpContextServiceManager httpContextServiceManager) : IReportService
 {
     public async Task<Result<PagedList<RequestDto>>> GetRequestsReportPaged(
         int pageNumber,
         int pageSize,
         DateTime? startDate,
-        DateTime? endDate)
+        DateTime? endDate,
+        bool forCurrentDepartment)
     {
         try
         {
-            logger.LogInformation("Fetching requests report, page: {Page}, size: {PageSize}, startDate: {StartDate}, endDate: {EndDate}",
-                pageNumber, pageSize, startDate, endDate);
-
+            logger.LogInformation("Fetching requests report, page: {Page}, size: {PageSize}, startDate: {StartDate}, endDate: {EndDate}, forCurrentDepartment: {ForCurrentDepartment}",
+                pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
             if (pageNumber <= 0)
                 return ApplicationErrors.InvalidInput;
             if (pageSize <= 0 || pageSize > 100)
@@ -37,6 +37,17 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
                 filters.Add(r => r.CreatedAt >= startDate.Value);
             if (endDate.HasValue)
                 filters.Add(r => r.CreatedAt <= endDate.Value);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var userResults = await unitOfWork.Users.GetAsync(x => x.Id == currentUserId);
+            if (forCurrentDepartment)
+            {
+                filters.Add(r => r.Requester != null && r.RequesterDepartmentId == userResults.Value!.DepartmentId);
+            }
+            else
+            {
+                filters.Add(r => r.RequesterId == currentUserId);
+            }
 
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 pageNumber,
@@ -62,12 +73,13 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
         int pageNumber,
         int pageSize,
         DateTime? startDate,
-        DateTime? endDate)
+        DateTime? endDate,
+        bool forCurrentDepartment)
     {
         try
         {
-            logger.LogInformation("Fetching responses report, page: {Page}, size: {PageSize}, startDate: {StartDate}, endDate: {EndDate}",
-                pageNumber, pageSize, startDate, endDate);
+            logger.LogInformation("Fetching responses report, page: {Page}, size: {PageSize}, startDate: {StartDate}, endDate: {EndDate}, forCurrentDepartment: {ForCurrentDepartment}",
+                pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
 
             if (pageNumber <= 0)
                 return ApplicationErrors.InvalidInput;
@@ -86,6 +98,18 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
                 filters.Add(r => r.CreatedAt >= startDate.Value);
             if (endDate.HasValue)
                 filters.Add(r => r.CreatedAt <= endDate.Value);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var userResults = await unitOfWork.Users.GetAsync(x => x.Id == currentUserId);
+            if (forCurrentDepartment)
+            {
+                filters.Add(r => r.Request!.Requester != null && r.Request!.RequesterDepartmentId == userResults.Value!.DepartmentId);
+            }
+            else
+            {
+                filters.Add(r => r.Request!.RequesterId == currentUserId);
+            }
+
 
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 pageNumber,
