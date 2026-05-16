@@ -6,9 +6,9 @@ global using Scalar.AspNetCore;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
-    .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day,
-        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .MinimumLevel.Fatal()
+    .WriteTo.File("logs/bootstrap-fatal.log", rollingInterval: RollingInterval.Day,
+        outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] {SourceContext} | {Message:lj}{NewLine}{Exception}")
     .CreateBootstrapLogger();
 
 try
@@ -72,6 +72,21 @@ try
 
     //app.UseHttpsRedirection();
 
+    app.UseSerilogRequestLogging(opts =>
+    {
+        opts.GetLevel = (httpContext, _, ex) =>
+        {
+            if (ex is not null)
+                return Serilog.Events.LogEventLevel.Error;
+
+            var statusCode = (int?)httpContext.Response?.StatusCode;
+            return statusCode >= 500
+                ? Serilog.Events.LogEventLevel.Error
+                : statusCode >= 400
+                    ? Serilog.Events.LogEventLevel.Warning
+                    : Serilog.Events.LogEventLevel.Information;
+        };
+    });
     app.UseRouting();
     app.UseCors("AllowAll");
     app.UseAuthentication();

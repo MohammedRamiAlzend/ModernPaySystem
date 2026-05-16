@@ -34,6 +34,7 @@
     <Folder Include="Controllers\DiwanController\" />
     <Folder Include="Diwan\Uploads\TransactionSystem\Requests\" />
     <Folder Include="Diwan\Uploads\TransactionSystem\Responses\" />
+    <Folder Include="logs\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
