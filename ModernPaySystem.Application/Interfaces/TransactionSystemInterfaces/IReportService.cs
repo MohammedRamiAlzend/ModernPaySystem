@@ -1,12 +1,19 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Text;
+﻿global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using ModernPaySystem.Domain.Commons;
 
-//namespace ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
+namespace ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 
-//public interface IReportService
-//{
+public interface IReportService
+{
+    Task<Result<PagedList<RequestDto>>> GetRequestsReportPaged(
+        int pageNumber,
+        int pageSize,
+        DateTime? startDate,
+        DateTime? endDate);
 
-//    public Task<>
-
-//}
+    Task<Result<PagedList<ResponseDto>>> GetResponsesReportPaged(
+        int pageNumber,
+        int pageSize,
+        DateTime? startDate,
+        DateTime? endDate);
+}

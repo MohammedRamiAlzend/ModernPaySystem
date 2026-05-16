@@ -1,4 +1,5 @@
 using FileManager.Extensions;
+using ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.Interceptors;
 using ModernPaySystem.Infrastructure.Services;
@@ -36,6 +37,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IResponseService, ResponseService>();
+        services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IRequestTransactionService, RequestTransactionService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
