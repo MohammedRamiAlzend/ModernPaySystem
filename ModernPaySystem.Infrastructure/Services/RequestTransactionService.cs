@@ -58,7 +58,7 @@ public class RequestTransactionService(
             var combinedExp = ExpressionCombiner.AndAll(filters.ToArray());
 
             var pagedTransactions = await unitOfWork.RequestTransactions.GetPagedAsync(
-                filterDto.Page,
+                filterDto!.Page,
                 filterDto.PageSize,
                 combinedExp,
                 transform: x => x.Include(x => x.ParentTransaction)
@@ -67,9 +67,8 @@ public class RequestTransactionService(
                                  .Include(x => x.Request)
                                     .ThenInclude(r => r.RequestAttachments)
                                         .ThenInclude(ra => ra.Attachment)
-                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
-                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
-                                 );
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues));
 
             if (pagedTransactions.IsError)
                 return pagedTransactions.Errors;
