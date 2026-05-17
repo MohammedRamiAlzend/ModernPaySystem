@@ -1,4 +1,4 @@
-﻿global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Domain.Commons;
 
 namespace ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
@@ -9,11 +9,13 @@ public interface IReportService
         int pageNumber,
         int pageSize,
         DateTime? startDate,
-        DateTime? endDate);
+        DateTime? endDate,
+        bool forCurrentDepartment = false);
 
     Task<Result<PagedList<ResponseDto>>> GetResponsesReportPaged(
         int pageNumber,
         int pageSize,
         DateTime? startDate,
-        DateTime? endDate);
+        DateTime? endDate,
+        bool forCurrentDepartment = false);
 }

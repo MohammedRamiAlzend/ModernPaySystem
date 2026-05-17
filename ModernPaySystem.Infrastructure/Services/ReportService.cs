@@ -69,6 +69,8 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
         }
     }
 
+
+
     public async Task<Result<PagedList<ResponseDto>>> GetResponsesReportPaged(
         int pageNumber,
         int pageSize,
@@ -133,4 +135,6 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
             return ApplicationErrors.InternalServerError;
         }
     }
+
+
 }
