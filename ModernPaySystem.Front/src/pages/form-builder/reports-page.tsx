@@ -33,10 +33,10 @@ export const ReportsPage: React.FC = () => {
 
     // 1. Local Input States (for filter inputs)
     const [reportType, setReportType] = useState<'requests' | 'responses'>('requests');
-    const [startDate, setStartDate] = useState<string>(() => 
+    const [startDate, setStartDate] = useState<string>(() =>
         new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // Default to 30 days ago
     );
-    const [endDate, setEndDate] = useState<string>(() => 
+    const [endDate, setEndDate] = useState<string>(() =>
         new Date().toISOString().split('T')[0] // Default to today
     );
     const [forCurrentDepartment, setForCurrentDepartment] = useState<boolean>(false);
@@ -422,7 +422,7 @@ export const ReportsPage: React.FC = () => {
                                             <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">صاحب الطلب</th>
                                             <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">تاريخ التقديم</th>
                                             <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">الحالة</th>
-                                            <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">المرفقات</th>
+                                            {/* <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">المرفقات</th> */}
                                         </tr>
                                     ) : (
                                         <tr>
@@ -430,7 +430,7 @@ export const ReportsPage: React.FC = () => {
                                             <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">نوع الخدمة الأصلية</th>
                                             <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">الرد / الإجراء المضاف</th>
                                             <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">تاريخ الرد</th>
-                                            <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">المرفقات</th>
+                                            {/* <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">المرفقات</th> */}
                                         </tr>
                                     )}
                                 </thead>
@@ -475,9 +475,9 @@ export const ReportsPage: React.FC = () => {
                                                                 {statusText}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-center text-sm font-bold text-muted-foreground">
+                                                        {/* <td className="px-6 py-4 text-center text-sm font-bold text-muted-foreground">
                                                             {request.requestAttachmentDtos?.length || 0}
-                                                        </td>
+                                                        </td> */}
                                                     </tr>
                                                 );
                                             })
@@ -508,9 +508,9 @@ export const ReportsPage: React.FC = () => {
                                                         <td className="px-6 py-4 text-center text-xs text-muted-foreground">
                                                             {response.respondedAt || response.createdAt ? new Date(response.respondedAt || response.createdAt).toLocaleDateString('ar-EG') : '---'}
                                                         </td>
-                                                        <td className="px-6 py-4 text-center text-sm font-bold text-muted-foreground">
+                                                        {/* <td className="px-6 py-4 text-center text-sm font-bold text-muted-foreground">
                                                             {response.responseAttachments?.length || 0}
-                                                        </td>
+                                                        </td> */}
                                                     </tr>
                                                 );
                                             })
