@@ -6,10 +6,10 @@ public class InputValue : Entity<Guid>
     public RequestTemplateValues RequestTemplateValues { get; set; } = null!;
 
     public string Key { get; set; } = null!;
-    public string Value { get; set; } = null!;
+    public string? Value { get; set; } = null!;
 }
 public class InputValueDto
 {
     public string Key { get; set; } = null!;
-    public string Value { get; set; } = null!;
+    public string? Value { get; set; } = null!;
 }
