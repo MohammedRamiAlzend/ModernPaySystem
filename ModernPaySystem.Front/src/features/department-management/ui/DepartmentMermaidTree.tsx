@@ -175,7 +175,7 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
 
             <TransformWrapper
                 initialScale={1}
-                minScale={2}
+                minScale={0.01}
                 maxScale={12}
                 centerOnInit={true}
                 wheel={{ step: 0.1 }}
