@@ -49,27 +49,58 @@ public class UserSeeder : EntitySeederBase<User>
         int transactionUserCount = count / 2;
         int diwanUserCount = count - transactionUserCount;
 
-        // TransactionSystem users: username/password = "1", "2", ...
-        for (int i = 1; i <= transactionUserCount; i++)
+        var names = new List<string>
         {
-            users.Add(new User
+            "أحمد", "محمد", "فاطمة", "علي", "سارة", "خالد", "ليلى", "عمر", "رامي", "يوسف",
+            "نور", "مصطفى", "أمل", "حسن", "منى", "زين", "ريم", "طارق", "سلمى", "هاني",
+            "عبير", "ايهم", "دينا", "شريف", "ندى", "عمرو", "رنا", "وائل", "كريم", "هند",
+            "يسرا", "حسين"
+        };
+
+        int nameIndex = 0;
+
+        string GetNextName()
+        {
+            if (nameIndex < names.Count)
             {
-                Id = Guid.NewGuid(),
-                UserName = i.ToString(),
-                HashedPassword = _passwordHasher.HashPassword(i.ToString()),
-                Roles = new List<Role>()
-            });
+                return names[nameIndex++];
+            }
+            return $"مستخدم {++nameIndex}";
         }
 
-        // Diwan users: username/password = "11", "22", ...
+        // TransactionSystem users: username/password = "123" (except first one which is "1"/"1")
+        for (int i = 1; i <= transactionUserCount; i++)
+        {
+            if (i == 1)
+            {
+                users.Add(new User
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = "1",
+                    HashedPassword = _passwordHasher.HashPassword("1"),
+                    Roles = new List<Role>()
+                });
+            }
+            else
+            {
+                users.Add(new User
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = GetNextName(),
+                    HashedPassword = _passwordHasher.HashPassword("123"),
+                    Roles = new List<Role>()
+                });
+            }
+        }
+
+        // Diwan users: username/password = "123"
         for (int i = 1; i <= diwanUserCount; i++)
         {
-            string val = (i * 11).ToString();
             users.Add(new User
             {
                 Id = Guid.NewGuid(),
-                UserName = val,
-                HashedPassword = _passwordHasher.HashPassword(val),
+                UserName = GetNextName(),
+                HashedPassword = _passwordHasher.HashPassword("123"),
                 Roles = new List<Role>()
             });
         }

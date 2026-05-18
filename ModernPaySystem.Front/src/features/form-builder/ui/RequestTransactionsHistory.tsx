@@ -29,8 +29,11 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
 
             <div className="bg-background/50 rounded-xl p-4 border border-primary/10 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between gap-4 mb-3">
-                    <div className="flex items-center gap-2">
-                        <UserDisplay userId={transaction.createdByUserId} className="text-xs font-bold" showIcon />
+                    <div className="flex items-center gap-2 text-xs flex-wrap">
+                        <span className="text-muted-foreground font-medium">من:</span>
+                        <UserDisplay userId={transaction.createdByUserId} className="font-bold" showIcon />
+                        <span className="text-muted-foreground font-medium mr-1">إلى:</span>
+                        <UserDisplay userId={transaction.currentUserHolderId} className="font-bold" showIcon />
                     </div>
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/30 px-2 py-1 rounded-full">
                         <Clock className="w-3 h-3" />
