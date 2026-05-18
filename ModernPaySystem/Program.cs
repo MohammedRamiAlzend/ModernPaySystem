@@ -16,8 +16,7 @@ try
 
 
     var builder = WebApplication.CreateBuilder(args);
-    builder.Services.AddSerilog((services, lc) => lc
-        .ReadFrom.Configuration(builder.Configuration)
+    builder.Services.AddSerilog((services, lc) => lc.ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services));
     builder.Logging.ClearProviders();
     builder.Services.AddPersistenceServices(builder.Configuration);
