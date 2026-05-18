@@ -3,7 +3,7 @@ import mermaid from 'mermaid';
 import { DepartmentTree } from '@/entities/department/model/types';
 import { convertToMermaid } from '../model/useDepartmentTree';
 import { useTheme } from '@/app/providers/theme-context';
-import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/lib/utils';
@@ -19,17 +19,49 @@ interface DepartmentMermaidTreeProps {
     onNodeClick?: (id: string) => void;
 }
 
-const Controls = () => {
-    const { zoomIn, zoomOut, resetTransform } = useControls();
+interface ControlsProps {
+    zoomIn: (step?: number, speed?: number) => void;
+    zoomOut: (step?: number, speed?: number) => void;
+    resetTransform: (speed?: number) => void;
+    scale: number;
+}
+
+const Controls: React.FC<ControlsProps> = ({ zoomIn, zoomOut, resetTransform }) => {
     return (
-        <div className="absolute top-4 right-4 z-20 flex flex-col gap-2 bg-background/80 backdrop-blur-sm p-1 rounded-lg border shadow-sm">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => zoomIn(0.4, 300)}>
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-background/90 backdrop-blur-md p-1.5 rounded-xl border border-border shadow-md transition-all duration-200" dir="rtl">
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
+                onClick={() => zoomIn(0.2, 200)}
+                title="تكبير"
+            >
                 <ZoomIn className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => zoomOut(0.4, 300)}>
+
+            {/* <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 bg-muted/50 rounded-md min-w-[45px] text-center font-mono select-none">
+                {Math.round(scale * 100)}%
+            </span> */}
+
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
+                onClick={() => zoomOut(0.2, 200)}
+                title="تصغير"
+            >
                 <ZoomOut className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => resetTransform(300)}>
+
+            <div className="w-[1px] h-5 bg-border mx-0.5" />
+
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
+                onClick={() => resetTransform(200)}
+                title="إعادة تعيين"
+            >
                 <RotateCcw className="w-4 h-4" />
             </Button>
         </div>
@@ -143,17 +175,22 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
 
             <TransformWrapper
                 initialScale={1}
-                minScale={0.1}
-                maxScale={4}
+                minScale={2}
+                maxScale={12}
                 centerOnInit={true}
                 wheel={{ step: 0.1 }}
                 pinch={{ step: 5, disabled: false }}
                 doubleClick={{ disabled: true }}
                 panning={{ activationKeys: [], disabled: false, velocityDisabled: false }}
             >
-                {() => (
+                {({ state, zoomIn, zoomOut, resetTransform }) => (
                     <>
-                        <Controls />
+                        <Controls
+                            zoomIn={zoomIn}
+                            zoomOut={zoomOut}
+                            resetTransform={resetTransform}
+                            scale={state.scale}
+                        />
                         <TransformComponent
                             wrapperStyle={{
                                 width: '100%',
