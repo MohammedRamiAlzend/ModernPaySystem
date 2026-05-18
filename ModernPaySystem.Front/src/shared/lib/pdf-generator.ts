@@ -42,7 +42,7 @@ export const generateFormPDF = async (
         top: 0;
         width: ${PAGE_WIDTH_PX}px;
         background: #ffffff;
-        padding: 40px;
+        padding: 20px 35px;
         font-family: Cairo, Arial, sans-serif;
         direction: ${direction};
         color: #000000;
@@ -119,16 +119,16 @@ export const generateFormPDF = async (
 
     container.innerHTML = `
         <div style="background: #ffffff;">
-            <div style="text-align: center; padding-bottom: 10px; margin-bottom: 20px; border-bottom: 2px solid #000000;">
-                <img src="/ECSC.png" style="height: 50px; object-fit: contain; display: block; margin: 0 auto 10px;" />
-                <h1 style="font-size: 18px; font-weight: 900; color: #000000; margin: 5px 0;">${title}</h1>
+            <div style="text-align: center; padding-bottom: 3px; margin-bottom: 6px; border-bottom: none;">
+                <img src="/ECSC.png" style="height: 35px; object-fit: contain; display: block; margin: 0 auto 5px;" />
+                <h1 style="font-size: 14px; font-weight: 900; color: #000000; margin: 5px 0;">${title}</h1>
                 <div style="font-size: 12px; color: #000000; font-weight: 600;">تاريخ التقديم: ${submittedAt}</div>
             </div>
             <div style="width: 100%;">${fieldsHtml}</div>
             <div style="clear: both;"></div>
             ${finalResponseHtml}
             ${generateTableHtml('تاريخ الإحالات والتنقلات', options.referrals || [])}
-            <div style="margin-top: 20px; padding: 10px 0; border-top: 1px solid #000000; text-align: center; font-size: 10px;">
+            <div style="margin-top: 10px; padding: 5px 0; border-top: 1px solid #000000; text-align: center; font-size: 10px;">
                 طُبع بتاريخ: ${new Date().toLocaleDateString('ar-SA')}
             </div>
         </div>
@@ -294,18 +294,18 @@ export const printFormResponse = (
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Cairo',sans-serif; background:white; color:#1a1a1a; padding:15mm; direction:${direction}; font-size:12pt; line-height:1.6; }
+        body { font-family:'Cairo',sans-serif; background:white; color:#1a1a1a; padding:8mm 12mm; direction:${direction}; font-size:12pt; line-height:1.6; }
         .document { max-width:180mm; margin:0 auto; }
-        .header { text-align:center; padding-bottom:20px; margin-bottom:25px; border-bottom:2px solid #000; }
-        .header h1 { font-size:22pt; font-weight:900; color:#000; margin-bottom:8px; }
-        .header .date { font-size:11pt; color:#000; font-weight:600; }
+        .header { text-align:center; padding-bottom:3px; margin-bottom:6px; border-bottom:none; }
+        .header h1 { font-size:14pt; font-weight:900; color:#000; margin-bottom:5px; }
+        .header .date { font-size:10pt; color:#000; font-weight:600; }
         .fields-container { display:flex; flex-wrap:wrap; }
         .field-item { display:flex; align-items:baseline; gap:8px; padding:10px; min-height:40px; }
         .field-label { font-weight:700; white-space:nowrap; font-size:11pt; }
         .field-value { font-weight:500; font-size:11pt; }
         @media print {
             @page { size:auto; margin:0; }
-            body { padding:15mm; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            body { padding:8mm 12mm; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
             .document { max-width:100%; margin:0; }
         }
     </style>
@@ -313,7 +313,7 @@ export const printFormResponse = (
 <body>
     <div class="document">
         <div class="header">
-            <img src="/ECSC.png" style="height:60px;object-fit:contain;display:block;margin:0 auto 10px;" />
+            <img src="/ECSC.png" style="height:35px;object-fit:contain;display:block;margin:0 auto 5px;" />
             <h1>${title}</h1>
             <div class="date">تاريخ التقديم: ${submittedAt}</div>
         </div>
@@ -374,7 +374,7 @@ export const generateReportPDF = async (
         top: 0;
         width: ${PAGE_WIDTH_PX}px;
         background: #ffffff;
-        padding: 40px;
+        padding: 20px 35px;
         font-family: Cairo, Arial, sans-serif;
         direction: ${direction};
         color: #000000;
@@ -492,9 +492,9 @@ export const generateReportPDF = async (
 
     container.innerHTML = `
         <div style="background: #ffffff; min-height: 1050px; display: flex; flex-direction: column;">
-            <div style="text-align: center; padding-bottom: 15px; margin-bottom: 25px; border-bottom: 2px solid #000000; position: relative; clear: both;">
-                <img src="/ECSC.png" style="height: 55px; object-fit: contain; display: block; margin: 0 auto 10px;" />
-                <h1 style="font-size: 20px; font-weight: 900; color: #000000; margin: 5px 0;">${title}</h1>
+            <div style="text-align: center; padding-bottom: 3px; margin-bottom: 6px; border-bottom: none; position: relative; clear: both;">
+                <img src="/ECSC.png" style="height: 35px; object-fit: contain; display: block; margin: 0 auto 5px;" />
+                <h1 style="font-size: 14px; font-weight: 900; color: #000000; margin: 5px 0;">${title}</h1>
                 <div style="font-size: 11px; color: #64748b; font-weight: 700; margin-top: 5px;">${periodHtml}</div>
                 ${options.departmentName ? `<div style="font-size: 11px; color: #0f172a; font-weight: 800; margin-top: 3px;">القسم المعني: ${options.departmentName}</div>` : ''}
             </div>
@@ -512,7 +512,7 @@ export const generateReportPDF = async (
                 </table>
             </div>
 
-            <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #64748b; font-weight: 700; clear: both;">
+            <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #64748b; font-weight: 700; clear: both;">
                 <div>طُبع بتاريخ: ${new Date().toLocaleDateString('ar-SA')} | الموظف: ${options.generatedBy}</div>
                 <div>نظام المعاملات والدفع الإلكتروني - ModernPaySystem</div>
             </div>
