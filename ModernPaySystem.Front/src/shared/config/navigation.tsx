@@ -1,5 +1,5 @@
 
-import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock } from "lucide-react";
+import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3 } from "lucide-react";
 // import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive,List } from "lucide-react";
 
 export interface NavigationItem {
@@ -79,6 +79,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "الطلبات المعلقة",
                 path: "/form-builder/all-pending",
                 icon: <Clock className="h-4 w-4" />,
+            },
+            {
+                title: "التقارير والإحصائيات",
+                path: "/form-builder/reports",
+                icon: <BarChart3 className="h-4 w-4 text-emerald-500" />,
             }
 
         ]

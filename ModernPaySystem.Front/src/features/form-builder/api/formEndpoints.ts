@@ -258,6 +258,30 @@ export const formEndpoints = {
     getAllPendingRequestsPaged: async (page: number = 1, pageSize: number = 10): Promise<{ data: PagedResult<TemplateRequest> }> => {
         const response = await api.get(`/Requests/my-pending/paged?page=${page}&pageSize=${pageSize}`);
         return response.data;
+    },
+
+    getRequestsReport: async (pageNumber: number, pageSize: number, startDate?: string, endDate?: string, forCurrentDepartment: boolean = false): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const params = new URLSearchParams();
+        params.append('pageNumber', String(pageNumber));
+        params.append('pageSize', String(pageSize));
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        params.append('forCurrentDepartment', String(forCurrentDepartment));
+        
+        const response = await api.get(`/Reports/requests?${params.toString()}`);
+        return response.data;
+    },
+
+    getResponsesReport: async (pageNumber: number, pageSize: number, startDate?: string, endDate?: string, forCurrentDepartment: boolean = false): Promise<{ data: PagedResult<TemplateResponse> }> => {
+        const params = new URLSearchParams();
+        params.append('pageNumber', String(pageNumber));
+        params.append('pageSize', String(pageSize));
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        params.append('forCurrentDepartment', String(forCurrentDepartment));
+        
+        const response = await api.get(`/Reports/responses?${params.toString()}`);
+        return response.data;
     }
 
 };
@@ -455,6 +479,32 @@ export const useRequestTransactionsHistory = (requestId: string | null) => {
             return res.data;
         },
         enabled: !!requestId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestsReport = (pageNumber: number, pageSize: number, startDate?: string, endDate?: string, forCurrentDepartment: boolean = false, enabled: boolean = false) => {
+    return useQuery({
+        queryKey: queryKeys.form.list({ type: 'report-requests', page: pageNumber, pageSize, startDate, endDate, forCurrentDepartment }),
+        queryFn: async () => {
+            const res = await formEndpoints.getRequestsReport(pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
+            const payload = (res as any).data || res;
+            return payload?.value || payload;
+        },
+        enabled: enabled && pageNumber > 0,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useResponsesReport = (pageNumber: number, pageSize: number, startDate?: string, endDate?: string, forCurrentDepartment: boolean = false, enabled: boolean = false) => {
+    return useQuery({
+        queryKey: queryKeys.form.list({ type: 'report-responses', page: pageNumber, pageSize, startDate, endDate, forCurrentDepartment }),
+        queryFn: async () => {
+            const res = await formEndpoints.getResponsesReport(pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
+            const payload = (res as any).data || res;
+            return payload?.value || payload;
+        },
+        enabled: enabled && pageNumber > 0,
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };

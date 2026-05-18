@@ -21,8 +21,13 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
+            if (startDate.HasValue)
+                startDate = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            if (endDate.HasValue)
+                endDate = DateTime.SpecifyKind(endDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59), DateTimeKind.Utc);
+
             if (startDate.HasValue && !endDate.HasValue)
-                endDate = DateTime.Now;
+                endDate = DateTime.UtcNow;
 
             if (startDate.HasValue && endDate.HasValue && startDate >= endDate)
                 return Error.Validation("R001", "startDate must be earlier than endDate.");
@@ -84,8 +89,13 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
+            if (startDate.HasValue)
+                startDate = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            if (endDate.HasValue)
+                endDate = DateTime.SpecifyKind(endDate.Value.Date.AddHours(23).AddMinutes(59).AddSeconds(59), DateTimeKind.Utc);
+
             if (startDate.HasValue && !endDate.HasValue)
-                endDate = DateTime.Now;
+                endDate = DateTime.UtcNow;
 
             if (startDate.HasValue && endDate.HasValue && startDate >= endDate)
                 return Error.Validation("R002", "startDate must be earlier than endDate.");
