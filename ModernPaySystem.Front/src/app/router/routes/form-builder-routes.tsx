@@ -14,6 +14,7 @@ const MyRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/my-req
 const AllPendingRequestsPage = lazyWithPreload(() => import('@/pages/form-builder/all-pending-requests-page'));
 const ReferralsPage = lazyWithPreload(() => import('@/pages/form-builder/referrals-page'));
 const DelphiTransactionPage = lazyWithPreload(() => import('@/pages/delphi-transaction/delphi-transaction-page').then(module => ({ default: module.DelphiTransactionPage })));
+const ReportsPage = lazyWithPreload(() => import('@/pages/form-builder/reports-page'));
 
 export const formBuilderRoutes: RouteObject = {
   path: 'form-builder',
@@ -168,6 +169,19 @@ export const formBuilderRoutes: RouteObject = {
         crumb: () => 'معاملات دلفي',
         permission: RoutePermissions.AUTHENTICATED,
         preload: () => DelphiTransactionPage.preload(),
+      },
+    },
+    {
+      path: 'reports',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ReportsPage />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'التقارير والإحصائيات',
+        permission: RoutePermissions.AUTHENTICATED,
+        preload: () => ReportsPage.preload(),
       },
     },
   ],
