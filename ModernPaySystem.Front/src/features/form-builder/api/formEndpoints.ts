@@ -134,8 +134,8 @@ export const formEndpoints = {
 
 
     // Responses
-    getResponsesByRequestId: async (requestId: string): Promise<{ data: TemplateResponse[] }> => {
-        const response = await api.get(`/Responses/by-request/${requestId}`);
+    getResponsesByRequestId: async (requestId: string, filterDto: RequestPagedFilterDto = { page: 1, pageSize: 100 }): Promise<{ data: PagedResult<TemplateResponse> | TemplateResponse[] }> => {
+        const response = await api.post(`/Responses/by-request/${requestId}`, filterDto);
         return response.data;
     },
 

@@ -1,8 +1,11 @@
 import React from 'react';
 import { FileArchive, History } from 'lucide-react';
+// import { FileArchive, History, CheckCircle2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
 import { RequestTransactionsHistory } from '@/features/form-builder/ui/RequestTransactionsHistory';
 import { CurrentLocationBadge } from '@/features/form-builder/ui/CurrentLocationBadge';
+// import { useRequestResponses } from '@/features/form-builder/api/formEndpoints';
+// import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 interface ResponseDetailsDataProps {
     requestId?: string;
@@ -19,6 +22,10 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({
     visibleFields
 }) => {
     const showTabs = requestId && !hideTabs;
+
+    // Fetch responses to display the final response if it exists
+    // const { data: responses = [] } = useRequestResponses(requestId || null);
+    // const finalResponse = responses.length > 0 ? responses[responses.length - 1] : null;
 
     // Logic for rendering fields extracted to avoid duplication
     const renderFieldsGrid = () => (
@@ -93,6 +100,29 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({
                             className="mb-1"
                         />
                         {renderFieldsGrid()}
+
+                        {/* {finalResponse && (
+                            <div className="mt-8 p-5 bg-primary/5 border border-primary/10 rounded-2xl relative overflow-hidden text-right" dir="rtl">
+                                <div className="absolute top-0 right-0 w-1.5 h-full bg-primary" />
+                                <div className="flex items-center justify-between mb-3 pr-3">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle2 className="w-4 h-4 text-primary" />
+                                        <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                            الرد
+                                        </span>
+                                        <UserDisplay userId={finalResponse.respondedByUserId} className="text-xs font-bold text-foreground" showIcon />
+                                    </div>
+                                    {finalResponse.createdAt && (
+                                        <span className="text-[10px] text-muted-foreground font-mono">
+                                            {new Date(finalResponse.createdAt).toLocaleString('ar-EG')}
+                                        </span>
+                                    )}
+                                </div>
+                                <p className="text-sm font-semibold text-foreground pr-3 leading-relaxed whitespace-pre-wrap">
+                                    {finalResponse.comment}
+                                </p>
+                            </div>
+                        )} */}
                     </TabsContent>
 
                     <TabsContent value="referrals" className="mt-0 outline-none">
@@ -109,6 +139,29 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({
 
                     </div>
                     {renderFieldsGrid()}
+
+                    {/* {finalResponse && (
+                        <div className="mt-8 p-5 bg-primary/5 border border-primary/10 rounded-2xl relative overflow-hidden text-right" dir="rtl">
+                            <div className="absolute top-0 right-0 w-1.5 h-full bg-primary" />
+                            <div className="flex items-center justify-between mb-3 pr-3">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                                    <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                        الرد
+                                    </span>
+                                    <UserDisplay userId={finalResponse.respondedByUserId} className="text-xs font-bold text-foreground" showIcon />
+                                </div>
+                                {finalResponse.createdAt && (
+                                    <span className="text-[10px] text-muted-foreground font-mono">
+                                        {new Date(finalResponse.createdAt).toLocaleString('ar-EG')}
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-sm font-semibold text-foreground pr-3 leading-relaxed whitespace-pre-wrap">
+                                {finalResponse.comment}
+                            </p>
+                        </div>
+                    )} */}
                 </>
             )}
         </div>
