@@ -75,6 +75,17 @@ export const DepartmentDashboardWidget: React.FC = () => {
         if (viewMode === 'full') setViewMode('subtree');
     };
 
+    const handleNodeClick = (id: string) => {
+        if (highlightId === id) {
+            // Second click: Open drawer (Sheet)
+            setSelectedDeptForUsers(id);
+        } else {
+            // First click: Highlight/select in tree
+            setHighlightId(id);
+            setSelectedRootId(id);
+        }
+    };
+
     // Handle deep linking from users page - sync during render
     const [prevUrlHighlightId, setPrevUrlHighlightId] = React.useState(urlHighlightId);
     if (urlHighlightId !== prevUrlHighlightId) {
@@ -273,7 +284,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                             data={treeData || []}
                             highlightId={highlightId}
                             isLoading={isTreeLoading}
-                            onNodeClick={(id: string) => setSelectedDeptForUsers(id)}
+                            onNodeClick={handleNodeClick}
                         />
                     </div>
 
