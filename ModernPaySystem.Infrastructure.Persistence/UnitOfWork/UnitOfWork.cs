@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Repos;
@@ -42,6 +43,7 @@ public class UnitOfWork(
     private IRepositoryBase<RequestTransaction, Guid>? _requestTransactions;
     private IRepositoryBase<RequestTransactionAttachment, Guid>? _requestTransactionAttachments;
     private IRepositoryBase<Department, Guid>? _departments;
+    private IRepositoryBase<DepartmentTemplateNumber, Guid>? _departmentTemplateNumbers;
 
     public IRepositoryBase<User, Guid> Users =>
         _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>(), _httpContextServiceManager);
@@ -95,6 +97,10 @@ public class UnitOfWork(
 
     public IRepositoryBase<Department, Guid> Departments =>
         _departments ??= new RepositoryBase<Department, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Department, Guid>>(), _httpContextServiceManager);
+    public IRepositoryBase<DepartmentTemplateNumber, Guid> DepartmentTemplateNumbers =>
+        _departmentTemplateNumbers ??= new RepositoryBase<DepartmentTemplateNumber, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<DepartmentTemplateNumber, Guid>>(), _httpContextServiceManager);
+
+    public bool HasActiveTransaction => _transaction != null;
 
     public async Task<int> SaveChangesAsync()
     {

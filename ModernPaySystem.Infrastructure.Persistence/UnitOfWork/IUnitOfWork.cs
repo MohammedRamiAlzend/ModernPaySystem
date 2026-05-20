@@ -39,8 +39,11 @@ public interface IUnitOfWork
     IRepositoryBase<RequestTransactionAttachment, Guid> RequestTransactionAttachments { get; }
 
     IRepositoryBase<Department, Guid> Departments { get; }
+    IRepositoryBase<DepartmentTemplateNumber, Guid> DepartmentTemplateNumbers { get; }
 
     Task<int> SaveChangesAsync();
+    //Task<int> GetNextRequestNumberAsync(Guid departmentId);
+    bool HasActiveTransaction { get; }
 
     Task BeginTransactionAsync();
 

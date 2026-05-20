@@ -15,6 +15,7 @@ public class Template : Entity<Guid>, IAuditableEntity
     public ICollection<TemplateDepartmentOwnership>? DepartmentOwnerships { get; set; } = null;
     public ICollection<UserTemplateOwnership>? UserOwnerships { get; set; } = null;
     public ICollection<LookUpField> LookUpFields { get; set; } = [];
+    public ICollection<DepartmentTemplateNumber> DepartmentTemplateNumbers { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

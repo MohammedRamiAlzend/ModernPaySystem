@@ -26,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
+    public DbSet<DepartmentTemplateNumber> DepartmentTemplateNumbers { get; set; }
 
     public DbSet<Client> Clients { get; set; }
     public DbSet<Gender> Genders { get; set; }
@@ -95,6 +96,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithOne(resp => resp.Request)
             .HasForeignKey<Request>(r => r.ResponseId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<DepartmentTemplateNumber>()
+            .HasIndex(r => new { r.DepartmentId, r.TemplateId })
+            .IsUnique();
+        //modelBuilder.Entity<Request>()
+        //    .HasIndex(r => new { r.ApproverDepartmentId, r.RequestNumber })
+        //    .IsUnique();
+
+
 
         modelBuilder.Entity<ResponseAttachment>()
             .HasOne(ra => ra.Response)
@@ -259,6 +269,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey<Department>(d => d.DepartmentHeadId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+
+        //modelBuilder.Entity<Department>()
+        //    .Property(d => d.LastRequestNumber)
+        //    .HasDefaultValue(0);
 
         // Department-User relationship
         modelBuilder.Entity<User>()

@@ -18,10 +18,11 @@ public class Department : Entity<Guid>, IAuditableEntity
     public int Level { get; set; }
     public string? MaterializedPath { get; set; }
     public DepartmentType Type { get; set; }
+    public ICollection<DepartmentTemplateNumber> DepartmentTemplateNumbers { get; set; } = [];
 
     public ICollection<Department> ChildDepartments { get; set; } = [];
     public ICollection<User> Users { get; set; } = [];
-    public ICollection<TemplateDepartmentOwnership> TemplateOwnerships { get; set; } = new List<TemplateDepartmentOwnership>();
+    public ICollection<TemplateDepartmentOwnership> TemplateOwnerships { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -46,7 +47,18 @@ public class Department : Entity<Guid>, IAuditableEntity
         };
     }
 }
+public class DepartmentTemplateNumber : Entity<Guid>
+{
+    public Guid DepartmentId { get; set; }
+    public Department? Department { get; set; }
 
+    public Guid TemplateId { get; set; }
+    public Template? Template { get; set; }
+
+    public int LastRequestNumber { get; set; } = 0;
+
+
+}
 public enum DepartmentType
 {
     Country = 1,

@@ -168,6 +168,7 @@ export interface UserReference {
 export interface TemplateRequest {
     id: string;
     templateId: string;
+    requestNumber: number;
     requesterId: string;
     approverId: string;
     content: InputValueDto[];

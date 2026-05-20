@@ -179,7 +179,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
         if (zipImages.length === 0) return;
         setIsGeneratingImagesPDF(true);
         try {
-            await imagesToPdf(zipImages, `Attachments_${request.id.split('-')[0]}`);
+            await imagesToPdf(zipImages, `Attachments_${request.requestNumber}`);
         } catch (error) {
             console.error('Error generating images PDF:', error);
             showStatus({ type: 'error', title: 'خطأ', message: 'فشل إنشاء ملف PDF للصور' });
@@ -210,6 +210,9 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                     <div className="overflow-hidden">
                         <h3 className="font-bold text-sm truncate">{template.title}</h3>
                         <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                #{request.requestNumber}
+                            </span>
                             <UserDisplay userId={request.requesterId} className="text-[10px] text-muted-foreground" showIcon iconClassName="w-2.5 h-2.5" />
                             <span className="text-[10px] text-border">|</span>
                             <span className="text-[10px] text-muted-foreground">{new Date(request.createdAt || '').toLocaleString('ar-EG')}</span>

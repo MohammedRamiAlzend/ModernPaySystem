@@ -238,7 +238,7 @@ public class RequestService(
                 return usersResult.Errors;
 
             logger.LogInformation("Creating new request for requester: {RequesterId}", httpContextServiceManager.GetCurrentUserId());
-            var getDepartmentResult = await unitOfWork.Departments.GetAsync(x => x.Id == request.DepartmentId, i => i.Include(x => x.DepartmentHead));
+            var getDepartmentResult = await unitOfWork.Departments.GetAsync(x => x.Id == request.DepartmentId, i => i.Include(x => x.DepartmentHead).Include(x => x.DepartmentTemplateNumbers));
             if (getDepartmentResult.IsError)
                 return getDepartmentResult.Errors;
 
@@ -259,47 +259,88 @@ public class RequestService(
             {
                 return userResult.Errors;
             }
-            var requestEntity = new Request
+
+            try
             {
-                Id = Guid.NewGuid(),
-                RequesterId = httpContextServiceManager.GetCurrentUserId(),
-                ApproverId = getDepartmentResult.Value!.DepartmentHeadId.Value,
-                ReadOnlyUsers = usersResult.Value,
-                ApproverDepartmentId = getDepartmentResult.Value.Id,
-                RequesterDepartmentId = userResult.Value!.DepartmentId!.Value
-            };
+                DepartmentTemplateNumber getDepartmentTemplateNumber = getDepartmentResult.Value!.DepartmentTemplateNumbers.FirstOrDefault(dtn => dtn.TemplateId == request.TemplateId);
 
-            var newRequestTemplateValues = new RequestTemplateValues
-            {
-                Id = Guid.NewGuid(),
-                TemplateId = request.TemplateId,
-                RequestId = requestEntity.Id,
-                InputValues = request.Content.Select(iv => new InputValue { Key = iv.Key, Value = iv.Value }).ToList()
-            };
+                if (getDepartmentTemplateNumber is null)
+                {
+                    getDepartmentTemplateNumber = new DepartmentTemplateNumber
+                    {
+                        Id = Guid.NewGuid(),
+                        DepartmentId = getDepartmentResult.Value.Id,
+                        TemplateId = request.TemplateId,
+                        LastRequestNumber = 0
+                    };
+                    var addDepartmentTemplateNumberResult = await unitOfWork.DepartmentTemplateNumbers.AddAsync(getDepartmentTemplateNumber);
+                    if (addDepartmentTemplateNumberResult.IsError)
+                    {
+                        if (unitOfWork.HasActiveTransaction)
+                            await unitOfWork.RollbackTransactionAsync();
+                        return addDepartmentTemplateNumberResult.Errors;
+                    }
+                }
+                var requestEntity = new Request
+                {
+                    Id = Guid.NewGuid(),
+                    RequestNumber = ++getDepartmentTemplateNumber.LastRequestNumber,
+                    RequesterId = httpContextServiceManager.GetCurrentUserId(),
+                    ApproverId = getDepartmentResult.Value.DepartmentHeadId.Value,
+                    ReadOnlyUsers = usersResult.Value,
+                    ApproverDepartmentId = getDepartmentResult.Value.Id,
+                    RequesterDepartmentId = userResult.Value!.DepartmentId!.Value
+                };
 
-            // link the template values to the request entity
-            requestEntity.RequestTemplateValuesId = newRequestTemplateValues.Id;
+                var newRequestTemplateValues = new RequestTemplateValues
+                {
+                    Id = Guid.NewGuid(),
+                    TemplateId = request.TemplateId,
+                    RequestId = requestEntity.Id,
+                    Request = requestEntity,
+                    InputValues = [.. request.Content.Select(iv => new InputValue { Key = iv.Key, Value = iv.Value })]
+                };
 
-            var addRequestTemplateValuesResult = await unitOfWork.RequestTemplateValues.AddAsync(newRequestTemplateValues);
-            if (addRequestTemplateValuesResult.IsError)
-                return addRequestTemplateValuesResult.Errors;
+                requestEntity.RequestTemplateValuesId = newRequestTemplateValues.Id;
+                requestEntity.RequestTemplateValues = newRequestTemplateValues;
 
-            var addResult = await unitOfWork.Requests.AddAsync(requestEntity);
-            if (addResult.IsError)
-                return addResult.Errors;
+                var addRequestTemplateValuesResult = await unitOfWork.RequestTemplateValues.AddAsync(newRequestTemplateValues);
+                if (addRequestTemplateValuesResult.IsError)
+                {
+                    if (unitOfWork.HasActiveTransaction)
+                        await unitOfWork.RollbackTransactionAsync();
 
-            int result = await unitOfWork.SaveChangesAsync();
-            if (result <= 0)
-                return ApplicationErrors.DatabaseError;
-            foreach (var file in files)
-            {
-                var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, requestEntity.Id);
-                if (uploadResult.IsError)
-                    return uploadResult.Errors;
+                    return addRequestTemplateValuesResult.Errors;
+                }
+
+                var addResult = await unitOfWork.Requests.AddAsync(requestEntity);
+                if (addResult.IsError)
+                {
+                    if (unitOfWork.HasActiveTransaction)
+                        await unitOfWork.RollbackTransactionAsync();
+
+                    return addResult.Errors;
+                }
+
+                await unitOfWork.SaveChangesAsync();
+
+                foreach (var file in files)
+                {
+                    var uploadResult = await webAttachmentService.UploadFileToRequestAsync(file, requestEntity.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
+
+                logger.LogInformation("Successfully created request: {RequestId} with number {RequestNumber}", requestEntity.Id, requestEntity.RequestNumber);
+                return requestEntity.ToDto();
             }
+            catch
+            {
+                if (unitOfWork.HasActiveTransaction)
+                    await unitOfWork.RollbackTransactionAsync();
 
-            logger.LogInformation("Successfully created request: {RequestId}", requestEntity.Id);
-            return requestEntity.ToDto();
+                throw;
+            }
         }
         catch (Exception ex)
         {

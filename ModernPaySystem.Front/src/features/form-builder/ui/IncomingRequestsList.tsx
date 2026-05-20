@@ -78,8 +78,11 @@ export const IncomingRequestsList = ({
                                         <div className="font-bold text-sm truncate max-w-[200px] flex items-center gap-2">
                                             <TemplateTitle 
                                                 templateId={request.templateId} 
-                                                fallbackTitle={templates.find(t => t.id === request.templateId)?.title || `${request.id.split('-')[0].toUpperCase()} ... ID`} 
+                                                fallbackTitle={templates.find(t => t.id === request.templateId)?.title || `طلب #${request.requestNumber}`} 
                                             />
+                                            <span className="px-1.5 py-0.5 bg-primary/10 text-[10px] text-primary rounded-md whitespace-nowrap">
+                                                #{request.requestNumber}
+                                            </span>
                                             {request.isNew && (
                                                 <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md">جديد</span>
                                             )}

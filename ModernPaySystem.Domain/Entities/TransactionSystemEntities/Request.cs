@@ -28,6 +28,7 @@ public class Request : Entity<Guid>, IAuditableEntity
     public Guid? ResponseId { get; set; }
     public Response? Response { get; set; }
 
+    public int RequestNumber { get; set; }
     public RequestStatus Status { get; set; } = RequestStatus.Pending;
 
     public Guid? FirstTransactionId { get; set; }
@@ -71,6 +72,7 @@ public class Request : Entity<Guid>, IAuditableEntity
         {
             Id = this.Id,
             TemplateId = this.RequestTemplateValues?.TemplateId ?? throw new Exception("RequestTemplateValues is null"),
+            RequestNumber = this.RequestNumber,
             RequesterId = this.RequesterId,
             ApproverId = this.ApproverId,
             Content = this.RequestTemplateValues?.InputValues.Select(iv => new InputValueDto
@@ -99,6 +101,7 @@ public class RequestDto
 {
     public Guid Id { get; set; }
     public Guid TemplateId { get; set; }
+    public int RequestNumber { get; set; }
     public Guid RequesterId { get; set; }
     public Guid ApproverId { get; set; }
     public Guid? ResponseId { get; set; }
