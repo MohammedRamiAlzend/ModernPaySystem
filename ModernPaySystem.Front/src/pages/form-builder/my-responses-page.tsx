@@ -86,6 +86,9 @@ export const MyResponsesPage = () => {
                                                 <div className="flex flex-col">
                                                     <span className="font-bold text-sm flex items-center gap-2">
                                                         {templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
+                                                        <span className="px-1.5 py-0.5 bg-primary/10 text-[10px] text-primary rounded-md whitespace-nowrap">
+                                                            #{request.requestNumber}
+                                                        </span>
                                                         {request.isNew && (
                                                             <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md animate-pulse">
                                                                 جديد

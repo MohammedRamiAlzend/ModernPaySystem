@@ -240,6 +240,7 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
                     submittedAt={response.submittedAt}
                     visibleCount={visibleFields.length}
                     totalCount={schema.fields.length}
+                    requestNumber={response.requestNumber}
                 />
 
                 <ResponseDetailsData requestId={response.id} visibleFields={visibleFields} />

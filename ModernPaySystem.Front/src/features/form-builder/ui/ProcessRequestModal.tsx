@@ -49,7 +49,7 @@ export const ProcessRequestModal = ({
         <BaseModal
             isOpen={isOpen}
             onClose={onClose}
-            title={`معالجة الطلب: ${template.title}`}
+            title={`معالجة الطلب #${request.requestNumber}: ${template.title}`}
             maxWidth="4xl"
             maxHeight="4xl"
             footer={

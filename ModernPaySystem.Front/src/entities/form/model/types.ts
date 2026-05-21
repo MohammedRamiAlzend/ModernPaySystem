@@ -250,6 +250,7 @@ export interface FormResponse {
     /** The complete form schema at the time of submission */
     schema: FormSchema;
     attachments?: RequestAttachmentDto[];
+    requestNumber?: number;
 }
 
 // --- Pagination Types ---
