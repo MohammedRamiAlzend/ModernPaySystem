@@ -109,7 +109,8 @@ export const ResponseDetailsModal: React.FC<ResponseDetailsModalProps> = ({
         const userNamesMap = await resolveUserNames(Array.from(userIdsToResolve));
 
         const printOptions: PrintOptions = {
-            direction: 'rtl'
+            direction: 'rtl',
+            requestNumber: response.requestNumber
         };
 
         if (includeResponses && responses.length > 0) {
