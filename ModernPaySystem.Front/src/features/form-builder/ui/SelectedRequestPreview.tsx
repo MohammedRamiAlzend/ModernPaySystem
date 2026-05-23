@@ -111,7 +111,8 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
         const userNamesMap = await resolveUserNames(Array.from(userIdsToResolve));
 
         const printOptions: PrintOptions = {
-            direction: 'rtl'
+            direction: 'rtl',
+            requestNumber: request.requestNumber
         };
 
         if (includeResponses && responses.length > 0) {

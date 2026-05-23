@@ -86,11 +86,16 @@ export const ReferralCard = ({ referral, isPending, onAction }: ReferralCardProp
                         </div>
                         <div className="flex flex-col overflow-hidden">
                             <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">نوع الخدمة</span>
-                            <span className="text-sm font-black truncate">
+                            <span className="text-sm font-black truncate flex items-center gap-2">
                                 <TemplateTitle
                                     templateId={referral.request?.templateId || ''}
                                     fallbackTitle={getTemplateTitleFallback(referral.request?.templateId || '')}
                                 />
+                                {referral.request?.requestNumber && (
+                                    <span className="px-1.5 py-0.5 bg-primary/10 text-[10px] text-primary rounded-md whitespace-nowrap">
+                                        #{referral.request.requestNumber}
+                                    </span>
+                                )}
                             </span>
                         </div>
                     </div>

@@ -463,7 +463,12 @@ export const ReportsPage: React.FC = () => {
 
                                                 return (
                                                     <tr key={request.id} className="hover:bg-muted/10 transition-colors">
-                                                        <td className="px-6 py-4 font-bold text-sm text-foreground">{templateTitle}</td>
+                                                        <td className="px-6 py-4 font-bold text-sm text-foreground flex items-center gap-2">
+                                                            {templateTitle}
+                                                            <span className="px-1.5 py-0.5 bg-primary/10 text-[10px] text-primary rounded-md whitespace-nowrap">
+                                                                #{request.requestNumber}
+                                                            </span>
+                                                        </td>
                                                         <td className="px-6 py-4 text-sm">
                                                             <UserDisplay userId={request.requesterId} className="text-sm font-bold" />
                                                         </td>
@@ -501,7 +506,14 @@ export const ReportsPage: React.FC = () => {
                                                         <td className="px-6 py-4 text-sm">
                                                             <UserDisplay userId={response.respondedByUserId} className="text-sm font-bold" />
                                                         </td>
-                                                        <td className="px-6 py-4 font-bold text-sm text-foreground">{originalTitle}</td>
+                                                        <td className="px-6 py-4 font-bold text-sm text-foreground flex items-center gap-2">
+                                                            {originalTitle}
+                                                            {response.request?.requestNumber && (
+                                                                <span className="px-1.5 py-0.5 bg-primary/10 text-[10px] text-primary rounded-md whitespace-nowrap">
+                                                                    #{response.request.requestNumber}
+                                                                </span>
+                                                            )}
+                                                        </td>
                                                         <td className="px-6 py-4 text-sm text-muted-foreground max-w-xs truncate" title={response.comment || ''}>
                                                             {response.comment || 'لا يوجد تعليق مضاف'}
                                                         </td>

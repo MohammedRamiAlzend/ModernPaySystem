@@ -22,7 +22,8 @@ export const useRequestDetails = () => {
                     return acc;
                 }, {} as Record<string, any>),
                 schema: fetchedTemplate,
-                attachments: activeRequest.requestAttachmentDtos
+                attachments: activeRequest.requestAttachmentDtos,
+                requestNumber: activeRequest.requestNumber
             } as FormResponse;
         } catch (e) {
             console.error('Failed to map request content', e);

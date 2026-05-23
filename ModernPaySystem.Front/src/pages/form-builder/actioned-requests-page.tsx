@@ -85,11 +85,14 @@ export const ActionedRequestsPage = () => {
                                                 <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
                                                     <FileText className="w-4 h-4 text-primary" />
                                                 </div>
-                                                <span className="font-bold text-sm">
+                                                <span className="font-bold text-sm flex items-center gap-2">
                                                     <TemplateTitle
                                                         templateId={request.templateId}
                                                         fallbackTitle={templates.find(t => t.id === request.templateId)?.title || "نموذج غير معروف"}
                                                     />
+                                                    <span className="px-1.5 py-0.5 bg-primary/10 text-[10px] text-primary rounded-md whitespace-nowrap">
+                                                        #{request.requestNumber}
+                                                    </span>
                                                 </span>
                                             </div>
                                         </td>

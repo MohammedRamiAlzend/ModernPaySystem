@@ -13,6 +13,7 @@ export interface PrintOptions {
     referrals?: PrintResponseItem[];
     finalResponse?: PrintResponseItem;
     direction?: 'rtl' | 'ltr';
+    requestNumber?: string | number;
 }
 
 interface PrintField {
@@ -122,7 +123,9 @@ export const generateFormPDF = async (
             <div style="text-align: center; padding-bottom: 3px; margin-bottom: 6px; border-bottom: none;">
                 <img src="/ECSC.png" style="height: 35px; object-fit: contain; display: block; margin: 0 auto 5px;" />
                 <h1 style="font-size: 14px; font-weight: 900; color: #000000; margin: 5px 0;">${title}</h1>
-                <div style="font-size: 12px; color: #000000; font-weight: 600;">تاريخ التقديم: ${submittedAt}</div>
+                <div style="font-size: 12px; color: #000000; font-weight: 600;">
+                    ${options.requestNumber ? `رقم الطلب: #${options.requestNumber} &nbsp;|&nbsp; ` : ''}تاريخ التقديم: ${submittedAt}
+                </div>
             </div>
             <div style="width: 100%;">${fieldsHtml}</div>
             <div style="clear: both;"></div>
@@ -315,7 +318,9 @@ export const printFormResponse = (
         <div class="header">
             <img src="/ECSC.png" style="height:35px;object-fit:contain;display:block;margin:0 auto 5px;" />
             <h1>${title}</h1>
-            <div class="date">تاريخ التقديم: ${submittedAt}</div>
+            <div class="date">
+                ${options.requestNumber ? `رقم الطلب: #${options.requestNumber} &nbsp;|&nbsp; ` : ''}تاريخ التقديم: ${submittedAt}
+            </div>
         </div>
         <div class="fields-container">${fieldsHtml}</div>
         ${finalResponseHtml}
