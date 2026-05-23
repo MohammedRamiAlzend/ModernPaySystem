@@ -16,6 +16,18 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
     IHttpContextServiceManager httpContextServiceManager) : IRepositoryBase<TEntity, TKey>
     where TEntity : Entity<TKey>
 {
+    private static IOrderedQueryable<TEntity> ApplyDefaultOrdering(IQueryable<TEntity> query)
+    {
+        if (typeof(IAuditableEntity).IsAssignableFrom(typeof(TEntity)))
+        {
+            return query
+                .OrderByDescending(e => EF.Property<DateTime?>(e, nameof(IAuditableEntity.CreatedAt)))
+                .ThenByDescending(e => e.Id);
+        }
+
+        return query.OrderByDescending(e => e.Id);
+    }
+
     public async Task<Result<Success>> AddAsync(TEntity entity, bool bypassAuth = false)
     {
         if (entity == null)
@@ -71,13 +83,9 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
             if (transform != null) query = transform(query);
 
             if (orderBy == null)
-            {
-                query = query.OrderByDescending(e => e.Id);
-            }
+                query = ApplyDefaultOrdering(query);
             else
-            {
                 query = orderBy(query);
-            }
 
             return await query.ToListAsync();
         }
@@ -133,13 +141,9 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
             int totalItems = await query.CountAsync();
 
             if (orderBy == null)
-            {
-                query = query.OrderByDescending(e => e.Id);
-            }
+                query = ApplyDefaultOrdering(query);
             else
-            {
                 query = orderBy(query);
-            }
 
             var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
