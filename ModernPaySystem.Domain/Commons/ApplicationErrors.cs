@@ -103,6 +103,9 @@ public static class ApplicationErrors
     public static readonly Error FormIdMustHasValue = new("10022", "The specified archive record's form ID must have a value.", ErrorKind.Validation, "يجب أن يحتوي معرف النموذج المحدد لسجل الأرشفة على قيمة.");
     public static Error ArchivePhysicalFileMissingFromStorage(string storagePath) =>
         new("10023", $"The archive file metadata exists but the physical file is missing from storage: {storagePath}.", ErrorKind.NotFound, "الملف المادي غير موجود في التخزين رغم وجود بياناته الوصفية.", HttpStatusCode.Gone);
+    public static readonly Error ArchiveRecordHasNoFiles = new("10024", "The specified archive record does not contain any files.", ErrorKind.NotFound, "سجل الأرشفة المحدد لا يحتوي على أي ملفات.");
+    public static readonly Error ArchiveRecordZipTooLarge = new("10025", "The archive record files exceed the configured ZIP size limit.", ErrorKind.Validation, "تتجاوز ملفات سجل الأرشفة الحد المسموح به لحجم ملف ZIP.");
+    public static readonly Error ArchiveRecordZipGenerationTimedOut = new("10026", "The ZIP archive generation timed out.", ErrorKind.Failure, "استغرق إنشاء ملف ZIP وقتاً أطول من المسموح.", HttpStatusCode.RequestTimeout);
 
 
     // File Operation Errors (1000-1099)

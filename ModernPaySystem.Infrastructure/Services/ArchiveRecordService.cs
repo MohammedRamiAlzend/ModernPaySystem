@@ -1,12 +1,18 @@
 using FileManager.Abstractions;
 using FileManager.Services.Abstraction;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Infrastructure.Options;
+using ICSharpCode.SharpZipLib.Zip;
 using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -14,13 +20,17 @@ public class ArchiveRecordService(
     IUnitOfWork unitOfWork,
     IFilesManagerService filesManagerService,
     IFileManager fileManager,
+    IMemoryCache memoryCache,
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
+    IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string UploadsDirectory = "Uploads";
+    private const string ZipCachePrefix = "archive-record-zip";
 
     private ArchiveRecordFileUploadOptions UploadSettings => uploadOptions.Value;
+    private ArchiveRecordZipOptions ZipSettings => zipOptions.Value;
 
     public async Task<Result<IEnumerable<ArchiveRecordDto>>> GetAllAsync()
     {
@@ -1126,6 +1136,306 @@ public class ArchiveRecordService(
             return ApplicationErrors.InternalServerError;
         }
     }
+
+    public async Task<Result<ArchiveRecordZipBundleDto>> GetZipBundleAsync(Guid recordId, bool flatten = false, string? password = null, CompressionLevel compression = CompressionLevel.Optimal, bool includeMetadata = false, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (recordId == Guid.Empty)
+            {
+                return ApplicationErrors.InvalidInput;
+            }
+
+            var normalizedPassword = string.IsNullOrWhiteSpace(password) ? null : password;
+            var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
+                x => x.Id == recordId,
+                query => query.Include(x => x.Folder)
+                              .Include(x => x.PhysicalFiles));
+
+            if (recordResult.IsError)
+            {
+                return recordResult.Errors;
+            }
+
+            var record = recordResult.Value;
+            if (record == null)
+            {
+                return ApplicationErrors.ArchiveRecordNotFound;
+            }
+
+            var activeFiles = record.PhysicalFiles.Where(x => !x.IsDeleted).ToList();
+            if (activeFiles.Count == 0)
+            {
+                return ApplicationErrors.ArchiveRecordHasNoFiles;
+            }
+
+            foreach (var physicalFile in activeFiles)
+            {
+                if (!filesManagerService.FileExists(physicalFile.StoragePath))
+                {
+                    return ApplicationErrors.ArchivePhysicalFileMissingFromStorage(physicalFile.StoragePath);
+                }
+            }
+
+            var totalSize = activeFiles.Sum(x => x.FileSize);
+            if (ZipSettings.MaxTotalSizeBytes > 0 && totalSize > ZipSettings.MaxTotalSizeBytes)
+            {
+                return ApplicationErrors.ArchiveRecordZipTooLarge;
+            }
+
+            var cacheKey = BuildZipCacheKey(recordId, flatten, normalizedPassword, compression, includeMetadata);
+            if (memoryCache.TryGetValue<CachedZipBundle>(cacheKey, out var cachedBundle) && cachedBundle != null && File.Exists(cachedBundle.ZipFilePath))
+            {
+                return new ArchiveRecordZipBundleDto
+                {
+                    ArchiveRecordId = recordId,
+                    ZipFilePath = cachedBundle.ZipFilePath,
+                    DownloadFileName = cachedBundle.DownloadFileName,
+                    ContentLength = cachedBundle.ContentLength,
+                    ContentType = "application/zip"
+                };
+            }
+
+            if (cachedBundle is not null)
+            {
+                RemoveCachedZip(cacheKey, cachedBundle.ZipFilePath);
+            }
+
+            var generationTimeout = TimeSpan.FromSeconds(Math.Max(1, ZipSettings.GenerationTimeoutSeconds));
+            using var timeoutCts = new CancellationTokenSource(generationTimeout);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+
+            var tempDirectory = Path.Combine(Path.GetTempPath(), ZipSettings.CacheDirectoryName);
+            Directory.CreateDirectory(tempDirectory);
+
+            var downloadFileName = BuildZipDownloadFileName(record.Id);
+            var tempZipPath = Path.Combine(tempDirectory, BuildZipCacheFileName(cacheKey));
+
+            await GenerateZipBundleAsync(record, activeFiles, tempZipPath, flatten, normalizedPassword, compression, includeMetadata, linkedCts.Token);
+
+            var contentLength = new FileInfo(tempZipPath).Length;
+            var bundle = new CachedZipBundle(tempZipPath, downloadFileName, contentLength);
+
+            var entryOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(Math.Max(1, ZipSettings.CacheExpirationMinutes))
+            };
+
+            entryOptions.RegisterPostEvictionCallback(static (_, value, _, _) =>
+            {
+                if (value is CachedZipBundle zipBundle)
+                {
+                    RemoveZipFile(zipBundle.ZipFilePath);
+                }
+            });
+
+            memoryCache.Set(cacheKey, bundle, entryOptions);
+
+            return new ArchiveRecordZipBundleDto
+            {
+                ArchiveRecordId = recordId,
+                ZipFilePath = bundle.ZipFilePath,
+                DownloadFileName = bundle.DownloadFileName,
+                ContentLength = bundle.ContentLength,
+                ContentType = "application/zip"
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            return ApplicationErrors.ArchiveRecordZipGenerationTimedOut;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error generating zip bundle for archive record {RecordId}", recordId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    private async Task GenerateZipBundleAsync(ArchiveRecord record, IReadOnlyCollection<PhysicalFile> files, string zipFilePath, bool flatten, string? password, CompressionLevel compression, bool includeMetadata, CancellationToken cancellationToken)
+    {
+        await using var zipFileStream = new FileStream(
+            zipFilePath,
+            FileMode.Create,
+            FileAccess.Write,
+            FileShare.None,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+        using var zipOutputStream = new ZipOutputStream(zipFileStream)
+        {
+            IsStreamOwner = false
+        };
+
+        zipOutputStream.SetLevel(MapCompressionLevel(compression));
+        if (!string.IsNullOrWhiteSpace(password))
+        {
+            zipOutputStream.Password = password;
+        }
+
+        var usedEntryNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var entryPrefix = flatten ? string.Empty : $"record-{record.Id.ToString("N")[..8]}/";
+
+        if (includeMetadata)
+        {
+            await WriteMetadataEntryAsync(zipOutputStream, record, files, entryPrefix, usedEntryNames, cancellationToken);
+        }
+
+        foreach (var physicalFile in files)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var entryName = BuildZipEntryName(entryPrefix, physicalFile.FileName, usedEntryNames);
+            var zipEntry = new ZipEntry(entryName)
+            {
+                DateTime = physicalFile.CreatedAt ?? DateTime.UtcNow,
+                CompressionMethod = compression == CompressionLevel.NoCompression ? CompressionMethod.Stored : CompressionMethod.Deflated
+            };
+
+            zipOutputStream.PutNextEntry(zipEntry);
+            var absolutePath = Path.GetFullPath(physicalFile.StoragePath);
+            var streamResult = await filesManagerService.GetFileStreamAsync(absolutePath);
+            if (streamResult.IsError)
+            {
+                throw new FileNotFoundException($"File missing from storage: {absolutePath}", absolutePath);
+            }
+
+            await using var sourceStream = streamResult.Value!;
+            await sourceStream.CopyToAsync(zipOutputStream, 64 * 1024, cancellationToken);
+            zipOutputStream.CloseEntry();
+        }
+
+        zipOutputStream.Finish();
+        await zipFileStream.FlushAsync(cancellationToken);
+    }
+
+    private async Task WriteMetadataEntryAsync(ZipOutputStream zipOutputStream, ArchiveRecord record, IReadOnlyCollection<PhysicalFile> files, string entryPrefix, HashSet<string> usedEntryNames, CancellationToken cancellationToken)
+    {
+        var metadataPayload = new
+        {
+            recordId = record.Id,
+            archivalNumber = record.ArchivalNumber,
+            folderId = record.FolderId,
+            folderName = record.Folder?.Name,
+            generatedAtUtc = DateTime.UtcNow,
+            fileCount = files.Count,
+            files = files.Select(file => new
+            {
+                fileId = file.Id,
+                fileName = file.FileName,
+                fileExtension = file.FileExtension,
+                contentType = file.ContentType,
+                contentLength = file.FileSize,
+                archiveRecordId = file.ArchiveRecordId
+            })
+        };
+
+        var metadataBytes = JsonSerializer.SerializeToUtf8Bytes(metadataPayload, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        var metadataEntryName = BuildZipEntryName(entryPrefix, "metadata.json", usedEntryNames);
+        var metadataEntry = new ZipEntry(metadataEntryName)
+        {
+            DateTime = DateTime.UtcNow,
+            CompressionMethod = CompressionMethod.Deflated
+        };
+
+        zipOutputStream.PutNextEntry(metadataEntry);
+        await zipOutputStream.WriteAsync(metadataBytes, cancellationToken);
+        zipOutputStream.CloseEntry();
+    }
+
+    private static int MapCompressionLevel(CompressionLevel compression)
+    {
+        return compression switch
+        {
+            CompressionLevel.NoCompression => 0,
+            CompressionLevel.Fastest => 1,
+            CompressionLevel.Optimal => 9,
+            _ => 9
+        };
+    }
+
+    private static string BuildZipEntryName(string prefix, string fileName, HashSet<string> usedEntryNames)
+    {
+        var safeFileName = Path.GetFileName(fileName);
+        var entryName = NormalizeZipEntryPath(Path.Combine(prefix, safeFileName));
+
+        if (usedEntryNames.Add(entryName))
+        {
+            return entryName;
+        }
+
+        var directoryName = Path.GetDirectoryName(entryName) ?? string.Empty;
+        var baseName = Path.GetFileNameWithoutExtension(safeFileName);
+        var extension = Path.GetExtension(safeFileName);
+
+        var suffix = 1;
+        while (true)
+        {
+            var candidateName = string.IsNullOrEmpty(directoryName)
+                ? $"{baseName} ({suffix}){extension}"
+                : Path.Combine(directoryName, $"{baseName} ({suffix}){extension}");
+
+            candidateName = NormalizeZipEntryPath(candidateName);
+            if (usedEntryNames.Add(candidateName))
+            {
+                return candidateName;
+            }
+
+            suffix++;
+        }
+    }
+
+    private static string NormalizeZipEntryPath(string path)
+    {
+        return path.Replace('\\', '/').TrimStart('/');
+    }
+
+    private static void RemoveZipFile(string zipFilePath)
+    {
+        try
+        {
+            if (File.Exists(zipFilePath))
+            {
+                File.Delete(zipFilePath);
+            }
+        }
+        catch
+        {
+        }
+    }
+
+    private void RemoveCachedZip(string cacheKey, string zipFilePath)
+    {
+        memoryCache.Remove(cacheKey);
+        RemoveZipFile(zipFilePath);
+    }
+
+    private string BuildZipCacheKey(Guid recordId, bool flatten, string? password, CompressionLevel compression, bool includeMetadata)
+    {
+        var passwordHash = string.IsNullOrEmpty(password)
+            ? "nopassword"
+            : Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(password)));
+
+        return $"{ZipCachePrefix}:{recordId:N}:{flatten}:{compression}:{includeMetadata}:{passwordHash}";
+    }
+
+    private static string BuildZipCacheFileName(string cacheKey)
+    {
+        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(cacheKey)));
+        return $"{hash}.zip";
+    }
+
+    private static string BuildZipDownloadFileName(Guid recordId)
+    {
+        var shortGuid = recordId.ToString("N")[..8];
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+        return $"archive-record-{shortGuid}-{timestamp}.zip";
+    }
+
+    private sealed record CachedZipBundle(string ZipFilePath, string DownloadFileName, long ContentLength);
 
     private async Task<Result<List<PhysicalFile>>> StoreFilesAsync(ArchiveRecord record, IFormFileCollection files, List<string> storedPaths)
     {

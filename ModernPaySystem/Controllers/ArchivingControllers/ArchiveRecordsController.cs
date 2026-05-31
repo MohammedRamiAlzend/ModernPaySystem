@@ -5,6 +5,7 @@ using Microsoft.Net.Http.Headers;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Infrastructure.Extensions;
+using System.IO.Compression;
 using System.Net;
 
 namespace ModernPaySystem.Controllers.ArchivingControllers;
@@ -120,6 +121,14 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
         return await StreamArchiveFileAsync(fileId, download, recordId);
     }
 
+    [HttpGet("{recordId}/files/zip")]
+    [EndpointPermission("archiving.records.download-zip", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> DownloadZip(Guid recordId, [FromQuery] string? password = null, [FromQuery] CompressionLevel compression = CompressionLevel.Optimal, [FromQuery] bool includeMetadata = false)
+    {
+        logger.LogInformation("Downloading ZIP bundle for archive record {RecordId}. Flatten: {Flatten}, Compression: {Compression}, IncludeMetadata: {IncludeMetadata}", recordId, false, compression, includeMetadata);
+        return await StreamArchiveZipAsync(recordId, false, password, compression, includeMetadata);
+    }
+
     [HttpGet("files/{fileId}")]
     [EndpointPermission("archiving.records.download-file", SubSystem.Archiving, PermissionType.Read)]
     public async Task<IActionResult> DownloadFileById(Guid fileId, [FromQuery] bool download = false)
@@ -164,5 +173,44 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
         Response.Headers[HeaderNames.ContentLength] = file.ContentLength.ToString();
 
         return File(file.ContentStream, file.ContentType, enableRangeProcessing: true);
+    }
+
+    private async Task<IActionResult> StreamArchiveZipAsync(Guid recordId, bool flatten, string? password, CompressionLevel compression, bool includeMetadata)
+    {
+        var result = await archiveRecordService.GetZipBundleAsync(recordId, flatten, password, compression, includeMetadata, HttpContext.RequestAborted);
+        if (result.IsError)
+        {
+            var topError = result.TopError;
+            if (topError.HttpStatus == HttpStatusCode.Gone)
+            {
+                return StatusCode(StatusCodes.Status410Gone, new { errors = result.Errors });
+            }
+
+            if (topError.HttpStatus == HttpStatusCode.RequestTimeout)
+            {
+                return StatusCode(StatusCodes.Status408RequestTimeout, new { errors = result.Errors });
+            }
+
+            return result.ToActionResult();
+        }
+
+        var bundle = result.Value!;
+        Response.ContentType = bundle.ContentType;
+        Response.ContentLength = bundle.ContentLength;
+        Response.Headers[HeaderNames.ContentDisposition] = new ContentDispositionHeaderValue("attachment")
+        {
+            FileName = bundle.DownloadFileName,
+            FileNameStar = bundle.DownloadFileName
+        }.ToString();
+
+        var stream = new FileStream(
+            bundle.ZipFilePath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.Read,
+            64 * 1024,
+            FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+        return File(stream, bundle.ContentType, bundle.DownloadFileName, enableRangeProcessing: true);
     }
 }

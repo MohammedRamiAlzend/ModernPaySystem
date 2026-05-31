@@ -21,9 +21,11 @@ public static class InfrastructureServiceRegistration
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<ArchiveRecordFileUploadOptions>(configuration.GetSection("ArchiveRecordFiles"));
+        services.Configure<ArchiveRecordZipOptions>(configuration.GetSection("ArchiveRecordZip"));
 
         // Register File Manager Services
         services.AddFileManager();
+        services.AddMemoryCache();
 
         // Register HTTP Context Accessor
         services.AddHttpContextAccessor();

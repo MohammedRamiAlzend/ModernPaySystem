@@ -77,6 +77,15 @@ public class ArchiveRecordFilesMetadataPageDto
     public List<PhysicalFileMetadataDto> Files { get; set; } = [];
 }
 
+public class ArchiveRecordZipBundleDto
+{
+    public Guid ArchiveRecordId { get; set; }
+    public string ZipFilePath { get; set; } = string.Empty;
+    public string DownloadFileName { get; set; } = string.Empty;
+    public long ContentLength { get; set; }
+    public string ContentType { get; set; } = "application/zip";
+}
+
 public class ArchivePhysicalFileDownloadDto
 {
     public Guid FileId { get; set; }
