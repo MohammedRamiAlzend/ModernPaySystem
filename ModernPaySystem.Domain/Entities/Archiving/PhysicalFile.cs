@@ -3,6 +3,64 @@ using System.IO;
 
 namespace ModernPaySystem.Domain.Entities.Archiving;
 
+/// <summary>
+/// Controls how archive file data is returned by the paginated file endpoint.
+/// </summary>
+public enum ArchiveFileRetrievalMode
+{
+    /// <summary>
+    /// Returns file metadata only.
+    /// </summary>
+    MetadataOnly = 0,
+
+    /// <summary>
+    /// Returns file metadata and download/view URLs.
+    /// </summary>
+    WithUrls = 1,
+
+    /// <summary>
+    /// Returns file metadata, URLs, and inline Base64 data for small files.
+    /// </summary>
+    WithData = 2
+}
+
+/// <summary>
+/// Specifies the field used to sort paginated archive files.
+/// </summary>
+public enum ArchiveFileSortBy
+{
+    /// <summary>
+    /// Sort by creation time.
+    /// </summary>
+    CreatedAt = 0,
+
+    /// <summary>
+    /// Sort by file name.
+    /// </summary>
+    FileName = 1,
+
+    /// <summary>
+    /// Sort by file size.
+    /// </summary>
+    FileSize = 2
+}
+
+/// <summary>
+/// Specifies the ordering direction for paginated archive files.
+/// </summary>
+public enum ArchiveFileSortOrder
+{
+    /// <summary>
+    /// Sort from lowest to highest.
+    /// </summary>
+    Asc = 0,
+
+    /// <summary>
+    /// Sort from highest to lowest.
+    /// </summary>
+    Desc = 1
+}
+
 public class PhysicalFile : Entity<Guid>, IAuditableEntity
 {
     public Guid ArchiveRecordId { get; set; }
@@ -84,6 +142,37 @@ public class ArchiveRecordZipBundleDto
     public string DownloadFileName { get; set; } = string.Empty;
     public long ContentLength { get; set; }
     public string ContentType { get; set; } = "application/zip";
+}
+
+public class ArchivePhysicalFilePageItemDto
+{
+    public Guid Id { get; set; }
+    public Guid ArchiveRecordId { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public string FileExtension { get; set; } = string.Empty;
+    public string ContentType { get; set; } = string.Empty;
+    public long FileSize { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public string? DownloadUrl { get; set; }
+    public string? ViewUrl { get; set; }
+    public string? Base64Data { get; set; }
+}
+
+public class PagedFileResult<TItem>
+    where TItem : notnull
+{
+    public Guid RecordId { get; set; }
+    public List<TItem> Items { get; set; } = [];
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public int TotalPages => PageSize <= 0 ? 0 : (int)Math.Ceiling((double)TotalCount / PageSize);
+    public bool HasNext => PageNumber < TotalPages;
+    public bool HasPrevious => PageNumber > 1;
+    public long TotalSize { get; set; }
+    public double AverageSize { get; set; }
+    public Dictionary<string, int> FileTypeBreakdown { get; set; } = [];
 }
 
 public class ArchivePhysicalFileDownloadDto

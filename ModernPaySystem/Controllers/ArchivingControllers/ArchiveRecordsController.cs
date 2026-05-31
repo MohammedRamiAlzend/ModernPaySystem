@@ -1,20 +1,26 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Net.Http.Headers;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Infrastructure.Extensions;
+using System.Collections.Concurrent;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Net;
+using System.Text.Json;
 
 namespace ModernPaySystem.Controllers.ArchivingControllers;
 
 [ApiController]
 [Route("api/archive-records")]
 [Authorize]
-public class ArchiveRecordsController(IArchiveRecordService archiveRecordService, ILogger<ArchiveRecordsController> logger) : ControllerBase
+public class ArchiveRecordsController(IArchiveRecordService archiveRecordService, IMemoryCache memoryCache, ILogger<ArchiveRecordsController> logger) : ControllerBase
 {
+    private static readonly ConcurrentDictionary<string, object> RateLimitLocks = new();
+
     //[HttpGet]
     //[EndpointPermission("archiving.records.get-all", SubSystem.Archiving, PermissionType.Read)]
     //public async Task<IActionResult> GetAll()
@@ -121,12 +127,70 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
         return await StreamArchiveFileAsync(fileId, download, recordId);
     }
 
+    /// <summary>
+    /// Downloads all files for an archive record as a ZIP bundle.
+    /// </summary>
+    /// <param name="recordId">The archive record identifier.</param>
+    /// <param name="flatten">When true, folders inside the archive are flattened into a single ZIP structure.</param>
+    /// <param name="password">Optional ZIP password used to encrypt the bundle.</param>
+    /// <param name="compression">The ZIP compression level. Allowed values are Optimal, Fastest, NoCompression, and SmallestSize.</param>
+    /// <param name="includeMetadata">When true, includes archive metadata in the ZIP bundle.</param>
+    [EndpointSummary("Download an archive record as a ZIP bundle.")]
+    [EndpointDescription("Creates a ZIP archive containing the files for the selected archive record. Use flatten to ignore folder nesting, password to encrypt the ZIP, compression to control ZIP size versus speed, and includeMetadata to embed archive metadata in the bundle.")]
     [HttpGet("{recordId}/files/zip")]
     [EndpointPermission("archiving.records.download-zip", SubSystem.Archiving, PermissionType.Read)]
-    public async Task<IActionResult> DownloadZip(Guid recordId, [FromQuery] string? password = null, [FromQuery] CompressionLevel compression = CompressionLevel.Optimal, [FromQuery] bool includeMetadata = false)
+    public async Task<IActionResult> DownloadZip(Guid recordId, [FromQuery] bool flatten = false, [FromQuery] string? password = null, [FromQuery] CompressionLevel compression = CompressionLevel.Optimal, [FromQuery] bool includeMetadata = false)
     {
-        logger.LogInformation("Downloading ZIP bundle for archive record {RecordId}. Flatten: {Flatten}, Compression: {Compression}, IncludeMetadata: {IncludeMetadata}", recordId, false, compression, includeMetadata);
-        return await StreamArchiveZipAsync(recordId, false, password, compression, includeMetadata);
+        logger.LogInformation("Downloading ZIP bundle for archive record {RecordId}. Flatten: {Flatten}, Compression: {Compression}, IncludeMetadata: {IncludeMetadata}", recordId, flatten, compression, includeMetadata);
+        return await StreamArchiveZipAsync(recordId, flatten, password, compression, includeMetadata);
+    }
+
+    /// <summary>
+    /// Returns paginated archive file results for a record.
+    /// </summary>
+    /// <param name="recordId">The archive record identifier.</param>
+    /// <param name="pageNumber">The 1-based page number to retrieve.</param>
+    /// <param name="pageSize">The number of files per page. The service accepts values from 1 to 100.</param>
+    /// <param name="mode">Controls the payload shape. MetadataOnly returns file metadata only, WithUrls adds download and view URLs, and WithData also includes inline Base64 content for small files.</param>
+    /// <param name="sortBy">The field used to sort the file results. Allowed values are CreatedAt, FileName, and FileSize.</param>
+    /// <param name="sortOrder">The sort direction. Allowed values are Asc and Desc.</param>
+    /// <param name="searchTerm">Optional case-insensitive search text applied to file names.</param>
+    /// <param name="fileTypes">Optional file content-type filters, such as application/pdf or image/png.</param>
+    [EndpointSummary("Get paginated archive file results.")]
+    [EndpointDescription("Retrieves archive files in pages and supports three retrieval modes. MetadataOnly returns file metadata, WithUrls adds download and view links, and WithData additionally includes inline Base64 data for small files. Sorting is available by CreatedAt, FileName, or FileSize, and the sort order can be Asc or Desc. The fileTypes filter expects content types, for example application/pdf or image/png.")]
+    [HttpGet("{recordId}/files/paginated")]
+    [EndpointPermission("archiving.records.get-files-paginated", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetPaginatedFiles(
+        Guid recordId,
+        [FromQuery(Name = "pageNumber")] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] ArchiveFileRetrievalMode mode = ArchiveFileRetrievalMode.MetadataOnly,
+        [FromQuery] ArchiveFileSortBy sortBy = ArchiveFileSortBy.CreatedAt,
+        [FromQuery] ArchiveFileSortOrder sortOrder = ArchiveFileSortOrder.Desc,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string[]? fileTypes = null)
+    {
+        return await GetPaginatedFilesInternal(recordId, pageNumber, pageSize, mode, sortBy, sortOrder, searchTerm, fileTypes, headOnly: false);
+    }
+
+    [HttpHead("{recordId}/files/paginated")]
+    [EndpointPermission("archiving.records.get-files-paginated", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> HeadPaginatedFiles(
+        Guid recordId,
+        [FromQuery(Name = "pageNumber")] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] ArchiveFileRetrievalMode mode = ArchiveFileRetrievalMode.MetadataOnly,
+        [FromQuery] ArchiveFileSortBy sortBy = ArchiveFileSortBy.CreatedAt,
+        [FromQuery] ArchiveFileSortOrder sortOrder = ArchiveFileSortOrder.Desc,
+        [FromQuery] string? searchTerm = null,
+        [FromQuery] string[]? fileTypes = null)
+    {
+        if (mode != ArchiveFileRetrievalMode.MetadataOnly)
+        {
+            return BadRequest("HEAD requests are supported for MetadataOnly mode only.");
+        }
+
+        return await GetPaginatedFilesInternal(recordId, pageNumber, pageSize, mode, sortBy, sortOrder, searchTerm, fileTypes, headOnly: true);
     }
 
     [HttpGet("files/{fileId}")]
@@ -213,4 +277,130 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
 
         return File(stream, bundle.ContentType, bundle.DownloadFileName, enableRangeProcessing: true);
     }
+
+    private async Task<IActionResult> GetPaginatedFilesInternal(
+        Guid recordId,
+        int pageNumber,
+        int pageSize,
+        ArchiveFileRetrievalMode mode,
+        ArchiveFileSortBy sortBy,
+        ArchiveFileSortOrder sortOrder,
+        string? searchTerm,
+        string[]? fileTypes,
+        bool headOnly)
+    {
+        var rateLimitResult = ApplyPaginatedFileRateLimit(recordId, mode);
+        if (rateLimitResult is not null)
+        {
+            return rateLimitResult;
+        }
+
+        var result = await archiveRecordService.GetPaginatedFilesAsync(recordId, pageNumber, pageSize, mode, sortBy, sortOrder, searchTerm, fileTypes, HttpContext.RequestAborted);
+        if (result.IsError)
+        {
+            return result.ToActionResult();
+        }
+
+        var payload = result.Value!;
+        var responseBytes = JsonSerializer.SerializeToUtf8Bytes(payload);
+        var etag = $"W/\"{Convert.ToHexString(SHA256.HashData(responseBytes))}\"";
+
+        Response.Headers[HeaderNames.ETag] = etag;
+        Response.Headers[HeaderNames.AcceptRanges] = "bytes";
+        Response.Headers[HeaderNames.CacheControl] = "private, max-age=0, must-revalidate";
+
+        if (Request.Headers.IfNoneMatch.Any(x => string.Equals(x, etag, StringComparison.Ordinal)))
+        {
+            return StatusCode(StatusCodes.Status304NotModified);
+        }
+
+        if (headOnly)
+        {
+            Response.ContentLength = responseBytes.Length;
+            Response.Headers[HeaderNames.ContentType] = "application/json; charset=utf-8";
+            Response.Headers[HeaderNames.ContentLength] = responseBytes.Length.ToString();
+            return StatusCode(StatusCodes.Status200OK);
+        }
+
+        if (Request.Headers.Range.Count > 0)
+        {
+            if (!TryGetSingleRange(Request.Headers.Range.ToString(), responseBytes.Length, out var start, out var end))
+            {
+                return StatusCode(StatusCodes.Status416RangeNotSatisfiable);
+            }
+
+            var length = end - start + 1;
+            var partialBytes = responseBytes.AsSpan(start, length).ToArray();
+            Response.StatusCode = StatusCodes.Status206PartialContent;
+            Response.Headers[HeaderNames.ContentRange] = $"bytes {start}-{end}/{responseBytes.Length}";
+            Response.Headers[HeaderNames.ContentLength] = partialBytes.Length.ToString();
+            Response.Headers[HeaderNames.ContentType] = "application/json; charset=utf-8";
+            return File(partialBytes, "application/json; charset=utf-8");
+        }
+
+        Response.Headers[HeaderNames.ContentType] = "application/json; charset=utf-8";
+        Response.Headers[HeaderNames.ContentLength] = responseBytes.Length.ToString();
+        return File(responseBytes, "application/json; charset=utf-8");
+    }
+
+    private IActionResult? ApplyPaginatedFileRateLimit(Guid recordId, ArchiveFileRetrievalMode mode)
+    {
+        var clientKey = User?.Identity?.Name ?? HttpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+        var threshold = mode == ArchiveFileRetrievalMode.WithData ? 6 : 30;
+        var window = TimeSpan.FromMinutes(1);
+        var cacheKey = $"archive-files-rate:{recordId:N}:{mode}:{clientKey}";
+        var gate = RateLimitLocks.GetOrAdd(cacheKey, _ => new object());
+
+        lock (gate)
+        {
+            var bucket = memoryCache.GetOrCreate(cacheKey, entry =>
+            {
+                entry.SlidingExpiration = window;
+                return new RateLimitBucket(DateTime.UtcNow, 0);
+            });
+
+            bucket = DateTime.UtcNow - bucket.WindowStartUtc >= window
+                ? new RateLimitBucket(DateTime.UtcNow, 1)
+                : bucket with { Count = bucket.Count + 1 };
+            memoryCache.Set(cacheKey, bucket, new MemoryCacheEntryOptions { SlidingExpiration = window });
+
+            if (bucket.Count > threshold)
+            {
+                var retryAfter = (int)Math.Ceiling(Math.Max(1, (bucket.WindowStartUtc.Add(window) - DateTime.UtcNow).TotalSeconds));
+                Response.Headers[HeaderNames.RetryAfter] = retryAfter.ToString();
+                return StatusCode(StatusCodes.Status429TooManyRequests, new { errors = new[] { "Rate limit exceeded for this archive file query mode." } });
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryGetSingleRange(string rangeHeader, int totalLength, out int start, out int end)
+    {
+        start = 0;
+        end = totalLength - 1;
+
+        if (!RangeHeaderValue.TryParse(rangeHeader, out var rangeValue) || rangeValue.Ranges.Count != 1)
+        {
+            return false;
+        }
+
+        var range = rangeValue.Ranges.First();
+        if (!range.From.HasValue && !range.To.HasValue)
+        {
+            return false;
+        }
+
+        start = (int)(range.From ?? 0);
+        end = (int)(range.To ?? (totalLength - 1));
+
+        if (start < 0 || end < start || end >= totalLength)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private readonly record struct RateLimitBucket(DateTime WindowStartUtc, int Count);
 }

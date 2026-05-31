@@ -8,6 +8,7 @@ using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Infrastructure.Options;
 using ICSharpCode.SharpZipLib.Zip;
+using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -28,6 +29,7 @@ public class ArchiveRecordService(
     private const string UploadRootDirectory = "Diwan";
     private const string UploadsDirectory = "Uploads";
     private const string ZipCachePrefix = "archive-record-zip";
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> QueryLocks = new();
 
     private ArchiveRecordFileUploadOptions UploadSettings => uploadOptions.Value;
     private ArchiveRecordZipOptions ZipSettings => zipOptions.Value;
@@ -1137,6 +1139,112 @@ public class ArchiveRecordService(
         }
     }
 
+    public async Task<Result<PagedFileResult<ArchivePhysicalFilePageItemDto>>> GetPaginatedFilesAsync(
+        Guid recordId,
+        int page = 1,
+        int pageSize = 10,
+        ArchiveFileRetrievalMode mode = ArchiveFileRetrievalMode.MetadataOnly,
+        ArchiveFileSortBy sortBy = ArchiveFileSortBy.CreatedAt,
+        ArchiveFileSortOrder sortOrder = ArchiveFileSortOrder.Desc,
+        string? searchTerm = null,
+        IReadOnlyCollection<string>? fileTypes = null,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (recordId == Guid.Empty || page <= 0 || pageSize <= 0 || pageSize > 100)
+            {
+                return ApplicationErrors.InvalidInput;
+            }
+
+            var recordExists = await unitOfWork.ArchiveRecords.AnyAsync(x => x.Id == recordId);
+            if (!recordExists)
+            {
+                return ApplicationErrors.ArchiveRecordNotFound;
+            }
+
+            var normalizedSearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim().ToLowerInvariant();
+            var normalizedFileTypes = fileTypes?
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim().ToLowerInvariant())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            var cacheKey = BuildPagedFilesCacheKey(recordId, page, pageSize, mode, sortBy, sortOrder, normalizedSearchTerm, normalizedFileTypes);
+            if (memoryCache.TryGetValue<PagedFileResult<ArchivePhysicalFilePageItemDto>>(cacheKey, out var cachedResult) && cachedResult is not null)
+            {
+                return cachedResult;
+            }
+
+            var queryLock = QueryLocks.GetOrAdd(cacheKey, _ => new SemaphoreSlim(1, 1));
+            await queryLock.WaitAsync(cancellationToken);
+
+            try
+            {
+                if (memoryCache.TryGetValue<PagedFileResult<ArchivePhysicalFilePageItemDto>>(cacheKey, out cachedResult) && cachedResult is not null)
+                {
+                    return cachedResult;
+                }
+
+                var allFilesResult = await unitOfWork.PhysicalFiles.GetAllAsync(
+                    filter: x => x.ArchiveRecordId == recordId && !x.IsDeleted,
+                    transform: query => query.AsNoTracking());
+
+                if (allFilesResult.IsError)
+                {
+                    return allFilesResult.Errors;
+                }
+
+                var filteredFiles = allFilesResult.Value!
+                    .Where(file => normalizedSearchTerm == null || file.FileName.ToLowerInvariant().Contains(normalizedSearchTerm))
+                    .Where(file => normalizedFileTypes == null || normalizedFileTypes.Length == 0 || normalizedFileTypes.Contains(file.ContentType.ToLowerInvariant()))
+                    .ToList();
+
+                var summary = BuildPagedFileSummary(recordId, filteredFiles);
+                var sortedFiles = SortPagedFiles(filteredFiles, sortBy, sortOrder);
+
+                var totalCount = sortedFiles.Count;
+                var pageItems = new List<ArchivePhysicalFilePageItemDto>();
+                foreach (var file in sortedFiles.Skip((page - 1) * pageSize).Take(pageSize))
+                {
+                    pageItems.Add(await BuildPagedFileItemAsync(file, mode));
+                }
+
+                var pagedResult = new PagedFileResult<ArchivePhysicalFilePageItemDto>
+                {
+                    RecordId = recordId,
+                    Items = pageItems,
+                    PageNumber = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalSize = summary.TotalSize,
+                    AverageSize = summary.AverageSize,
+                    FileTypeBreakdown = summary.FileTypeBreakdown
+                };
+
+                memoryCache.Set(cacheKey, pagedResult, new MemoryCacheEntryOptions
+                {
+                    SlidingExpiration = TimeSpan.FromMinutes(Math.Max(1, ZipSettings.CacheExpirationMinutes))
+                });
+
+                return pagedResult;
+            }
+            finally
+            {
+                queryLock.Release();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            return ApplicationErrors.InternalServerError;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching paginated archive files for record {RecordId}", recordId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
     public async Task<Result<ArchiveRecordZipBundleDto>> GetZipBundleAsync(Guid recordId, bool flatten = false, string? password = null, CompressionLevel compression = CompressionLevel.Optimal, bool includeMetadata = false, CancellationToken cancellationToken = default)
     {
         try
@@ -1426,6 +1534,74 @@ public class ArchiveRecordService(
     {
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(cacheKey)));
         return $"{hash}.zip";
+    }
+
+    private static string BuildPagedFilesCacheKey(Guid recordId, int page, int pageSize, ArchiveFileRetrievalMode mode, ArchiveFileSortBy sortBy, ArchiveFileSortOrder sortOrder, string? searchTerm, IReadOnlyCollection<string>? fileTypes)
+    {
+        var fileTypesPart = fileTypes is null || fileTypes.Count == 0 ? "*" : string.Join(',', fileTypes.OrderBy(x => x, StringComparer.OrdinalIgnoreCase));
+        return $"archive-record-files:{recordId:N}:{page}:{pageSize}:{mode}:{sortBy}:{sortOrder}:{searchTerm ?? string.Empty}:{fileTypesPart}";
+    }
+
+    private static (long TotalSize, double AverageSize, Dictionary<string, int> FileTypeBreakdown) BuildPagedFileSummary(Guid recordId, IReadOnlyCollection<PhysicalFile> files)
+    {
+        var totalSize = files.Sum(x => x.FileSize);
+        var averageSize = files.Count == 0 ? 0 : (double)totalSize / files.Count;
+
+        var fileTypeBreakdown = files
+            .GroupBy(x => string.IsNullOrWhiteSpace(x.ContentType) ? x.FileExtension : x.ContentType, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(x => x.Key, x => x.Count(), StringComparer.OrdinalIgnoreCase);
+
+        return (totalSize, averageSize, fileTypeBreakdown);
+    }
+
+    private static List<PhysicalFile> SortPagedFiles(List<PhysicalFile> files, ArchiveFileSortBy sortBy, ArchiveFileSortOrder sortOrder)
+    {
+        IOrderedEnumerable<PhysicalFile> orderedFiles = sortBy switch
+        {
+            ArchiveFileSortBy.FileName => sortOrder == ArchiveFileSortOrder.Asc
+                ? files.OrderBy(x => x.FileName, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Id)
+                : files.OrderByDescending(x => x.FileName, StringComparer.OrdinalIgnoreCase).ThenByDescending(x => x.Id),
+            ArchiveFileSortBy.FileSize => sortOrder == ArchiveFileSortOrder.Asc
+                ? files.OrderBy(x => x.FileSize).ThenBy(x => x.Id)
+                : files.OrderByDescending(x => x.FileSize).ThenByDescending(x => x.Id),
+            _ => sortOrder == ArchiveFileSortOrder.Asc
+                ? files.OrderBy(x => x.CreatedAt ?? DateTime.MinValue).ThenBy(x => x.Id)
+                : files.OrderByDescending(x => x.CreatedAt ?? DateTime.MinValue).ThenByDescending(x => x.Id)
+        };
+
+        return orderedFiles.ToList();
+    }
+
+    private async Task<ArchivePhysicalFilePageItemDto> BuildPagedFileItemAsync(PhysicalFile file, ArchiveFileRetrievalMode mode)
+    {
+        var item = new ArchivePhysicalFilePageItemDto
+        {
+            Id = file.Id,
+            ArchiveRecordId = file.ArchiveRecordId,
+            FileName = file.FileName,
+            FileExtension = file.FileExtension,
+            ContentType = file.ContentType,
+            FileSize = file.FileSize,
+            CreatedAt = file.CreatedAt,
+            UpdatedAt = file.UpdatedAt
+        };
+
+        if (mode != ArchiveFileRetrievalMode.MetadataOnly)
+        {
+            item.DownloadUrl = $"/api/archive-records/{file.ArchiveRecordId}/files/{file.Id}?download=true";
+            item.ViewUrl = $"/api/archive-records/{file.ArchiveRecordId}/files/{file.Id}?download=false";
+        }
+
+        if (mode == ArchiveFileRetrievalMode.WithData && file.FileSize <= ZipSettings.MaxInlineDataSizeBytes)
+        {
+            var fileBytesResult = await filesManagerService.GetFileBytesAsync(file.StoragePath);
+            if (!fileBytesResult.IsError)
+            {
+                item.Base64Data = Convert.ToBase64String(fileBytesResult.Value!);
+            }
+        }
+
+        return item;
     }
 
     private static string BuildZipDownloadFileName(Guid recordId)

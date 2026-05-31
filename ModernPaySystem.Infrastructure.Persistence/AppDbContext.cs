@@ -300,6 +300,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey<ArchiveRecordTemplateValues>(artv => artv.ArchiveRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<PhysicalFile>()
+            .HasIndex(pf => new { pf.ArchiveRecordId, pf.CreatedAt })
+            .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_CreatedAt");
+
+        modelBuilder.Entity<PhysicalFile>()
+            .HasIndex(pf => new { pf.ArchiveRecordId, pf.IsDeleted, pf.FileExtension })
+            .IncludeProperties(pf => new { pf.FileSize, pf.ContentType, pf.FileName, pf.CreatedAt, pf.UpdatedAt })
+            .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_IsDeleted_FileExtension_Covering");
+
         modelBuilder.Entity<Folder>()
             .HasMany(f => f.Permissions)
             .WithOne(p => p.Folder)

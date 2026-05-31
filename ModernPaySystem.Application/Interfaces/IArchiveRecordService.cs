@@ -15,6 +15,16 @@ public interface IArchiveRecordService
     Task<Result<ArchiveRecordDto>> AddFilesAsync(Guid id, IFormFileCollection files);
     Task<Result<bool>> RemoveFileAsync(Guid id, Guid fileId);
     Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null);
+    Task<Result<PagedFileResult<ArchivePhysicalFilePageItemDto>>> GetPaginatedFilesAsync(
+        Guid recordId,
+        int page = 1,
+        int pageSize = 10,
+        ArchiveFileRetrievalMode mode = ArchiveFileRetrievalMode.MetadataOnly,
+        ArchiveFileSortBy sortBy = ArchiveFileSortBy.CreatedAt,
+        ArchiveFileSortOrder sortOrder = ArchiveFileSortOrder.Desc,
+        string? searchTerm = null,
+        IReadOnlyCollection<string>? fileTypes = null,
+        CancellationToken cancellationToken = default);
     Task<Result<ArchiveRecordZipBundleDto>> GetZipBundleAsync(Guid recordId, bool flatten = false, string? password = null, System.IO.Compression.CompressionLevel compression = System.IO.Compression.CompressionLevel.Optimal, bool includeMetadata = false, CancellationToken cancellationToken = default);
     Task<Result<ArchiveRecordFilesMetadataPageDto>> GetFilesMetadataByRecordIdAsync(Guid recordId, int page = 1, int pageSize = 10, bool includeDeleted = false);
     Task<Result<ArchiveFileConsistencyDto>> CheckFileConsistencyAsync(Guid id);
