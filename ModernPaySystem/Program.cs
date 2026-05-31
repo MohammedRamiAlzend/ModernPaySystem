@@ -19,6 +19,11 @@ try
     builder.Services.AddSerilog((services, lc) => lc.ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services));
     builder.Logging.ClearProviders();
+
+
+#if DEBUG == false
+    builder.WebHost.UseUrls("http://0.0.0.0:7010/");
+#endif
     builder.Services.AddPersistenceServices(builder.Configuration);
 
     builder.Services.AddSeeding(builder.Configuration);
@@ -27,7 +32,7 @@ try
 
     builder.Services.AddAuthorizationPolicies();
 
-    builder.Services.AddInfrastructureServices();
+    builder.Services.AddInfrastructureServices(builder.Configuration);
     builder.Services.AddCors(options =>
     {
         options.AddPolicy("AllowAll",

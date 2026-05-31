@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/.vs/
+**/node_modules/
+**/dist/
+**/coverage/
+**/logs/
+ModernPaySystem.Front/.vite/
+ModernPaySystem.Front/wwwroot/
+ModernPaySystem/wwwroot/
+*.user
+*.suo
+*.rsuser

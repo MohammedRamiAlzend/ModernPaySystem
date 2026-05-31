@@ -159,6 +159,71 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         }
     }
 
+    public async Task<Result<PagedList<TResult>>> GetPagedProjectedAsync<TResult>(
+        int page,
+        int pageSize,
+        Expression<Func<TEntity, bool>>? filter = null,
+        Expression<Func<TEntity, TResult>>? selector = null,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null,
+        LogicalOperator logicalOperator = LogicalOperator.And)
+        where TResult : notnull
+    {
+        if (selector == null)
+        {
+            return new Error("00", "Projection selector cannot be null.", ErrorKind.Failure);
+        }
+
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+
+        IQueryable<TEntity> query = dbcontext.Set<TEntity>();
+
+        try
+        {
+            var allFilters = new List<Expression<Func<TEntity, bool>>>();
+            if (filter != null) allFilters.Add(filter);
+            if (additionalFilters != null && additionalFilters.Count > 0)
+                allFilters.AddRange(additionalFilters);
+
+            if (allFilters.Count > 0)
+            {
+                if (logicalOperator == LogicalOperator.Or)
+                {
+                    var combinedFilter = ExpressionCombiner.OrAll(allFilters.ToArray());
+                    query = query.Where(combinedFilter);
+                }
+                else
+                {
+                    var combinedFilter = ExpressionCombiner.AndAll(allFilters.ToArray());
+                    query = query.Where(combinedFilter);
+                }
+            }
+
+            if (transform != null) query = transform(query);
+
+            int totalItems = await query.CountAsync();
+
+            if (selector != null)
+            {
+                query = query.OrderByDescending(e => e.Id);
+                var items = await query.Skip((page - 1) * pageSize).Take(pageSize).Select(selector).ToListAsync();
+                return PagedList<TResult>.Create(items, totalItems, page, pageSize);
+            }
+
+            return new Error("00", "Projection selector cannot be null.", ErrorKind.Failure);
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error retrieving projected paged entities of type {EntityType}.", typeof(TEntity).Name);
+            return new Error(
+                "00",
+                $"Something went wrong while retrieving projected paged entities of type {typeof(TEntity).Name}. Exception: {e.Message}",
+                ErrorKind.Failure);
+        }
+    }
+
     public async Task<Result<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null,

@@ -2,7 +2,7 @@ namespace ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
 public class Template : Entity<Guid>, IAuditableEntity
 {
-    public ICollection<User> VisitedByUsers { get; set; } = new List<User>();
+    public ICollection<User> VisitedByUsers { get; set; } = [];
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ModernPaySystem.Infrastructure.Persistence;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260525115909_RemoveMetadataValuesFromArchiveRecord")]
+    partial class RemoveMetadataValuesFromArchiveRecord
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,7 +69,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ArchiveRecordTemplateValues")
+                    b.Property<Guid>("ArchiveRecordTemplateValues")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -78,7 +81,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("FolderId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("FormId")
+                    b.Property<Guid>("FormId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -131,7 +134,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ArchiveRecordId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ArchiveRecordId1")
+                    b.Property<Guid>("ArchiveRecordId1")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -240,18 +243,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ArchiveRecordId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedByUserId")
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("FileExtension")
                         .IsRequired()
@@ -263,9 +259,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("StoragePath")
                         .IsRequired()
@@ -1216,7 +1209,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveFormTemplate", "Form")
                         .WithMany("ArchiveRecords")
                         .HasForeignKey("FormId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Folder");
 
@@ -1247,7 +1241,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", "ArchiveRecord")
                         .WithMany()
-                        .HasForeignKey("ArchiveRecordId1");
+                        .HasForeignKey("ArchiveRecordId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("ArchiveFormTemplate");
 
@@ -1704,7 +1700,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", b =>
                 {
-                    b.Navigation("ArchiveRecordTemplateValuesId");
+                    b.Navigation("ArchiveRecordTemplateValuesId")
+                        .IsRequired();
 
                     b.Navigation("PhysicalFiles");
                 });

@@ -1,7 +1,9 @@
 using FileManager.Extensions;
+using Microsoft.Extensions.Configuration;
 using ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.Interceptors;
+using ModernPaySystem.Infrastructure.Options;
 using ModernPaySystem.Infrastructure.Services;
 using NumberSpelling;
 using OcrReader;
@@ -16,8 +18,10 @@ public static class InfrastructureServiceRegistration
     /// <summary>
     /// Adds infrastructure services to the dependency injection container.
     /// </summary>
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<ArchiveRecordFileUploadOptions>(configuration.GetSection("ArchiveRecordFiles"));
+
         // Register File Manager Services
         services.AddFileManager();
 
@@ -41,6 +45,10 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IRequestTransactionService, RequestTransactionService>();
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IWebAttachmentService, WebAttachmentService>();
+        services.AddScoped<IFolderService, FolderService>();
+        services.AddScoped<IDynamicFormService, DynamicFormService>();
+        services.AddScoped<IArchiveFormTemplateService, ArchiveFormTemplateService>();
+        services.AddScoped<IArchiveRecordService, ArchiveRecordService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 
         // Register Lookup Field Services

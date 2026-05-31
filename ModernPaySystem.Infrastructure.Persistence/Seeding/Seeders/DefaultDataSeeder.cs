@@ -8,7 +8,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
 /// Seeder for default roles only
 /// Order: 1 (runs early to establish foundational data).
 /// </summary>
-public class DefaultDataSeeder(IPasswordHasher passwordHasher) : IEntitySeeder
+public class DefaultDataSeeder : IEntitySeeder
 {
     public int Order => 1;
 
@@ -67,6 +67,6 @@ public class DefaultDataSeeder(IPasswordHasher passwordHasher) : IEntitySeeder
     /// <summary>
     /// Seeds super admin user with SuperAdmin role
     /// </summary>
-    
+
 
 }

@@ -11,6 +11,8 @@ namespace FileManager.Services;
 /// </summary>
 public class FilesManagerService(IFileManager? fileManager = null) : IFilesManagerService
 {
+    private const int DefaultStreamBufferSize = 64 * 1024;
+
     private readonly IFileManager _fileManager = fileManager ?? new Core.EnhancedFileManager();
     private readonly string[] _defaultAllowedExtensions = {
         ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
@@ -21,6 +23,7 @@ public class FilesManagerService(IFileManager? fileManager = null) : IFilesManag
     public string UploadsDirectory => Path.Combine("Diwan", "Uploads");
 
     public string RootDirectory => _fileManager.RootDirectory;
+
 
     public async Task<Result<FileMetadata>> SaveFileAsync(IFormFile file, string? subDirectory = null, string? customFileName = null)
     {
@@ -105,13 +108,18 @@ public class FilesManagerService(IFileManager? fileManager = null) : IFilesManag
 
         try
         {
-            var fileContentResult = await _fileManager.ReadFileAsync(filePath);
-            if (!fileContentResult.Success)
-            {
-                return ApplicationErrors.FileOperationFailed(fileContentResult.ErrorMessage ?? "Unknown error");
-            }
+            var absolutePath = Path.IsPathRooted(filePath)
+                ? filePath
+                : Path.Combine(_fileManager.RootDirectory, filePath);
 
-            var stream = new MemoryStream(fileContentResult.Content!);
+            var stream = new FileStream(
+                absolutePath,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                DefaultStreamBufferSize,
+                FileOptions.Asynchronous | FileOptions.SequentialScan);
+
             return stream;
         }
         catch (Exception ex)

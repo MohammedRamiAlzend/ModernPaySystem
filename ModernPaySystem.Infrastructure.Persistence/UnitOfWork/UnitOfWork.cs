@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Application.Repos;
 using ModernPaySystem.Application.Services;
+using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Persistence.Repos;
@@ -19,6 +20,8 @@ public class UnitOfWork(
     IHttpContextServiceManager httpContextServiceManager) : IUnitOfWork
 {
     private readonly AppDbContext _dbContext = dbContext;
+    public AppDbContext Context => _dbContext;
+
     private readonly ILogger<UnitOfWork> _logger = logger;
     private readonly ILoggerFactory _loggerFactory = loggerFactory;
     private readonly IHttpContextServiceManager _httpContextServiceManager = httpContextServiceManager;
@@ -44,6 +47,13 @@ public class UnitOfWork(
     private IRepositoryBase<RequestTransactionAttachment, Guid>? _requestTransactionAttachments;
     private IRepositoryBase<Department, Guid>? _departments;
     private IRepositoryBase<DepartmentTemplateNumber, Guid>? _departmentTemplateNumbers;
+    private IRepositoryBase<Folder, Guid>? _folders;
+    private IRepositoryBase<ArchiveFormTemplate, Guid>? _dynamicForms;
+    private IRepositoryBase<ArchiveRecord, Guid>? _archiveRecords;
+    private IRepositoryBase<ArchiveRecordTemplateValues, Guid>? _archiveRecordTemplateValues;
+    private IRepositoryBase<ArchiveRecordFormInputValue, Guid>? _archiveRecordFormInputValues;
+    private IRepositoryBase<PhysicalFile, Guid>? _physicalFiles;
+    private IRepositoryBase<FolderPermission, Guid>? _folderPermissions;
 
     public IRepositoryBase<User, Guid> Users =>
         _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>(), _httpContextServiceManager);
@@ -100,7 +110,29 @@ public class UnitOfWork(
     public IRepositoryBase<DepartmentTemplateNumber, Guid> DepartmentTemplateNumbers =>
         _departmentTemplateNumbers ??= new RepositoryBase<DepartmentTemplateNumber, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<DepartmentTemplateNumber, Guid>>(), _httpContextServiceManager);
 
+    public IRepositoryBase<Folder, Guid> Folders =>
+        _folders ??= new RepositoryBase<Folder, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Folder, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<ArchiveFormTemplate, Guid> DynamicForms =>
+        _dynamicForms ??= new RepositoryBase<ArchiveFormTemplate, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ArchiveFormTemplate, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<ArchiveRecord, Guid> ArchiveRecords =>
+        _archiveRecords ??= new RepositoryBase<ArchiveRecord, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ArchiveRecord, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<ArchiveRecordTemplateValues, Guid> ArchiveRecordTemplateValues =>
+        _archiveRecordTemplateValues ??= new RepositoryBase<ArchiveRecordTemplateValues, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ArchiveRecordTemplateValues, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<ArchiveRecordFormInputValue, Guid> ArchiveRecordFormInputValues =>
+        _archiveRecordFormInputValues ??= new RepositoryBase<ArchiveRecordFormInputValue, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ArchiveRecordFormInputValue, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<PhysicalFile, Guid> PhysicalFiles =>
+        _physicalFiles ??= new RepositoryBase<PhysicalFile, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<PhysicalFile, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<FolderPermission, Guid> FolderPermissions =>
+        _folderPermissions ??= new RepositoryBase<FolderPermission, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<FolderPermission, Guid>>(), _httpContextServiceManager);
+
     public bool HasActiveTransaction => _transaction != null;
+
 
     public async Task<int> SaveChangesAsync()
     {

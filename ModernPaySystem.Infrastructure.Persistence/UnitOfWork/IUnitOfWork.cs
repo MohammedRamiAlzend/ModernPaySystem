@@ -1,4 +1,5 @@
 using ModernPaySystem.Application.Repos;
+using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -6,6 +7,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 
 public interface IUnitOfWork
 {
+    AppDbContext Context { get; }
     IRepositoryBase<User, Guid> Users { get; }
 
     IRepositoryBase<Role, Guid> Roles { get; }
@@ -40,6 +42,14 @@ public interface IUnitOfWork
 
     IRepositoryBase<Department, Guid> Departments { get; }
     IRepositoryBase<DepartmentTemplateNumber, Guid> DepartmentTemplateNumbers { get; }
+
+    IRepositoryBase<Folder, Guid> Folders { get; }
+    IRepositoryBase<ArchiveFormTemplate, Guid> DynamicForms { get; }
+    IRepositoryBase<ArchiveRecord, Guid> ArchiveRecords { get; }
+    IRepositoryBase<ArchiveRecordTemplateValues, Guid> ArchiveRecordTemplateValues { get; }
+    IRepositoryBase<ArchiveRecordFormInputValue, Guid> ArchiveRecordFormInputValues { get; }
+    IRepositoryBase<PhysicalFile, Guid> PhysicalFiles { get; }
+    IRepositoryBase<FolderPermission, Guid> FolderPermissions { get; }
 
     Task<int> SaveChangesAsync();
     //Task<int> GetNextRequestNumberAsync(Guid departmentId);

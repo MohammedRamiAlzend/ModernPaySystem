@@ -6,4 +6,5 @@ public enum SubSystem
     TransactionSystem = 1,
     Diwan = 2,
     Shared = 3,
+    Archiving = 4,
 }

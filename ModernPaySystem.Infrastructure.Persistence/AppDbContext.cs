@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Domain.Entities.PaySystemEntities.FastOperations;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
@@ -13,6 +14,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Role> Roles { get; set; }
     public DbSet<PermissionEntity> Permissions { get; set; }
     public DbSet<Department> Departments { get; set; }
+
+    public DbSet<Folder> Folders { get; set; }
+    public DbSet<ArchiveFormTemplate> DynamicForms { get; set; }
+    public DbSet<ArchiveRecord> ArchiveRecords { get; set; }
+    public DbSet<ArchiveRecordTemplateValues> ArchiveRecordTemplateValues { get; set; }
+    public DbSet<ArchiveRecordFormInputValue> ArchiveRecordFormInputValues { get; set; }
+    public DbSet<PhysicalFile> PhysicalFiles { get; set; }
+    public DbSet<FolderPermission> FolderPermissions { get; set; }
 
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
@@ -255,6 +264,51 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(rta => rta.AttachmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Folder>()
+            .HasOne(f => f.Parent)
+            .WithMany(f => f!.SubFolders)
+            .HasForeignKey(f => f.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Folder>()
+            .HasMany(f => f.ArchiveRecords)
+            .WithOne(ar => ar.Folder)
+            .HasForeignKey(ar => ar.FolderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ArchiveFormTemplate>()
+            .HasMany(f => f.ArchiveRecords)
+            .WithOne(ar => ar.Form)
+            .HasForeignKey(ar => ar.FormId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ArchiveRecord>()
+            .HasMany(ar => ar.PhysicalFiles)
+            .WithOne(pf => pf.ArchiveRecord)
+            .HasForeignKey(pf => pf.ArchiveRecordId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ArchiveRecordTemplateValues>()
+            .HasMany(artv => artv.ArchiveRecordFormInputValues)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ArchiveRecord>()
+            .HasOne(ar => ar.ArchiveRecordTemplateValuesId)
+            .WithOne()
+            .HasForeignKey<ArchiveRecordTemplateValues>(artv => artv.ArchiveRecordId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Folder>()
+            .HasMany(f => f.Permissions)
+            .WithOne(p => p.Folder)
+            .HasForeignKey(p => p.FolderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ArchiveFormTemplate>()
+            .Property(f => f.ContentAsJson)
+            .HasColumnType("jsonb");
 
         // Department self-referencing relationship
         modelBuilder.Entity<Department>()

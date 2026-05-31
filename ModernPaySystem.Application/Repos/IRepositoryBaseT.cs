@@ -32,6 +32,17 @@ public interface IRepositoryBase<TEntity, TKey>
         List<Expression<Func<TEntity, bool>>>? additionalFilters = null,
         LogicalOperator logicalOperator = LogicalOperator.And);
 
+    Task<Result<PagedList<TResult>>> GetPagedProjectedAsync<TResult>(
+        int page,
+        int pageSize,
+        Expression<Func<TEntity, bool>>? filter = null,
+        Expression<Func<TEntity, TResult>>? selector = null,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        bool bypassAuth = false,
+        List<Expression<Func<TEntity, bool>>>? additionalFilters = null,
+        LogicalOperator logicalOperator = LogicalOperator.And)
+        where TResult : notnull;
+
     Task<Result<TEntity>> GetAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,

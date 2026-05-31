@@ -1,5 +1,7 @@
 namespace ModernPaySystem.Domain.Commons;
 
+using System.Net;
+
 /// <summary>
 /// Contains predefined application errors with unique numeric codes.
 /// </summary>
@@ -87,6 +89,21 @@ public static class ApplicationErrors
     public static readonly Error RequestTransactionNotFound = new("907", "The specified request transaction was not found.", ErrorKind.NotFound, "لم يتم العثور على معاملة الطلب المحددة.");
     public static readonly Error RequestAlreadyHasTransaction = new("908", "Request Already Has Transaction", ErrorKind.NotFound, "يوجد طلب احالة مسبقا");
     public static readonly Error DepartmentHeadIsNotSet = new("909", "DepartmentHeadIsNotSet", ErrorKind.Validation, "DepartmentHeadIsNotSet.");
+
+    // Archiving Errors (10000-10099)
+    public static readonly Error FolderNotFound = new("10000", "The specified folder was not found.", ErrorKind.NotFound, "لم يتم العثور على المجلد المحدد.");
+    public static readonly Error FolderAlreadyExists = new("10001", "A folder with this name already exists.", ErrorKind.Conflict, "يوجد بالفعل مجلد بهذا الاسم.");
+    public static readonly Error FolderHasChildren = new("10002", "The folder contains child folders or records and cannot be deleted.", ErrorKind.Conflict, "المجلد يحتوي على مجلدات أو سجلات فرعية ولا يمكن حذفه.");
+    public static readonly Error DynamicFormNotFound = new("10010", "The specified form was not found.", ErrorKind.NotFound, "لم يتم العثور على النموذج المحدد.");
+    public static readonly Error DynamicFormAlreadyExists = new("10011", "A form with this name already exists.", ErrorKind.Conflict, "يوجد بالفعل نموذج بهذا الاسم.");
+    public static readonly Error InvalidJsonDefinition = new("10012", "The provided JSON definition is invalid.", ErrorKind.Validation, "تعريف JSON المقدم غير صحيح.");
+    public static readonly Error DynamicFormInUse = new("10013", "The form is currently in use and cannot be deleted.", ErrorKind.Conflict, "النموذج قيد الاستخدام ولا يمكن حذفه.");
+    public static readonly Error ArchiveRecordNotFound = new("10020", "The specified archive record was not found.", ErrorKind.NotFound, "لم يتم العثور على سجل الأرشفة المحدد.");
+    public static readonly Error ArchiveRecordArchivalNumberAlreadyInUse = new("10021", "The specified archive record's archival number is already in use.", ErrorKind.Conflict, "رقم الأرشيف المحدد مستخدم بالفعل.");
+    public static readonly Error FormIdMustHasValue = new("10022", "The specified archive record's form ID must have a value.", ErrorKind.Validation, "يجب أن يحتوي معرف النموذج المحدد لسجل الأرشفة على قيمة.");
+    public static Error ArchivePhysicalFileMissingFromStorage(string storagePath) =>
+        new("10023", $"The archive file metadata exists but the physical file is missing from storage: {storagePath}.", ErrorKind.NotFound, "الملف المادي غير موجود في التخزين رغم وجود بياناته الوصفية.", HttpStatusCode.Gone);
+
 
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");
