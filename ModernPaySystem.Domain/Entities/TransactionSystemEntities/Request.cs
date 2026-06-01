@@ -139,7 +139,7 @@ public class CreateRequestDto
     public required Guid DepartmentId { get; set; }
     public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
     public required List<InputValueDto> Content { get; set; } = [];
-    public List<CreateRequestRelatedRequestDto> RelatedRequests { get; set; } = [];
+    public List<CreateRequestRelatedRequestDto>? RelatedRequests { get; set; } = null;
     public List<IFormFile>? Files { get; set; } = [];
 }
 
