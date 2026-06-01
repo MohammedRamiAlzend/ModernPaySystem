@@ -39,6 +39,8 @@ public class Request : Entity<Guid>, IAuditableEntity
 
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = [];
     public required ICollection<User>? ReadOnlyUsers { get; set; } = [];
+    public ICollection<RequestRelation> OutgoingRelations { get; set; } = [];
+    public ICollection<RequestRelation> IncomingRelations { get; set; } = [];
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -92,7 +94,15 @@ public class Request : Entity<Guid>, IAuditableEntity
             ResponseId = this.ResponseId,
             FirstTransactionId = this.FirstTransactionId,
             CurrentTransactionId = this.CurrentTransactionId,
-            ReadOnlyUsers = [.. this.ReadOnlyUsers!.Select(u => u.Id)]
+            ReadOnlyUsers = [.. this.ReadOnlyUsers!.Select(u => u.Id)],
+            RelatedRequests = [.. this.OutgoingRelations.Select(r => new RelatedRequestDto
+                            {
+                               RequestId = r.TargetRequestId,
+                               RequestNumber = r.TargetRequest.RequestNumber,
+                               RelationType = r.RelationType,
+                               Notes = r.Notes,
+                               Status = r.TargetRequest.Status
+                            })]
         };
     }
 }
@@ -119,6 +129,8 @@ public class RequestDto
     public DateTime? UpdatedAt { get; set; }
     public int AttachmentCount => RequestAttachmentDtos?.Count ?? 0;
     public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
+    public List<RelatedRequestDto> RelatedRequests { get; set; } = [];
+
 }
 
 public class CreateRequestDto
@@ -127,5 +139,22 @@ public class CreateRequestDto
     public required Guid DepartmentId { get; set; }
     public required ICollection<Guid> ReadOnlyUsers { get; set; } = [];
     public required List<InputValueDto> Content { get; set; } = [];
+    public List<CreateRequestRelatedRequestDto> RelatedRequests { get; set; } = [];
     public List<IFormFile>? Files { get; set; } = [];
+}
+
+public class CreateRequestRelatedRequestDto
+{
+    public Guid TargetRequestId { get; set; }
+    public RequestRelationType RelationType { get; set; } = RequestRelationType.Reference;
+    public string? Notes { get; set; }
+}
+
+public class RelatedRequestDto
+{
+    public Guid RequestId { get; set; }
+    public int RequestNumber { get; set; }
+    public RequestRelationType RelationType { get; set; }
+    public string? Notes { get; set; }
+    public RequestStatus Status { get; set; } // مفيد للواجهة
 }

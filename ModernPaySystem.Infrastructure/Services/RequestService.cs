@@ -57,7 +57,8 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page, pageSize,
                 transform: i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                                .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                                .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: filters
             //logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or ? LogicalOperator.Or : LogicalOperator.And
             );
@@ -88,7 +89,8 @@ public class RequestService(
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
-                                 .Include(x => x.RequestAttachments),
+                                 .Include(x => x.RequestAttachments)
+                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(currentUserId) });
 
             if (request.IsError)
@@ -146,7 +148,8 @@ public class RequestService(
                 filterDto.PageSize,
                 transform: i => i.Include(r => r.RequestAttachments)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                                .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                                 .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: filters);
 
             if (pagedRequests.IsError)
@@ -178,7 +181,8 @@ public class RequestService(
                 pageSize,
                 transform: i => i.Include(r => r.RequestAttachments)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template),
+                 .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
+                 .Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.ByApproverId(approverId) });
 
             if (pagedRequests.IsError)
@@ -208,7 +212,7 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues).Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: RequestExpressions.ByTemplateIdWithIncludes(templateId));
 
             if (pagedRequests.IsError)
@@ -304,6 +308,56 @@ public class RequestService(
                 requestEntity.RequestTemplateValuesId = newRequestTemplateValues.Id;
                 requestEntity.RequestTemplateValues = newRequestTemplateValues;
 
+                var relationKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var relatedRequest in request.RelatedRequests)
+                {
+                    if (relatedRequest.TargetRequestId == Guid.Empty)
+                        return ApplicationErrors.InvalidInput;
+
+                    var relationKey = $"{relatedRequest.TargetRequestId}:{(int)relatedRequest.RelationType}";
+                    if (!relationKeys.Add(relationKey))
+                        return ApplicationErrors.RequestRelationAlreadyExists;
+
+                    var targetRequestResult = await unitOfWork.Requests.GetByIdAsync(relatedRequest.TargetRequestId);
+                    if (targetRequestResult.IsError)
+                        return targetRequestResult.Errors;
+
+                    if (targetRequestResult.Value == null)
+                        return ApplicationErrors.RequestNotFound;
+
+                    var targetAccessResult = await unitOfWork.Requests.GetAsync(
+                        filter: r => r.Id == relatedRequest.TargetRequestId,
+                        additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(httpContextServiceManager.GetCurrentUserId()) });
+
+                    if (targetAccessResult.IsError)
+                        return targetAccessResult.Errors;
+
+                    if (targetAccessResult.Value == null)
+                        return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+                    var relation = new RequestRelation
+                    {
+                        Id = Guid.NewGuid(),
+                        SourceRequestId = requestEntity.Id,
+                        TargetRequestId = relatedRequest.TargetRequestId,
+                        RelationType = relatedRequest.RelationType,
+                        Notes = relatedRequest.Notes,
+                        CreatedByUserId = httpContextServiceManager.GetCurrentUserId().ToString(),
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedByUserId = httpContextServiceManager.GetCurrentUserId().ToString(),
+                        UpdatedAt = DateTime.UtcNow
+                    };
+
+                    var addRelationResult = await unitOfWork.RequestRelations.AddAsync(relation);
+                    if (addRelationResult.IsError)
+                    {
+                        if (unitOfWork.HasActiveTransaction)
+                            await unitOfWork.RollbackTransactionAsync();
+
+                        return addRelationResult.Errors;
+                    }
+                }
+
                 var addRequestTemplateValuesResult = await unitOfWork.RequestTemplateValues.AddAsync(newRequestTemplateValues);
                 if (addRequestTemplateValuesResult.IsError)
                 {
@@ -332,7 +386,22 @@ public class RequestService(
                 }
 
                 logger.LogInformation("Successfully created request: {RequestId} with number {RequestNumber}", requestEntity.Id, requestEntity.RequestNumber);
-                return requestEntity.ToDto();
+                var createdRequest = await unitOfWork.Requests.GetAsync(
+                    filter: r => r.Id == requestEntity.Id,
+                    transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                     .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                                     .Include(x => x.Approver)
+                                     .Include(x => x.Requester)
+                                     .Include(x => x.RequestAttachments)
+                                     .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest));
+
+                if (createdRequest.IsError)
+                    return createdRequest.Errors;
+
+                if (createdRequest.Value == null)
+                    return ApplicationErrors.RequestNotFound;
+
+                return createdRequest.Value.ToDto();
             }
             catch
             {
@@ -425,7 +494,8 @@ public class RequestService(
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
-                                 .Include(x => x.RequestAttachments));
+                                 .Include(x => x.RequestAttachments)
+                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest));
 
             if (updatedRequest.IsError)
                 return updatedRequest.Errors;
@@ -480,7 +550,8 @@ public class RequestService(
                 page,
                 pageSize,
                 transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!.Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: filters,
                 logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or ? ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or : ExpressionBuilderLib.src.Core.Enums.LogicalOperator.And);
 
@@ -522,9 +593,10 @@ public class RequestService(
                 i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
 
-                      .Include(x => x.Approver)
-                      .Include(x => x.Requester)
-                      .Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!);
+                       .Include(x => x.Approver)
+                       .Include(x => x.Requester)
+                       .Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!
+                       .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)!);
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
@@ -535,6 +607,312 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching pending requests for requester, page: {Page}, size: {PageSize}", page, pageSize);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<List<RequestRelationDto>>> GetRelationsByRequestIdAsync(Guid requestId)
+    {
+        try
+        {
+            if (requestId == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var requestAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == requestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(currentUserId) });
+
+            if (requestAccess.IsError)
+                return requestAccess.Errors;
+
+            if (requestAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            var relations = await unitOfWork.RequestRelations.GetAllAsync(
+                filter: r => r.SourceRequestId == requestId,
+                transform: q => q.Include(r => r.SourceRequest).Include(r => r.TargetRequest));
+
+            if (relations.IsError)
+                return relations.Errors;
+
+            return relations.Value!.Select(r => r.ToDto()).ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching request relations for request: {RequestId}", requestId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<RequestRelationDto>> GetRelationByIdAsync(Guid id)
+    {
+        try
+        {
+            if (id == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var relation = await unitOfWork.RequestRelations.GetAsync(
+                filter: r => r.Id == id,
+                transform: q => q.Include(r => r.SourceRequest).Include(r => r.TargetRequest));
+
+            if (relation.IsError)
+                return relation.Errors;
+
+            if (relation.Value == null)
+                return ApplicationErrors.RequestRelationNotFound;
+
+            var sourceAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == relation.Value.SourceRequestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(currentUserId) });
+
+            if (sourceAccess.IsError)
+                return sourceAccess.Errors;
+
+            if (sourceAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            return relation.Value.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching request relation by id: {RelationId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<RequestRelationDto>> CreateRelationAsync(CreateRequestRelationDto dto)
+    {
+        try
+        {
+            if (dto == null || dto.SourceRequestId == Guid.Empty || dto.TargetRequestId == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            if (dto.SourceRequestId == dto.TargetRequestId)
+                return ApplicationErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var sourceRequestExists = await unitOfWork.Requests.GetByIdAsync(dto.SourceRequestId);
+            if (sourceRequestExists.IsError)
+                return sourceRequestExists.Errors;
+            if (sourceRequestExists.Value == null)
+                return ApplicationErrors.RequestNotFound;
+
+            var sourceRequestAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == dto.SourceRequestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanMakeUpdateByUserId(currentUserId) });
+
+            if (sourceRequestAccess.IsError)
+                return sourceRequestAccess.Errors;
+            if (sourceRequestAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            var targetRequestExists = await unitOfWork.Requests.GetByIdAsync(dto.TargetRequestId);
+            if (targetRequestExists.IsError)
+                return targetRequestExists.Errors;
+            if (targetRequestExists.Value == null)
+                return ApplicationErrors.RequestNotFound;
+
+            var targetRequestAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == dto.TargetRequestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(currentUserId) });
+
+            if (targetRequestAccess.IsError)
+                return targetRequestAccess.Errors;
+            if (targetRequestAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            var duplicateExists = await unitOfWork.RequestRelations.AnyAsync(
+                r => r.SourceRequestId == dto.SourceRequestId
+                     && r.TargetRequestId == dto.TargetRequestId
+                     && r.RelationType == dto.RelationType);
+
+            if (duplicateExists)
+                return ApplicationErrors.RequestRelationAlreadyExists;
+
+            var relation = new RequestRelation
+            {
+                Id = Guid.NewGuid(),
+                SourceRequestId = dto.SourceRequestId,
+                TargetRequestId = dto.TargetRequestId,
+                RelationType = dto.RelationType,
+                Notes = dto.Notes,
+                CreatedByUserId = currentUserId.ToString(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedByUserId = currentUserId.ToString(),
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var addResult = await unitOfWork.RequestRelations.AddAsync(relation);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
+                return ApplicationErrors.DatabaseError;
+
+            var createdRelation = await unitOfWork.RequestRelations.GetAsync(
+                filter: r => r.Id == relation.Id,
+                transform: q => q.Include(r => r.SourceRequest).Include(r => r.TargetRequest));
+
+            if (createdRelation.IsError)
+                return createdRelation.Errors;
+
+            return createdRelation.Value!.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating request relation");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<RequestRelationDto>> UpdateRelationAsync(Guid id, UpdateRequestRelationDto dto)
+    {
+        try
+        {
+            if (id == Guid.Empty || dto == null || dto.SourceRequestId == Guid.Empty || dto.TargetRequestId == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            if (dto.SourceRequestId == dto.TargetRequestId)
+                return ApplicationErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var existingRelation = await unitOfWork.RequestRelations.GetAsync(
+                filter: r => r.Id == id,
+                transform: q => q.Include(r => r.SourceRequest).Include(r => r.TargetRequest));
+
+            if (existingRelation.IsError)
+                return existingRelation.Errors;
+
+            if (existingRelation.Value == null)
+                return ApplicationErrors.RequestRelationNotFound;
+
+            var currentSourceAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == existingRelation.Value.SourceRequestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanMakeUpdateByUserId(currentUserId) });
+
+            if (currentSourceAccess.IsError)
+                return currentSourceAccess.Errors;
+            if (currentSourceAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            if (existingRelation.Value.SourceRequestId != dto.SourceRequestId)
+            {
+                var newSourceExists = await unitOfWork.Requests.GetByIdAsync(dto.SourceRequestId);
+                if (newSourceExists.IsError)
+                    return newSourceExists.Errors;
+                if (newSourceExists.Value == null)
+                    return ApplicationErrors.RequestNotFound;
+
+                var newSourceAccess = await unitOfWork.Requests.GetAsync(
+                    filter: r => r.Id == dto.SourceRequestId,
+                    additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanMakeUpdateByUserId(currentUserId) });
+
+                if (newSourceAccess.IsError)
+                    return newSourceAccess.Errors;
+                if (newSourceAccess.Value == null)
+                    return ApplicationErrors.UnauthorizedRequestRelationAccess;
+            }
+
+            var targetExists = await unitOfWork.Requests.GetByIdAsync(dto.TargetRequestId);
+            if (targetExists.IsError)
+                return targetExists.Errors;
+            if (targetExists.Value == null)
+                return ApplicationErrors.RequestNotFound;
+
+            var targetAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == dto.TargetRequestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(currentUserId) });
+
+            if (targetAccess.IsError)
+                return targetAccess.Errors;
+            if (targetAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            var duplicateExists = await unitOfWork.RequestRelations.AnyAsync(
+                r => r.Id != id
+                     && r.SourceRequestId == dto.SourceRequestId
+                     && r.TargetRequestId == dto.TargetRequestId
+                     && r.RelationType == dto.RelationType);
+
+            if (duplicateExists)
+                return ApplicationErrors.RequestRelationAlreadyExists;
+
+            existingRelation.Value.SourceRequestId = dto.SourceRequestId;
+            existingRelation.Value.TargetRequestId = dto.TargetRequestId;
+            existingRelation.Value.RelationType = dto.RelationType;
+            existingRelation.Value.Notes = dto.Notes;
+            existingRelation.Value.UpdatedByUserId = currentUserId.ToString();
+            existingRelation.Value.UpdatedAt = DateTime.UtcNow;
+
+            var updateResult = await unitOfWork.RequestRelations.UpdateAsync(existingRelation.Value);
+            if (updateResult.IsError)
+                return updateResult.Errors;
+
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
+                return ApplicationErrors.DatabaseError;
+
+            var updatedRelation = await unitOfWork.RequestRelations.GetAsync(
+                filter: r => r.Id == id,
+                transform: q => q.Include(r => r.SourceRequest).Include(r => r.TargetRequest));
+
+            if (updatedRelation.IsError)
+                return updatedRelation.Errors;
+
+            return updatedRelation.Value!.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating request relation: {RelationId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<bool>> DeleteRelationAsync(Guid id)
+    {
+        try
+        {
+            if (id == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var relation = await unitOfWork.RequestRelations.GetAsync(
+                filter: r => r.Id == id,
+                transform: q => q.Include(r => r.SourceRequest));
+
+            if (relation.IsError)
+                return relation.Errors;
+
+            if (relation.Value == null)
+                return ApplicationErrors.RequestRelationNotFound;
+
+            var sourceAccess = await unitOfWork.Requests.GetAsync(
+                filter: r => r.Id == relation.Value.SourceRequestId,
+                additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanMakeUpdateByUserId(currentUserId) });
+
+            if (sourceAccess.IsError)
+                return sourceAccess.Errors;
+
+            if (sourceAccess.Value == null)
+                return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+            var deleteResult = await unitOfWork.RequestRelations.RemoveAsync(r => r.Id == id);
+            if (deleteResult.IsError)
+                return deleteResult.Errors;
+
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
+                return ApplicationErrors.DatabaseError;
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting request relation: {RelationId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }

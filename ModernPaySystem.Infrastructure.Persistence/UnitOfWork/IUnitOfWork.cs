@@ -22,6 +22,7 @@ public interface IUnitOfWork
 
     IRepositoryBase<Request, Guid> Requests { get; }
     IRepositoryBase<RequestTemplateValues, Guid> RequestTemplateValues { get; }
+    IRepositoryBase<RequestRelation, Guid> RequestRelations { get; }
 
     IRepositoryBase<Response, Guid> Responses { get; }
 

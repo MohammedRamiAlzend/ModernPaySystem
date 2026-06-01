@@ -52,6 +52,8 @@ graph TB
 | `CurrentTransactionId` | `Guid?` | الإحالة الحالية النشطة |
 | `RequestAttachments` | `Collection` | المرفقات عند التقديم |
 | `ReadOnlyUsers` | `Collection<User>` | مستخدمون بصلاحية قراءة فقط |
+| `OutgoingRelations` | `Collection<RequestRelation>` | العلاقات الصادرة من الطلب |
+| `IncomingRelations` | `Collection<RequestRelation>` | العلاقات الواردة إلى الطلب |
 
 #### حالات الطلب (`RequestStatus`):
 
@@ -70,6 +72,21 @@ stateDiagram-v2
 | `1` | `Delivered` | وصل للموافق |
 | `2` | `InProcess` | أُنشئت إحالة (Transaction) |
 | `3` | `Managed` | تم الانتهاء من المعالجة |
+
+### 1.1 RequestRelation (علاقة الطلب)
+
+> [!NOTE]
+> ملف الكيان: [RequestRelation.cs](file:///c:/Users/DELL/Desktop/ModernPaySystem/ModernPaySystem.Domain/Entities/TransactionSystemEntities/RequestRelation.cs)
+
+| الحقل | النوع | الوصف |
+|-------|------|------|
+| `Id` | `Guid` | المعرف الفريد |
+| `SourceRequestId` | `Guid` | الطلب المصدر |
+| `TargetRequestId` | `Guid` | الطلب الهدف |
+| `RelationType` | `RequestRelationType` | نوع العلاقة |
+| `Notes` | `string?` | ملاحظات اختيارية |
+
+**REST routes:** `GET /api/Requests/relations/{id}`, `GET /api/Requests/{requestId}/relations`, `POST /api/Requests/relations`, `PUT /api/Requests/relations/{id}`, `DELETE /api/Requests/relations/{id}`
 
 ### 2. Response (الرد)
 

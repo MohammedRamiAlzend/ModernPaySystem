@@ -47,6 +47,9 @@ public static class ApplicationErrors
     public static readonly Error RequesterNotFound = new("405", "The requester was not found.", ErrorKind.NotFound, "لم يتم العثور على طالب الطلب.");
     public static readonly Error ApproverNotFound = new("406", "The approver was not found.", ErrorKind.NotFound, "لم يتم العثور على الموافق.");
     public static readonly Error UnauthorizedRequestAccess = new("407", "You do not have access to this request.", ErrorKind.Forbidden, "ليس لديك حق الوصول إلى هذا الطلب.");
+    public static readonly Error RequestRelationNotFound = new("408", "The specified request relation was not found.", ErrorKind.NotFound, "لم يتم العثور على علاقة الطلب المحددة.");
+    public static readonly Error UnauthorizedRequestRelationAccess = new("409", "You do not have access to this request relation.", ErrorKind.Forbidden, "ليس لديك حق الوصول إلى علاقة الطلب المحددة.");
+    public static readonly Error RequestRelationAlreadyExists = new("410", "A request relation with the same source, target, and type already exists.", ErrorKind.Conflict, "يوجد بالفعل ارتباط بنفس المصدر والهدف والنوع.");
 
     // Response Errors (500-599)
     public static readonly Error ResponseNotFound = new("500", "The specified response was not found.", ErrorKind.NotFound, "لم يتم العثور على الرد المحدد.");

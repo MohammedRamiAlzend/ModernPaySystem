@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using ModernPaySystem.Domain.Entities.Abstraction;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Domain.Entities.PaySystemEntities.FastOperations;
 using ModernPaySystem.Domain.Entities.SharedEntities;
@@ -25,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
+    public DbSet<RequestRelation> RequestRelations { get; set; }
     public DbSet<RequestAttachment> RequestAttachments { get; set; }
     public DbSet<Response> Responses { get; set; }
     public DbSet<ResponseAttachment> ResponseAttachments { get; set; }
@@ -50,7 +52,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     {
         base.OnModelCreating(modelBuilder);
 
-        // User <-> VisitedTemplates (many-to-many)
         modelBuilder.Entity<User>()
             .HasMany(u => u.VisitedTemplates)
             .WithMany(t => t.VisitedByUsers)
@@ -58,12 +59,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<RequestAttachment>()
             .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
-
-        //modelBuilder.Entity<Request>()
-        //    .HasOne(r => r.Template)
-        //    .WithMany(t => t.Requests)
-        //    .HasForeignKey(r => r.TemplateId)
-        //    .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Request>()
             .HasOne(r => r.RequestTemplateValues)
@@ -109,10 +104,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<DepartmentTemplateNumber>()
             .HasIndex(r => new { r.DepartmentId, r.TemplateId })
             .IsUnique();
-        //modelBuilder.Entity<Request>()
-        //    .HasIndex(r => new { r.ApproverDepartmentId, r.RequestNumber })
-        //    .IsUnique();
-
 
 
         modelBuilder.Entity<ResponseAttachment>()
@@ -221,7 +212,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(o => o.OperationServiceTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // RequestTransaction self-referencing relationship
         modelBuilder.Entity<RequestTransaction>()
             .HasOne(rt => rt.ParentTransaction)
             .WithMany(rt => rt.ChildTransactions)
@@ -240,7 +230,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(rt => rt.CurrentUserHolderId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Request to RequestTransaction relationships
         modelBuilder.Entity<Request>()
             .HasOne(r => r.FirstTransaction)
             .WithMany()
@@ -319,7 +308,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .Property(f => f.ContentAsJson)
             .HasColumnType("jsonb");
 
-        // Department self-referencing relationship
         modelBuilder.Entity<Department>()
             .HasOne(d => d.ParentDepartment)
             .WithMany(d => d.ChildDepartments)
@@ -333,25 +321,38 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
-        //modelBuilder.Entity<Department>()
-        //    .Property(d => d.LastRequestNumber)
-        //    .HasDefaultValue(0);
 
-        // Department-User relationship
         modelBuilder.Entity<User>()
             .HasOne(u => u.Department)
             .WithMany(d => d.Users)
             .HasForeignKey(u => u.DepartmentId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Index on InputValue
         modelBuilder.Entity<InputValue>()
             .HasIndex(e => new { e.RequestTemplateValuesId, e.Key, e.Value })
             .HasDatabaseName("IX_InputValue_Lookup");
 
-        // Index on RequestTemplateValues
         modelBuilder.Entity<RequestTemplateValues>()
             .HasIndex(e => e.RequestId)
             .HasDatabaseName("IX_RequestTemplateValues_RequestId");
+
+        modelBuilder.Entity<RequestRelation>(entity =>
+        {
+            entity.ToTable("RequestRelations");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(r => r.SourceRequest)
+                  .WithMany(r => r.OutgoingRelations)
+                  .HasForeignKey(r => r.SourceRequestId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(r => r.TargetRequest)
+                  .WithMany(r => r.IncomingRelations)
+                  .HasForeignKey(r => r.TargetRequestId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.SourceRequestId, e.TargetRequestId, e.RelationType })
+                  .IsUnique();
+        });
     }
 }

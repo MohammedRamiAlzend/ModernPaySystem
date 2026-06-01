@@ -19,6 +19,24 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         return result.ToActionResult();
     }
 
+    [HttpGet("{requestId}/relations")]
+    [EndpointPermission("requests.relations.get-by-request-id", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetRelationsByRequestId(Guid requestId)
+    {
+        logger.LogInformation("Getting relations for request: {RequestId}", requestId);
+        var result = await requestService.GetRelationsByRequestIdAsync(requestId);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("relations/{id}")]
+    [EndpointPermission("requests.relations.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetRelationById(Guid id)
+    {
+        logger.LogInformation("Getting request relation by id: {RelationId}", id);
+        var result = await requestService.GetRelationByIdAsync(id);
+        return result.ToActionResult();
+    }
+
     [HttpPost("by-requester/{requesterId}")]
     [EndpointPermission("requests.get-by-requester-id", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetByRequesterId(Guid requesterId, [FromBody] RequestPagedFilterDto filterDto)
@@ -54,6 +72,35 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
         var result = await requestService.CreateAsync(request, request.Files!);
         return result.ToActionResult();
     }
+
+    //[HttpPost("relations")]
+    //[EndpointPermission("requests.relations.create", SubSystem.TransactionSystem, PermissionType.Insert)]
+    //public async Task<IActionResult> CreateRelation([FromBody] CreateRequestRelationDto dto)
+    //{
+    //    logger.LogInformation("Creating request relation from {SourceRequestId} to {TargetRequestId}", dto?.SourceRequestId, dto?.TargetRequestId);
+    //    ArgumentNullException.ThrowIfNull(dto);
+    //    var result = await requestService.CreateRelationAsync(dto);
+    //    return result.ToActionResult();
+    //}
+
+    //[HttpPut("relations/{id}")]
+    //[EndpointPermission("requests.relations.update", SubSystem.TransactionSystem, PermissionType.Update)]
+    //public async Task<IActionResult> UpdateRelation(Guid id, [FromBody] UpdateRequestRelationDto dto)
+    //{
+    //    logger.LogInformation("Updating request relation: {RelationId}", id);
+    //    ArgumentNullException.ThrowIfNull(dto);
+    //    var result = await requestService.UpdateRelationAsync(id, dto);
+    //    return result.ToActionResult();
+    //}
+
+    //[HttpDelete("relations/{id}")]
+    //[EndpointPermission("requests.relations.delete", SubSystem.TransactionSystem, PermissionType.Delete)]
+    //public async Task<IActionResult> DeleteRelation(Guid id)
+    //{
+    //    logger.LogInformation("Deleting request relation: {RelationId}", id);
+    //    var result = await requestService.DeleteRelationAsync(id);
+    //    return result.ToActionResult();
+    //}
 
     [HttpDelete("{id}")]
     [EndpointPermission("requests.delete", SubSystem.TransactionSystem, PermissionType.Delete)]

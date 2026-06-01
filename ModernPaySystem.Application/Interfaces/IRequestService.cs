@@ -29,4 +29,14 @@ public interface IRequestService
     Task<Result<PagedList<RequestDto>>> GetAllRequestNeedActionPagedAsync(RequestPagedFilterDto? filterDto, bool hasResponse);
 
     Task<Result<PagedList<RequestDto>>> GetPendingByCurrentRequesterPagedAsync(int page, int pageSize);
+
+    Task<Result<List<RequestRelationDto>>> GetRelationsByRequestIdAsync(Guid requestId);
+
+    Task<Result<RequestRelationDto>> GetRelationByIdAsync(Guid id);
+
+    Task<Result<RequestRelationDto>> CreateRelationAsync(CreateRequestRelationDto dto);
+
+    Task<Result<RequestRelationDto>> UpdateRelationAsync(Guid id, UpdateRequestRelationDto dto);
+
+    Task<Result<bool>> DeleteRelationAsync(Guid id);
 }
