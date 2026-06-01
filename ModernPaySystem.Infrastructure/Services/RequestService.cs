@@ -309,55 +309,59 @@ public class RequestService(
                 requestEntity.RequestTemplateValues = newRequestTemplateValues;
 
                 var relationKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                foreach (var relatedRequest in request.RelatedRequests)
+                if (request.RelatedRequests is not null)
                 {
-                    if (relatedRequest.TargetRequestId == Guid.Empty)
-                        return ApplicationErrors.InvalidInput;
 
-                    var relationKey = $"{relatedRequest.TargetRequestId}:{(int)relatedRequest.RelationType}";
-                    if (!relationKeys.Add(relationKey))
-                        return ApplicationErrors.RequestRelationAlreadyExists;
-
-                    var targetRequestResult = await unitOfWork.Requests.GetByIdAsync(relatedRequest.TargetRequestId);
-                    if (targetRequestResult.IsError)
-                        return targetRequestResult.Errors;
-
-                    if (targetRequestResult.Value == null)
-                        return ApplicationErrors.RequestNotFound;
-
-                    var targetAccessResult = await unitOfWork.Requests.GetAsync(
-                        filter: r => r.Id == relatedRequest.TargetRequestId,
-                        additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.CanReadByUserId(httpContextServiceManager.GetCurrentUserId()) });
-
-                    if (targetAccessResult.IsError)
-                        return targetAccessResult.Errors;
-
-                    if (targetAccessResult.Value == null)
-                        return ApplicationErrors.UnauthorizedRequestRelationAccess;
-
-                    var relation = new RequestRelation
+                    foreach (var relatedRequest in request.RelatedRequests)
                     {
-                        Id = Guid.NewGuid(),
-                        SourceRequestId = requestEntity.Id,
-                        TargetRequestId = relatedRequest.TargetRequestId,
-                        RelationType = relatedRequest.RelationType,
-                        Notes = relatedRequest.Notes,
-                        CreatedByUserId = httpContextServiceManager.GetCurrentUserId().ToString(),
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedByUserId = httpContextServiceManager.GetCurrentUserId().ToString(),
-                        UpdatedAt = DateTime.UtcNow
-                    };
+                        if (relatedRequest.TargetRequestId == Guid.Empty)
+                            return ApplicationErrors.InvalidInput;
 
-                    var addRelationResult = await unitOfWork.RequestRelations.AddAsync(relation);
-                    if (addRelationResult.IsError)
-                    {
-                        if (unitOfWork.HasActiveTransaction)
-                            await unitOfWork.RollbackTransactionAsync();
+                        var relationKey = $"{relatedRequest.TargetRequestId}:{(int)relatedRequest.RelationType}";
+                        if (!relationKeys.Add(relationKey))
+                            return ApplicationErrors.RequestRelationAlreadyExists;
 
-                        return addRelationResult.Errors;
+                        var targetRequestResult = await unitOfWork.Requests.GetByIdAsync(relatedRequest.TargetRequestId);
+                        if (targetRequestResult.IsError)
+                            return targetRequestResult.Errors;
+
+                        if (targetRequestResult.Value == null)
+                            return ApplicationErrors.RequestNotFound;
+
+                        var targetAccessResult = await unitOfWork.Requests.GetAsync(
+                            filter: r => r.Id == relatedRequest.TargetRequestId,
+                            additionalFilters: [RequestExpressions.CanReadByUserId(httpContextServiceManager.GetCurrentUserId())]);
+
+                        if (targetAccessResult.IsError)
+                            return targetAccessResult.Errors;
+
+                        if (targetAccessResult.Value == null)
+                            return ApplicationErrors.UnauthorizedRequestRelationAccess;
+
+                        var relation = new RequestRelation
+                        {
+                            Id = Guid.NewGuid(),
+                            SourceRequestId = requestEntity.Id,
+                            TargetRequestId = relatedRequest.TargetRequestId,
+                            RelationType = relatedRequest.RelationType,
+                            Notes = relatedRequest.Notes,
+                            CreatedByUserId = httpContextServiceManager.GetCurrentUserId().ToString(),
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedByUserId = httpContextServiceManager.GetCurrentUserId().ToString(),
+                            UpdatedAt = DateTime.UtcNow
+                        };
+
+                        var addRelationResult = await unitOfWork.RequestRelations.AddAsync(relation);
+                        if (addRelationResult.IsError)
+                        {
+                            if (unitOfWork.HasActiveTransaction)
+                                await unitOfWork.RollbackTransactionAsync();
+
+                            return addRelationResult.Errors;
+                        }
                     }
-                }
 
+                }
                 var addRequestTemplateValuesResult = await unitOfWork.RequestTemplateValues.AddAsync(newRequestTemplateValues);
                 if (addRequestTemplateValuesResult.IsError)
                 {
