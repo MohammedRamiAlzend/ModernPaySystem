@@ -68,6 +68,7 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
 
     [HttpPost]
     [Consumes("multipart/form-data")]
+    [DisableRequestSizeLimit]
     [EndpointPermission("archiving.records.create", SubSystem.Archiving, PermissionType.Insert)]
     public async Task<IActionResult> Create([FromForm] CreateArchiveRecordDto dto)
     {
@@ -78,6 +79,7 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
 
     [HttpPut("{id}")]
     [Consumes("multipart/form-data")]
+    [DisableRequestSizeLimit]
     [EndpointPermission("archiving.records.update", SubSystem.Archiving, PermissionType.Update)]
     public async Task<IActionResult> Update(Guid id, [FromForm] UpdateArchiveRecordDto dto)
     {
@@ -88,6 +90,7 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
 
     [HttpPost("{id}/files")]
     [Consumes("multipart/form-data")]
+    [DisableRequestSizeLimit]
     [EndpointPermission("archiving.records.add-files", SubSystem.Archiving, PermissionType.Insert)]
     public async Task<IActionResult> AddFiles(Guid id, [FromForm] IFormFileCollection files)
     {

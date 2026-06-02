@@ -88,11 +88,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
 
         ]
     },
-    // {
-    //     title: "إعدادات النظام",
-    //     path: "/settings",
-    //     icon: <Settings className="h-5 w-5" />,
-    // },
+
+    {
+        title: "نظام الأرشفة",
+        path: "/archiving",
+        icon: <Archive className="h-5 w-5" />,
+    }
 ];
 
 export const FOOTER_NAVIGATION_ITEMS = [

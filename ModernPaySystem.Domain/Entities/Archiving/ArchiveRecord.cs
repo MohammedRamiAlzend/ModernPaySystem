@@ -75,10 +75,11 @@ public class ArchiveRecordFormInputValueDto
 
 public class CreateArchiveRecordDto
 {
+    public Guid? Id { get; set; }
     public Guid FolderId { get; set; }
     public Guid? FormId { get; set; } = null;
     public string ArchivalNumber { get; set; } = string.Empty;
-    public IFormFileCollection Files { get; set; } = default!;
+    public IFormFileCollection? Files { get; set; }
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];
 }
 
@@ -88,7 +89,7 @@ public class UpdateArchiveRecordDto
     public Guid FormId { get; set; }
     public string ArchivalNumber { get; set; } = string.Empty;
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];
-    public IFormFileCollection Files { get; set; } = default!;
+    public IFormFileCollection? Files { get; set; }
     public List<Guid> FileIdsToRemove { get; set; } = [];
     public bool ReplaceFiles { get; set; }
 }
