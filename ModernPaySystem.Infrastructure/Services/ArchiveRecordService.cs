@@ -817,7 +817,7 @@ public class ArchiveRecordService(
                     report.MissingStoragePaths.Add(physicalFile.StoragePath);
                 }
 
-                if (!filesManagerService.FileExists(physicalFile.StoragePath))
+                if (!filesManagerService.FileExists(NormalizePath(physicalFile.StoragePath)))
                 {
                     report.MissingPhysicalFileIds.Add(physicalFile.Id);
                 }
@@ -1126,11 +1126,11 @@ public class ArchiveRecordService(
                 return ApplicationErrors.AttachmentNotFound;
             }
 
-            if (!filesManagerService.FileExists(physicalFile.StoragePath))
+            if (!filesManagerService.FileExists(NormalizePath(physicalFile.StoragePath)))
             {
                 return ApplicationErrors.ArchivePhysicalFileMissingFromStorage(physicalFile.StoragePath);
             }
-            var absolutePath = Path.GetFullPath(physicalFile.StoragePath);
+            var absolutePath = NormalizePath(physicalFile.StoragePath);
 
             var streamResult = await filesManagerService.GetFileStreamAsync(absolutePath);
             if (streamResult.IsError)
@@ -1304,7 +1304,7 @@ public class ArchiveRecordService(
 
             foreach (var physicalFile in activeFiles)
             {
-                if (!filesManagerService.FileExists(physicalFile.StoragePath))
+                if (!filesManagerService.FileExists(NormalizePath(physicalFile.StoragePath)))
                 {
                     return ApplicationErrors.ArchivePhysicalFileMissingFromStorage(physicalFile.StoragePath);
                 }
@@ -1425,7 +1425,7 @@ public class ArchiveRecordService(
             };
 
             zipOutputStream.PutNextEntry(zipEntry);
-            var absolutePath = Path.GetFullPath(physicalFile.StoragePath);
+            var absolutePath = NormalizePath(physicalFile.StoragePath);
             var streamResult = await filesManagerService.GetFileStreamAsync(absolutePath);
             if (streamResult.IsError)
             {
@@ -1701,7 +1701,8 @@ public class ArchiveRecordService(
 
     private async Task<Result<bool>> DeleteStoredFileAsync(string storagePath)
     {
-        var deleteResult = await filesManagerService.DeleteFileAsync(storagePath);
+        var absolutePath = NormalizePath(storagePath);
+        var deleteResult = await filesManagerService.DeleteFileAsync(absolutePath);
         if (deleteResult.IsError)
         {
             return deleteResult.Errors;
@@ -1714,10 +1715,11 @@ public class ArchiveRecordService(
     {
         foreach (var storedPath in storedPaths.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            var deleteResult = await filesManagerService.DeleteFileAsync(storedPath);
+            var absolutePath = NormalizePath(storedPath);
+            var deleteResult = await filesManagerService.DeleteFileAsync(absolutePath);
             if (deleteResult.IsError)
             {
-                logger.LogWarning("Failed to clean up stored file {Path}: {Error}", storedPath, deleteResult.Errors);
+                logger.LogWarning("Cleanup failed for stored file at path: {Path}. Error: {Error}", absolutePath, deleteResult.Errors);
             }
         }
     }

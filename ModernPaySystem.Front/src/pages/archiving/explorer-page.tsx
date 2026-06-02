@@ -383,6 +383,43 @@ export default function ExplorerPage() {
         }));
     };
 
+    const printQrCover = (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        
+        const doc = iframe.contentWindow?.document || iframe.contentDocument;
+        if (doc) {
+            doc.write(`
+                <html>
+                    <head>
+                        <title>طباعة غلاف QR</title>
+                        <style>
+                            @page { size: auto; margin: 0mm; }
+                            body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+                            img { max-width: 100%; max-height: 100%; object-fit: contain; }
+                        </style>
+                    </head>
+                    <body>
+                        <img src="${url}" onload="window.focus(); window.print();" />
+                    </body>
+                </html>
+            `);
+            doc.close();
+        }
+        
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+            URL.revokeObjectURL(url);
+        }, 5000);
+    };
+
     const handleSaveRecord = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!archivalNumber.trim() || !currentFolder) return;
@@ -395,6 +432,7 @@ export default function ExplorerPage() {
             }));
 
             let filesToUpload = [...selectedFiles];
+            let qrCoverBlob: Blob | null = null;
 
             // Generate QR Cover if required
             if (recordModalMode === 'create' && generateQrCover) {
@@ -411,6 +449,7 @@ export default function ExplorerPage() {
                             backgroundColor: '#ffffff'
                         });
                         if (blob) {
+                            qrCoverBlob = blob;
                             const qrFile = new File([blob], `QR_Cover_${archivalNumber}.png`, { type: 'image/png' });
                             filesToUpload.unshift(qrFile);
                         }
@@ -435,6 +474,11 @@ export default function ExplorerPage() {
                     title: 'تم الأرشفة بنجاح',
                     message: `تم حفظ مستند الأرشفة رقم "${archivalNumber}" بنجاح.`
                 });
+
+                // Auto-print the cover page immediately
+                if (qrCoverBlob) {
+                    printQrCover(qrCoverBlob);
+                }
             } else if (recordModalMode === 'edit' && selectedRecord) {
                 await archivingService.updateArchiveRecord(selectedRecord.id, {
                     folderId: currentFolder.id,

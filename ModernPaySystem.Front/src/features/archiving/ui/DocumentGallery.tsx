@@ -17,7 +17,8 @@ import {
     Loader2,
     Trash2,
     Upload,
-    QrCode
+    QrCode,
+    Printer
 } from 'lucide-react';
 
 interface DocumentGalleryProps {
@@ -186,6 +187,51 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         }
     };
 
+    const printBlob = (blob: Blob, isPdf: boolean) => {
+        const url = URL.createObjectURL(blob);
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+        
+        const doc = iframe.contentWindow?.document || iframe.contentDocument;
+        if (doc) {
+            if (isPdf) {
+                iframe.src = url;
+                iframe.onload = () => {
+                    iframe.contentWindow?.focus();
+                    iframe.contentWindow?.print();
+                };
+            } else {
+                doc.write(`
+                    <html>
+                        <head>
+                            <title>طباعة مستند</title>
+                            <style>
+                                @page { size: auto; margin: 0mm; }
+                                body { margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+                                img { max-width: 100%; max-height: 100%; object-fit: contain; }
+                            </style>
+                        </head>
+                        <body>
+                            <img src="${url}" onload="window.focus(); window.print();" />
+                        </body>
+                    </html>
+                `);
+                doc.close();
+            }
+        }
+        
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+            URL.revokeObjectURL(url);
+        }, 5000);
+    };
+
     const handleGenerateAndAddQrCover = async () => {
         if (!record) return;
         setIsUploading(true);
@@ -219,6 +265,9 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                         message: 'تم توليد صفحة غلاف QR وإدراجها بنجاح.'
                     });
                     onFilesChanged?.();
+
+                    // Print the generated cover page immediately
+                    printBlob(blob, false);
                 }
             }
         } catch (err) {
@@ -580,6 +629,24 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                                 <span className="text-xs text-muted-foreground font-medium">حجم الملف: {formatBytes(selectedFile.fileSize)}</span>
                             </div>
                             <div className="flex gap-2">
+                                {selectedFile && (isImageFile(selectedFile.fileName) || isPdfFile(selectedFile.fileName)) && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-xl flex items-center gap-1.5 text-foreground border-border"
+                                        onClick={async () => {
+                                            try {
+                                                const blob = await archivingService.viewFileBlob(recordId, selectedFile.id);
+                                                printBlob(blob, isPdfFile(selectedFile.fileName));
+                                            } catch (err) {
+                                                console.error('Failed to print file', err);
+                                            }
+                                        }}
+                                    >
+                                        <Printer className="h-4 w-4 text-amber-500" />
+                                        <span>طباعة</span>
+                                    </Button>
+                                )}
                                 <Button
                                     variant="outline"
                                     size="sm"
