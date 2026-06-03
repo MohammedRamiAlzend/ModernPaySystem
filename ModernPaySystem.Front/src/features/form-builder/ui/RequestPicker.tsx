@@ -266,7 +266,7 @@ export const RequestPicker = ({
                         <SelectValue placeholder="تصفية حسب النموذج" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-primary/10">
-                        <SelectItem value="all" className="text-xs">جميع النماذج</SelectItem>
+                        <SelectItem value="all" className="text-xs">جميع الخدمات</SelectItem>
                         {templates.map(t => (
                             <SelectItem key={t.id} value={t.id} className="text-xs">
                                 {t.templateName}
