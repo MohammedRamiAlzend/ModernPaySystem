@@ -22,6 +22,7 @@ interface ProcessRequestModalProps {
     onSubmissionModeChange: (mode: 'submit' | 'referral') => void;
     targetUserId: string;
     onTargetUserChange: (userId: string) => void;
+    uploadProgress: number;
     onSubmit: () => void;
 }
 
@@ -41,6 +42,7 @@ export const ProcessRequestModal = ({
     onSubmissionModeChange,
     targetUserId,
     onTargetUserChange,
+    uploadProgress,
     onSubmit
 }: ProcessRequestModalProps) => {
     if (!request || !template) return null;
@@ -79,6 +81,7 @@ export const ProcessRequestModal = ({
                         onSubmissionModeChange={onSubmissionModeChange}
                         targetUserId={targetUserId}
                         onTargetUserChange={onTargetUserChange}
+                        uploadProgress={uploadProgress}
                         onSubmit={onSubmit}
                     />
                 </div>

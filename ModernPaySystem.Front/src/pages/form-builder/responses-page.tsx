@@ -35,7 +35,8 @@ export const ResponsesPage = () => {
         setSubmissionMode,
         targetUserId,
         setTargetUserId,
-        isTemplateLoading
+        isTemplateLoading,
+        uploadProgress
     } = useResponsePageLogic();
 
     const [isProcessModalOpen, setIsProcessModalOpen] = useState(false);
@@ -107,6 +108,7 @@ export const ResponsesPage = () => {
                     onSubmissionModeChange={setSubmissionMode}
                     targetUserId={targetUserId}
                     onTargetUserChange={setTargetUserId}
+                    uploadProgress={uploadProgress}
                     onSubmit={async () => {
                         await handleSubmit();
                     }}

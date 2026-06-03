@@ -24,7 +24,7 @@ export const ArchivingTemplatesList: React.FC<ArchivingTemplatesListProps> = ({
         try {
             const parsed = JSON.parse(contentAsJson);
             return Array.isArray(parsed) ? parsed.length : 0;
-        } catch (e) {
+        } catch {
             return 0;
         }
     };

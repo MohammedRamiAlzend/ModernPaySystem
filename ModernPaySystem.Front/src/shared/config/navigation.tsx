@@ -92,7 +92,20 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     {
         title: "نظام الأرشفة",
         path: "/archiving",
-        icon: <Archive className="h-5 w-5" />,
+        icon: <Archive className="h-5 w-5 text-emerald-500" />,
+        isOpen: true,
+        children: [
+            {
+                title: "مستكشف الأرشيف",
+                path: "/archiving",
+                icon: <LayoutDashboard className="h-4 w-4" />,
+            },
+            {
+                title: "إدارة النماذج الديناميكية",
+                path: "/archiving/templates",
+                icon: <Settings className="h-4 w-4" />,
+            }
+        ]
     }
 ];
 

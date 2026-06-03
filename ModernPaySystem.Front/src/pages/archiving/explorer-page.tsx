@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef } from 'react';
 import { Folder, ArchiveRecord, DynamicFormTemplate, PhysicalFile } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
@@ -7,6 +8,7 @@ import { DocumentGallery } from '@/features/archiving/ui/DocumentGallery';
 import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { useUIStore } from '@/app/store/uiStore';
 import { Button } from '@/shared/ui/button';
+import { Progress } from '@/shared/ui/progress';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { Switch } from '@/shared/ui/switch';
@@ -28,6 +30,17 @@ import * as htmlToImage from 'html-to-image';
 import { ScannerModal } from '@/features/document-scanner';
 import { ImageMeta } from '@/features/document-scanner';
 
+const flattenFolders = (nodes: Folder[]): Folder[] => {
+    let result: Folder[] = [];
+    for (const node of nodes) {
+        result.push(node);
+        if (node.folderDtos && node.folderDtos.length > 0) {
+            result = result.concat(flattenFolders(node.folderDtos));
+        }
+    }
+    return result;
+};
+
 export default function ExplorerPage() {
     const { showStatus, showConfirm } = useUIStore();
 
@@ -38,7 +51,18 @@ export default function ExplorerPage() {
     const [records, setRecords] = useState<ArchiveRecord[]>([]);
     const [dynamicTemplates, setDynamicTemplates] = useState<DynamicFormTemplate[]>([]);
     const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
-    const [breadcrumbs, setBreadcrumbs] = useState<Folder[]>([]);
+
+    const breadcrumbs = React.useMemo(() => {
+        if (!currentFolder) return [];
+        const crumbs: Folder[] = [];
+        let curr: Folder | undefined = currentFolder;
+        while (curr) {
+            crumbs.unshift(curr);
+            const parentId: string | null = curr.parentId;
+            curr = parentId ? folders.find(f => f.id === parentId) : undefined;
+        }
+        return crumbs;
+    }, [currentFolder, folders]);
 
     const [viewMode, setViewMode] = useState<'explorer' | 'list'>('explorer');
     const [searchTerm, setSearchTerm] = useState('');
@@ -62,6 +86,9 @@ export default function ExplorerPage() {
     const [existingFiles, setExistingFiles] = useState<PhysicalFile[]>([]);
     const [fileIdsToRemove, setFileIdsToRemove] = useState<string[]>([]);
     const [isSavingRecord, setIsSavingRecord] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [downloadingZipId, setDownloadingZipId] = useState<string | null>(null);
+    const [downloadProgress, setDownloadProgress] = useState(0);
     const [generateQrCover, setGenerateQrCover] = useState(true);
     const [loadingRecords, setLoadingRecords] = useState(false);
     const [recordsPage, setRecordsPage] = useState(1);
@@ -81,18 +108,8 @@ export default function ExplorerPage() {
     // ---------------------------------------------------------
     // Initial Load & Navigation
     // ---------------------------------------------------------
-    const flattenFolders = (nodes: Folder[]): Folder[] => {
-        let result: Folder[] = [];
-        for (const node of nodes) {
-            result.push(node);
-            if (node.folderDtos && node.folderDtos.length > 0) {
-                result = result.concat(flattenFolders(node.folderDtos));
-            }
-        }
-        return result;
-    };
 
-    const loadFolders = async () => {
+    const loadFolders = React.useCallback(async () => {
         setLoadingFolders(true);
         try {
             const data = await archivingService.getAllFolders();
@@ -107,18 +124,18 @@ export default function ExplorerPage() {
         } finally {
             setLoadingFolders(false);
         }
-    };
+    }, [showStatus]);
 
-    const loadDynamicTemplates = async () => {
+    const loadDynamicTemplates = React.useCallback(async () => {
         try {
             const templates = await archivingService.getAllDynamicForms();
             setDynamicTemplates(templates);
         } catch (error) {
             console.error('Failed to load templates', error);
         }
-    };
+    }, []);
 
-    const loadRecords = async (folderId: string, page = 1) => {
+    const loadRecords = React.useCallback(async (folderId: string, page = 1) => {
         if (page === 1) {
             setLoadingRecords(true);
         }
@@ -141,7 +158,7 @@ export default function ExplorerPage() {
         } finally {
             setLoadingRecords(false);
         }
-    };
+    }, [showStatus]);
 
     const loadMoreRecords = () => {
         if (currentFolder) {
@@ -153,7 +170,7 @@ export default function ExplorerPage() {
     useEffect(() => {
         loadFolders();
         loadDynamicTemplates();
-    }, []);
+    }, [loadFolders, loadDynamicTemplates]);
 
     // Load records when current folder changes
     useEffect(() => {
@@ -163,33 +180,17 @@ export default function ExplorerPage() {
             setRecords([]);
             setHasMoreRecords(false);
         }
-    }, [currentFolder]);
+    }, [currentFolder, loadRecords]);
 
     // Keep current folder in sync when folder tree updates
     useEffect(() => {
         if (currentFolder) {
             const fresh = folders.find(f => f.id === currentFolder.id);
-            if (fresh) {
+            if (fresh && fresh !== currentFolder) {
                 setCurrentFolder(fresh);
             }
         }
-    }, [folders]);
-
-    // Update breadcrumbs
-    useEffect(() => {
-        if (!currentFolder) {
-            setBreadcrumbs([]);
-            return;
-        }
-        const crumbs: Folder[] = [];
-        let curr: Folder | undefined = currentFolder;
-        while (curr) {
-            crumbs.unshift(curr);
-            const parentId: string | null = curr.parentId;
-            curr = parentId ? folders.find(f => f.id === parentId) : undefined;
-        }
-        setBreadcrumbs(crumbs);
-    }, [currentFolder, folders]);
+    }, [folders, currentFolder]);
 
     // Close preview on Esc key press
     useEffect(() => {
@@ -224,6 +225,23 @@ export default function ExplorerPage() {
             window.removeEventListener('keydown', handleKeyDown);
         };
     }, [showRecordModal]);
+
+    // Close folder modal on Esc key press
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setShowFolderModal(false);
+            }
+        };
+
+        if (showFolderModal) {
+            window.addEventListener('keydown', handleKeyDown);
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [showFolderModal]);
 
     const navigateToFolder = (folder: Folder | null) => {
         setCurrentFolder(folder);
@@ -339,7 +357,7 @@ export default function ExplorerPage() {
         setSelectedFiles([]);
         setFileIdsToRemove([]);
         setQrCoverGuid(record.id);
-        
+
         // Load existing template values
         const inputs: Record<string, string> = {};
         if (record.archiveRecordTemplateValues?.archiveRecordFormInputValues) {
@@ -393,7 +411,7 @@ export default function ExplorerPage() {
         iframe.style.height = '0';
         iframe.style.border = '0';
         document.body.appendChild(iframe);
-        
+
         const doc = iframe.contentWindow?.document || iframe.contentDocument;
         if (doc) {
             doc.write(`
@@ -413,7 +431,7 @@ export default function ExplorerPage() {
             `);
             doc.close();
         }
-        
+
         setTimeout(() => {
             document.body.removeChild(iframe);
             URL.revokeObjectURL(url);
@@ -431,7 +449,7 @@ export default function ExplorerPage() {
                 value: templateInputs[key]
             }));
 
-            let filesToUpload = [...selectedFiles];
+            const filesToUpload = [...selectedFiles];
             let qrCoverBlob: Blob | null = null;
 
             // Generate QR Cover if required
@@ -468,6 +486,9 @@ export default function ExplorerPage() {
                     archivalNumber,
                     files: filesToUpload,
                     content: fieldsArray
+                }, (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setUploadProgress(percentCompleted);
                 });
                 showStatus({
                     type: 'success',
@@ -488,6 +509,9 @@ export default function ExplorerPage() {
                     content: fieldsArray,
                     fileIdsToRemove,
                     replaceFiles: false
+                }, (progressEvent) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    setUploadProgress(percentCompleted);
                 });
                 showStatus({
                     type: 'success',
@@ -498,13 +522,23 @@ export default function ExplorerPage() {
 
             setShowRecordModal(false);
             await loadRecords(currentFolder.id, 1);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to save record', error);
-            showStatus({
-                type: 'error',
-                title: 'خطأ في الأرشفة',
-                message: 'حدث خطأ أثناء حفظ السجل، يرجى مراجعة البيانات المرفقة.'
-            });
+            if (error.response.data.errors && error.response.data.errors[0].arabicDescription) {
+
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في الأرشفة',
+                    message: error.response.data.errors[0].arabicDescription
+                });
+            } else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في الأرشفة',
+                    message: 'حدث خطأ أثناء حفظ السجل، يرجى مراجعة البيانات المرفقة.'
+                });
+            }
+
         } finally {
             setIsSavingRecord(false);
         }
@@ -540,13 +574,18 @@ export default function ExplorerPage() {
     };
 
     const handleDownloadRecordZip = async (record: ArchiveRecord) => {
+        setDownloadingZipId(record.id);
+        setDownloadProgress(0);
         try {
             showStatus({
                 type: 'info',
                 title: 'تحضير الملفات',
                 message: 'جاري تجميع الملفات في ملف ZIP مضغوط وتنزيله...'
             });
-            const blob = await archivingService.downloadZip(record.id);
+            const blob = await archivingService.downloadZip(record.id, {}, (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setDownloadProgress(percentCompleted);
+            });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -562,6 +601,9 @@ export default function ExplorerPage() {
                 title: 'فشل التنزيل',
                 message: 'تعذر تجميع وتنزيل الملفات المضغوطة.'
             });
+        } finally {
+            setDownloadingZipId(null);
+            setDownloadProgress(0);
         }
     };
 
@@ -578,10 +620,10 @@ export default function ExplorerPage() {
             try {
                 const fields = JSON.parse(template.contentAsJson);
                 if (Array.isArray(fields)) {
-                    const targetField = fields.find(f => 
-                        f.type === 'textarea' || 
-                        f.label.includes('نص') || 
-                        f.label.includes('محتوى') || 
+                    const targetField = fields.find(f =>
+                        f.type === 'textarea' ||
+                        f.label.includes('نص') ||
+                        f.label.includes('محتوى') ||
                         f.label.includes('ملاحظات')
                     ) || fields[0];
 
@@ -603,15 +645,15 @@ export default function ExplorerPage() {
     // ---------------------------------------------------------
     // Filters & Render
     // ---------------------------------------------------------
-    const filteredFolders = folders.filter(f => 
+    const filteredFolders = folders.filter(f =>
         f.parentId === (currentFolder ? currentFolder.id : null) &&
         (searchTerm.trim() === '' || f.name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    const filteredRecords = currentFolder 
-        ? records.filter(r => 
+    const filteredRecords = currentFolder
+        ? records.filter(r =>
             searchTerm.trim() === '' || r.archivalNumber.toLowerCase().includes(searchTerm.toLowerCase())
-          )
+        )
         : [];
 
     return (
@@ -622,7 +664,7 @@ export default function ExplorerPage() {
                     <h1 className="text-xl font-bold text-foreground">مستكشف ونظام الأرشفة</h1>
                     <p className="text-xs text-muted-foreground font-medium">إدارة وتصنيف المجلدات والمستندات المؤرشفة والملفات المرفقة بها</p>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                     {currentFolder && (
                         <Button
@@ -633,7 +675,7 @@ export default function ExplorerPage() {
                             <span>أرشفة مستند</span>
                         </Button>
                     )}
-                    
+
                     <Button
                         onClick={handleOpenCreateFolder}
                         variant="outline"
@@ -642,7 +684,7 @@ export default function ExplorerPage() {
                         <FolderPlus className="h-4 w-4 text-amber-500" />
                         <span>مجلد جديد</span>
                     </Button>
-                    
+
                     {currentFolder && (
                         <Button
                             variant="ghost"
@@ -683,11 +725,10 @@ export default function ExplorerPage() {
                     <div className="flex bg-muted/80 p-1.5 rounded-2xl border border-border/50">
                         <button
                             onClick={() => setViewMode('explorer')}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                                viewMode === 'explorer' 
-                                    ? 'bg-card text-primary shadow-sm' 
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${viewMode === 'explorer'
+                                ? 'bg-card text-primary shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                                }`}
                             title="عرض شبكي مستكشف"
                         >
                             <LayoutGrid className="h-4 w-4" />
@@ -695,11 +736,10 @@ export default function ExplorerPage() {
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                                viewMode === 'list' 
-                                    ? 'bg-card text-primary shadow-sm' 
-                                    : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${viewMode === 'list'
+                                ? 'bg-card text-primary shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'
+                                }`}
                             title="عرض كقائمة جدولية"
                         >
                             <List className="h-4 w-4" />
@@ -713,7 +753,7 @@ export default function ExplorerPage() {
             <div className="flex items-center gap-1.5 text-sm bg-muted/50 p-3 rounded-2xl border border-border">
                 <button
                     onClick={() => navigateToFolder(null)}
-                    className="text-muted-foreground hover:text-primary font-medium transition-colors font-bold"
+                    className="text-muted-foreground hover:text-primary transition-colors font-bold"
                 >
                     الأرشيف الرئيسي
                 </button>
@@ -722,9 +762,8 @@ export default function ExplorerPage() {
                         <ChevronLeft className="h-4 w-4 text-muted-foreground/60" />
                         <button
                             onClick={() => navigateToFolder(crumb)}
-                            className={`font-semibold transition-colors ${
-                                idx === breadcrumbs.length - 1 ? 'text-primary font-bold' : 'text-muted-foreground hover:text-primary'
-                            }`}
+                            className={`font-semibold transition-colors ${idx === breadcrumbs.length - 1 ? 'text-primary font-bold' : 'text-muted-foreground hover:text-primary'
+                                }`}
                         >
                             {crumb.name}
                         </button>
@@ -740,7 +779,7 @@ export default function ExplorerPage() {
                         <span className="text-sm font-medium">جاري تحميل مستندات الأرشيف...</span>
                     </div>
                 ) : viewMode === 'explorer' ? (
-                    <ExplorerView 
+                    <ExplorerView
                         folders={filteredFolders}
                         records={filteredRecords}
                         onFolderDoubleClick={navigateToFolder}
@@ -752,7 +791,7 @@ export default function ExplorerPage() {
                         onRecordDownloadZip={handleDownloadRecordZip}
                     />
                 ) : (
-                    <ListView 
+                    <ListView
                         folders={filteredFolders}
                         records={filteredRecords}
                         onFolderClick={navigateToFolder}
@@ -778,8 +817,8 @@ export default function ExplorerPage() {
                                 {folderModalMode === 'create' ? 'إنشاء مجلد جديد' : 'تعديل اسم المجلد'}
                             </h2>
                             <p className="text-xs text-muted-foreground font-medium">
-                                {folderModalMode === 'create' 
-                                    ? 'أدخل اسم المجلد الذي ترغب بإنشائه في المسار الحالي' 
+                                {folderModalMode === 'create'
+                                    ? 'أدخل اسم المجلد الذي ترغب بإنشائه في المسار الحالي'
                                     : 'أدخل الاسم الجديد للمجلد'}
                             </p>
                         </div>
@@ -926,9 +965,8 @@ export default function ExplorerPage() {
                                                         </span>
                                                         <button
                                                             type="button"
-                                                            className={`p-1.5 rounded-lg transition-colors ${
-                                                                isRemoved ? 'text-primary hover:bg-primary/10' : 'text-destructive hover:bg-destructive/10'
-                                                            }`}
+                                                            className={`p-1.5 rounded-lg transition-colors ${isRemoved ? 'text-primary hover:bg-primary/10' : 'text-destructive hover:bg-destructive/10'
+                                                                }`}
                                                             onClick={() => {
                                                                 if (isRemoved) {
                                                                     setFileIdsToRemove(prev => prev.filter(id => id !== f.id));
@@ -963,7 +1001,7 @@ export default function ExplorerPage() {
                                         <span className="text-xs font-bold text-foreground">اسحب وأفلت الملفات هنا أو انقر للتصفح</span>
                                         <span className="text-[10px] text-muted-foreground">صيغ الملفات المدعومة: PDF, JPG, PNG, DOCX, XLSX ...</span>
                                     </div>
-                                    
+
                                     {selectedFiles.length > 0 && (
                                         <div className="flex flex-col gap-1.5 max-h-[150px] overflow-y-auto mt-2">
                                             {selectedFiles.map((file, index) => (
@@ -984,24 +1022,35 @@ export default function ExplorerPage() {
                             </div>
 
                             {/* Save Actions */}
-                            <div className="border-t border-border pt-4 flex justify-end gap-3 flex-shrink-0">
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    onClick={() => setShowRecordModal(false)}
-                                    className="rounded-xl px-5"
-                                    disabled={isSavingRecord}
-                                >
-                                    إلغاء
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="rounded-xl px-8 font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
-                                    disabled={isSavingRecord || !archivalNumber.trim()}
-                                >
-                                    <Upload className="h-4 w-4" />
-                                    <span>{isSavingRecord ? 'جاري الحفظ والأرشفة...' : 'حفظ المستند'}</span>
-                                </Button>
+                            <div className="border-t border-border pt-4 flex flex-col gap-3 flex-shrink-0">
+                                {isSavingRecord && (
+                                    <div className="flex flex-col gap-1.5 px-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                        <div className="flex justify-between text-[10px] font-bold text-primary">
+                                            <span>جاري رفع البيانات والملفات...</span>
+                                            <span>{uploadProgress}%</span>
+                                        </div>
+                                        <Progress value={uploadProgress} className="h-1.5" />
+                                    </div>
+                                )}
+                                <div className="flex justify-end gap-3">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() => setShowRecordModal(false)}
+                                        className="rounded-xl px-5"
+                                        disabled={isSavingRecord}
+                                    >
+                                        إلغاء
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="rounded-xl px-8 font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
+                                        disabled={isSavingRecord || !archivalNumber.trim()}
+                                    >
+                                        <Upload className="h-4 w-4" />
+                                        <span>{isSavingRecord ? 'جاري الحفظ والأرشفة...' : 'حفظ المستند'}</span>
+                                    </Button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -1071,6 +1120,28 @@ export default function ExplorerPage() {
                     content={Object.keys(templateInputs).map(k => ({ key: k, value: templateInputs[k] }))}
                 />
             </div>
+
+            {/* Global Progress Overlay for ZIP Downloads */}
+            {downloadingZipId && (
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-300">
+                    <div className="bg-card border border-border rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center gap-6 text-center">
+                        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <h3 className="text-base font-bold text-foreground">جاري تحميل الملفات</h3>
+                            <p className="text-xs text-muted-foreground font-medium">يتم الآن تجميع وضغط الملفات وتنزيلها كملف ZIP واحد...</p>
+                        </div>
+                        <div className="w-full flex flex-col gap-2">
+                            <div className="flex justify-between text-xs font-bold text-primary">
+                                <span>التقدم:</span>
+                                <span>{downloadProgress}%</span>
+                            </div>
+                            <Progress value={downloadProgress} className="h-2" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

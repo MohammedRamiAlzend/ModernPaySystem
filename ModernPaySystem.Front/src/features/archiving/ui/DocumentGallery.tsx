@@ -4,6 +4,7 @@ import { archivingService } from '../api/archivingService';
 import { Button } from '@/shared/ui/button';
 import { useUIStore } from '@/app/store/uiStore';
 import { QRPreviewTemplate } from './QRPreviewTemplate';
+import { Progress } from '@/shared/ui/progress';
 import * as htmlToImage from 'html-to-image';
 import { 
     FileText, 
@@ -29,6 +30,30 @@ interface DocumentGalleryProps {
     formName?: string;
 }
 
+const isImageFile = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '');
+};
+
+const isVideoFile = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ['mp4', 'webm', 'ogg', 'mov'].includes(ext || '');
+};
+
+const isPdfFile = (fileName: string) => {
+    return fileName.split('.').pop()?.toLowerCase() === 'pdf';
+};
+
+const isTextFile = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ['txt', 'md', 'json', 'xml'].includes(ext || '');
+};
+
+const isOfficeFile = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext || '');
+};
+
 export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
     recordId,
     files,
@@ -38,19 +63,13 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
 }) => {
     const { showConfirm, showStatus } = useUIStore();
     const [localFiles, setLocalFiles] = useState<PhysicalFile[]>(files);
+    const [prevFiles, setPrevFiles] = useState<PhysicalFile[]>(files);
     const [selectedFile, setSelectedFile] = useState<PhysicalFile | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
-    const [downloadProgress, setDownloadProgress] = useState<number>(0);
-    const [textContent, setTextContent] = useState<string | null>(null);
-    const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState<boolean>(false);
-    const qrCoverRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    if (files !== prevFiles) {
         setLocalFiles(files);
+        setPrevFiles(files);
         if (files && files.length > 0) {
-            // المحافظة على الملف المحدد حالياً إن وجد ضمن القائمة الجديدة، وإلا نختار الأول
             setSelectedFile(prev => {
                 if (prev && files.some(f => f.id === prev.id)) {
                     return files.find(f => f.id === prev.id) || files[0];
@@ -60,7 +79,30 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         } else {
             setSelectedFile(null);
         }
-    }, [files]);
+    }
+
+    const [loading, setLoading] = useState<boolean>(false);
+    const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
+    const [downloadProgress, setDownloadProgress] = useState<number>(0);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [textContent, setTextContent] = useState<string | null>(null);
+    const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState<boolean>(false);
+    const qrCoverRef = useRef<HTMLDivElement>(null);
+
+    const fetchTextContent = React.useCallback(async (file: PhysicalFile) => {
+        setLoading(true);
+        try {
+            const blob = await archivingService.downloadFile(recordId, file.id);
+            const text = await blob.text();
+            setTextContent(text);
+        } catch (error) {
+            console.error('Failed to load text content:', error);
+            setTextContent('فشل تحميل محتوى الملف نصي.');
+        } finally {
+            setLoading(false);
+        }
+    }, [recordId]);
 
     useEffect(() => {
         let activeUrl: string | null = null;
@@ -88,9 +130,16 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     const url = URL.createObjectURL(blob);
                     activeUrl = url;
                     setPreviewBlobUrl(url);
-                } catch (error) {
+                } catch (error: any) {
                     console.error('Failed to load preview blob:', error);
                     setPreviewBlobUrl(null);
+                    if (error?.response?.status === 410) {
+                        showStatus({
+                            type: 'error',
+                            title: 'الملف غير موجود',
+                            message: 'هذا الملف تم حذفه أو غير متوفر حالياً على الخادم (خطأ 410).'
+                        });
+                    }
                 } finally {
                     setLoading(false);
                 }
@@ -107,7 +156,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 URL.revokeObjectURL(activeUrl);
             }
         };
-    }, [selectedFile, recordId]);
+    }, [selectedFile, recordId, fetchTextContent]);
 
     const handleDeleteFile = (file: PhysicalFile) => {
         showConfirm({
@@ -148,13 +197,17 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         if (fileList.length === 0) return;
 
         setIsUploading(true);
+        setUploadProgress(0);
         try {
             showStatus({
                 type: 'info',
                 title: 'جاري رفع الملفات',
                 message: `جاري رفع عدد ${fileList.length} ملفات جديدة وإضافتها للمستند...`
             });
-            const updatedRecord = await archivingService.addFilesToArchiveRecord(recordId, fileList);
+            const updatedRecord = await archivingService.addFilesToArchiveRecord(recordId, fileList, (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadProgress(percentCompleted);
+            });
             const updatedFiles = updatedRecord.physicalFiles || [];
             setLocalFiles(updatedFiles);
             
@@ -254,7 +307,10 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                         title: 'جاري إدراج صفحة الغلاف',
                         message: 'يتم الآن رفع وإدراج صفحة غلاف QR إلى المستند...'
                     });
-                    const updatedRecord = await archivingService.addFilesToArchiveRecord(recordId, [qrFile]);
+                    const updatedRecord = await archivingService.addFilesToArchiveRecord(recordId, [qrFile], (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
+                    });
                     const updatedFiles = updatedRecord.physicalFiles || [];
                     setLocalFiles(updatedFiles);
                     const newAdded = updatedFiles.find(uf => uf.fileName.startsWith('QR_Cover_'));
@@ -279,44 +335,6 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
             });
         } finally {
             setIsUploading(false);
-        }
-    };
-
-    const isImageFile = (fileName: string) => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].includes(ext || '');
-    };
-
-    const isVideoFile = (fileName: string) => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        return ['mp4', 'webm', 'ogg', 'mov'].includes(ext || '');
-    };
-
-    const isPdfFile = (fileName: string) => {
-        return fileName.split('.').pop()?.toLowerCase() === 'pdf';
-    };
-
-    const isTextFile = (fileName: string) => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        return ['txt', 'md', 'json', 'xml'].includes(ext || '');
-    };
-
-    const isOfficeFile = (fileName: string) => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
-        return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext || '');
-    };
-
-    const fetchTextContent = async (file: PhysicalFile) => {
-        setLoading(true);
-        try {
-            const blob = await archivingService.downloadFile(recordId, file.id);
-            const text = await blob.text();
-            setTextContent(text);
-        } catch (error) {
-            console.error('Failed to load text content:', error);
-            setTextContent('فشل تحميل محتوى الملف النصي.');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -525,45 +543,57 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         <div className="flex flex-col md:flex-row gap-6 bg-card p-2 sm:p-4 rounded-3xl h-full border border-border" dir="rtl">
             {/* القائمة الجانبية للملفات */}
             <div className="w-full md:w-64 border-l border-border pl-0 md:pl-6 flex flex-col gap-4">
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                    <h3 className="text-sm font-bold text-foreground">الملفات المرفقة ({localFiles.length})</h3>
-                    
-                    {isUploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    ) : (
-                        <div className="flex items-center gap-1.5">
-                            {record && (
-                                <button
-                                    type="button"
-                                    onClick={handleGenerateAndAddQrCover}
-                                    className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-500/10 transition-colors cursor-pointer"
-                                    title="توليد وإدراج صفحة الغلاف (QR)"
-                                >
-                                    <QrCode className="h-4 w-4" />
-                                </button>
-                            )}
-                            <label className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors cursor-pointer" title="إضافة ملفات جديدة">
-                                <Upload className="h-4 w-4" />
-                                <input
-                                    type="file"
-                                    multiple
-                                    className="hidden"
-                                    onChange={handleAddFiles}
-                                    disabled={isUploading}
-                                />
-                            </label>
+                <div className="flex flex-col gap-3 pb-3 border-b border-border">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-foreground">الملفات المرفقة ({localFiles.length})</h3>
+                        
+                        {isUploading ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        ) : (
+                            <div className="flex items-center gap-1.5">
+                                {record && (
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateAndAddQrCover}
+                                        className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                                        title="توليد وإدراج صفحة الغلاف (QR)"
+                                    >
+                                        <QrCode className="h-4 w-4" />
+                                    </button>
+                                )}
+                                <label className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors cursor-pointer" title="إضافة ملفات جديدة">
+                                    <Upload className="h-4 w-4" />
+                                    <input
+                                        type="file"
+                                        multiple
+                                        className="hidden"
+                                        onChange={handleAddFiles}
+                                        disabled={isUploading}
+                                    />
+                                </label>
+                            </div>
+                        )}
+                    </div>
+
+                    {isUploading && (
+                        <div className="flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                            <div className="flex justify-between text-[10px] font-bold text-primary">
+                                <span>جاري الرفع...</span>
+                                <span>{uploadProgress}%</span>
+                            </div>
+                            <Progress value={uploadProgress} className="h-1" />
                         </div>
                     )}
                 </div>
                 
-                <div className="flex flex-col gap-2 max-h-[400px] md:max-h-full overflow-y-auto">
+                <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto pr-1">
                     {localFiles.map((file) => {
                         const isSelected = selectedFile?.id === file.id;
                         const isDownloading = downloadingFileId === file.id;
 
                         return (
+                        <React.Fragment key={file.id}>
                             <div
-                                key={file.id}
                                 onClick={() => !isDownloading && setSelectedFile(file)}
                                 className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border-2 transition-all ${
                                     isSelected
@@ -579,41 +609,49 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                                         <span className="text-xs font-semibold text-foreground truncate block">
                                             {file.fileName}
                                         </span>
-                                        <span className="text-[10px] text-muted-foreground">
+                                        <span className={`text-[10px] ${isSelected ? 'text-primary/70' : 'text-muted-foreground'}`}>
                                             {formatBytes(file.fileSize)}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-0.5">
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteFile(file);
-                                        }}
-                                        className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                        title="حذف الملف"
-                                    >
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDownload(file);
-                                        }}
-                                        disabled={isDownloading}
-                                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                        title="تحميل الملف"
-                                    >
-                                        {isDownloading ? (
-                                            <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                                        ) : (
-                                            <Download className="h-3.5 w-3.5" />
-                                        )}
-                                    </button>
+                                <div className="flex flex-col items-end gap-1">
+                                    <div className="flex items-center gap-0.5">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteFile(file);
+                                            }}
+                                            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                            title="حذف الملف"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDownload(file);
+                                            }}
+                                            disabled={isDownloading}
+                                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                            title="تحميل الملف"
+                                        >
+                                            {isDownloading ? (
+                                                <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
+                                            ) : (
+                                                <Download className="h-3.5 w-3.5" />
+                                            )}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                            {isDownloading && (
+                                <div className="px-1 mb-2 -mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                    <Progress value={downloadProgress} className="h-0.5 bg-primary/10" />
+                                </div>
+                            )}
+                        </React.Fragment>
                         );
                     })}
                 </div>

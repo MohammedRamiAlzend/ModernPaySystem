@@ -79,7 +79,7 @@ export const formEndpoints = {
     },
 
     // Requests
-    createRequest: async (data: CreateRequestDto): Promise<{ data: TemplateRequest }> => {
+    createRequest: async (data: CreateRequestDto, onUploadProgress?: (progressEvent: any) => void): Promise<{ data: TemplateRequest }> => {
         const formData = new FormData();
         formData.append('TemplateId', data.TemplateId);
         formData.append('DepartmentId', data.DepartmentId);
@@ -112,6 +112,7 @@ export const formEndpoints = {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+            onUploadProgress
         });
         return response.data;
     },
@@ -139,7 +140,7 @@ export const formEndpoints = {
         return response.data;
     },
 
-    createResponse: async (data: CreateResponseDto): Promise<{ data: TemplateResponse }> => {
+    createResponse: async (data: CreateResponseDto, onUploadProgress?: (progressEvent: any) => void): Promise<{ data: TemplateResponse }> => {
         const formData = new FormData();
         if (data.comment) formData.append('comment', data.comment);
         formData.append('requestId', data.requestId);
@@ -155,20 +156,22 @@ export const formEndpoints = {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+            onUploadProgress
         });
         return response.data;
     },
 
     // Attachments
-    fetchRequestAttachmentsBlob: async (requestId: string): Promise<Blob> => {
+    fetchRequestAttachmentsBlob: async (requestId: string, onDownloadProgress?: (progressEvent: any) => void): Promise<Blob> => {
         const response = await api.get(`/Attachments/request/${requestId}/download-all`, {
             responseType: 'blob',
+            onDownloadProgress
         });
         return new Blob([response.data]);
     },
 
-    downloadRequestAttachments: async (requestId: string): Promise<void> => {
-        const blob = await formEndpoints.fetchRequestAttachmentsBlob(requestId);
+    downloadRequestAttachments: async (requestId: string, onDownloadProgress?: (progressEvent: any) => void): Promise<void> => {
+        const blob = await formEndpoints.fetchRequestAttachmentsBlob(requestId, onDownloadProgress);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -179,15 +182,16 @@ export const formEndpoints = {
         window.URL.revokeObjectURL(url);
     },
 
-    fetchResponseAttachmentsBlob: async (responseId: string): Promise<Blob> => {
+    fetchResponseAttachmentsBlob: async (responseId: string, onDownloadProgress?: (progressEvent: any) => void): Promise<Blob> => {
         const response = await api.get(`/Attachments/response/${responseId}/download-all`, {
             responseType: 'blob',
+            onDownloadProgress
         });
         return new Blob([response.data]);
     },
 
-    downloadResponseAttachments: async (responseId: string): Promise<void> => {
-        const blob = await formEndpoints.fetchResponseAttachmentsBlob(responseId);
+    downloadResponseAttachments: async (responseId: string, onDownloadProgress?: (progressEvent: any) => void): Promise<void> => {
+        const blob = await formEndpoints.fetchResponseAttachmentsBlob(responseId, onDownloadProgress);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -198,15 +202,16 @@ export const formEndpoints = {
         window.URL.revokeObjectURL(url);
     },
 
-    fetchTransactionAttachmentsBlob: async (transactionId: string): Promise<Blob> => {
+    fetchTransactionAttachmentsBlob: async (transactionId: string, onDownloadProgress?: (progressEvent: any) => void): Promise<Blob> => {
         const response = await api.get(`/Attachments/transaction/${transactionId}/download-all`, {
             responseType: 'blob',
+            onDownloadProgress
         });
         return new Blob([response.data]);
     },
 
-    downloadTransactionAttachments: async (transactionId: string): Promise<void> => {
-        const blob = await formEndpoints.fetchTransactionAttachmentsBlob(transactionId);
+    downloadTransactionAttachments: async (transactionId: string, onDownloadProgress?: (progressEvent: any) => void): Promise<void> => {
+        const blob = await formEndpoints.fetchTransactionAttachmentsBlob(transactionId, onDownloadProgress);
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
@@ -223,7 +228,7 @@ export const formEndpoints = {
         return response.data;
     },
 
-    createReferral: async (data: CreateRequestTransactionDto): Promise<any> => {
+    createReferral: async (data: CreateRequestTransactionDto, onUploadProgress?: (progressEvent: any) => void): Promise<any> => {
         const formData = new FormData();
         formData.append('RequestId', data.requestId);
         if (data.notes) formData.append('Notes', data.notes);
@@ -241,6 +246,7 @@ export const formEndpoints = {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+            onUploadProgress
         });
         return response.data;
     },
@@ -393,20 +399,20 @@ export const useUpdateTemplate = () => {
 
 export const useCreateRequest = () => {
     return useMutation({
-        mutationFn: formEndpoints.createRequest
+        mutationFn: (data: CreateRequestDto) => formEndpoints.createRequest(data)
     });
 };
 
 
 export const useCreateResponse = () => {
     return useMutation({
-        mutationFn: formEndpoints.createResponse
+        mutationFn: (data: CreateResponseDto) => formEndpoints.createResponse(data)
     });
 };
 
 export const useCreateReferral = () => {
     return useMutation({
-        mutationFn: formEndpoints.createReferral
+        mutationFn: (data: CreateRequestTransactionDto) => formEndpoints.createReferral(data)
     });
 };
 
