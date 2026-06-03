@@ -54,7 +54,7 @@ const printBlob = (blob: Blob, isPdf: boolean) => {
                 iframe.contentWindow?.print();
             };
         } else {
-            doc.write(`
+            doc.write(`<!DOCTYPE html>
                 <html>
                     <head>
                         <title>طباعة مستند</title>

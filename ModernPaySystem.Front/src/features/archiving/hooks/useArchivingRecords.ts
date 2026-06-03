@@ -18,7 +18,7 @@ const printQrCover = (blob: Blob) => {
 
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
     if (doc) {
-        doc.write(`
+        doc.write(`<!DOCTYPE html>
             <html>
                 <head>
                     <title>طباعة غلاف QR</title>
