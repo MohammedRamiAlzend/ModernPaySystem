@@ -58,7 +58,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                     >
                                         <MoreVertical className="h-4 w-4" />
                                     </button>
-                                    
+
                                     {activeMenuId === folder.id && (
                                         <div className="absolute left-0 mt-1 w-32 bg-card border border-border rounded-xl shadow-xl z-20 py-1 text-right" onClick={(e) => e.stopPropagation()}>
                                             {onFolderEdit && (
@@ -114,7 +114,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                     >
                                         <MoreVertical className="h-4 w-4" />
                                     </button>
-                                    
+
                                     {activeMenuId === record.id && (
                                         <div className="absolute left-0 mt-1 w-36 bg-card border border-border rounded-xl shadow-xl z-20 py-1 text-right">
                                             <button
@@ -162,7 +162,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                     {record.archivalNumber}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground mt-1 block">
-                                    {record.physicalFiles?.length || 0} ملف(ات)
+                                    {record.physicalFiles?.length || 0} ملف
                                 </span>
                             </div>
                         ))}

@@ -1,12 +1,12 @@
 import React from 'react';
 import { Folder, ArchiveRecord } from '../model/types';
 import { Button } from '@/shared/ui/button';
-import { 
-    FileText, 
-    Download, 
-    Edit3, 
-    Trash2, 
-    Eye, 
+import {
+    FileText,
+    Download,
+    Edit3,
+    Trash2,
+    Eye,
     Folder as FolderIcon
 } from 'lucide-react';
 
@@ -62,8 +62,8 @@ export const ListView: React.FC<ListViewProps> = ({
                             <>
                                 {/* Render Folders */}
                                 {folders.map((folder) => (
-                                    <tr 
-                                        key={folder.id} 
+                                    <tr
+                                        key={folder.id}
                                         className="hover:bg-amber-500/5 cursor-pointer transition-colors"
                                         onDoubleClick={() => onFolderClick(folder)}
                                     >
@@ -78,9 +78,9 @@ export const ListView: React.FC<ListViewProps> = ({
                                         <td className="p-4">
                                             <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                 {onFolderEdit && (
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
                                                         className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all duration-200"
                                                         onClick={() => onFolderEdit(folder)}
                                                         title="تعديل المجلد"
@@ -89,9 +89,9 @@ export const ListView: React.FC<ListViewProps> = ({
                                                     </Button>
                                                 )}
                                                 {onFolderDelete && (
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
                                                         className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20 transition-all duration-200"
                                                         onClick={() => onFolderDelete(folder)}
                                                         title="حذف المجلد"
@@ -106,8 +106,8 @@ export const ListView: React.FC<ListViewProps> = ({
 
                                 {/* Render Records */}
                                 {records.map((record) => (
-                                    <tr 
-                                        key={record.id} 
+                                    <tr
+                                        key={record.id}
                                         className="hover:bg-primary/5 cursor-pointer transition-colors"
                                         onClick={() => onView(record)}
                                     >
@@ -123,40 +123,40 @@ export const ListView: React.FC<ListViewProps> = ({
                                             {record.formId ? 'نموذج مخصص' : 'نموذج عام'}
                                         </td>
                                         <td className="p-4 text-muted-foreground text-xs">
-                                            {record.physicalFiles?.length || 0} ملف(ات)
+                                            {record.physicalFiles?.length || 0} ملف
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all duration-200"
                                                     onClick={() => onView(record)}
                                                     title="عرض السجل"
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all duration-200"
                                                     onClick={() => onEdit(record)}
                                                     title="تعديل السجل"
                                                 >
                                                     <Edit3 className="h-4 w-4" />
                                                 </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all duration-200"
                                                     onClick={() => onDownloadZip(record)}
                                                     title="تحميل كملف ZIP"
                                                 >
                                                     <Download className="h-4 w-4" />
                                                 </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
                                                     className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20 transition-all duration-200"
                                                     onClick={() => onDelete(record)}
                                                     title="حذف الأرشيف"
@@ -175,9 +175,9 @@ export const ListView: React.FC<ListViewProps> = ({
 
             {hasMore && onLoadMore && (
                 <div className="flex justify-center py-4">
-                    <Button 
-                        variant="outline" 
-                        onClick={onLoadMore} 
+                    <Button
+                        variant="outline"
+                        onClick={onLoadMore}
                         disabled={isLoading}
                         className="rounded-xl px-8 border-border text-foreground hover:bg-muted font-bold transition-all hover:scale-[1.02]"
                     >
