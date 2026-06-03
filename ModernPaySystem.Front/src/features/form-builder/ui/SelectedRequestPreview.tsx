@@ -17,6 +17,7 @@ import { resolveUserNames } from '@/shared/utils/resolve-user-names';
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
 import { RequestTransactionsHistory } from './RequestTransactionsHistory';
+import { RequestRelationsSection } from './RequestRelationsSection';
 
 interface SelectedRequestPreviewProps {
     request: TemplateRequest | null;
@@ -292,6 +293,12 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                         >
                             متابعة الإحالات
                         </TabsTrigger>
+                        <TabsTrigger
+                            value="relations"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold"
+                        >
+                            الارتباطات
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="details" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
@@ -314,6 +321,10 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
 
                     <TabsContent value="referrals" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
                         <RequestTransactionsHistory requestId={request.id} />
+                    </TabsContent>
+
+                    <TabsContent value="relations" className="flex-1 overflow-y-auto custom-scrollbar pr-2 m-0 outline-none">
+                        <RequestRelationsSection requestId={request.id} />
                     </TabsContent>
                 </Tabs>
             </div>

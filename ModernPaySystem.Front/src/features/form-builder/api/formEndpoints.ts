@@ -16,7 +16,8 @@ import type {
     RequestTransactionDto,
     TemplateOwnershipDto,
     UserTemplateOwnershipDto,
-    RequestPagedFilterDto
+    RequestPagedFilterDto,
+    RequestRelationDto
 } from '@/entities/form/model/types';
 
 // --- API Service ---
@@ -99,6 +100,16 @@ export const formEndpoints = {
         if (data.ReadOnlyUsers && data.ReadOnlyUsers.length > 0) {
             data.ReadOnlyUsers.forEach((userId) => {
                 formData.append('ReadOnlyUsers', userId);
+            });
+        }
+
+        if (data.RelatedRequests && data.RelatedRequests.length > 0) {
+            data.RelatedRequests.forEach((related, index) => {
+                formData.append(`RelatedRequests[${index}].TargetRequestId`, related.targetRequestId);
+                formData.append(`RelatedRequests[${index}].RelationType`, String(related.relationType));
+                if (related.notes) {
+                    formData.append(`RelatedRequests[${index}].Notes`, related.notes);
+                }
             });
         }
 
@@ -288,6 +299,31 @@ export const formEndpoints = {
         
         const response = await api.get(`/Reports/responses?${params.toString()}`);
         return response.data;
+    },
+
+    getRequestsPaged: async (filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<TemplateRequest> }> => {
+        const response = await api.post('/Requests/paged', filterDto);
+        return response.data;
+    },
+
+    getRequestById: async (id: string): Promise<TemplateRequest> => {
+        const response = await api.get(`/Requests/${id}`);
+        return response.data?.data ?? response.data;
+    },
+
+    getRequestRelations: async (requestId: string): Promise<{ data: RequestRelationDto[] }> => {
+        const response = await api.get(`/Requests/${requestId}/relations`);
+        return response.data;
+    },
+
+    createRelation: async (dto: { sourceRequestId: string; targetRequestId: string; relationType: number; notes?: string }): Promise<{ data: RequestRelationDto }> => {
+        const response = await api.post('/Requests/relations', dto);
+        return response.data;
+    },
+
+    deleteRelation: async (id: string): Promise<{ data: boolean }> => {
+        const response = await api.delete(`/Requests/relations/${id}`);
+        return response.data;
     }
 
 };
@@ -400,6 +436,67 @@ export const useUpdateTemplate = () => {
 export const useCreateRequest = () => {
     return useMutation({
         mutationFn: (data: CreateRequestDto) => formEndpoints.createRequest(data)
+    });
+};
+
+export const useRequestsPaged = (filter: RequestPagedFilterDto) => {
+    return useQuery({
+        queryKey: queryKeys.form.list({ type: 'paged', ...filter }),
+        queryFn: async () => {
+            const res = await formEndpoints.getRequestsPaged(filter);
+            return res.data;
+        },
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useRequestById = (id: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.form.detail(id),
+        queryFn: async (): Promise<TemplateRequest | null> => {
+            if (!id) return null;
+            const res = await formEndpoints.getRequestById(id);
+            return res;
+        },
+        enabled: !!id,
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
+    });
+};
+
+export const useRequestRelations = (requestId: string | null) => {
+    return useQuery({
+        queryKey: [...queryKeys.form.detail(requestId), 'relations'],
+        queryFn: async () => {
+            if (!requestId) return [];
+            const res = await formEndpoints.getRequestRelations(requestId);
+            return res.data || [];
+        },
+        enabled: !!requestId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+export const useCreateRelation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: formEndpoints.createRelation,
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: [...queryKeys.form.detail(variables.sourceRequestId), 'relations']
+            });
+        }
+    });
+};
+
+export const useDeleteRelation = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id }: { id: string; sourceRequestId: string }) => formEndpoints.deleteRelation(id),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: [...queryKeys.form.detail(variables.sourceRequestId), 'relations']
+            });
+        }
     });
 };
 

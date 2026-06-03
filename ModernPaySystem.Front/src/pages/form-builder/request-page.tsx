@@ -6,7 +6,7 @@ import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { Card } from '@/shared/ui/card';
 import { useMutation } from '@tanstack/react-query';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
-import type { CreateRequestDto } from '@/entities/form/model/types';
+import type { CreateRequestDto, CreateRequestRelatedRequestDto } from '@/entities/form/model/types';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
 import { FileText, Printer, Download, Loader2 } from 'lucide-react';
@@ -30,6 +30,7 @@ export const RequestPage = () => {
     const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [relatedRequests, setRelatedRequests] = useState<CreateRequestRelatedRequestDto[]>([]);
 
     
     const currentUser = useAuthStore((state) => state.user);
@@ -65,6 +66,7 @@ export const RequestPage = () => {
             setFormKey(prev => prev + 1);
             setFiles([]);
             setReadOnlyUsers([]);
+            setRelatedRequests([]);
             setUploadProgress(0);
         },
         onError: () => {
@@ -107,6 +109,7 @@ export const RequestPage = () => {
                 key,
                 value: String(value)
             })),
+            RelatedRequests: relatedRequests,
             files: files
         };
 
@@ -164,6 +167,9 @@ export const RequestPage = () => {
                     onFilesChange={setFiles}
                     showFiles={!!selectedTemplate}
                     departmentLabel="القسم المستلم"
+                    relatedRequests={relatedRequests}
+                    onRelatedRequestsChange={setRelatedRequests}
+                    showRelations={!!selectedTemplate}
                 />
 
             </div>
