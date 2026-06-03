@@ -1,4 +1,5 @@
 import { forwardRef } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { ArchiveRecordFormInputValue } from '../model/types';
 
 interface QRPreviewTemplateProps {
@@ -16,8 +17,6 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
     content,
     createdAt = new Date().toLocaleString('ar-SY')
 }, ref) => {
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(guid)}`;
-
     return (
         <div
             ref={ref}
@@ -104,12 +103,20 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
                     </div> */}
                 </div>
                 <div className="flex flex-col items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-100 shadow-inner">
-                    <img
-                        src={qrCodeUrl}
-                        alt="QR Code"
-                        className="w-[140px] h-[140px] object-contain rounded-lg border border-slate-200 bg-white p-1"
-                        crossOrigin="anonymous"
-                    />
+                    {guid ? (
+                        <div className="w-[140px] h-[140px] flex items-center justify-center bg-white rounded-lg border border-slate-200 p-1">
+                            <QRCodeSVG
+                                value={guid}
+                                size={128}
+                                level="M"
+                                includeMargin={false}
+                            />
+                        </div>
+                    ) : (
+                        <div className="w-[140px] h-[140px] rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center text-slate-300 text-xs">
+                            لا يوجد رمز
+                        </div>
+                    )}
                     <span className="text-[10px] font-mono font-bold text-slate-400">GUID VERIFIED</span>
                 </div>
             </div>
