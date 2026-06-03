@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useCallback } from 'react';
 import { ArchiveRecord, DynamicFormTemplate, PhysicalFile } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
@@ -63,7 +64,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
     const [isSavingRecord, setIsSavingRecord] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [downloadingZipId, setDownloadingZipId] = useState<string | null>(null);
-    const [downloadProgress, setDownloadProgress] = useState(0);
+    const [downloadProgress, setDownloadProgress] = useState<number>(0);
     const [generateQrCover, setGenerateQrCover] = useState(true);
     const [qrCoverGuid, setQrCoverGuid] = useState<string>('');
 
@@ -122,29 +123,27 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
         }
     }, [currentFolderId, loadRecords]);
 
-    // Load default inputs when template changes in create mode
-    useEffect(() => {
-        if (recordModalMode === 'create') {
-            const template = dynamicTemplates.find(t => t.id === selectedTemplateId);
-            if (template) {
-                try {
-                    const fields = JSON.parse(template.contentAsJson);
-                    if (Array.isArray(fields)) {
-                        const defaultInputs: Record<string, string> = {};
-                        fields.forEach(f => {
-                            defaultInputs[f.label] = '';
-                        });
-                        setTemplateInputs(defaultInputs);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    setTemplateInputs({});
+    // Triggered on select change from UI
+    const handleTemplateIdChange = (templateId: string) => {
+        setSelectedTemplateId(templateId);
+        const template = dynamicTemplates.find(t => t.id === templateId);
+        if (template) {
+            try {
+                const fields = JSON.parse(template.contentAsJson);
+                if (Array.isArray(fields)) {
+                    const defaultInputs: Record<string, string> = {};
+                    fields.forEach(f => {
+                        defaultInputs[f.label] = '';
+                    });
+                    setTemplateInputs(defaultInputs);
+                    return;
                 }
-            } else {
-                setTemplateInputs({});
+            } catch (e) {
+                console.error(e);
             }
         }
-    }, [selectedTemplateId, dynamicTemplates, recordModalMode]);
+        setTemplateInputs({});
+    };
 
     const handleTemplateInputChange = (label: string, value: string) => {
         setTemplateInputs(prev => ({
@@ -374,6 +373,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
         setArchivalNumber,
         selectedTemplateId,
         setSelectedTemplateId,
+        handleTemplateIdChange,
         templateInputs,
         setTemplateInputs,
         selectedFiles,

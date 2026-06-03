@@ -60,7 +60,7 @@ export default function ExplorerPage() {
         archivalNumber,
         setArchivalNumber,
         selectedTemplateId,
-        setSelectedTemplateId,
+        handleTemplateIdChange,
         templateInputs,
         setTemplateInputs,
         selectedFiles,
@@ -226,7 +226,7 @@ export default function ExplorerPage() {
                 archivalNumber={archivalNumber}
                 onArchivalNumberChange={setArchivalNumber}
                 selectedTemplateId={selectedTemplateId}
-                onSelectedTemplateIdChange={setSelectedTemplateId}
+                onSelectedTemplateIdChange={handleTemplateIdChange}
                 dynamicTemplates={dynamicTemplates}
                 templateInputs={templateInputs}
                 onTemplateInputChange={handleTemplateInputChange}

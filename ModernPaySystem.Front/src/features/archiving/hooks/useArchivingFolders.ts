@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Folder } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
@@ -18,15 +18,21 @@ export function useArchivingFolders() {
     const { showStatus, showConfirm } = useUIStore();
 
     const [folders, setFolders] = useState<Folder[]>([]);
-    const [currentFolder, setCurrentFolder] = useState<Folder | null>(null);
+    const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
     const [loadingFolders, setLoadingFolders] = useState(false);
-    
+
     // Modal states
     const [showFolderModal, setShowFolderModal] = useState(false);
     const [folderModalMode, setFolderModalMode] = useState<'create' | 'edit'>('create');
     const [folderName, setFolderName] = useState('');
     const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
     const [isSavingFolder, setIsSavingFolder] = useState(false);
+
+    // Derive currentFolder from currentFolderId and folders list during render
+    const currentFolder = useMemo(() => {
+        if (!currentFolderId) return null;
+        return folders.find(f => f.id === currentFolderId) || null;
+    }, [currentFolderId, folders]);
 
     const breadcrumbs = useMemo(() => {
         if (!currentFolder) return [];
@@ -57,16 +63,6 @@ export function useArchivingFolders() {
         }
     }, [showStatus]);
 
-    // Keep current folder in sync when folder tree updates
-    useEffect(() => {
-        if (currentFolder) {
-            const fresh = folders.find(f => f.id === currentFolder.id);
-            if (fresh && fresh !== currentFolder) {
-                setCurrentFolder(fresh);
-            }
-        }
-    }, [folders, currentFolder]);
-
     const handleOpenCreateFolder = () => {
         setFolderName('');
         setFolderModalMode('create');
@@ -88,7 +84,7 @@ export function useArchivingFolders() {
             if (folderModalMode === 'create') {
                 await archivingService.createFolder({
                     name: folderName,
-                    parentId: currentFolder ? currentFolder.id : null
+                    parentId: currentFolderId
                 });
                 showStatus({
                     type: 'success',
@@ -132,8 +128,8 @@ export function useArchivingFolders() {
                         title: 'تم حذف المجلد',
                         message: 'تم حذف المجلد وكل محتوياته بنجاح.'
                     });
-                    if (currentFolder && (currentFolder.id === folder.id || breadcrumbs.some(c => c.id === folder.id))) {
-                        setCurrentFolder(null);
+                    if (currentFolderId && (currentFolderId === folder.id || breadcrumbs.some(c => c.id === folder.id))) {
+                        setCurrentFolderId(null);
                     }
                     await loadFolders();
                 } catch (error) {
@@ -149,14 +145,15 @@ export function useArchivingFolders() {
     };
 
     const navigateToFolder = (folder: Folder | null) => {
-        setCurrentFolder(folder);
+        setCurrentFolderId(folder ? folder.id : null);
     };
 
     return {
         folders,
         setFolders,
         currentFolder,
-        setCurrentFolder,
+        currentFolderId,
+        setCurrentFolderId,
         loadingFolders,
         loadFolders,
         breadcrumbs,
