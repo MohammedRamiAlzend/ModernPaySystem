@@ -121,6 +121,8 @@ public static class ApplicationErrors
     public static readonly Error DeleteRequestTargetNotFound = new("10033", "The target item for the delete request was not found.", ErrorKind.NotFound, "لم يتم العثور على العنصر المستهدف لطلب الحذف.");
     public static readonly Error DepartmentArchiveLeaderNotAssigned = new("10034", "The department has no active archive leader assigned.", ErrorKind.Validation, "لا يوجد قائد أرشيف نشط معين لهذا القسم.");
     public static readonly Error DepartmentHeadMissing = new("10035", "The department does not have a department head assigned.", ErrorKind.Validation, "لا يوجد رئيس قسم معين.");
+    public static readonly Error EditRequestNotFound = new("10036", "The specified edit request was not found.", ErrorKind.NotFound, "لم يتم العثور على طلب التعديل المحدد.");
+    public static readonly Error EditRequestAlreadyHandled = new("10037", "The edit request has already been processed.", ErrorKind.Conflict, "تمت معالجة طلب التعديل بالفعل.");
 
 
     // File Operation Errors (1000-1099)

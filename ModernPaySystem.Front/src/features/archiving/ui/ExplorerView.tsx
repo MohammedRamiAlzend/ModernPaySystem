@@ -12,7 +12,9 @@ interface ExplorerViewProps {
     onRecordEdit?: (record: ArchiveRecord) => void;
     onRecordDelete?: (record: ArchiveRecord) => void;
     onRecordDownloadZip?: (record: ArchiveRecord) => void;
+    onRecordRequestEdit?: (record: ArchiveRecord) => void;
 }
+
 
 export const ExplorerView: React.FC<ExplorerViewProps> = ({
     folders,
@@ -24,6 +26,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onRecordEdit,
     onRecordDelete,
     onRecordDownloadZip,
+    onRecordRequestEdit,
 }) => {
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
@@ -130,6 +133,15 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                     className="w-full px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-end gap-2"
                                                 >
                                                     <span>تعديل</span>
+                                                    <Edit3 className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
+                                            {onRecordRequestEdit && (
+                                                <button
+                                                    onClick={() => handleAction(() => onRecordRequestEdit(record))}
+                                                    className="w-full px-3 py-2 text-xs font-semibold text-amber-500 hover:bg-amber-500/10 flex items-center justify-end gap-2"
+                                                >
+                                                    <span>طلب تعديل</span>
                                                     <Edit3 className="h-3.5 w-3.5" />
                                                 </button>
                                             )}

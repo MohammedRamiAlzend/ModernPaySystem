@@ -84,6 +84,14 @@ export const queryKeys = {
             list: (page?: number, pageSize?: number) => [...queryKeys.archiving.dynamicForms.lists(), { page, pageSize }] as const,
             details: () => [...queryKeys.archiving.dynamicForms.all, 'detail'] as const,
             detail: (id: string | null) => [...queryKeys.archiving.dynamicForms.details(), id] as const,
+        },
+        editRequests: {
+            all: ['archiving', 'editRequests'] as const,
+            lists: () => [...queryKeys.archiving.editRequests.all, 'list'] as const,
+            listPending: (departmentId: string, page: number, pageSize: number) => [...queryKeys.archiving.editRequests.lists(), 'pending', { departmentId, page, pageSize }] as const,
+            listMy: (page: number, pageSize: number) => [...queryKeys.archiving.editRequests.lists(), 'my', { page, pageSize }] as const,
+            details: () => [...queryKeys.archiving.editRequests.all, 'detail'] as const,
+            detail: (id: string | null) => [...queryKeys.archiving.editRequests.details(), id] as const,
         }
     }
 };

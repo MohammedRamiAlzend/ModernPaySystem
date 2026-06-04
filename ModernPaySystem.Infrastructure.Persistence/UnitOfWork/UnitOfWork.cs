@@ -51,6 +51,7 @@ public class UnitOfWork(
     private IRepositoryBase<Folder, Guid>? _folders;
     private IRepositoryBase<DepartmentArchiveLeader, Guid>? _departmentArchiveLeaders;
     private IRepositoryBase<DeleteArchiveRequest, Guid>? _deleteArchiveRequests;
+    private IRepositoryBase<EditArchiveRequest, Guid>? _editArchiveRequests;
     private IRepositoryBase<ArchiveFormTemplate, Guid>? _dynamicForms;
     private IRepositoryBase<ArchiveRecord, Guid>? _archiveRecords;
     private IRepositoryBase<ArchiveRecordTemplateValues, Guid>? _archiveRecordTemplateValues;
@@ -123,6 +124,9 @@ public class UnitOfWork(
 
     public IRepositoryBase<DeleteArchiveRequest, Guid> DeleteArchiveRequests =>
         _deleteArchiveRequests ??= new RepositoryBase<DeleteArchiveRequest, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<DeleteArchiveRequest, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<EditArchiveRequest, Guid> EditArchiveRequests =>
+        _editArchiveRequests ??= new RepositoryBase<EditArchiveRequest, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<EditArchiveRequest, Guid>>(), _httpContextServiceManager);
 
     public IRepositoryBase<ArchiveFormTemplate, Guid> DynamicForms =>
         _dynamicForms ??= new RepositoryBase<ArchiveFormTemplate, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<ArchiveFormTemplate, Guid>>(), _httpContextServiceManager);

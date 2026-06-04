@@ -68,7 +68,7 @@ public class ArchiveLeaderService(
 
             var existing = await unitOfWork.Context.DepartmentArchiveLeaders
                 .IgnoreQueryFilters()
-                .SingleOrDefaultAsync(x => x.DepartmentId == departmentId && x.UserId == userId);
+                .FirstOrDefaultAsync(x => x.DepartmentId == departmentId && x.UserId == userId);
 
             if (existing is null)
             {
@@ -96,6 +96,12 @@ public class ArchiveLeaderService(
 
                 await unitOfWork.CommitTransactionAsync();
                 return MapToDto(assignment);
+            }
+
+            if (!existing.IsDeleted)
+            {
+                await unitOfWork.RollbackTransactionAsync();
+                return MapToDto(existing);
             }
 
             existing.IsDeleted = false;
@@ -145,7 +151,7 @@ public class ArchiveLeaderService(
 
             var assignment = await unitOfWork.Context.DepartmentArchiveLeaders
                 .IgnoreQueryFilters()
-                .SingleOrDefaultAsync(x => x.DepartmentId == departmentId && x.UserId == userId && !x.IsDeleted);
+                .FirstOrDefaultAsync(x => x.DepartmentId == departmentId && x.UserId == userId && !x.IsDeleted);
 
             if (assignment == null)
             {

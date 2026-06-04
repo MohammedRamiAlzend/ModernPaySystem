@@ -9,8 +9,8 @@ import {
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Shield } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/shared/ui/dialog';
@@ -109,6 +109,58 @@ export const DepartmentDashboardWidget: React.FC = () => {
         queryKey: ['department', selectedDeptForUsers],
         queryFn: () => selectedDeptForUsers ? departmentApi.getById(selectedDeptForUsers) : null,
         enabled: !!selectedDeptForUsers
+    });
+
+    // Fetch department archive leaders
+    const { data: archiveLeaders } = useQuery({
+        queryKey: ['department-archive-leaders', selectedDeptForUsers],
+        queryFn: () => selectedDeptForUsers ? departmentApi.getArchiveLeaders(selectedDeptForUsers) : [],
+        enabled: !!selectedDeptForUsers
+    });
+
+    // Archive leader set for lookup
+    const archiveLeaderUserIds = useMemo(() => {
+        return new Set((archiveLeaders || []).map((al: any) => al.userId));
+    }, [archiveLeaders]);
+
+    const assignArchiveLeaderMutation = useMutation({
+        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) =>
+            departmentApi.assignArchiveLeader(departmentId, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['department-archive-leaders', selectedDeptForUsers] });
+            showStatus({
+                type: 'success',
+                title: 'تم تعيين مدير الأرشيف',
+                message: 'تم تعيين المستخدم كمدير أرشيف للقسم بنجاح'
+            });
+        },
+        onError: (error: any) => {
+            showStatus({
+                type: 'error',
+                title: 'خطأ في التعيين',
+                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير الأرشيف'
+            });
+        }
+    });
+
+    const unassignArchiveLeaderMutation = useMutation({
+        mutationFn: ({ departmentId, userId }: { departmentId: string, userId: string }) =>
+            departmentApi.unassignArchiveLeader(departmentId, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['department-archive-leaders', selectedDeptForUsers] });
+            showStatus({
+                type: 'success',
+                title: 'تم إلغاء التعيين',
+                message: 'تم إلغاء تعيين مدير الأرشيف للقسم بنجاح'
+            });
+        },
+        onError: (error: any) => {
+            showStatus({
+                type: 'error',
+                title: 'خطأ في إلغاء التعيين',
+                message: error.response?.data?.message || 'حدث خطأ أثناء إلغاء تعيين مدير الأرشيف'
+            });
+        }
     });
 
     const selectedDeptName = useMemo(() => {
@@ -395,6 +447,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                     ملف المستخدم
                                                                 </Button>
 
+                                                            {/* Department Head Assignment */}
                                                             {currentDepartment?.departmentHeadId === user.id ? (
                                                                 <div className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded text-[10px] font-bold">
                                                                     <Crown className="w-3 h-3" />
@@ -423,6 +476,61 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                 >
                                                                     <Crown className="w-3 h-3" />
                                                                     تعيين كرئيس
+                                                                </Button>
+                                                            )}
+
+                                                            {/* Archive Leader Assignment */}
+                                                            {archiveLeaderUserIds.has(user.id) ? (
+                                                                <div className="flex items-center gap-1">
+                                                                    <div className="flex items-center gap-1 text-emerald-600 bg-emerald-600/10 dark:text-emerald-400 dark:bg-emerald-400/10 px-2 py-1 rounded text-[10px] font-bold">
+                                                                        <Shield className="w-3 h-3" />
+                                                                        مدير الأرشيف
+                                                                    </div>
+                                                                    <Button 
+                                                                        variant="ghost" 
+                                                                        size="sm" 
+                                                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        onClick={() => {
+                                                                            showConfirm({
+                                                                                title: 'إلغاء تعيين مدير الأرشيف',
+                                                                                message: `هل أنت متأكد من إلغاء تعيين "${user.userName}" كمدير أرشيف لقسم "${selectedDeptName}"؟`,
+                                                                                variant: 'destructive',
+                                                                                confirmLabel: 'إلغاء التعيين',
+                                                                                onConfirm: () => {
+                                                                                    unassignArchiveLeaderMutation.mutate({
+                                                                                        departmentId: selectedDeptForUsers!,
+                                                                                        userId: user.id
+                                                                                    });
+                                                                                }
+                                                                            });
+                                                                        }}
+                                                                        title="إلغاء تعيين كمدير أرشيف"
+                                                                    >
+                                                                        <Trash2 className="w-3 h-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            ) : (
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="sm" 
+                                                                    className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:text-emerald-400 dark:hover:bg-emerald-400/10"
+                                                                    onClick={() => {
+                                                                        showConfirm({
+                                                                            title: 'تعيين مدير الأرشيف',
+                                                                            message: `هل أنت متأكد من تعيين "${user.userName}" كمدير أرشيف لقسم "${selectedDeptName}"؟`,
+                                                                            variant: 'warning',
+                                                                            confirmLabel: 'تعيين كمدير أرشيف',
+                                                                            onConfirm: () => {
+                                                                                assignArchiveLeaderMutation.mutate({
+                                                                                    departmentId: selectedDeptForUsers!,
+                                                                                    userId: user.id
+                                                                                });
+                                                                            }
+                                                                        });
+                                                                    }}
+                                                                >
+                                                                    <Shield className="w-3 h-3" />
+                                                                    تعيين كمدير أرشيف
                                                                 </Button>
                                                             )}
                                                             </div>

@@ -109,7 +109,8 @@ public class ArchiveDeletionWorkflowService(
                 DependenciesSnapshotJson = JsonSerializer.Serialize(dependencies, JsonOptions),
                 ActivitySnapshotJson = JsonSerializer.Serialize(activity, JsonOptions),
                 SourceFolderId = target.Value.sourceFolderId,
-                TargetDisplayName = snapshot.DisplayName
+                TargetDisplayName = snapshot.DisplayName,
+                RowVersion = Guid.NewGuid().ToByteArray()
             };
 
             var addResult = await unitOfWork.DeleteArchiveRequests.AddAsync(request);
@@ -239,13 +240,6 @@ public class ArchiveDeletionWorkflowService(
             request.ApprovedAt = DateTime.UtcNow;
             request.ApprovalNotes = notes;
 
-            var updateResult = await unitOfWork.DeleteArchiveRequests.UpdateAsync(request);
-            if (updateResult.IsError)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                return updateResult.Errors;
-            }
-
             var executionResult = request.TargetType switch
             {
                 ArchiveDeletionTargetType.Folder => await SoftDeleteFolderTreeAsync(request.TargetId, request.Id, "System"),
@@ -265,12 +259,7 @@ public class ArchiveDeletionWorkflowService(
             request.RequesterNotificationMessage = "Your archive delete request was approved and executed.";
             request.RequesterNotifiedAt = DateTime.UtcNow;
 
-            updateResult = await unitOfWork.DeleteArchiveRequests.UpdateAsync(request);
-            if (updateResult.IsError)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                return updateResult.Errors;
-            }
+            // Removed manual RowVersion update since it conflicts with ValueGeneratedOnAddOrUpdate in EF Core
 
             var saveResult = await unitOfWork.SaveChangesAsync();
             if (saveResult <= 0)
@@ -291,7 +280,7 @@ public class ArchiveDeletionWorkflowService(
             }
 
             logger.LogError(ex, "Error approving delete request {RequestId}", requestId);
-            return ApplicationErrors.InternalServerError;
+            return new Error("500", $"حدث خطأ أثناء الموافقة على طلب الحذف: {ex.Message} - {ex.InnerException?.Message}", ErrorKind.Failure);
         }
     }
 
@@ -338,11 +327,7 @@ public class ArchiveDeletionWorkflowService(
             request.RequesterNotificationMessage = reason.Trim();
             request.RequesterNotifiedAt = DateTime.UtcNow;
 
-            var updateResult = await unitOfWork.DeleteArchiveRequests.UpdateAsync(request);
-            if (updateResult.IsError)
-            {
-                return updateResult.Errors;
-            }
+            // Removed manual RowVersion update since it conflicts with ValueGeneratedOnAddOrUpdate in EF Core
 
             var saveResult = await unitOfWork.SaveChangesAsync();
             if (saveResult <= 0)
@@ -356,7 +341,7 @@ public class ArchiveDeletionWorkflowService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error rejecting delete request {RequestId}", requestId);
-            return ApplicationErrors.InternalServerError;
+            return new Error("500", $"حدث خطأ أثناء رفض طلب الحذف: {ex.Message} - {ex.InnerException?.Message}", ErrorKind.Failure);
         }
     }
 

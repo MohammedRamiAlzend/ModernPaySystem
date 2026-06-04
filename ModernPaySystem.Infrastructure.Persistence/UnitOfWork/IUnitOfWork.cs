@@ -47,6 +47,7 @@ public interface IUnitOfWork
     IRepositoryBase<Folder, Guid> Folders { get; }
     IRepositoryBase<DepartmentArchiveLeader, Guid> DepartmentArchiveLeaders { get; }
     IRepositoryBase<DeleteArchiveRequest, Guid> DeleteArchiveRequests { get; }
+    IRepositoryBase<EditArchiveRequest, Guid> EditArchiveRequests { get; }
     IRepositoryBase<ArchiveFormTemplate, Guid> DynamicForms { get; }
     IRepositoryBase<ArchiveRecord, Guid> ArchiveRecords { get; }
     IRepositoryBase<ArchiveRecordTemplateValues, Guid> ArchiveRecordTemplateValues { get; }

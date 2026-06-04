@@ -61,6 +61,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IArchiveRecordService, ArchiveRecordService>();
         services.AddScoped<IArchiveLeaderService, ArchiveLeaderService>();
         services.AddScoped<IArchiveDeletionWorkflowService, ArchiveDeletionWorkflowService>();
+        services.AddScoped<IArchiveEditWorkflowService, ArchiveEditWorkflowService>();
         services.AddScoped<IArchiveAuthorizationService, ArchiveAuthorizationService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 

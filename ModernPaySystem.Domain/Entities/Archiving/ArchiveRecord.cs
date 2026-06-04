@@ -41,7 +41,7 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
             FormId = FormId,
             ArchivalNumber = ArchivalNumber,
             ArchiveRecordTemplateValues = ArchiveRecordTemplateValuesId?.ToDto(),
-            PhysicalFiles = [.. PhysicalFiles.Where(pf => !pf.IsDeleted).Select(pf => pf.ToDto())],
+            PhysicalFiles = [.. PhysicalFiles.Where(pf => !pf.IsDeleted && pf.EditArchiveRequestId == null).Select(pf => pf.ToDto())],
             IsDeleted = IsDeleted,
             DeletedAt = DeletedAt,
             DeletedByUserId = DeletedByUserId,

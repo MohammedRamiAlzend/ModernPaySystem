@@ -19,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Folder> Folders { get; set; }
     public DbSet<DepartmentArchiveLeader> DepartmentArchiveLeaders { get; set; }
     public DbSet<DeleteArchiveRequest> DeleteArchiveRequests { get; set; }
+    public DbSet<EditArchiveRequest> EditArchiveRequests { get; set; }
     public DbSet<ArchiveFormTemplate> DynamicForms { get; set; }
     public DbSet<ArchiveRecord> ArchiveRecords { get; set; }
     public DbSet<ArchiveRecordTemplateValues> ArchiveRecordTemplateValues { get; set; }
@@ -312,6 +313,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_CreatedAt");
 
         modelBuilder.Entity<PhysicalFile>()
+            .HasOne(pf => pf.EditArchiveRequest)
+            .WithMany(r => r.PhysicalFiles)
+            .HasForeignKey(pf => pf.EditArchiveRequestId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PhysicalFile>()
             .HasIndex(pf => new { pf.ArchiveRecordId, pf.IsDeleted, pf.FileExtension })
             .IncludeProperties(pf => new { pf.FileSize, pf.ContentType, pf.FileName, pf.CreatedAt, pf.UpdatedAt })
             .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_IsDeleted_FileExtension_Covering");
@@ -375,11 +382,39 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(x => x.ApproverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.Property(x => x.RowVersion).IsRowVersion();
+            // Removed concurrency token because Npgsql throws DbUpdateConcurrencyException due to missing trigger for bytea
             entity.Property(x => x.TargetSnapshotJson).HasColumnType("jsonb");
             entity.Property(x => x.DependenciesSnapshotJson).HasColumnType("jsonb");
             entity.Property(x => x.ActivitySnapshotJson).HasColumnType("jsonb");
             entity.HasIndex(x => new { x.DepartmentId, x.TargetType, x.TargetId, x.Status });
+        });
+
+        modelBuilder.Entity<EditArchiveRequest>(entity =>
+        {
+            entity.HasOne(x => x.Department)
+                .WithMany()
+                .HasForeignKey(x => x.DepartmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.ArchiveRecord)
+                .WithMany()
+                .HasForeignKey(x => x.ArchiveRecordId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Requester)
+                .WithMany()
+                .HasForeignKey(x => x.RequesterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Approver)
+                .WithMany()
+                .HasForeignKey(x => x.ApproverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Removed concurrency token because Npgsql throws DbUpdateConcurrencyException due to missing trigger for bytea
+            entity.Property(x => x.RequestedChangesJson).HasColumnType("jsonb");
+            entity.Property(x => x.OriginalSnapshotJson).HasColumnType("jsonb");
+            entity.HasIndex(x => new { x.DepartmentId, x.ArchiveRecordId, x.Status });
         });
 
         modelBuilder.Entity<User>()

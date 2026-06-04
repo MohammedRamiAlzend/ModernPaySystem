@@ -24,10 +24,6 @@ public static class PersistenceServiceRegistration
                 npgsqlOptionsAction: sqlOptions =>
                 {
                     sqlOptions.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName);
-                    sqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 3,
-                        maxRetryDelay: TimeSpan.FromSeconds(30),
-                        errorCodesToAdd: null);
                 });
             options.AddInterceptors(serviceProvider.GetRequiredService<AuditInterceptor>());
         });

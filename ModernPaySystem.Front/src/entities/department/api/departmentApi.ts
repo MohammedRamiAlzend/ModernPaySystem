@@ -1,5 +1,5 @@
 import api from '@/shared/api/baseApi';
-import { Department, DepartmentTree } from '../model/types';
+import { Department, DepartmentTree, ArchiveLeaderAssignment } from '../model/types';
 
 export const departmentApi = {
     getTree: async () => {
@@ -44,5 +44,21 @@ export const departmentApi = {
             params: { includeSubDepartments }
         });
         return response.data.data;
+    },
+
+    getArchiveLeaders: async (id: string) => {
+        const response = await api.get<{ data: ArchiveLeaderAssignment[] }>(`/Departments/${id}/archive-leaders`);
+        return response.data.data;
+    },
+
+    assignArchiveLeader: async (id: string, userId: string) => {
+        const response = await api.post<{ data: ArchiveLeaderAssignment }>(`/Departments/${id}/archive-leaders/${userId}`);
+        return response.data.data;
+    },
+
+    unassignArchiveLeader: async (id: string, userId: string) => {
+        const response = await api.delete<{ data: boolean }>(`/Departments/${id}/archive-leaders/${userId}`);
+        return response.data.data;
     }
 };
+

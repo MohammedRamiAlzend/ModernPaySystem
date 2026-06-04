@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Http;
 using ModernPaySystem.Domain.Entities.Abstraction;
 using System.Text.Json;
+using System.Linq;
 
 namespace ModernPaySystem.Domain.Entities.Archiving;
 
@@ -203,6 +205,132 @@ public class DeleteArchiveRequestDto
             CreatedAt = entity.CreatedAt,
             UpdatedByUserId = entity.UpdatedByUserId,
             UpdatedAt = entity.UpdatedAt
+        };
+    }
+}
+
+public enum EditArchiveRequestStatus
+{
+    Pending = 0,
+    Approved = 1,
+    Rejected = 2
+}
+
+public class EditArchiveRequest : Entity<Guid>, IAuditableEntity
+{
+    public Guid DepartmentId { get; set; }
+    public Department Department { get; set; } = default!;
+
+    public Guid ArchiveRecordId { get; set; }
+    public ArchiveRecord ArchiveRecord { get; set; } = default!;
+
+    public Guid RequesterId { get; set; }
+    public User Requester { get; set; } = default!;
+
+    public Guid? ApproverId { get; set; }
+    public User? Approver { get; set; }
+
+    public EditArchiveRequestStatus Status { get; set; } = EditArchiveRequestStatus.Pending;
+
+    public string Justification { get; set; } = string.Empty;
+
+    public string RequestedChangesJson { get; set; } = string.Empty;
+
+    public string OriginalSnapshotJson { get; set; } = string.Empty;
+
+    public string? RejectionReason { get; set; }
+    public string? ApprovalNotes { get; set; }
+
+    public Guid? ApprovedByUserId { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+    public Guid? RejectedByUserId { get; set; }
+    public DateTime? RejectedAt { get; set; }
+
+    public byte[] RowVersion { get; set; } = [];
+
+    public string? CreatedByUserId { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public string? UpdatedByUserId { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
+    public ICollection<PhysicalFile> PhysicalFiles { get; set; } = [];
+}
+
+public class CreateEditArchiveRequestDto
+{
+    public Guid ArchiveRecordId { get; set; }
+    public string Justification { get; set; } = string.Empty;
+    public List<ArchiveRecordFormInputValueDto> RequestedChanges { get; set; } = [];
+    public IFormFileCollection? Files { get; set; }
+}
+
+public class EditArchiveRequestDecisionDto
+{
+    public string? Notes { get; set; }
+}
+
+public class EditArchiveRequestRejectDto
+{
+    public string Reason { get; set; } = string.Empty;
+}
+
+public class EditArchiveRequestDto
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    public Guid Id { get; set; }
+    public Guid DepartmentId { get; set; }
+    public Guid ArchiveRecordId { get; set; }
+    public EditArchiveRequestStatus Status { get; set; }
+    public Guid RequesterId { get; set; }
+    public string? RequesterName { get; set; }
+    public Guid? ApproverId { get; set; }
+    public string? ApproverName { get; set; }
+    public string Justification { get; set; } = string.Empty;
+    public List<ArchiveRecordFormInputValueDto> RequestedChanges { get; set; } = [];
+    public string? OriginalSnapshotJson { get; set; }
+    public string? RejectionReason { get; set; }
+    public string? ApprovalNotes { get; set; }
+    public string? ArchiveRecordArchivalNumber { get; set; }
+    public Guid? ApprovedByUserId { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+    public Guid? RejectedByUserId { get; set; }
+    public DateTime? RejectedAt { get; set; }
+    public string? CreatedByUserId { get; set; }
+    public DateTime? CreatedAt { get; set; }
+    public List<PhysicalFileDto> AttachedFiles { get; set; } = [];
+
+    public static EditArchiveRequestDto FromEntity(EditArchiveRequest entity)
+    {
+        var changes = string.IsNullOrEmpty(entity.RequestedChangesJson)
+            ? new List<ArchiveRecordFormInputValueDto>()
+            : JsonSerializer.Deserialize<List<ArchiveRecordFormInputValueDto>>(entity.RequestedChangesJson, JsonOptions) ?? [];
+
+        return new EditArchiveRequestDto
+        {
+            Id = entity.Id,
+            DepartmentId = entity.DepartmentId,
+            ArchiveRecordId = entity.ArchiveRecordId,
+            Status = entity.Status,
+            RequesterId = entity.RequesterId,
+            RequesterName = entity.Requester?.UserName,
+            ApproverId = entity.ApproverId,
+            ApproverName = entity.Approver?.UserName,
+            Justification = entity.Justification,
+            RequestedChanges = changes,
+            OriginalSnapshotJson = entity.OriginalSnapshotJson,
+            RejectionReason = entity.RejectionReason,
+            ApprovalNotes = entity.ApprovalNotes,
+            ArchiveRecordArchivalNumber = entity.ArchiveRecord?.ArchivalNumber,
+            ApprovedByUserId = entity.ApprovedByUserId,
+            ApprovedAt = entity.ApprovedAt,
+            RejectedByUserId = entity.RejectedByUserId,
+            RejectedAt = entity.RejectedAt,
+            CreatedByUserId = entity.CreatedByUserId,
+            CreatedAt = entity.CreatedAt,
+            AttachedFiles = entity.PhysicalFiles != null
+                ? [.. entity.PhysicalFiles.Where(f => !f.IsDeleted).Select(f => f.ToDto())]
+                : []
         };
     }
 }

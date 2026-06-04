@@ -66,6 +66,9 @@ public class PhysicalFile : Entity<Guid>, IAuditableEntity
     public Guid ArchiveRecordId { get; set; }
     public ArchiveRecord ArchiveRecord { get; set; } = default!;
 
+    public Guid? EditArchiveRequestId { get; set; }
+    public EditArchiveRequest? EditArchiveRequest { get; set; }
+
     public string FileName { get; set; } = string.Empty;
     public string FileExtension { get; set; } = string.Empty;
     public string StoragePath { get; set; } = string.Empty;
@@ -86,6 +89,7 @@ public class PhysicalFile : Entity<Guid>, IAuditableEntity
         {
             Id = Id,
             ArchiveRecordId = ArchiveRecordId,
+            EditArchiveRequestId = EditArchiveRequestId,
             FileName = FileName,
             FileExtension = FileExtension,
             StoragePath = StoragePath,
@@ -106,6 +110,7 @@ public class PhysicalFileDto
 {
     public Guid Id { get; set; }
     public Guid ArchiveRecordId { get; set; }
+    public Guid? EditArchiveRequestId { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FileExtension { get; set; } = string.Empty;
     public string StoragePath { get; set; } = string.Empty;

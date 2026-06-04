@@ -52,3 +52,11 @@ export interface UpdateDepartmentDto {
     type?: DepartmentType;
 }
 
+export interface ArchiveLeaderAssignment {
+    id: string;
+    departmentId: string;
+    userId: string;
+    userName: string;
+}
+
+

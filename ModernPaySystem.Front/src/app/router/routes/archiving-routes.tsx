@@ -7,6 +7,7 @@ import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 
 const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-page'));
 const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
+const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
 
 export const archivingRoutes: RouteObject = {
   path: 'archiving',
@@ -41,6 +42,18 @@ export const archivingRoutes: RouteObject = {
       handle: {
         crumb: () => 'إدارة النماذج الأرشيفية',
         preload: () => TemplatesPage.preload(),
+      }
+    },
+    {
+      path: 'edit-requests',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ArchiveEditRequestsPage />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'طلبات تعديل الأرشيف',
+        preload: () => ArchiveEditRequestsPage.preload(),
       }
     }
   ]

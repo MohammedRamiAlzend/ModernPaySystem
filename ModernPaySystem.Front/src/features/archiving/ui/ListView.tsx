@@ -20,6 +20,7 @@ interface ListViewProps {
     onEdit: (record: ArchiveRecord) => void;
     onDelete: (record: ArchiveRecord) => void;
     onDownloadZip: (record: ArchiveRecord) => void;
+    onRecordRequestEdit?: (record: ArchiveRecord) => void;
     isLoading?: boolean;
     hasMore?: boolean;
     onLoadMore?: () => void;
@@ -35,6 +36,7 @@ export const ListView: React.FC<ListViewProps> = ({
     onEdit,
     onDelete,
     onDownloadZip,
+    onRecordRequestEdit,
     isLoading = false,
     hasMore = false,
     onLoadMore
@@ -136,15 +138,28 @@ export const ListView: React.FC<ListViewProps> = ({
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all duration-200"
-                                                    onClick={() => onEdit(record)}
-                                                    title="تعديل السجل"
-                                                >
-                                                    <Edit3 className="h-4 w-4" />
-                                                </Button>
+                                                {onEdit && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent hover:border-border transition-all duration-200"
+                                                        onClick={() => onEdit(record)}
+                                                        title="تعديل السجل"
+                                                    >
+                                                        <Edit3 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {onRecordRequestEdit && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 border border-transparent hover:border-amber-500/20 transition-all duration-200"
+                                                        onClick={() => onRecordRequestEdit(record)}
+                                                        title="طلب تعديل السجل"
+                                                    >
+                                                        <Edit3 className="h-4 w-4 text-amber-500" />
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

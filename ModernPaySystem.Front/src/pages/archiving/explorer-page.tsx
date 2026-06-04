@@ -5,6 +5,7 @@ import { useArchivingFolders } from '@/features/archiving/hooks/useArchivingFold
 import { useArchivingRecords } from '@/features/archiving/hooks/useArchivingRecords';
 import { FolderModal } from '@/features/archiving/ui/FolderModal';
 import { RecordModal } from '@/features/archiving/ui/RecordModal';
+import { SubmitEditRequestModal } from '@/features/archive-edit-requests/ui/SubmitEditRequestModal';
 import { ExplorerToolbar } from '@/features/archiving/ui/ExplorerToolbar';
 import { ExplorerView } from '@/features/archiving/ui/ExplorerView';
 import { ListView } from '@/features/archiving/ui/ListView';
@@ -26,6 +27,14 @@ export default function ExplorerPage() {
     const [previewingRecord, setPreviewingRecord] = useState<ArchiveRecord | null>(null);
 
     const qrCoverRef = useRef<HTMLDivElement>(null);
+
+    const [showSubmitEditModal, setShowSubmitEditModal] = useState(false);
+    const [editRequestRecord, setEditRequestRecord] = useState<ArchiveRecord | null>(null);
+
+    const handleOpenRequestEdit = (record: ArchiveRecord) => {
+        setEditRequestRecord(record);
+        setShowSubmitEditModal(true);
+    };
 
     const {
         folders,
@@ -189,6 +198,7 @@ export default function ExplorerPage() {
                         onRecordEdit={handleOpenEditRecord}
                         onRecordDelete={handleDeleteRecord}
                         onRecordDownloadZip={handleDownloadRecordZip}
+                        onRecordRequestEdit={handleOpenRequestEdit}
                     />
                 ) : (
                     <ListView
@@ -201,6 +211,7 @@ export default function ExplorerPage() {
                         onEdit={handleOpenEditRecord}
                         onDelete={handleDeleteRecord}
                         onDownloadZip={handleDownloadRecordZip}
+                        onRecordRequestEdit={handleOpenRequestEdit}
                         isLoading={loadingRecords}
                         hasMore={hasMoreRecords}
                         onLoadMore={loadMoreRecords}
@@ -324,6 +335,15 @@ export default function ExplorerPage() {
                     </div>
                 </div>
             )}
+            {/* 4. Modal: Submit Archive Edit Request */}
+            <SubmitEditRequestModal
+                isOpen={showSubmitEditModal}
+                record={editRequestRecord}
+                onClose={() => {
+                    setShowSubmitEditModal(false);
+                    setEditRequestRecord(null);
+                }}
+            />
         </div>
     );
 }
