@@ -1,0 +1,65 @@
+### ═══════════════════════════════════════════════════════════
+### FOLDERS WORKFLOW - Archiving Sub-System
+### Base Route: api/ArchiveSystem/Folders
+### ═══════════════════════════════════════════════════════════
+
+@baseUrl = https://localhost:7010
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImMzMjMxZDlhLWYyMzMtNGUzYS05MWI4LWI5NDEyZWE0MmU1MiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3lzdGVtIjoiVHJhbnNhY3Rpb25TeXN0ZW0iLCJJc0RlcGFydG1lbnRIZWFkIjoiVHJ1ZSIsImV4cCI6MTc4MDUyNDM1OSwiaXNzIjoiTW9kZXJuUGF5U3lzdGVtIiwiYXVkIjoiTW9kZXJuUGF5U3lzdGVtVXNlcnMifQ.Q2jA5PJdQpjOZ9F0wnU_2GCorgyE4UQlEIGWMeofAmQ
+
+@folderId = 00000000-0000-0000-0000-000000000000
+
+### ──────────────────────────────────────────────
+### 1. GET ALL FOLDERS
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/Folders
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 2. GET FOLDER BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/Folders/{{folderId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 3. CREATE FOLDER
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/ArchiveSystem/Folders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "New Folder Name",
+  "parentId": null,
+  "departmentId": null
+}
+
+### ──────────────────────────────────────────────
+### 4. UPDATE FOLDER
+### ──────────────────────────────────────────────
+PUT {{baseUrl}}/api/ArchiveSystem/Folders/{{folderId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Folder Name"
+}
+
+### ──────────────────────────────────────────────
+### 5. MOVE FOLDER (NEW)
+### Move a folder to a different parent folder
+### ──────────────────────────────────────────────
+PUT {{baseUrl}}/api/ArchiveSystem/Folders/MoveFolder
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "folderId": "{{folderId}}",
+  "destnationFolderId": "11111111-1111-1111-1111-111111111111"
+}
+
+### ──────────────────────────────────────────────
+### 6. DELETE FOLDER
+### Requires DepartmentArchiveLeader authorization
+### ──────────────────────────────────────────────
+DELETE {{baseUrl}}/api/ArchiveSystem/Folders/{{folderId}}
+Authorization: Bearer {{token}}

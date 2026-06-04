@@ -1,3 +1,4 @@
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.DTOs;
 
 namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
@@ -5,7 +6,10 @@ namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class DepartmentsController(IDepartmentService departmentService, ILogger<DepartmentsController> logger) : ControllerBase
+public class DepartmentsController(
+    IDepartmentService departmentService,
+    IArchiveLeaderService archiveLeaderService,
+    ILogger<DepartmentsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get the full department tree
@@ -206,6 +210,30 @@ public class DepartmentsController(IDepartmentService departmentService, ILogger
     {
         logger.LogInformation("Removing user: {UserId} from department: {DepartmentId}", userId, id);
         var result = await departmentService.RemoveUserFromDepartmentAsync(userId);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{id:guid}/archive-leaders")]
+    [EndpointPermission("departments.archive_leaders.view", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetArchiveLeaders(Guid id)
+    {
+        var result = await archiveLeaderService.GetByDepartmentAsync(id);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{id:guid}/archive-leaders/{userId:guid}")]
+    [EndpointPermission("departments.archive_leaders.assign", SubSystem.TransactionSystem, PermissionType.Update)]
+    public async Task<IActionResult> AssignArchiveLeader(Guid id, Guid userId)
+    {
+        var result = await archiveLeaderService.AssignAsync(id, userId);
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("{id:guid}/archive-leaders/{userId:guid}")]
+    [EndpointPermission("departments.archive_leaders.unassign", SubSystem.TransactionSystem, PermissionType.Update)]
+    public async Task<IActionResult> UnassignArchiveLeader(Guid id, Guid userId)
+    {
+        var result = await archiveLeaderService.UnassignAsync(id, userId);
         return result.ToActionResult();
     }
 }

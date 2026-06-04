@@ -8,6 +8,7 @@ namespace ModernPaySystem.Infrastructure.Services;
 
 public class DepartmentService(
     IUnitOfWork unitOfWork,
+    IArchiveLeaderService archiveLeaderService,
     ILogger<DepartmentService> logger) : IDepartmentService
 {
 
@@ -369,11 +370,21 @@ public class DepartmentService(
             if (user.IsError || user.Value == null)
                 return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
 
+            var previousDepartmentId = user.Value.DepartmentId;
             user.Value.DepartmentId = departmentId;
             var updateResult = await unitOfWork.Users.UpdateAsync(user.Value);
             if (updateResult.IsError)
                 return updateResult.Errors;
             await unitOfWork.SaveChangesAsync();
+
+            if (previousDepartmentId.HasValue && previousDepartmentId.Value != departmentId)
+            {
+                var revokeResult = await archiveLeaderService.RevokeAssignmentsForUserAsync(userId, previousDepartmentId.Value);
+                if (revokeResult.IsError)
+                {
+                    return revokeResult.Errors;
+                }
+            }
 
             logger.LogInformation("Assigning user: {UserId} to department: {DepartmentId}", userId, departmentId);
             return true;
@@ -450,12 +461,21 @@ public class DepartmentService(
             if (user.IsError || user.Value == null)
                 return new Error("NOT_FOUND", "User not found", ErrorKind.NotFound);
 
+            var previousDepartmentId = user.Value.DepartmentId;
             user.Value.DepartmentId = null;
             var updateResult = await unitOfWork.Users.UpdateAsync(user.Value);
             if (updateResult.IsError)
                 return updateResult.Errors;
 
             await unitOfWork.SaveChangesAsync();
+            if (previousDepartmentId.HasValue)
+            {
+                var revokeResult = await archiveLeaderService.RevokeAssignmentsForUserAsync(userId, previousDepartmentId.Value);
+                if (revokeResult.IsError)
+                {
+                    return revokeResult.Errors;
+                }
+            }
 
             logger.LogInformation("Removed user: {UserId} from department", userId);
             return true;

@@ -1,10 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Application.Services;
 using ModernPaySystem.Domain.Entities.Archiving;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
-public class FolderService(IUnitOfWork unitOfWork, ILogger<FolderService> logger) : IFolderService
+public class FolderService(
+    IUnitOfWork unitOfWork,
+    IHttpContextServiceManager httpContextServiceManager,
+    IArchiveDeletionWorkflowService archiveDeletionWorkflowService,
+    ILogger<FolderService> logger) : IFolderService
 {
     public async Task<Result<IEnumerable<FolderDto>>> GetAllAsync()
     {
@@ -63,9 +68,11 @@ public class FolderService(IUnitOfWork unitOfWork, ILogger<FolderService> logger
                 return ApplicationErrors.InvalidInput;
             }
 
+            Guid? departmentId = dto.DepartmentId;
+
             if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty)
             {
-                var parent = await unitOfWork.Folders.GetByIdAsync(dto.ParentId.Value);
+                var parent = await unitOfWork.Folders.GetAsync(x => x.Id == dto.ParentId.Value);
                 if (parent.IsError)
                 {
                     return parent.Errors;
@@ -75,6 +82,19 @@ public class FolderService(IUnitOfWork unitOfWork, ILogger<FolderService> logger
                 {
                     return ApplicationErrors.FolderNotFound;
                 }
+
+                departmentId = parent.Value.DepartmentId;
+            }
+
+            if (!departmentId.HasValue || departmentId == Guid.Empty)
+            {
+                var currentUser = await unitOfWork.Users.GetByIdAsync(httpContextServiceManager.GetCurrentUserId());
+                if (currentUser.IsError || currentUser.Value == null || !currentUser.Value.DepartmentId.HasValue)
+                {
+                    return ApplicationErrors.FolderDepartmentNotConfigured;
+                }
+
+                departmentId = currentUser.Value.DepartmentId;
             }
 
             var exists = await unitOfWork.Folders.AnyAsync(x => x.Name == dto.Name && x.ParentId == dto.ParentId);
@@ -87,6 +107,7 @@ public class FolderService(IUnitOfWork unitOfWork, ILogger<FolderService> logger
             {
                 Name = dto.Name.Trim(),
                 ParentId = dto.ParentId,
+                DepartmentId = departmentId,
                 Level = await ResolveFolderLevelAsync(dto.ParentId)
             };
 
@@ -183,6 +204,11 @@ public class FolderService(IUnitOfWork unitOfWork, ILogger<FolderService> logger
                 return ApplicationErrors.FolderNotFound;
             }
             if (destFolder.Value.Id == folderId || await WouldCreateCircularReferenceAsync(folderId, destinationFolderId))
+            {
+                return ApplicationErrors.InvalidInput;
+            }
+
+            if (folder.DepartmentId.HasValue && destFolder.Value.DepartmentId.HasValue && folder.DepartmentId != destFolder.Value.DepartmentId)
             {
                 return ApplicationErrors.InvalidInput;
             }
@@ -343,33 +369,7 @@ public class FolderService(IUnitOfWork unitOfWork, ILogger<FolderService> logger
     {
         try
         {
-            if (id == Guid.Empty)
-            {
-                return ApplicationErrors.InvalidInput;
-            }
-
-            var hasChildren = await unitOfWork.Folders.AnyAsync(x => x.ParentId == id);
-            var hasRecords = await unitOfWork.ArchiveRecords.AnyAsync(x => x.FolderId == id);
-            var hasPermissions = await unitOfWork.FolderPermissions.AnyAsync(x => x.FolderId == id);
-
-            if (hasChildren || hasRecords || hasPermissions)
-            {
-                return ApplicationErrors.FolderHasChildren;
-            }
-
-            var removeResult = await unitOfWork.Folders.RemoveAsync(x => x.Id == id);
-            if (removeResult.IsError)
-            {
-                return removeResult.Errors;
-            }
-
-            var saveResult = await unitOfWork.SaveChangesAsync();
-            if (saveResult <= 0)
-            {
-                return ApplicationErrors.DatabaseError;
-            }
-
-            return true;
+            return await archiveDeletionWorkflowService.DeleteFolderAsync(id);
         }
         catch (Exception ex)
         {

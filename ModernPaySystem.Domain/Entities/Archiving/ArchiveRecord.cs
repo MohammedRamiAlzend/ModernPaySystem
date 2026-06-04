@@ -7,6 +7,8 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
 {
     public Guid FolderId { get; set; }
     public Folder Folder { get; set; } = default!;
+    public Guid? DepartmentId { get; set; }
+    public Department? Department { get; set; }
 
     public Guid? FormId { get; set; }
     public ArchiveFormTemplate? Form { get; set; } 
@@ -17,6 +19,12 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
     public ArchiveRecordTemplateValues? ArchiveRecordTemplateValuesId { get; set; }
 
     public ICollection<PhysicalFile> PhysicalFiles { get; set; } = [];
+
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
+    public Guid? DeletedByRequestId { get; set; }
+    public Guid? ApprovedByRequestId { get; set; }
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -29,10 +37,16 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
         {
             Id = Id,
             FolderId = FolderId,
+            DepartmentId = DepartmentId,
             FormId = FormId,
             ArchivalNumber = ArchivalNumber,
             ArchiveRecordTemplateValues = ArchiveRecordTemplateValuesId?.ToDto(),
             PhysicalFiles = [.. PhysicalFiles.Where(pf => !pf.IsDeleted).Select(pf => pf.ToDto())],
+            IsDeleted = IsDeleted,
+            DeletedAt = DeletedAt,
+            DeletedByUserId = DeletedByUserId,
+            DeletedByRequestId = DeletedByRequestId,
+            ApprovedByRequestId = ApprovedByRequestId,
             CreatedByUserId = CreatedByUserId,
             CreatedAt = CreatedAt,
             UpdatedByUserId = UpdatedByUserId,
@@ -45,10 +59,16 @@ public class ArchiveRecordDto
 {
     public Guid Id { get; set; }
     public Guid FolderId { get; set; }
+    public Guid? DepartmentId { get; set; }
     public Guid? FormId { get; set; }
     public string ArchivalNumber { get; set; } = string.Empty;
     public ArchiveRecordTemplateValuesDto? ArchiveRecordTemplateValues { get; set; }
     public List<PhysicalFileDto> PhysicalFiles { get; set; } = [];
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
+    public Guid? DeletedByRequestId { get; set; }
+    public Guid? ApprovedByRequestId { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -78,6 +98,7 @@ public class CreateArchiveRecordDto
     public Guid FolderId { get; set; }
     public Guid? FormId { get; set; } = null;
     public string ArchivalNumber { get; set; } = string.Empty;
+    public Guid? DepartmentId { get; set; }
     public IFormFileCollection Files { get; set; } = default!;
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];
 }

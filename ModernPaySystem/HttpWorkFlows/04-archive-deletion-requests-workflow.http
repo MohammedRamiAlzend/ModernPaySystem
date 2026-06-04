@@ -1,0 +1,76 @@
+### ═══════════════════════════════════════════════════════════
+### ARCHIVE DELETION REQUESTS WORKFLOW (NEW)
+### Base Route: api/archive-deletion-requests
+### ═══════════════════════════════════════════════════════════
+
+@baseUrl = https://localhost:7010
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImMzMjMxZDlhLWYyMzMtNGUzYS05MWI4LWI5NDEyZWE0MmU1MiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3lzdGVtIjoiVHJhbnNhY3Rpb25TeXN0ZW0iLCJJc0RlcGFydG1lbnRIZWFkIjoiVHJ1ZSIsImV4cCI6MTc4MDUyNDM1OSwiaXNzIjoiTW9kZXJuUGF5U3lzdGVtIiwiYXVkIjoiTW9kZXJuUGF5U3lzdGVtVXNlcnMifQ.Q2jA5PJdQpjOZ9F0wnU_2GCorgyE4UQlEIGWMeofAmQ
+
+@requestId = 00000000-0000-0000-0000-000000000000
+@departmentId = 00000000-0000-0000-0000-000000000000
+@targetFolderId = 00000000-0000-0000-0000-000000000000
+@targetRecordId = 00000000-0000-0000-0000-000000000000
+
+### ──────────────────────────────────────────────
+### 1. SUBMIT DELETE REQUEST (for a Folder)
+### TargetType: 0 = Folder, 1 = Record
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/archive-deletion-requests
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "targetType": 0,
+  "targetId": "{{targetFolderId}}",
+  "justification": "This folder contains outdated records that need to be removed per retention policy."
+}
+
+### ──────────────────────────────────────────────
+### 2. SUBMIT DELETE REQUEST (for a Record)
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/archive-deletion-requests
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "targetType": 1,
+  "targetId": "{{targetRecordId}}",
+  "justification": "This record is duplicated and no longer needed."
+}
+
+### ──────────────────────────────────────────────
+### 3. GET DELETE REQUEST BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-deletion-requests/{{requestId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 4. GET PENDING REQUESTS FOR DEPARTMENT (NEW)
+### Requires DepartmentHead authorization
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-deletion-requests/department/{{departmentId}}?page=1&pageSize=20
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 5. APPROVE DELETE REQUEST (NEW)
+### Requires DepartmentHead authorization
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/archive-deletion-requests/{{requestId}}/approve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "notes": "Approved. The target is verified and can be deleted."
+}
+
+### ──────────────────────────────────────────────
+### 6. REJECT DELETE REQUEST (NEW)
+### Requires DepartmentHead authorization
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/archive-deletion-requests/{{requestId}}/reject
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reason": "The target still contains active records. Reconsider after archiving."
+}

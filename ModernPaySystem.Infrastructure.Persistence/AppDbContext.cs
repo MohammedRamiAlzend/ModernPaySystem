@@ -17,6 +17,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Department> Departments { get; set; }
 
     public DbSet<Folder> Folders { get; set; }
+    public DbSet<DepartmentArchiveLeader> DepartmentArchiveLeaders { get; set; }
+    public DbSet<DeleteArchiveRequest> DeleteArchiveRequests { get; set; }
     public DbSet<ArchiveFormTemplate> DynamicForms { get; set; }
     public DbSet<ArchiveRecord> ArchiveRecords { get; set; }
     public DbSet<ArchiveRecordTemplateValues> ArchiveRecordTemplateValues { get; set; }
@@ -261,10 +263,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Folder>()
+            .HasOne(f => f.Department)
+            .WithMany()
+            .HasForeignKey(f => f.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Folder>()
             .HasMany(f => f.ArchiveRecords)
             .WithOne(ar => ar.Folder)
             .HasForeignKey(ar => ar.FolderId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Folder>().HasQueryFilter(f => !f.IsDeleted);
 
         modelBuilder.Entity<ArchiveFormTemplate>()
             .HasMany(f => f.ArchiveRecords)
@@ -273,10 +283,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<ArchiveRecord>()
+            .HasOne(ar => ar.Department)
+            .WithMany()
+            .HasForeignKey(ar => ar.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ArchiveRecord>()
             .HasMany(ar => ar.PhysicalFiles)
             .WithOne(pf => pf.ArchiveRecord)
             .HasForeignKey(pf => pf.ArchiveRecordId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ArchiveRecord>().HasQueryFilter(ar => !ar.IsDeleted);
 
         modelBuilder.Entity<ArchiveRecordTemplateValues>()
             .HasMany(artv => artv.ArchiveRecordFormInputValues)
@@ -321,6 +339,48 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<DepartmentArchiveLeader>(entity =>
+        {
+            entity.HasOne(x => x.Department)
+                .WithMany()
+                .HasForeignKey(x => x.DepartmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(x => new { x.DepartmentId, x.UserId })
+                .IsUnique()
+                .HasFilter("\"IsDeleted\" = false");
+
+            entity.HasQueryFilter(x => !x.IsDeleted);
+        });
+
+        modelBuilder.Entity<DeleteArchiveRequest>(entity =>
+        {
+            entity.HasOne(x => x.Department)
+                .WithMany()
+                .HasForeignKey(x => x.DepartmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Requester)
+                .WithMany()
+                .HasForeignKey(x => x.RequesterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(x => x.Approver)
+                .WithMany()
+                .HasForeignKey(x => x.ApproverId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(x => x.RowVersion).IsRowVersion();
+            entity.Property(x => x.TargetSnapshotJson).HasColumnType("jsonb");
+            entity.Property(x => x.DependenciesSnapshotJson).HasColumnType("jsonb");
+            entity.Property(x => x.ActivitySnapshotJson).HasColumnType("jsonb");
+            entity.HasIndex(x => new { x.DepartmentId, x.TargetType, x.TargetId, x.Status });
+        });
 
         modelBuilder.Entity<User>()
             .HasOne(u => u.Department)

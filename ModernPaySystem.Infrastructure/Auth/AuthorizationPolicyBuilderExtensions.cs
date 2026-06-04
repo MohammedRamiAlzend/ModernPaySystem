@@ -9,4 +9,16 @@ public static class AuthorizationPolicyBuilderExtensions
         builder.Requirements.Add(new PermissionRequirement(permissionKey));
         return builder;
     }
+
+    public static AuthorizationPolicyBuilder RequireDepartmentArchiveLeader(this AuthorizationPolicyBuilder builder)
+    {
+        builder.Requirements.Add(new DepartmentArchiveLeaderRequirement());
+        return builder;
+    }
+
+    public static AuthorizationPolicyBuilder RequireDepartmentHead(this AuthorizationPolicyBuilder builder)
+    {
+        builder.Requirements.Add(new DepartmentHeadRequirement());
+        return builder;
+    }
 }

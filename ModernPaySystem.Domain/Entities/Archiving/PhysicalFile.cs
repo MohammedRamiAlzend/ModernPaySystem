@@ -73,6 +73,7 @@ public class PhysicalFile : Entity<Guid>, IAuditableEntity
     public string ContentType { get; set; } = string.Empty;
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -92,6 +93,7 @@ public class PhysicalFile : Entity<Guid>, IAuditableEntity
             ContentType = ContentType,
             IsDeleted = IsDeleted,
             DeletedAt = DeletedAt,
+            DeletedByUserId = DeletedByUserId,
             CreatedByUserId = CreatedByUserId,
             CreatedAt = CreatedAt,
             UpdatedByUserId = UpdatedByUserId,
@@ -111,6 +113,7 @@ public class PhysicalFileDto
     public string ContentType { get; set; } = string.Empty;
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }

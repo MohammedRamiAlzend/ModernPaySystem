@@ -1,6 +1,9 @@
 using FileManager.Extensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
+using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
+using ModernPaySystem.Infrastructure.Auth;
 using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.Interceptors;
 using ModernPaySystem.Infrastructure.Options;
@@ -51,6 +54,9 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IDynamicFormService, DynamicFormService>();
         services.AddScoped<IArchiveFormTemplateService, ArchiveFormTemplateService>();
         services.AddScoped<IArchiveRecordService, ArchiveRecordService>();
+        services.AddScoped<IArchiveLeaderService, ArchiveLeaderService>();
+        services.AddScoped<IArchiveDeletionWorkflowService, ArchiveDeletionWorkflowService>();
+        services.AddScoped<IArchiveAuthorizationService, ArchiveAuthorizationService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 
         // Register Lookup Field Services
@@ -69,6 +75,11 @@ public static class InfrastructureServiceRegistration
         // Register Department Service
         services.AddScoped<IDepartmentService, DepartmentService>();
 
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, DepartmentArchiveLeaderAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, DepartmentHeadAuthorizationHandler>();
+        services.AddScoped<IAuthorizationHandler, DeleteArchiveRequestHeadAuthorizationHandler>();
+
         services.AddTransient<IPermissionSeederService>(provider =>
         {
             var applicationPartManager = provider.GetRequiredService<ApplicationPartManager>();
@@ -84,6 +95,15 @@ public static class InfrastructureServiceRegistration
     /// </summary>
     public static IServiceCollection AddAuthorizationPolicies(this IServiceCollection services)
     {
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(ArchiveAuthorizationPolicyExtensions.RequireDepartmentArchiveLeader, policy =>
+                policy.RequireAuthenticatedUser().RequireDepartmentArchiveLeader());
+
+            options.AddPolicy(ArchiveAuthorizationPolicyExtensions.RequireDepartmentHead, policy =>
+                policy.RequireAuthenticatedUser().RequireDepartmentHead());
+        });
+
         return services;
     }
 }

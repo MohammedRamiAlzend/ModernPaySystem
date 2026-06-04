@@ -22,6 +22,8 @@ public class ArchiveRecordService(
     IFilesManagerService filesManagerService,
     IFileManager fileManager,
     IMemoryCache memoryCache,
+    IArchiveAuthorizationService archiveAuthorizationService,
+    IArchiveDeletionWorkflowService archiveDeletionWorkflowService,
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
     IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger) : IArchiveRecordService
@@ -207,6 +209,14 @@ public class ArchiveRecordService(
             var folderValidationResult = await EnsureFolderExistsAsync(dto.FolderId);
             if (folderValidationResult.IsError) return folderValidationResult.Errors;
 
+            var folderDepartmentResult = await archiveAuthorizationService.ResolveFolderDepartmentIdAsync(dto.FolderId);
+            if (folderDepartmentResult.IsError) return folderDepartmentResult.Errors;
+
+            if (!folderDepartmentResult.Value.HasValue)
+            {
+                return ApplicationErrors.ArchiveRecordDepartmentNotConfigured;
+            }
+
             var archivalNumberUniqueResult = await IsArchivalNumberUniqueAsync(dto.ArchivalNumber.Trim(), dto.FolderId);
             if (archivalNumberUniqueResult.IsError) return archivalNumberUniqueResult.Errors;
 
@@ -223,6 +233,7 @@ public class ArchiveRecordService(
             {
                 Id = Guid.NewGuid(),
                 FolderId = dto.FolderId,
+                DepartmentId = folderDepartmentResult.Value,
                 FormId = formResolutionResult?.Value?.Id,
                 ArchivalNumber = dto.ArchivalNumber.Trim()
             };
@@ -881,56 +892,7 @@ public class ArchiveRecordService(
     {
         try
         {
-            if (id == Guid.Empty)
-            {
-                return ApplicationErrors.InvalidInput;
-            }
-
-            var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
-                x => x.Id == id,
-                query => query.Include(x => x.PhysicalFiles));
-
-            if (recordResult.IsError)
-            {
-                return recordResult.Errors;
-            }
-
-            var record = recordResult.Value;
-            if (record == null)
-            {
-                return ApplicationErrors.ArchiveRecordNotFound;
-            }
-
-            var storedFiles = record.PhysicalFiles.ToList();
-
-            await unitOfWork.BeginTransactionAsync();
-
-            var removeResult = await unitOfWork.ArchiveRecords.RemoveAsync(x => x.Id == id);
-            if (removeResult.IsError)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                return removeResult.Errors;
-            }
-
-            var saveResult = await unitOfWork.SaveChangesAsync();
-            if (saveResult <= 0)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                return ApplicationErrors.DatabaseError;
-            }
-
-            await unitOfWork.CommitTransactionAsync();
-
-            foreach (var physicalFile in storedFiles.Where(x => !x.IsDeleted))
-            {
-                var deleteResult = await DeleteStoredFileAsync(physicalFile.StoragePath);
-                if (deleteResult.IsError)
-                {
-                    logger.LogWarning("Archive record {RecordId} deleted, but file cleanup failed for {Path}: {Error}", id, physicalFile.StoragePath, deleteResult.Errors);
-                }
-            }
-
-            return true;
+            return await archiveDeletionWorkflowService.DeleteArchiveRecordAsync(id);
         }
         catch (Exception ex)
         {

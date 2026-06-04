@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
+using ModernPaySystem.Infrastructure.Auth;
 using ModernPaySystem.Infrastructure.Extensions;
 
 namespace ModernPaySystem.Controllers.ArchivingControllers;
@@ -9,7 +10,10 @@ namespace ModernPaySystem.Controllers.ArchivingControllers;
 [ApiController]
 [Route("api/ArchiveSystem/[controller]")]
 [Authorize]
-public class FoldersController(IFolderService folderService, ILogger<FoldersController> logger) : ControllerBase
+public class FoldersController(
+    IFolderService folderService,
+    IAuthorizationService authorizationService,
+    ILogger<FoldersController> logger) : ControllerBase
 {
     [HttpGet]
     [EndpointPermission("archiving.folders.get-all", SubSystem.Archiving, PermissionType.Read)]
@@ -60,6 +64,24 @@ public class FoldersController(IFolderService folderService, ILogger<FoldersCont
     public async Task<IActionResult> Delete(Guid id)
     {
         logger.LogInformation("Deleting folder: {FolderId}", id);
+        var folderResult = await folderService.GetByIdAsync(id);
+        if (folderResult.IsError)
+        {
+            return folderResult.ToActionResult();
+        }
+
+        var folder = folderResult.Value!;
+        if (!folder.DepartmentId.HasValue)
+        {
+            return BadRequest("Folder is not scoped to a department.");
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, new ArchiveDepartmentScope(folder.DepartmentId.Value), ArchiveAuthorizationPolicyExtensions.RequireDepartmentArchiveLeader);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await folderService.DeleteAsync(id);
         return result.ToActionResult();
     }

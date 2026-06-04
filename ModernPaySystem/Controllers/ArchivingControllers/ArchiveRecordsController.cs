@@ -5,6 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Net.Http.Headers;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
+using ModernPaySystem.Infrastructure.Auth;
 using ModernPaySystem.Infrastructure.Extensions;
 using System.Collections.Concurrent;
 using System.IO.Compression;
@@ -17,7 +18,11 @@ namespace ModernPaySystem.Controllers.ArchivingControllers;
 [ApiController]
 [Route("api/archive-records")]
 [Authorize]
-public class ArchiveRecordsController(IArchiveRecordService archiveRecordService, IMemoryCache memoryCache, ILogger<ArchiveRecordsController> logger) : ControllerBase
+public class ArchiveRecordsController(
+    IArchiveRecordService archiveRecordService,
+    IAuthorizationService authorizationService,
+    IMemoryCache memoryCache,
+    ILogger<ArchiveRecordsController> logger) : ControllerBase
 {
     private static readonly ConcurrentDictionary<string, object> RateLimitLocks = new();
 
@@ -206,6 +211,24 @@ public class ArchiveRecordsController(IArchiveRecordService archiveRecordService
     public async Task<IActionResult> Delete(Guid id)
     {
         logger.LogInformation("Deleting archive record: {RecordId}", id);
+        var recordResult = await archiveRecordService.GetByIdAsync(id);
+        if (recordResult.IsError)
+        {
+            return recordResult.ToActionResult();
+        }
+
+        var record = recordResult.Value!;
+        if (!record.DepartmentId.HasValue)
+        {
+            return BadRequest("Archive record is not scoped to a department.");
+        }
+
+        var authResult = await authorizationService.AuthorizeAsync(User, new ArchiveDepartmentScope(record.DepartmentId.Value), ArchiveAuthorizationPolicyExtensions.RequireDepartmentArchiveLeader);
+        if (!authResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await archiveRecordService.DeleteAsync(id);
         return result.ToActionResult();
     }

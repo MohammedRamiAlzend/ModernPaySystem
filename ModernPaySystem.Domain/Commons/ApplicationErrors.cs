@@ -97,6 +97,9 @@ public static class ApplicationErrors
     public static readonly Error FolderNotFound = new("10000", "The specified folder was not found.", ErrorKind.NotFound, "لم يتم العثور على المجلد المحدد.");
     public static readonly Error FolderAlreadyExists = new("10001", "A folder with this name already exists.", ErrorKind.Conflict, "يوجد بالفعل مجلد بهذا الاسم.");
     public static readonly Error FolderHasChildren = new("10002", "The folder contains child folders or records and cannot be deleted.", ErrorKind.Conflict, "المجلد يحتوي على مجلدات أو سجلات فرعية ولا يمكن حذفه.");
+    public static readonly Error FolderDepartmentNotConfigured = new("10003", "The folder is not scoped to a department.", ErrorKind.Validation, "المجلد غير مرتبط بقسم.");
+    public static readonly Error FolderArchiveLeaderRequired = new("10004", "Only a department archive leader can delete this folder directly.", ErrorKind.Forbidden, "فقط قائد الأرشيف في القسم يمكنه حذف هذا المجلد مباشرة.");
+    public static readonly Error FolderDeleteRequestExists = new("10005", "A pending delete request already exists for this folder.", ErrorKind.Conflict, "يوجد طلب حذف قيد الانتظار لهذا المجلد.");
     public static readonly Error DynamicFormNotFound = new("10010", "The specified form was not found.", ErrorKind.NotFound, "لم يتم العثور على النموذج المحدد.");
     public static readonly Error DynamicFormAlreadyExists = new("10011", "A form with this name already exists.", ErrorKind.Conflict, "يوجد بالفعل نموذج بهذا الاسم.");
     public static readonly Error InvalidJsonDefinition = new("10012", "The provided JSON definition is invalid.", ErrorKind.Validation, "تعريف JSON المقدم غير صحيح.");
@@ -109,6 +112,15 @@ public static class ApplicationErrors
     public static readonly Error ArchiveRecordHasNoFiles = new("10024", "The specified archive record does not contain any files.", ErrorKind.NotFound, "سجل الأرشفة المحدد لا يحتوي على أي ملفات.");
     public static readonly Error ArchiveRecordZipTooLarge = new("10025", "The archive record files exceed the configured ZIP size limit.", ErrorKind.Validation, "تتجاوز ملفات سجل الأرشفة الحد المسموح به لحجم ملف ZIP.");
     public static readonly Error ArchiveRecordZipGenerationTimedOut = new("10026", "The ZIP archive generation timed out.", ErrorKind.Failure, "استغرق إنشاء ملف ZIP وقتاً أطول من المسموح.", HttpStatusCode.RequestTimeout);
+    public static readonly Error ArchiveRecordDepartmentNotConfigured = new("10027", "The archive record is not scoped to a department.", ErrorKind.Validation, "سجل الأرشفة غير مرتبط بقسم.");
+    public static readonly Error ArchiveRecordArchiveLeaderRequired = new("10028", "Only a department archive leader can delete this archive record directly.", ErrorKind.Forbidden, "فقط قائد الأرشيف في القسم يمكنه حذف سجل الأرشفة مباشرة.");
+    public static readonly Error DeleteRequestNotFound = new("10029", "The specified delete request was not found.", ErrorKind.NotFound, "لم يتم العثور على طلب الحذف المحدد.");
+    public static readonly Error DeleteRequestAlreadyHandled = new("10030", "The delete request has already been processed.", ErrorKind.Conflict, "تمت معالجة طلب الحذف بالفعل.");
+    public static readonly Error DeleteRequestApprovalRequiresDepartmentHead = new("10031", "Only the department head can approve this delete request.", ErrorKind.Forbidden, "فقط رئيس القسم يمكنه الموافقة على طلب الحذف.");
+    public static readonly Error DeleteRequestRejectionRequiresReason = new("10032", "A rejection reason is required.", ErrorKind.Validation, "سبب الرفض مطلوب.");
+    public static readonly Error DeleteRequestTargetNotFound = new("10033", "The target item for the delete request was not found.", ErrorKind.NotFound, "لم يتم العثور على العنصر المستهدف لطلب الحذف.");
+    public static readonly Error DepartmentArchiveLeaderNotAssigned = new("10034", "The department has no active archive leader assigned.", ErrorKind.Validation, "لا يوجد قائد أرشيف نشط معين لهذا القسم.");
+    public static readonly Error DepartmentHeadMissing = new("10035", "The department does not have a department head assigned.", ErrorKind.Validation, "لا يوجد رئيس قسم معين.");
 
 
     // File Operation Errors (1000-1099)

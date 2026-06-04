@@ -1,0 +1,194 @@
+### ═══════════════════════════════════════════════════════════
+### ARCHIVE RECORDS WORKFLOW - Archiving Sub-System
+### Base Route: api/archive-records
+### ═══════════════════════════════════════════════════════════
+
+@baseUrl = https://localhost:7010
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImMzMjMxZDlhLWYyMzMtNGUzYS05MWI4LWI5NDEyZWE0MmU1MiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3lzdGVtIjoiVHJhbnNhY3Rpb25TeXN0ZW0iLCJJc0RlcGFydG1lbnRIZWFkIjoiVHJ1ZSIsImV4cCI6MTc4MDUyNDM1OSwiaXNzIjoiTW9kZXJuUGF5U3lzdGVtIiwiYXVkIjoiTW9kZXJuUGF5U3lzdGVtVXNlcnMifQ.Q2jA5PJdQpjOZ9F0wnU_2GCorgyE4UQlEIGWMeofAmQ
+
+@recordId = 00000000-0000-0000-0000-000000000000
+@folderId = 00000000-0000-0000-0000-000000000000
+@formId = 00000000-0000-0000-0000-000000000000
+@fileId = 00000000-0000-0000-0000-000000000000
+@requestId = 00000000-0000-0000-0000-000000000000
+@departmentId = 00000000-0000-0000-0000-000000000000
+
+### ═══════════════════════════════════════════════════════════
+### HELPER GET ENDPOINTS - Fetch related entity IDs
+### Use these to populate the variable placeholders above
+### ═══════════════════════════════════════════════════════════
+
+### ──────────────────────────────────────────────
+### A. GET DEPARTMENT BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/Departments/{{departmentId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### B. GET FOLDER BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/Folders/{{folderId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### C. GET ARCHIVE RECORD BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### D. GET ARCHIVE DELETION REQUEST BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-deletion-requests/{{requestId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 1. GET ARCHIVE RECORD BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 2. GET RECORDS BY FOLDER ID (paged)
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/folder/{{folderId}}?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 3. GET RECORDS BY FORM ID (paged)
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/form/{{formId}}?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 4. CREATE ARCHIVE RECORD (multipart/form-data)
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/archive-records
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="FolderId"
+
+{{folderId}}
+------Boundary
+Content-Disposition: form-data; name="FormId"
+
+{{formId}}
+------Boundary
+Content-Disposition: form-data; name="ArchivalNumber"
+
+ARC-2026-001
+------Boundary
+Content-Disposition: form-data; name="DepartmentId"
+
+00000000-0000-0000-0000-000000000000
+------Boundary
+Content-Disposition: form-data; name="Files"; filename="sample.pdf"
+Content-Type: application/pdf
+
+< ./sample.pdf
+------Boundary--
+
+### ──────────────────────────────────────────────
+### 5. UPDATE ARCHIVE RECORD (multipart/form-data)
+### ──────────────────────────────────────────────
+PUT {{baseUrl}}/api/archive-records/{{recordId}}
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="FolderId"
+
+{{folderId}}
+------Boundary
+Content-Disposition: form-data; name="FormId"
+
+{{formId}}
+------Boundary
+Content-Disposition: form-data; name="ArchivalNumber"
+
+ARC-2026-001-UPDATED
+------Boundary
+Content-Disposition: form-data; name="ReplaceFiles"
+
+false
+------Boundary--
+
+### ──────────────────────────────────────────────
+### 6. ADD FILES TO RECORD (multipart/form-data)
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/archive-records/{{recordId}}/files
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="files"; filename="document1.pdf"
+Content-Type: application/pdf
+
+< ./document1.pdf
+------Boundary
+Content-Disposition: form-data; name="files"; filename="image1.png"
+Content-Type: image/png
+
+< ./image1.png
+------Boundary--
+
+### ──────────────────────────────────────────────
+### 7. GET FILES METADATA (paged)
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}/files/metadata?page=1&pageSize=10&includeDeleted=false
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 8. GET PAGINATED FILES (NEW - with sorting, search, filtering)
+### Supports: MetadataOnly | WithUrls | WithData
+### SortBy: CreatedAt | FileName | FileSize
+### SortOrder: Asc | Desc
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}/files/paginated?pageNumber=1&pageSize=10&mode=MetadataOnly&sortBy=CreatedAt&sortOrder=Desc&searchTerm=&fileTypes=application/pdf
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 9. HEAD PAGINATED FILES (NEW - headers only, MetadataOnly mode)
+### ──────────────────────────────────────────────
+HEAD {{baseUrl}}/api/archive-records/{{recordId}}/files/paginated?pageNumber=1&pageSize=10&mode=MetadataOnly&sortBy=CreatedAt&sortOrder=Desc
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 10. DOWNLOAD FILE (inline or attachment)
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}/files/{{fileId}}?download=false
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 11. DOWNLOAD FILE BY ID (NEW - download without recordId)
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/files/{{fileId}}?download=true
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 12. DOWNLOAD ZIP BUNDLE (NEW)
+### Compression: Optimal | Fastest | NoCompression | SmallestSize
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}/files/zip?flatten=false&compression=Optimal&includeMetadata=false
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 13. DOWNLOAD ZIP BUNDLE WITH PASSWORD (NEW)
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/archive-records/{{recordId}}/files/zip?flatten=true&password=MySecretPass&compression=Fastest&includeMetadata=true
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 14. REMOVE FILE FROM RECORD
+### ──────────────────────────────────────────────
+DELETE {{baseUrl}}/api/archive-records/{{recordId}}/files/{{fileId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 15. DELETE ARCHIVE RECORD
+### Requires DepartmentArchiveLeader authorization
+### ──────────────────────────────────────────────
+DELETE {{baseUrl}}/api/archive-records/{{recordId}}
+Authorization: Bearer {{token}}

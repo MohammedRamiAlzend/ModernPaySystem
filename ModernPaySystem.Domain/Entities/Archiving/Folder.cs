@@ -7,6 +7,8 @@ public class Folder : Entity<Guid>, IAuditableEntity
 {
     public string Name { get; set; } = string.Empty;
     public int Level { get; set; }
+    public Guid? DepartmentId { get; set; }
+    public Department? Department { get; set; }
 
     public Guid? ParentId { get; set; }
     public Folder? Parent { get; set; }
@@ -14,6 +16,11 @@ public class Folder : Entity<Guid>, IAuditableEntity
     public ICollection<Folder> SubFolders { get; set; } = [];
     public ICollection<ArchiveRecord> ArchiveRecords { get; set; } = [];
     public ICollection<FolderPermission> Permissions { get; set; } = [];
+
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
+    public Guid? DeletedByRequestId { get; set; }
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -27,8 +34,13 @@ public class Folder : Entity<Guid>, IAuditableEntity
             Id = Id,
             Name = Name,
             Level = Level,
+            DepartmentId = DepartmentId,
             ParentId = ParentId,
             FolderDtos = SubFolders is not null && SubFolders.Count != 0 ? [.. SubFolders.Where(x => x.Level == Level + 1).Select(f => f.ToDto())] : [],
+            IsDeleted = IsDeleted,
+            DeletedAt = DeletedAt,
+            DeletedByUserId = DeletedByUserId,
+            DeletedByRequestId = DeletedByRequestId,
             CreatedByUserId = CreatedByUserId,
             CreatedAt = CreatedAt,
             UpdatedByUserId = UpdatedByUserId,
@@ -42,9 +54,14 @@ public class FolderDto
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int Level { get; set; }
+    public Guid? DepartmentId { get; set; }
     public Guid? ParentId { get; set; }
 
     public required List<FolderDto> FolderDtos { get; set; } = [];
+    public bool IsDeleted { get; set; }
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedByUserId { get; set; }
+    public Guid? DeletedByRequestId { get; set; }
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
@@ -56,6 +73,7 @@ public class CreateFolderDto
 {
     public string Name { get; set; } = string.Empty;
     public Guid? ParentId { get; set; }
+    public Guid? DepartmentId { get; set; }
 }
 
 public class UpdateFolderDto
@@ -68,4 +86,3 @@ public class MoveFolderDto
     public Guid FolderId { get; set; }
     public Guid DestnationFolderId { get; set; }
 }
-
