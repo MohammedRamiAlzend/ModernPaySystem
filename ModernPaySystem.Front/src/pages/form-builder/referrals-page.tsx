@@ -29,6 +29,7 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
         selectedTemplate,
         isTemplateLoading,
         isSubmitting,
+        uploadProgress,
         setComment,
         setSubmissionMode,
         setTargetUserId,
@@ -127,6 +128,7 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
                     onSubmissionModeChange={setSubmissionMode}
                     targetUserId={targetUserId}
                     onTargetUserChange={setTargetUserId}
+                    uploadProgress={uploadProgress}
                     onSubmit={handleSubmit}
                 />
             )}

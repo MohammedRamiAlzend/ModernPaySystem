@@ -125,6 +125,43 @@ export interface CreateUserTemplateOwnershipDto {
     userId: string;
 }
 
+export enum RequestRelationType {
+    Reference = 0,    // مرجع فقط
+    FollowUp = 1,     // متابعة / استكمال
+    Replacement = 2,  // استبدال لطلب سابق
+    Duplicate = 3     // تكرار
+}
+
+export interface CreateRequestRelatedRequestDto {
+    targetRequestId: string;
+    relationType: RequestRelationType;
+    notes?: string;
+}
+
+export interface RelatedRequestDto {
+    requestId: string;
+    requestNumber: number;
+    relationType: RequestRelationType;
+    notes?: string;
+    status: number; // RequestStatus
+}
+
+export interface RequestRelationDto {
+    id: string;
+    sourceRequestId: string;
+    targetRequestId: string;
+    sourceRequestNumber: number;
+    targetRequestNumber: number;
+    sourceRequestStatus: number;
+    targetRequestStatus: number;
+    relationType: RequestRelationType;
+    notes?: string;
+    createdByUserId?: string;
+    createdAt?: string;
+    updatedByUserId?: string;
+    updatedAt?: string;
+}
+
 export interface InputValueDto {
     key: string;
     value: string;
@@ -135,6 +172,7 @@ export interface CreateRequestDto {
     DepartmentId: string;
     ReadOnlyUsers?: string[]; // List of user IDs for CC/Read-only
     Content: InputValueDto[]; // Updated to use structured content
+    RelatedRequests?: CreateRequestRelatedRequestDto[];
     files?: File[]; // For multi-part file upload
 }
 
@@ -180,6 +218,7 @@ export interface TemplateRequest {
     requester?: UserReference | null;
     approver?: UserReference | null;
     createdAt?: string | null;
+    relatedRequests?: RelatedRequestDto[];
 }
 
 export interface CreateResponseDto {
@@ -278,6 +317,7 @@ export interface RequestPagedFilterDto {
     pageSize: number;
     fromDate?: string;
     toDate?: string;
+    templateId?: string;
     inputValueFilters?: InputValueFilterDto[];
     logicalOperator?: FilterLogicalOperator;
 }

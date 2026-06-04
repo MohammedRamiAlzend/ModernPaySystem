@@ -21,6 +21,7 @@ export const useReferralsLogic = (status: number) => {
     const [selectedReferral, setSelectedReferral] = useState<RequestTransactionDto | null>(null);
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [submissionMode, setSubmissionMode] = useState<'submit' | 'referral'>('submit');
     const [targetUserId, setTargetUserId] = useState('');
 
@@ -28,7 +29,7 @@ export const useReferralsLogic = (status: number) => {
     const { data: selectedTemplate, isLoading: isTemplateLoading } = useTemplateById(selectedRequest?.templateId || null);
 
     const responseMutation = useMutation({
-        mutationFn: formEndpoints.createResponse,
+        mutationFn: (data: any) => formEndpoints.createResponse(data),
         onSuccess: () => {
             showStatus({ type: 'success', title: 'تمت العملية', message: 'تم إرسال الرد بنجاح' });
             queryClient.invalidateQueries({ queryKey: queryKeys.process.all });
@@ -41,7 +42,7 @@ export const useReferralsLogic = (status: number) => {
     });
 
     const referralMutation = useMutation({
-        mutationFn: formEndpoints.createReferral,
+        mutationFn: (data: any) => formEndpoints.createReferral(data),
         onSuccess: () => {
             showStatus({ type: 'success', title: 'تمت الإحالة', message: 'تمت إحالة الطلب بنجاح' });
             queryClient.invalidateQueries({ queryKey: queryKeys.process.all });
@@ -74,25 +75,41 @@ export const useReferralsLogic = (status: number) => {
     const handleSubmit = async () => {
         if (!selectedRequest || !currentUser) return;
 
+        setUploadProgress(0);
+        const onUploadProgress = (progressEvent: any) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+        };
+
         if (submissionMode === 'submit') {
-            responseMutation.mutate({
-                requestId: selectedRequest.id,
-                comment,
-                respondedByUserId: currentUser.id,
-                files: files.length > 0 ? files : undefined
-            });
+            try {
+                await responseMutation.mutateAsync({
+                    requestId: selectedRequest.id,
+                    comment,
+                    respondedByUserId: currentUser.id,
+                    files: files.length > 0 ? files : undefined,
+                    onUploadProgress
+                } as any);
+            } catch {
+                // handled
+            }
         } else {
             if (!targetUserId) {
                 showStatus({ type: 'warning', title: 'تنبيه', message: 'يرجى اختيار المستخدم المحال إليه' });
                 return;
             }
-            referralMutation.mutate({
-                requestId: selectedRequest.id,
-                notes: comment,
-                parentTransactionId: selectedReferral?.id || selectedRequest.currentTransactionId,
-                targetUserId,
-                files: files.length > 0 ? files : undefined
-            });
+            try {
+                await referralMutation.mutateAsync({
+                    requestId: selectedRequest.id,
+                    notes: comment,
+                    parentTransactionId: selectedReferral?.id || selectedRequest.currentTransactionId,
+                    targetUserId,
+                    files: files.length > 0 ? files : undefined,
+                    onUploadProgress
+                } as any);
+            } catch {
+                // handled
+            }
         }
     };
 
@@ -126,6 +143,7 @@ export const useReferralsLogic = (status: number) => {
         selectedTemplate,
         isTemplateLoading,
         isSubmitting: responseMutation.isPending || referralMutation.isPending,
+        uploadProgress,
         setComment,
         setSubmissionMode,
         setTargetUserId,

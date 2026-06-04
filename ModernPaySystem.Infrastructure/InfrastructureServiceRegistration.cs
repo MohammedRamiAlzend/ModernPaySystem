@@ -27,7 +27,12 @@ public static class InfrastructureServiceRegistration
         services.Configure<ArchiveRecordZipOptions>(configuration.GetSection("ArchiveRecordZip"));
 
         // Register File Manager Services
-        services.AddFileManager();
+        services.AddSingleton<FileManager.Abstractions.IFileManager>(provider =>
+        {
+            var env = provider.GetRequiredService<Microsoft.AspNetCore.Hosting.IWebHostEnvironment>();
+            return new FileManager.Core.EnhancedFileManager(env.ContentRootPath);
+        });
+        services.AddScoped<FileManager.Services.Abstraction.IFilesManagerService, FileManager.Services.FilesManagerService>();
         services.AddMemoryCache();
 
         // Register HTTP Context Accessor

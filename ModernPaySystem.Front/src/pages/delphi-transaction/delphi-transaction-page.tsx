@@ -8,7 +8,7 @@ import { useUIStore } from '@/app/store/uiStore';
 import { Loader2, Monitor, AlertCircle, RefreshCcw } from 'lucide-react';
 import { useAuthStore } from '@/app/store/authStore';
 import { RequestSubmissionSidebar } from '@/features/form-builder/ui/RequestSubmissionSidebar';
-import type { CreateRequestDto } from '@/entities/form/model/types';
+import type { CreateRequestDto, CreateRequestRelatedRequestDto } from '@/entities/form/model/types';
 
 /**
  * DelphiTransactionPage: Handles incoming technical data from Delphi desktop app.
@@ -21,6 +21,7 @@ export const DelphiTransactionPage = () => {
     const [receiverDepartmentId, setReceiverDepartmentId] = useState<string>("");
     const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
+    const [relatedRequests, setRelatedRequests] = useState<CreateRequestRelatedRequestDto[]>([]);
 
     const { mutateAsync: createRequest, isPending: isSubmitting } = useCreateRequest();
 
@@ -68,6 +69,7 @@ export const DelphiTransactionPage = () => {
                     key,
                     value: String(value)
                 })),
+                RelatedRequests: relatedRequests,
                 files: files
             };
 
@@ -82,6 +84,7 @@ export const DelphiTransactionPage = () => {
             setRawInput(""); // Clear for next one
             setFiles([]);    // Clear files
             setReadOnlyUsers([]); // Clear read only users
+            setRelatedRequests([]); // Clear related requests
         } catch {
             showStatus({
                 type: 'error',
@@ -140,6 +143,9 @@ export const DelphiTransactionPage = () => {
                     files={files}
                     onFilesChange={setFiles}
                     className="lg:col-span-3 h-full"
+                    relatedRequests={relatedRequests}
+                    onRelatedRequestsChange={setRelatedRequests}
+                    showRelations={!!template?.id}
                 />
             </div>
         </div>

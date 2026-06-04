@@ -88,11 +88,25 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
 
         ]
     },
-    // {
-    //     title: "إعدادات النظام",
-    //     path: "/settings",
-    //     icon: <Settings className="h-5 w-5" />,
-    // },
+
+    {
+        title: "نظام الأرشفة",
+        path: "/archiving",
+        icon: <Archive className="h-5 w-5 " />,
+        isOpen: true,
+        children: [
+            {
+                title: "مستكشف الأرشيف",
+                path: "/archiving",
+                icon: <LayoutDashboard className="h-4 w-4" />,
+            },
+            {
+                title: "إدارة النماذج الديناميكية",
+                path: "/archiving/templates",
+                icon: <Settings className="h-4 w-4" />,
+            }
+        ]
+    }
 ];
 
 export const FOOTER_NAVIGATION_ITEMS = [

@@ -15,13 +15,26 @@ public class FolderService(
     {
         try
         {
-            var result = await unitOfWork.Folders.GetAllAsync(x=> x.ParentId == null);
+            var result = await unitOfWork.Folders.GetAllAsync();
             if (result.IsError)
             {
                 return result.Errors;
             }
 
-            return result.Value!.Select(x => x.ToDto()).ToList();
+            // Return a flat list of all folders directly to avoid missing subfolders 
+            // and eliminate reliance on EF Core lazy loading or relationship fix-up for SubFolders.
+            return result.Value!.Select(x => new FolderDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Level = x.Level,
+                ParentId = x.ParentId,
+                FolderDtos = [], // Frontend will handle flat structure
+                CreatedByUserId = x.CreatedByUserId,
+                CreatedAt = x.CreatedAt,
+                UpdatedByUserId = x.UpdatedByUserId,
+                UpdatedAt = x.UpdatedAt
+            }).ToList();
         }
         catch (Exception ex)
         {

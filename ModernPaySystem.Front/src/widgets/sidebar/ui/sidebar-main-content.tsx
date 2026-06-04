@@ -57,14 +57,10 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
     const navItems = useMemo(() => {
         return NAVIGATION_ITEMS.map(item => {
             let children = item.children || [];
-            // تعطيل مؤقت لشرط
-            // console.log('user', user);
-            // تصفية العناصر بناءً على صلاحية رئيس القسم
             if (!user?.isDepartmentHead) {
                 children = children.filter(child =>
                     child.title !== "الرد على الطلبات" &&
                     child.title !== "الردود الصادرة"
-                    // child.title !== "الطلبات التي تم الرد عليها" &&
                 );
             }
 
@@ -172,7 +168,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                     >
                                         <div className={cn(
                                             "transition-transform duration-300 group-hover/item:scale-110",
-                                            hasChildren ? "text-primary" : "text-current"
+                                            hasChildren ? "text-primary" : isActive ? "text-primary-foreground" : "text-current"
                                         )}>
                                             {item.icon}
                                         </div>
@@ -180,7 +176,8 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                             <>
                                                 <span className={cn(
                                                     "text-sm tracking-tight flex-1 animate-in fade-in slide-in-from-right-3",
-                                                    hasChildren ? "font-black text-primary" : "font-bold"
+                                                    hasChildren ? "font-black text-primary" : "font-bold",
+                                                    isActive && !hasChildren && "text-primary-foreground"
                                                 )}>
                                                     {item.title}
                                                 </span>
@@ -256,7 +253,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                                                                 : "text-muted-foreground hover:text-primary hover:bg-accent"
                                                                         )}
                                                                     >
-                                                                        <div className="w-1 h-1 rounded-full bg-primary/40 shrink-0" />
+                                                                        <div className="w-1 h-1 rounded-full bg-primary/40 shrink-0 text-primary" />
                                                                         {child.title}
                                                                     </Link>
                                                                 )}

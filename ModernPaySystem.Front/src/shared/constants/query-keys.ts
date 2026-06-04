@@ -62,5 +62,28 @@ export const queryKeys = {
         all: ['delphi'] as const,
         transactions: () => [...queryKeys.delphi.all, 'transactions'] as const,
         transaction: (id: string | number) => [...queryKeys.delphi.transactions(), id] as const,
+    },
+    archiving: {
+        folders: {
+            all: ['archiving', 'folders'] as const,
+            lists: () => [...queryKeys.archiving.folders.all, 'list'] as const,
+            list: (filters?: any) => [...queryKeys.archiving.folders.lists(), filters] as const,
+            details: () => [...queryKeys.archiving.folders.all, 'detail'] as const,
+            detail: (id: string | null) => [...queryKeys.archiving.folders.details(), id] as const,
+        },
+        records: {
+            all: ['archiving', 'records'] as const,
+            lists: () => [...queryKeys.archiving.records.all, 'list'] as const,
+            list: (folderId: string, page?: number, pageSize?: number) => [...queryKeys.archiving.records.lists(), { folderId, page, pageSize }] as const,
+            details: () => [...queryKeys.archiving.records.all, 'detail'] as const,
+            detail: (id: string | null) => [...queryKeys.archiving.records.details(), id] as const,
+        },
+        dynamicForms: {
+            all: ['archiving', 'dynamicForms'] as const,
+            lists: () => [...queryKeys.archiving.dynamicForms.all, 'list'] as const,
+            list: (page?: number, pageSize?: number) => [...queryKeys.archiving.dynamicForms.lists(), { page, pageSize }] as const,
+            details: () => [...queryKeys.archiving.dynamicForms.all, 'detail'] as const,
+            detail: (id: string | null) => [...queryKeys.archiving.dynamicForms.details(), id] as const,
+        }
     }
 };

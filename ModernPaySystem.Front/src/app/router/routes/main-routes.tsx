@@ -8,6 +8,7 @@ import { MainLayout } from '../../layouts/main-layout';
 import { ProtectedRoute } from '../ProtectedRoute';
 import { ErrorPage } from '@/pages/error-page';
 import { formBuilderRoutes } from './form-builder-routes';
+import { archivingRoutes } from './archiving-routes';
 import { RootRedirect } from './components/RootRedirect';
 
 const ContractsPage = lazyWithPreload(() => import('@/pages/contracts-page'));
@@ -110,5 +111,6 @@ export const mainRoutes: RouteObject = {
       },
     },
     formBuilderRoutes,
+    archivingRoutes,
   ],
 };

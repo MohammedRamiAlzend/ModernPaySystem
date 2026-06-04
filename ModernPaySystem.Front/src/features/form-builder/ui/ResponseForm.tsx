@@ -10,6 +10,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { UserPicker } from '@/features/users/ui/UserPicker';
 import { User } from 'lucide-react';
 
+import { Progress } from '@/shared/ui/progress';
+
 interface ResponseFormProps {
     requestId: string;
     comment: string;
@@ -23,6 +25,7 @@ interface ResponseFormProps {
     onSubmissionModeChange: (mode: 'submit' | 'referral') => void;
     targetUserId: string;
     onTargetUserChange: (userId: string) => void;
+    uploadProgress: number;
     onSubmit: () => void;
 }
 
@@ -39,6 +42,7 @@ export const ResponseForm = ({
     onSubmissionModeChange,
     targetUserId,
     onTargetUserChange,
+    uploadProgress,
     onSubmit
 }: ResponseFormProps) => {
     const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -193,7 +197,16 @@ export const ResponseForm = ({
                 </div>
 
                 {/* Fixed Footer */}
-                <div className="p-5 border-t bg-muted/20 shrink-0">
+                <div className="p-5 border-t bg-muted/20 shrink-0 space-y-3">
+                    {isPending && (
+                        <div className="flex flex-col gap-1.5 px-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                            <div className="flex justify-between text-[10px] font-bold text-primary">
+                                <span>جاري الرفع...</span>
+                                <span>{uploadProgress}%</span>
+                            </div>
+                            <Progress value={uploadProgress} className="h-1.5" />
+                        </div>
+                    )}
                     <Button
                         onClick={onSubmit}
                         disabled={!requestId || isPending || !comment.trim() || (submissionMode === 'referral' && !targetUserId)}

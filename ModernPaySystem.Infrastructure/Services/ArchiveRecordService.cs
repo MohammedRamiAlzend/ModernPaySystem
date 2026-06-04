@@ -231,7 +231,7 @@ public class ArchiveRecordService(
 
             var record = new ArchiveRecord
             {
-                Id = Guid.NewGuid(),
+                Id = dto.Id ?? Guid.NewGuid(),
                 FolderId = dto.FolderId,
                 DepartmentId = folderDepartmentResult.Value,
                 FormId = formResolutionResult?.Value?.Id,
@@ -519,88 +519,87 @@ public class ArchiveRecordService(
                 await CleanupStoredFilesAsync(uploadedPaths);
                 return newPhysicalFiles.Errors;
             }
+            var dbContext = unitOfWork.Context;
+            var executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
-            await unitOfWork.BeginTransactionAsync();
-
-            record.FolderId = dto.FolderId;
-            record.FormId = dto.FormId;
-            record.ArchivalNumber = dto.ArchivalNumber.Trim();
-
-            if (record.ArchiveRecordTemplateValuesId == null)
+            return await executionStrategy.ExecuteAsync(async () =>
             {
-                record.ArchiveRecordTemplateValuesId = BuildTemplateValues(record, dto);
-                var addTemplateValuesResult = await unitOfWork.ArchiveRecordTemplateValues.AddAsync(record.ArchiveRecordTemplateValuesId);
-                if (addTemplateValuesResult.IsError)
+                await unitOfWork.BeginTransactionAsync();
+
+                record.FolderId = dto.FolderId;
+                record.FormId = dto.FormId;
+                record.ArchivalNumber = dto.ArchivalNumber.Trim();
+
+                if (record.ArchiveRecordTemplateValuesId == null)
+                {
+                    record.ArchiveRecordTemplateValuesId = BuildTemplateValues(record, dto);
+                    var addTemplateValuesResult = await unitOfWork.ArchiveRecordTemplateValues.AddAsync(record.ArchiveRecordTemplateValuesId);
+                    if (addTemplateValuesResult.IsError)
+                    {
+                        await unitOfWork.RollbackTransactionAsync();
+                        return addTemplateValuesResult.Errors;
+                    }
+                }
+                else
+                {
+                    record.ArchiveRecordTemplateValuesId.ArchiveFormTemplateId = dto.FormId;
+                    record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues = [.. dto.Content.Select(x => new ArchiveRecordFormInputValue
+                    {
+                        Key = x.Key,
+                        Value = x.Value
+                    })];
+                }
+
+                var addFiles = newPhysicalFiles.Value!.ToList();
+                record.PhysicalFiles ??= [];
+                foreach (var file in addFiles)
+                {
+                    record.PhysicalFiles.Add(file);
+                    var addFileResult = await unitOfWork.PhysicalFiles.AddAsync(file);
+                    if (addFileResult.IsError)
+                    {
+                        await unitOfWork.RollbackTransactionAsync();
+                        return addFileResult.Errors;
+                    }
+                }
+
+                foreach (var file in filesToRemove)
+                {
+                    var removeResult = await unitOfWork.PhysicalFiles.RemoveAsync(x => x.Id == file.Id);
+                    if (removeResult.IsError)
+                    {
+                        await unitOfWork.RollbackTransactionAsync();
+                        return removeResult.Errors;
+                    }
+                }
+
+                var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
+                if (updateResult.IsError)
                 {
                     await unitOfWork.RollbackTransactionAsync();
-                    await CleanupStoredFilesAsync(uploadedPaths);
-                    return addTemplateValuesResult.Errors;
+                    return updateResult.Errors;
                 }
-            }
-            else
-            {
-                record.ArchiveRecordTemplateValuesId.ArchiveFormTemplateId = dto.FormId;
-                record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues = [.. dto.Content.Select(x => new ArchiveRecordFormInputValue
-                {
-                    Key = x.Key,
-                    Value = x.Value
-                })];
-            }
 
-            var addFiles = newPhysicalFiles.Value!.ToList();
-            record.PhysicalFiles ??= [];
-            foreach (var file in addFiles)
-            {
-                record.PhysicalFiles.Add(file);
-                var addFileResult = await unitOfWork.PhysicalFiles.AddAsync(file);
-                if (addFileResult.IsError)
+                var saveResult = await unitOfWork.SaveChangesAsync();
+                if (saveResult <= 0)
                 {
                     await unitOfWork.RollbackTransactionAsync();
-                    await CleanupStoredFilesAsync(uploadedPaths);
-                    return addFileResult.Errors;
+                    return ApplicationErrors.DatabaseError;
                 }
-            }
 
-            foreach (var file in filesToRemove)
-            {
-                var removeResult = await unitOfWork.PhysicalFiles.RemoveAsync(x => x.Id == file.Id);
-                if (removeResult.IsError)
+                await unitOfWork.CommitTransactionAsync();
+
+                foreach (var file in filesToRemove)
                 {
-                    await unitOfWork.RollbackTransactionAsync();
-                    await CleanupStoredFilesAsync(uploadedPaths);
-                    return removeResult.Errors;
+                    var deleteResult = await DeleteStoredFileAsync(file.StoragePath);
+                    if (deleteResult.IsError)
+                    {
+                        logger.LogWarning("Record {RecordId} updated, but file cleanup failed for {Path}: {Error}", id, file.StoragePath, deleteResult.Errors);
+                    }
                 }
 
-            }
-
-            var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
-            if (updateResult.IsError)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                await CleanupStoredFilesAsync(uploadedPaths);
-                return updateResult.Errors;
-            }
-
-            var saveResult = await unitOfWork.SaveChangesAsync();
-            if (saveResult <= 0)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                await CleanupStoredFilesAsync(uploadedPaths);
-                return ApplicationErrors.DatabaseError;
-            }
-
-            await unitOfWork.CommitTransactionAsync();
-
-            foreach (var file in filesToRemove)
-            {
-                var deleteResult = await DeleteStoredFileAsync(file.StoragePath);
-                if (deleteResult.IsError)
-                {
-                    logger.LogWarning("Record {RecordId} updated, but file cleanup failed for {Path}: {Error}", id, file.StoragePath, deleteResult.Errors);
-                }
-            }
-
-            return await GetByIdAsync(record.Id);
+                return await GetByIdAsync(record.Id);
+            });
         }
         catch (Exception ex)
         {
@@ -654,39 +653,41 @@ public class ArchiveRecordService(
                 await CleanupStoredFilesAsync(uploadedPaths);
                 return newPhysicalFiles.Errors;
             }
+            var dbContext = unitOfWork.Context;
+            var executionStrategy = dbContext.Database.CreateExecutionStrategy();
 
-            await unitOfWork.BeginTransactionAsync();
-
-            foreach (var file in newPhysicalFiles.Value!)
+            return await executionStrategy.ExecuteAsync(async () =>
             {
-                record.PhysicalFiles.Add(file);
-                var addFileResult = await unitOfWork.PhysicalFiles.AddAsync(file);
-                if (addFileResult.IsError)
+                await unitOfWork.BeginTransactionAsync();
+
+                foreach (var file in newPhysicalFiles.Value!)
+                {
+                    record.PhysicalFiles.Add(file);
+                    var addFileResult = await unitOfWork.PhysicalFiles.AddAsync(file);
+                    if (addFileResult.IsError)
+                    {
+                        await unitOfWork.RollbackTransactionAsync();
+                        return addFileResult.Errors;
+                    }
+                }
+
+                var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
+                if (updateResult.IsError)
                 {
                     await unitOfWork.RollbackTransactionAsync();
-                    await CleanupStoredFilesAsync(uploadedPaths);
-                    return addFileResult.Errors;
+                    return updateResult.Errors;
                 }
-            }
 
-            var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
-            if (updateResult.IsError)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                await CleanupStoredFilesAsync(uploadedPaths);
-                return updateResult.Errors;
-            }
+                var saveResult = await unitOfWork.SaveChangesAsync();
+                if (saveResult <= 0)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    return ApplicationErrors.DatabaseError;
+                }
 
-            var saveResult = await unitOfWork.SaveChangesAsync();
-            if (saveResult <= 0)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                await CleanupStoredFilesAsync(uploadedPaths);
-                return ApplicationErrors.DatabaseError;
-            }
-
-            await unitOfWork.CommitTransactionAsync();
-            return await GetByIdAsync(record.Id);
+                await unitOfWork.CommitTransactionAsync();
+                return await GetByIdAsync(record.Id);
+            });
         }
         catch (Exception ex)
         {
@@ -730,34 +731,43 @@ public class ArchiveRecordService(
             {
                 return ApplicationErrors.AttachmentNotFound;
             }
-
-            await unitOfWork.BeginTransactionAsync();
-
-            file.IsDeleted = true;
-            file.DeletedAt = DateTime.UtcNow;
-
-            var updateFileResult = await unitOfWork.PhysicalFiles.UpdateAsync(file);
-            if (updateFileResult.IsError)
+            var dbContext = unitOfWork.Context;
+            var executionStrategy = dbContext.Database.CreateExecutionStrategy();
+            var transactionResult = await executionStrategy.ExecuteAsync(async () =>
             {
-                await unitOfWork.RollbackTransactionAsync();
-                return updateFileResult.Errors;
-            }
+                await unitOfWork.BeginTransactionAsync();
 
-            var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
-            if (updateResult.IsError)
+                file.IsDeleted = true;
+                file.DeletedAt = DateTime.UtcNow;
+
+                var updateFileResult = await unitOfWork.PhysicalFiles.UpdateAsync(file);
+                if (updateFileResult.IsError)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    return (Result<bool>)updateFileResult.Errors;
+                }
+
+                var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
+                if (updateResult.IsError)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    return (Result<bool>)updateResult.Errors;
+                }
+
+                var saveResult = await unitOfWork.SaveChangesAsync();
+                if (saveResult <= 0)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    return (Result<bool>)ApplicationErrors.DatabaseError;
+                }
+
+                await unitOfWork.CommitTransactionAsync();
+                return (Result<bool>)true;
+            });
+            if (transactionResult.IsError)
             {
-                await unitOfWork.RollbackTransactionAsync();
-                return updateResult.Errors;
+                return transactionResult.Errors;
             }
-
-            var saveResult = await unitOfWork.SaveChangesAsync();
-            if (saveResult <= 0)
-            {
-                await unitOfWork.RollbackTransactionAsync();
-                return ApplicationErrors.DatabaseError;
-            }
-
-            await unitOfWork.CommitTransactionAsync();
 
             var deleteResult = await DeleteStoredFileAsync(file.StoragePath);
             if (deleteResult.IsError)
@@ -818,7 +828,7 @@ public class ArchiveRecordService(
                     report.MissingStoragePaths.Add(physicalFile.StoragePath);
                 }
 
-                if (!filesManagerService.FileExists(physicalFile.StoragePath))
+                if (!filesManagerService.FileExists(NormalizePath(physicalFile.StoragePath)))
                 {
                     report.MissingPhysicalFileIds.Add(physicalFile.Id);
                 }
@@ -892,7 +902,66 @@ public class ArchiveRecordService(
     {
         try
         {
-            return await archiveDeletionWorkflowService.DeleteArchiveRecordAsync(id);
+            if (id == Guid.Empty)
+            {
+                return ApplicationErrors.InvalidInput;
+            }
+
+            var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
+                x => x.Id == id,
+                query => query.Include(x => x.PhysicalFiles));
+
+            if (recordResult.IsError)
+            {
+                return recordResult.Errors;
+            }
+
+            var record = recordResult.Value;
+            if (record == null)
+            {
+                return ApplicationErrors.ArchiveRecordNotFound;
+            }
+
+            var storedFiles = record.PhysicalFiles.ToList();
+
+            var dbContext = unitOfWork.Context;
+            var executionStrategy = dbContext.Database.CreateExecutionStrategy();
+            var transactionResult = await executionStrategy.ExecuteAsync(async () =>
+            {
+                await unitOfWork.BeginTransactionAsync();
+
+                var removeResult = await unitOfWork.ArchiveRecords.RemoveAsync(x => x.Id == id);
+                if (removeResult.IsError)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    return (Result<bool>)removeResult.Errors;
+                }
+
+                var saveResult = await unitOfWork.SaveChangesAsync();
+                if (saveResult <= 0)
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    return (Result<bool>)ApplicationErrors.DatabaseError;
+                }
+
+                await unitOfWork.CommitTransactionAsync();
+                return (Result<bool>)true;
+            });
+            if (transactionResult.IsError)
+            {
+                return transactionResult.Errors;
+            }
+
+            foreach (var physicalFile in storedFiles.Where(x => !x.IsDeleted))
+            {
+                var deleteResult = await DeleteStoredFileAsync(physicalFile.StoragePath);
+                if (deleteResult.IsError)
+                {
+                    logger.LogWarning("Archive record {RecordId} deleted, but file cleanup failed for {Path}: {Error}", id, physicalFile.StoragePath, deleteResult.Errors);
+                }
+            }
+
+            return true;
         }
         catch (Exception ex)
         {
@@ -906,8 +975,13 @@ public class ArchiveRecordService(
         }
     }
 
-    private Result<Success> ValidateFiles(IFormFileCollection files)
+    private Result<Success> ValidateFiles(IFormFileCollection? files)
     {
+        if (files == null)
+        {
+            return Result.Success;
+        }
+
         foreach (var file in files)
         {
             if (file == null || file.Length <= 0)
@@ -1063,11 +1137,11 @@ public class ArchiveRecordService(
                 return ApplicationErrors.AttachmentNotFound;
             }
 
-            if (!filesManagerService.FileExists(physicalFile.StoragePath))
+            if (!filesManagerService.FileExists(NormalizePath(physicalFile.StoragePath)))
             {
                 return ApplicationErrors.ArchivePhysicalFileMissingFromStorage(physicalFile.StoragePath);
             }
-            var absolutePath = Path.GetFullPath(physicalFile.StoragePath);
+            var absolutePath = NormalizePath(physicalFile.StoragePath);
 
             var streamResult = await filesManagerService.GetFileStreamAsync(absolutePath);
             if (streamResult.IsError)
@@ -1241,7 +1315,7 @@ public class ArchiveRecordService(
 
             foreach (var physicalFile in activeFiles)
             {
-                if (!filesManagerService.FileExists(physicalFile.StoragePath))
+                if (!filesManagerService.FileExists(NormalizePath(physicalFile.StoragePath)))
                 {
                     return ApplicationErrors.ArchivePhysicalFileMissingFromStorage(physicalFile.StoragePath);
                 }
@@ -1362,7 +1436,7 @@ public class ArchiveRecordService(
             };
 
             zipOutputStream.PutNextEntry(zipEntry);
-            var absolutePath = Path.GetFullPath(physicalFile.StoragePath);
+            var absolutePath = NormalizePath(physicalFile.StoragePath);
             var streamResult = await filesManagerService.GetFileStreamAsync(absolutePath);
             if (streamResult.IsError)
             {
@@ -1575,9 +1649,14 @@ public class ArchiveRecordService(
 
     private sealed record CachedZipBundle(string ZipFilePath, string DownloadFileName, long ContentLength);
 
-    private async Task<Result<List<PhysicalFile>>> StoreFilesAsync(ArchiveRecord record, IFormFileCollection files, List<string> storedPaths)
+    private async Task<Result<List<PhysicalFile>>> StoreFilesAsync(ArchiveRecord record, IFormFileCollection? files, List<string> storedPaths)
     {
         var physicalFiles = new List<PhysicalFile>();
+
+        if (files == null)
+        {
+            return physicalFiles;
+        }
 
         foreach (var file in files)
         {
@@ -1633,7 +1712,8 @@ public class ArchiveRecordService(
 
     private async Task<Result<bool>> DeleteStoredFileAsync(string storagePath)
     {
-        var deleteResult = await filesManagerService.DeleteFileAsync(storagePath);
+        var absolutePath = NormalizePath(storagePath);
+        var deleteResult = await filesManagerService.DeleteFileAsync(absolutePath);
         if (deleteResult.IsError)
         {
             return deleteResult.Errors;
@@ -1646,10 +1726,11 @@ public class ArchiveRecordService(
     {
         foreach (var storedPath in storedPaths.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            var deleteResult = await filesManagerService.DeleteFileAsync(storedPath);
+            var absolutePath = NormalizePath(storedPath);
+            var deleteResult = await filesManagerService.DeleteFileAsync(absolutePath);
             if (deleteResult.IsError)
             {
-                logger.LogWarning("Failed to clean up stored file {Path}: {Error}", storedPath, deleteResult.Errors);
+                logger.LogWarning("Cleanup failed for stored file at path: {Path}. Error: {Error}", absolutePath, deleteResult.Errors);
             }
         }
     }

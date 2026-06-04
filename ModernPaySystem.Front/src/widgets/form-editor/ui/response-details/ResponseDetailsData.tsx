@@ -1,9 +1,10 @@
 import React from 'react';
-import { FileArchive, History } from 'lucide-react';
+import { FileArchive, History, Link2 } from 'lucide-react';
 // import { FileArchive, History, CheckCircle2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
 import { RequestTransactionsHistory } from '@/features/form-builder/ui/RequestTransactionsHistory';
 import { CurrentLocationBadge } from '@/features/form-builder/ui/CurrentLocationBadge';
+import { RequestRelationsSection } from '@/features/form-builder/ui/RequestRelationsSection';
 // import { useRequestResponses } from '@/features/form-builder/api/formEndpoints';
 // import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
@@ -84,6 +85,13 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({
                                 <History className="w-4 h-4" />
                                 متابعة الإحالات
                             </TabsTrigger>
+                            <TabsTrigger
+                                value="relations"
+                                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-2 font-bold flex items-center gap-2"
+                            >
+                                <Link2 className="w-4 h-4" />
+                                الارتباطات
+                            </TabsTrigger>
                         </div>
 
                         <CurrentLocationBadge
@@ -127,6 +135,10 @@ export const ResponseDetailsData: React.FC<ResponseDetailsDataProps> = ({
 
                     <TabsContent value="referrals" className="mt-0 outline-none">
                         <RequestTransactionsHistory requestId={requestId!} />
+                    </TabsContent>
+
+                    <TabsContent value="relations" className="mt-0 outline-none">
+                        <RequestRelationsSection requestId={requestId!} />
                     </TabsContent>
                 </Tabs>
             ) : (

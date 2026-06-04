@@ -6,12 +6,13 @@ import { FormRenderer } from '@/widgets/form-renderer/ui/FormRenderer';
 import { Card } from '@/shared/ui/card';
 import { useMutation } from '@tanstack/react-query';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
-import type { CreateRequestDto } from '@/entities/form/model/types';
+import type { CreateRequestDto, CreateRequestRelatedRequestDto } from '@/entities/form/model/types';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
-import { FileText, Printer, Download } from 'lucide-react';
+import { FileText, Printer, Download, Loader2 } from 'lucide-react';
 import { RequestSubmissionSidebar } from '@/features/form-builder/ui/RequestSubmissionSidebar';
 import { printImage, downloadImage } from '@/shared/utils/image-actions';
+import { Progress } from '@/shared/ui/progress';
 
 /**
  * RequestPage: Handles the submission of a new form request.
@@ -28,6 +29,8 @@ export const RequestPage = () => {
     const [departmentId, setDepartmentId] = useState<string>('');
     const [readOnlyUsers, setReadOnlyUsers] = useState<string[]>([]);
     const [files, setFiles] = useState<File[]>([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [relatedRequests, setRelatedRequests] = useState<CreateRequestRelatedRequestDto[]>([]);
 
     
     const currentUser = useAuthStore((state) => state.user);
@@ -48,7 +51,11 @@ export const RequestPage = () => {
 
 
     const submitMutation = useMutation({
-        mutationFn: formEndpoints.createRequest,
+        mutationFn: (data: CreateRequestDto) => 
+            formEndpoints.createRequest(data, (progressEvent) => {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                setUploadProgress(percentCompleted);
+            }),
         onSuccess: () => {
             showStatus({
                 type: 'success',
@@ -59,6 +66,8 @@ export const RequestPage = () => {
             setFormKey(prev => prev + 1);
             setFiles([]);
             setReadOnlyUsers([]);
+            setRelatedRequests([]);
+            setUploadProgress(0);
         },
         onError: () => {
             showStatus({
@@ -66,6 +75,7 @@ export const RequestPage = () => {
                 title: 'خطأ',
                 message: 'حدث خطأ أثناء تقديم الطلب'
             });
+            setUploadProgress(0);
         }
     });
 
@@ -99,10 +109,11 @@ export const RequestPage = () => {
                 key,
                 value: String(value)
             })),
+            RelatedRequests: relatedRequests,
             files: files
         };
 
-
+        setUploadProgress(0);
         submitMutation.mutate(payload);
     };
 
@@ -127,9 +138,15 @@ export const RequestPage = () => {
                             />
 
                             {submitMutation.isPending && (
-                                <div className="mt-6 flex items-center justify-center gap-2 text-primary font-bold bg-primary/10 p-4 rounded-xl">
-                                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                    جاري إرسال الطلب...
+                                <div className="mt-6 flex flex-col gap-3 bg-primary/10 p-5 rounded-2xl animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="flex items-center justify-between text-primary font-bold">
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                            <span>جاري إرسال الطلب والمرفقات...</span>
+                                        </div>
+                                        <span>{uploadProgress}%</span>
+                                    </div>
+                                    <Progress value={uploadProgress} className="h-2 bg-primary/20" />
                                 </div>
                             )}
                         </Card>
@@ -150,6 +167,9 @@ export const RequestPage = () => {
                     onFilesChange={setFiles}
                     showFiles={!!selectedTemplate}
                     departmentLabel="القسم المستلم"
+                    relatedRequests={relatedRequests}
+                    onRelatedRequestsChange={setRelatedRequests}
+                    showRelations={!!selectedTemplate}
                 />
 
             </div>

@@ -16,6 +16,7 @@ export const useResponsePageLogic = () => {
     const [requestId, setRequestId] = useState('');
     const [comment, setComment] = useState('');
     const [files, setFiles] = useState<File[]>([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const [submissionMode, setSubmissionMode] = useState<'submit' | 'referral'>('submit');
     const [targetUserId, setTargetUserId] = useState('');
 
@@ -52,7 +53,7 @@ export const useResponsePageLogic = () => {
     const { data: selectedTemplate } = useTemplateById(selectedRequest?.templateId || null);
 
     const responseMutation = useMutation({
-        mutationFn: formEndpoints.createResponse,
+        mutationFn: (data: any) => formEndpoints.createResponse(data),
         onSuccess: () => {
             showStatus({
                 type: 'success',
@@ -115,13 +116,24 @@ export const useResponsePageLogic = () => {
     const handleSubmit = async () => {
         if (!requestId || !currentUser) return;
 
+        setUploadProgress(0);
+        const onUploadProgress = (progressEvent: any) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percentCompleted);
+        };
+
         if (submissionMode === 'submit') {
-            responseMutation.mutate({
-                requestId,
-                comment,
-                respondedByUserId: currentUser.id,
-                files: files.length > 0 ? files : undefined
-            });
+            try {
+                await responseMutation.mutateAsync({
+                    requestId,
+                    comment,
+                    respondedByUserId: currentUser.id,
+                    files: files.length > 0 ? files : undefined,
+                    onUploadProgress
+                } as any);
+            } catch {
+                // Error handled by mutation
+            }
         } else {
             if (!targetUserId) {
                 showStatus({
@@ -132,16 +144,19 @@ export const useResponsePageLogic = () => {
                 return;
             }
 
-            referralMutation.mutate({
-                requestId: requestId,
-                notes: comment,
-                parentTransactionId: selectedRequest?.currentTransactionId,
-                targetUserId: targetUserId,
-                files: files.length > 0 ? files : undefined
-            }, {
-                onSuccess: handleReferralSuccess,
-                onError: () => handleMutationError('خطأ', 'فشل إحالة الطلب')
-            });
+            try {
+                await referralMutation.mutateAsync({
+                    requestId: requestId,
+                    notes: comment,
+                    parentTransactionId: selectedRequest?.currentTransactionId,
+                    targetUserId: targetUserId,
+                    files: files.length > 0 ? files : undefined,
+                    onUploadProgress
+                } as any);
+                handleReferralSuccess();
+            } catch {
+                handleMutationError('خطأ', 'فشل إحالة الطلب');
+            }
         }
     };
 
@@ -183,6 +198,7 @@ export const useResponsePageLogic = () => {
         page,
         setPage,
         isPending: responseMutation.isPending || referralMutation.isPending,
+        uploadProgress,
         submissionMode,
         setSubmissionMode,
         targetUserId,
