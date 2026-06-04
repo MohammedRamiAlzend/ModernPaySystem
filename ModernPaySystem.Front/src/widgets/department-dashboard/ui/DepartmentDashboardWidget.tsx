@@ -442,9 +442,13 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <Button variant="ghost" size="sm" className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <RefreshCw className="w-3 h-3" />
-                                                                    ملف المستخدم
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:bg-primary/10 hover:text-primary transition-colors"
+                                                                    title="ملف المستخدم"
+                                                                >
+                                                                    <RefreshCw className="w-4 h-4" />
                                                                 </Button>
 
                                                             {/* Department Head Assignment */}
@@ -456,8 +460,9 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                             ) : (
                                                                 <Button 
                                                                     variant="ghost" 
-                                                                    size="sm" 
-                                                                    className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-amber-500 hover:bg-amber-500/10"
+                                                                    size="icon" 
+                                                                    className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:text-amber-500 hover:bg-amber-500/10 transition-colors"
+                                                                    title="تعيين كرئيس قسم"
                                                                     onClick={() => {
                                                                         showConfirm({
                                                                             title: 'تعيين رئيس قسم',
@@ -474,8 +479,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                         });
                                                                     }}
                                                                 >
-                                                                    <Crown className="w-3 h-3" />
-                                                                    تعيين كرئيس
+                                                                    <Crown className="w-4 h-4" />
                                                                 </Button>
                                                             )}
 
@@ -488,8 +492,8 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                     </div>
                                                                     <Button 
                                                                         variant="ghost" 
-                                                                        size="sm" 
-                                                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        size="icon" 
+                                                                        className="h-8 w-8 rounded-lg hidden group-hover:inline-flex text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
                                                                         onClick={() => {
                                                                             showConfirm({
                                                                                 title: 'إلغاء تعيين مدير الأرشيف',
@@ -506,14 +510,15 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                         }}
                                                                         title="إلغاء تعيين كمدير أرشيف"
                                                                     >
-                                                                        <Trash2 className="w-3 h-3" />
+                                                                        <Trash2 className="w-4 h-4" />
                                                                     </Button>
                                                                 </div>
                                                             ) : (
                                                                 <Button 
                                                                     variant="ghost" 
-                                                                    size="sm" 
-                                                                    className="h-8 text-xs gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:text-emerald-400 dark:hover:bg-emerald-400/10"
+                                                                    size="icon" 
+                                                                    className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:text-emerald-400 dark:hover:bg-emerald-400/10 transition-colors"
+                                                                    title="تعيين كمدير أرشيف"
                                                                     onClick={() => {
                                                                         showConfirm({
                                                                             title: 'تعيين مدير الأرشيف',
@@ -529,8 +534,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                         });
                                                                     }}
                                                                 >
-                                                                    <Shield className="w-3 h-3" />
-                                                                    تعيين كمدير أرشيف
+                                                                    <Shield className="w-4 h-4" />
                                                                 </Button>
                                                             )}
                                                             </div>
