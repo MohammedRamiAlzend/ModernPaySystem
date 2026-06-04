@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArchiveRecord } from '@/features/archiving/model/types';
 import { useSubmitEditRequest } from '../model/mutations';
 import { useUIStore } from '@/app/store/uiStore';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
-import { Upload, Trash2, X, Plus } from 'lucide-react';
+import { Upload, Trash2, X } from 'lucide-react';
 
 interface SubmitEditRequestModalProps {
     isOpen: boolean;
@@ -21,21 +21,25 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
     const [fields, setFields] = useState<Record<string, string>>({});
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
-    useEffect(() => {
-        if (record) {
-            setJustification('');
-            setSelectedFiles([]);
-            
-            // Populate fields from current template values
-            const initialFields: Record<string, string> = {};
-            if (record.archiveRecordTemplateValues?.archiveRecordFormInputValues) {
-                record.archiveRecordTemplateValues.archiveRecordFormInputValues.forEach(item => {
-                    initialFields[item.key] = item.value || '';
-                });
-            }
-            setFields(initialFields);
+    // Track previous props to synchronize state during render (avoids setState in useEffect)
+    const [prevRecordId, setPrevRecordId] = useState<string | null>(null);
+    const [prevIsOpen, setPrevIsOpen] = useState(false);
+
+    if (isOpen !== prevIsOpen || (record && record.id !== prevRecordId)) {
+        setPrevIsOpen(isOpen);
+        setPrevRecordId(record ? record.id : null);
+        setJustification('');
+        setSelectedFiles([]);
+
+        // Populate fields from current template values
+        const initialFields: Record<string, string> = {};
+        if (record?.archiveRecordTemplateValues?.archiveRecordFormInputValues) {
+            record.archiveRecordTemplateValues.archiveRecordFormInputValues.forEach(item => {
+                initialFields[item.key] = item.value || '';
+            });
         }
-    }, [record, isOpen]);
+        setFields(initialFields);
+    }
 
     if (!isOpen || !record) return null;
 
@@ -120,7 +124,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-1 overflow-hidden">
                     <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1.5 pl-0.5">
-                        
+
                         {/* Cause of edit */}
                         <div className="flex flex-col gap-2">
                             <Label className="text-xs font-semibold text-muted-foreground">سبب التعديل المطلوب *</Label>
@@ -157,7 +161,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                         {/* File Upload Section */}
                         <div className="flex flex-col gap-2">
                             <Label className="text-xs font-semibold text-muted-foreground">إرفاق مستندات أو ملفات جديدة (اختياري)</Label>
-                            
+
                             <div className="flex flex-col items-center justify-center border-2 border-dashed border-border hover:border-primary/50 rounded-2xl p-6 bg-muted/10 transition-colors cursor-pointer relative">
                                 <input
                                     type="file"

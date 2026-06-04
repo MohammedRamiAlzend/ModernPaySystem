@@ -41,8 +41,8 @@ export default function ArchiveEditRequestsPage() {
         !!user?.permissions?.includes('archiving.edit-requests.approve') ||
         !!(userProfile && archiveLeaders && archiveLeaders.some((leader: any) => leader.userId === userProfile.id));
 
-    const [pendingPage, setPendingPage] = useState(1);
-    const [myPage, setMyPage] = useState(1);
+    const [pendingPage] = useState(1);
+    const [myPage] = useState(1);
 
     const { data: pendingData, isLoading: isLoadingPending } = usePendingEditRequests(
         isArchiveLeader ? userDeptId : null,
@@ -114,8 +114,8 @@ export default function ArchiveEditRequestsPage() {
                     <button
                         onClick={() => setActiveTab('pending')}
                         className={`px-6 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${activeTab === 'pending'
-                                ? 'border-primary text-primary'
-                                : 'border-transparent text-muted-foreground hover:text-foreground'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
                             }`}
                     >
                         الطلبات المعلقة للقسم ({pendingData?.totalItems || 0})
@@ -124,8 +124,8 @@ export default function ArchiveEditRequestsPage() {
                 <button
                     onClick={() => setActiveTab('my')}
                     className={`px-6 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${activeTab === 'my'
-                            ? 'border-primary text-primary'
-                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
                         }`}
                 >
                     طلبات التعديل الخاصة بي ({myData?.totalItems || 0})

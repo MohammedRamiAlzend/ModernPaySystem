@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { EditArchiveRequest, EditArchiveRequestStatus } from '../model/types';
+import { EditArchiveRequest } from '../model/types';
 import { useApproveEditRequest, useRejectEditRequest } from '../model/mutations';
 import { useUIStore } from '@/app/store/uiStore';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { Check, X, Eye, FileText, Calendar, User, FileUp } from 'lucide-react';
+import { Check, X, Eye, FileText, User } from 'lucide-react';
 import { Label } from '@radix-ui/react-label';
 
 interface EditRequestsListProps {
@@ -14,7 +14,7 @@ interface EditRequestsListProps {
 }
 
 export function EditRequestsList({ requests, isLoading, onViewDetails }: EditRequestsListProps) {
-    const { showStatus, showConfirm } = useUIStore();
+    const { showStatus } = useUIStore();
     const approveMutation = useApproveEditRequest();
     const rejectMutation = useRejectEditRequest();
 

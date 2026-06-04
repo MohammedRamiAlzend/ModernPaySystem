@@ -1,9 +1,7 @@
 import api from '@/shared/api/baseApi';
 import {
     EditArchiveRequest,
-    CreateEditArchiveRequestDto,
-    EditArchiveRequestDecisionDto,
-    EditArchiveRequestRejectDto
+    CreateEditArchiveRequestDto
 } from '../model/types';
 
 export const archiveEditRequestsService = {

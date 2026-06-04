@@ -33,7 +33,7 @@ export const ListView: React.FC<ListViewProps> = ({
     onFolderEdit,
     onFolderDelete,
     onView,
-    onEdit,
+    // onEdit,
     onDelete,
     onDownloadZip,
     onRecordRequestEdit,
@@ -138,7 +138,7 @@ export const ListView: React.FC<ListViewProps> = ({
                                                 >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                {onEdit && (
+                                                {/* {onEdit && (
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
@@ -148,7 +148,7 @@ export const ListView: React.FC<ListViewProps> = ({
                                                     >
                                                         <Edit3 className="h-4 w-4" />
                                                     </Button>
-                                                )}
+                                                )} */}
                                                 {onRecordRequestEdit && (
                                                     <Button
                                                         variant="ghost"

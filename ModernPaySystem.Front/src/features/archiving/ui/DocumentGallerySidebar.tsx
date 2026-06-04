@@ -1,23 +1,23 @@
 import React from 'react';
 import { PhysicalFile, ArchiveRecord } from '../model/types';
 import { Progress } from '@/shared/ui/progress';
-import { 
-    isImageFile, 
-    isVideoFile, 
-    isPdfFile, 
-    isOfficeFile 
+import {
+    isImageFile,
+    isVideoFile,
+    isPdfFile,
+    isOfficeFile
 } from '../hooks/useDocumentPreview';
-import { 
-    Image, 
-    Video, 
-    FileIcon, 
-    FileSpreadsheet, 
-    FileText, 
-    Loader2, 
-    QrCode, 
-    Upload, 
-    Trash2, 
-    Download 
+import {
+    Image,
+    Video,
+    FileIcon,
+    FileSpreadsheet,
+    FileText,
+    Loader2,
+    QrCode,
+    // Upload,
+    Trash2,
+    Download
 } from 'lucide-react';
 
 interface DocumentGallerySidebarProps {
@@ -62,7 +62,7 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
     downloadingFileId,
     downloadProgress,
     onGenerateAndAddQrCover,
-    onAddFiles,
+    // onAddFiles,
     onDeleteFile,
     onDownload
 }) => {
@@ -70,8 +70,8 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
         <div className="w-full md:w-64 border-l border-border pl-0 md:pl-6 flex flex-col gap-4">
             <div className="flex flex-col gap-3 pb-3 border-b border-border">
                 <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-foreground">الملفات المرفقة ({localFiles.length})</h3>
-                    
+                    <h3 className="text-sm font-bold text-foreground">الملفات المرفقة  ({localFiles.length})</h3>
+
                     {isUploading ? (
                         <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     ) : (
@@ -86,7 +86,7 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                                     <QrCode className="h-4 w-4" />
                                 </button>
                             )}
-                            <label className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors cursor-pointer" title="إضافة ملفات جديدة">
+                            {/* <label className="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors cursor-pointer" title="إضافة ملفات جديدة">
                                 <Upload className="h-4 w-4" />
                                 <input
                                     type="file"
@@ -95,7 +95,7 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                                     onChange={onAddFiles}
                                     disabled={isUploading}
                                 />
-                            </label>
+                            </label> */}
                         </div>
                     )}
                 </div>
@@ -110,7 +110,7 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                     </div>
                 )}
             </div>
-            
+
             <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto pr-1">
                 {localFiles.map((file) => {
                     const isSelected = selectedFile?.id === file.id;
@@ -120,11 +120,10 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                         <React.Fragment key={file.id}>
                             <div
                                 onClick={() => !isDownloading && setSelectedFile(file)}
-                                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border-2 transition-all ${
-                                    isSelected
-                                        ? 'bg-primary/5 border-primary shadow-sm'
-                                        : 'bg-muted/30 border-transparent hover:border-border'
-                                }`}
+                                className={`flex items-center justify-between p-3 rounded-xl cursor-pointer border-2 transition-all ${isSelected
+                                    ? 'bg-primary/5 border-primary shadow-sm'
+                                    : 'bg-muted/30 border-transparent hover:border-border'
+                                    }`}
                             >
                                 <div className="flex items-center gap-2.5 overflow-hidden flex-1">
                                     <div className={`p-2 rounded-lg ${isSelected ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
