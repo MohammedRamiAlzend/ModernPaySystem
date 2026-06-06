@@ -236,6 +236,8 @@ public class EditArchiveRequest : Entity<Guid>, IAuditableEntity
 
     public string RequestedChangesJson { get; set; } = string.Empty;
 
+    public string? RequestedFileDeletionIdsJson { get; set; }
+
     public string OriginalSnapshotJson { get; set; } = string.Empty;
 
     public string? RejectionReason { get; set; }
@@ -262,6 +264,7 @@ public class CreateEditArchiveRequestDto
     public string Justification { get; set; } = string.Empty;
     public List<ArchiveRecordFormInputValueDto> RequestedChanges { get; set; } = [];
     public IFormFileCollection? Files { get; set; }
+    public List<Guid>? FileIdsToDelete { get; set; }
 }
 
 public class EditArchiveRequestDecisionDto
@@ -299,12 +302,17 @@ public class EditArchiveRequestDto
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public List<PhysicalFileDto> AttachedFiles { get; set; } = [];
+    public List<Guid>? FileIdsToDelete { get; set; }
 
     public static EditArchiveRequestDto FromEntity(EditArchiveRequest entity)
     {
         var changes = string.IsNullOrEmpty(entity.RequestedChangesJson)
             ? new List<ArchiveRecordFormInputValueDto>()
             : JsonSerializer.Deserialize<List<ArchiveRecordFormInputValueDto>>(entity.RequestedChangesJson, JsonOptions) ?? [];
+
+        var fileDeletionIds = string.IsNullOrEmpty(entity.RequestedFileDeletionIdsJson)
+            ? null
+            : JsonSerializer.Deserialize<List<Guid>>(entity.RequestedFileDeletionIdsJson, JsonOptions);
 
         return new EditArchiveRequestDto
         {
@@ -330,7 +338,8 @@ public class EditArchiveRequestDto
             CreatedAt = entity.CreatedAt,
             AttachedFiles = entity.PhysicalFiles != null
                 ? [.. entity.PhysicalFiles.Where(f => !f.IsDeleted).Select(f => f.ToDto())]
-                : []
+                : [],
+            FileIdsToDelete = fileDeletionIds
         };
     }
 }

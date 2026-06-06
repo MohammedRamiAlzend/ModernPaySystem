@@ -75,6 +75,25 @@ public class ArchiveEditWorkflowService(
 
             var requestedChangesJson = JsonSerializer.Serialize(dto.RequestedChanges, JsonOptions);
 
+            // Validate and store file deletion IDs if any
+            string? fileDeletionIdsJson = null;
+            if (dto.FileIdsToDelete != null && dto.FileIdsToDelete.Count > 0)
+            {
+                var distinctIds = dto.FileIdsToDelete.Distinct().ToList();
+                var existingFiles = await unitOfWork.PhysicalFiles.GetAllAsync(
+                    x => distinctIds.Contains(x.Id)
+                      && x.ArchiveRecordId == record.Id
+                      && !x.IsDeleted
+                      && x.EditArchiveRequestId == null);
+
+                if (existingFiles.IsError || existingFiles.Value == null || existingFiles.Value.Count != distinctIds.Count)
+                {
+                    return ApplicationErrors.ArchiveRecordFileDeletionNotBelongToRecord;
+                }
+
+                fileDeletionIdsJson = JsonSerializer.Serialize(distinctIds, JsonOptions);
+            }
+
             var requestId = Guid.NewGuid();
             var request = new EditArchiveRequest
             {
@@ -85,6 +104,7 @@ public class ArchiveEditWorkflowService(
                 Status = EditArchiveRequestStatus.Pending,
                 Justification = dto.Justification,
                 RequestedChangesJson = requestedChangesJson,
+                RequestedFileDeletionIdsJson = fileDeletionIdsJson,
                 OriginalSnapshotJson = originalSnapshotJson,
                 RowVersion = Guid.NewGuid().ToByteArray()
             };
@@ -343,6 +363,29 @@ public class ArchiveEditWorkflowService(
                     foreach (var file in attachedFiles.Value)
                     {
                         file.EditArchiveRequestId = null;
+                    }
+                }
+
+                // Process file deletions requested in the edit request
+                var fileDeletionIds = string.IsNullOrEmpty(requestEntity.RequestedFileDeletionIdsJson)
+                    ? null
+                    : JsonSerializer.Deserialize<List<Guid>>(requestEntity.RequestedFileDeletionIdsJson, JsonOptions);
+
+                if (fileDeletionIds != null && fileDeletionIds.Count > 0)
+                {
+                    var filesToDelete = await unitOfWork.PhysicalFiles.GetAllAsync(
+                        x => fileDeletionIds.Contains(x.Id)
+                          && x.ArchiveRecordId == requestEntity.ArchiveRecordId
+                          && !x.IsDeleted);
+
+                    if (!filesToDelete.IsError && filesToDelete.Value != null)
+                    {
+                        foreach (var file in filesToDelete.Value)
+                        {
+                            file.IsDeleted = true;
+                            file.DeletedAt = DateTime.UtcNow;
+                            file.DeletedByUserId = approverId.ToString();
+                        }
                     }
                 }
 
