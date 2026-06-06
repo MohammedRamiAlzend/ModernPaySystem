@@ -113,7 +113,7 @@ public class ArchiveEditWorkflowService(
 
                     var safeFileName = filesManagerService.GenerateSafeFileName(Path.GetFileName(file.FileName));
                     var storageName = $"{record.Id}_{safeFileName}";
-                    
+
                     var saveResult = await filesManagerService.SaveFileAsync(file, record.FolderId.ToString(), storageName);
                     if (saveResult.IsError)
                     {
@@ -169,7 +169,7 @@ public class ArchiveEditWorkflowService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
-                
+
                 // Return mapping
                 request.Requester = requesterResult.Value;
                 request.ArchiveRecord = record;
@@ -244,6 +244,7 @@ public class ArchiveEditWorkflowService(
         {
             var query = unitOfWork.Context.EditArchiveRequests
                 .Include(x => x.Requester)
+                .Include(x=>x.Approver)
                 .Include(x => x.ArchiveRecord)
                 .Include(x => x.PhysicalFiles)
                 .Where(x => x.RequesterId == requesterId)
@@ -303,49 +304,29 @@ public class ArchiveEditWorkflowService(
 
                 // Apply changes to the ArchiveRecord's template values
                 var changes = string.IsNullOrEmpty(requestEntity.RequestedChangesJson)
-                    ? new List<ArchiveRecordFormInputValueDto>()
+                    ? []
                     : JsonSerializer.Deserialize<List<ArchiveRecordFormInputValueDto>>(requestEntity.RequestedChangesJson, JsonOptions) ?? [];
 
                 var record = requestEntity.ArchiveRecord;
-                if (record != null)
+                if (record != null && record.ArchiveRecordTemplateValuesId != null)
                 {
-                    if (record.ArchiveRecordTemplateValuesId == null)
+                    // Use RemoveRange to explicitly DELETE old values instead of Clear()
+                    // Clear() with a nullable FK tries to SET FK = null (UPDATE), which causes
+                    // DbUpdateConcurrencyException. RemoveRange generates proper DELETE statements.
+                    var oldValues = record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.ToList();
+                    if (oldValues.Count > 0)
                     {
-                        var newTemplateValues = new ArchiveRecordTemplateValues
+                        unitOfWork.Context.RemoveRange(oldValues);
+                    }
+
+                    foreach (var change in changes)
+                    {
+                        record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.Add(new ArchiveRecordFormInputValue
                         {
                             Id = Guid.NewGuid(),
-                            ArchiveRecordId = record.Id,
-                            ArchiveFormTemplateId = record.FormId ?? Guid.Empty,
-                            ArchiveRecordFormInputValues = changes.Select(x => new ArchiveRecordFormInputValue
-                            {
-                                Id = Guid.NewGuid(),
-                                Key = x.Key,
-                                Value = x.Value
-                            }).ToList()
-                        };
-                        record.ArchiveRecordTemplateValuesId = newTemplateValues;
-                        await unitOfWork.ArchiveRecordTemplateValues.AddAsync(newTemplateValues);
-                    }
-                    else
-                    {
-                        // Use RemoveRange to explicitly DELETE old values instead of Clear()
-                        // Clear() with a nullable FK tries to SET FK = null (UPDATE), which causes
-                        // DbUpdateConcurrencyException. RemoveRange generates proper DELETE statements.
-                        var oldValues = record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.ToList();
-                        if (oldValues.Count > 0)
-                        {
-                            unitOfWork.Context.RemoveRange(oldValues);
-                        }
-
-                        foreach (var change in changes)
-                        {
-                            record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.Add(new ArchiveRecordFormInputValue
-                            {
-                                Id = Guid.NewGuid(),
-                                Key = change.Key,
-                                Value = change.Value
-                            });
-                        }
+                            Key = change.Key,
+                            Value = change.Value
+                        });
                     }
                 }
 
