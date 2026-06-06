@@ -1,4 +1,5 @@
 using ModernPaySystem.Domain.DTOs;
+using ModernPaySystem.Domain.Entities.Archiving;
 
 namespace ModernPaySystem.Infrastructure.Services;
 
@@ -130,6 +131,9 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             {
                 UserName = user.UserName,
                 HashedPassword = passwordHasher.HashPassword(user.Password),
+                DepartmentId = user.DepartmentId,
+                IsDepartmentHead = user.IsDepartmentHead,
+                HeadedDepartmentId = user.DepartmentId
             };
 
             var addResult = await unitOfWork.Users.AddAsync(userEntity);
@@ -147,12 +151,26 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             if (enrollUserToSubSystem.IsError)
                 return enrollUserToSubSystem.Errors;
 
+            if (user.DepartmentId.HasValue && user.IsArchiveLeader)
+            {
+
+                var re = await unitOfWork.DepartmentArchiveLeaders.AddAsync(new DepartmentArchiveLeader
+                {
+                    UserId = userEntity.Id,
+                    DepartmentId = user.DepartmentId.Value
+                });
+                if (re.IsError) return re.Errors;
+            }
+
             int result = await unitOfWork.SaveChangesAsync();
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
             logger.LogInformation("Successfully created user: {Username}", user.UserName);
-            return userEntity.ToDto();
+            
+            var getUser = await unitOfWork.Users.GetAsync(x => x.Id == userEntity.Id, i => i.Include(x => x.DepartmentArchiveLeaders).Include(x => x.Department).Include(x => x.HeadedDepartment));
+            
+            return getUser.IsError is false ? getUser.Value!.ToDto() : getUser.Errors;
         }
         catch (Exception ex)
         {
@@ -208,7 +226,7 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
             }
 
             int result = await unitOfWork.SaveChangesAsync();
-            
+
             logger.LogInformation("Successfully updated user: {UserId}", id);
             return userEntity.ToDto();
         }
