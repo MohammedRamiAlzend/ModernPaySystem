@@ -244,7 +244,7 @@ public class ArchiveEditWorkflowService(
         {
             var query = unitOfWork.Context.EditArchiveRequests
                 .Include(x => x.Requester)
-                .Include(x=>x.Approver)
+                .Include(x => x.Approver)
                 .Include(x => x.ArchiveRecord)
                 .Include(x => x.PhysicalFiles)
                 .Where(x => x.RequesterId == requesterId)
@@ -319,15 +319,21 @@ public class ArchiveEditWorkflowService(
                         unitOfWork.Context.RemoveRange(oldValues);
                     }
 
+                    ICollection<ArchiveRecordFormInputValue> ArchiveRecordFormInputValues = [];
                     foreach (var change in changes)
                     {
-                        record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.Add(new ArchiveRecordFormInputValue
+                        var addResult = await unitOfWork.ArchiveRecordFormInputValues.AddAsync(new ArchiveRecordFormInputValue
                         {
                             Id = Guid.NewGuid(),
                             Key = change.Key,
                             Value = change.Value
                         });
+                        if (addResult.IsError)
+                        {
+                            return addResult.Errors;
+                        }
                     }
+
                 }
 
                 // Mark any files attached to this request as permanent by clearing EditArchiveRequestId
