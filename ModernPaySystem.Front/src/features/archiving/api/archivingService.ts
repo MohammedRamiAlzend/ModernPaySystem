@@ -194,6 +194,20 @@ export const archivingService = {
         return `${baseURL}/archive-records/${recordId}/files/${fileId}?download=false&access_token=${token || ''}`;
     },
 
+    viewFileInlineUrlById: (fileId: string): string => {
+        const baseURL = api.defaults.baseURL || 'http://localhost:5173/api';
+        const token = sessionStorage.getItem('token');
+        return `${baseURL}/archive-records/files/${fileId}?download=false&access_token=${token || ''}`;
+    },
+
+    viewFileBlobById: async (fileId: string): Promise<Blob> => {
+        const response = await api.get(`/archive-records/files/${fileId}`, {
+            params: { download: false },
+            responseType: 'blob'
+        });
+        return response.data;
+    },
+
     downloadZip: async (
         recordId: string,
         options?: { flatten?: boolean; password?: string; includeMetadata?: boolean },
