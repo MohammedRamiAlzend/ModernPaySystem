@@ -94,7 +94,9 @@ export const UserManagement = () => {
             const dto: UserCreateDto = {
                 userName: values.userName,
                 password: values.password || undefined,
-                subSystem: parseInt(targetSubSystemValue)
+                subSystem: parseInt(targetSubSystemValue),
+                departmentId: values.departmentId || null,
+                isArchiveLeader: values.isArchiveLeader || false
             };
 
             if (editingUser) {
@@ -366,6 +368,7 @@ export const UserManagement = () => {
                         subSystems={subSystems}
                         currentUserSubsystem={currentUserSubsystem ? Number(currentUserSubsystem) : null}
                         isLoading={createUser.isPending || updateUser.isPending}
+                        departmentOptions={departmentOptions}
                     />
                 </DialogContent>
             </Dialog>
