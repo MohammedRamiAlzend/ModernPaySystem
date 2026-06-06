@@ -412,6 +412,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Removed concurrency token because Npgsql throws DbUpdateConcurrencyException due to missing trigger for bytea
+            entity.Property(x => x.RowVersion)
+                .IsConcurrencyToken(false)
+                .ValueGeneratedNever();
+
             entity.Property(x => x.RequestedChangesJson).HasColumnType("jsonb");
             entity.Property(x => x.OriginalSnapshotJson).HasColumnType("jsonb");
             entity.HasIndex(x => new { x.DepartmentId, x.ArchiveRecordId, x.Status });

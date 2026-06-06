@@ -328,11 +328,15 @@ public class ArchiveEditWorkflowService(
                     }
                     else
                     {
-                        var existingInputValues = record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.ToList();
-                        record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.Clear();
-                        
-                        // Explicit Remove is not needed and causes DbUpdateConcurrencyException because of Cascade Delete
-                        
+                        // Use RemoveRange to explicitly DELETE old values instead of Clear()
+                        // Clear() with a nullable FK tries to SET FK = null (UPDATE), which causes
+                        // DbUpdateConcurrencyException. RemoveRange generates proper DELETE statements.
+                        var oldValues = record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.ToList();
+                        if (oldValues.Count > 0)
+                        {
+                            unitOfWork.Context.RemoveRange(oldValues);
+                        }
+
                         foreach (var change in changes)
                         {
                             record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.Add(new ArchiveRecordFormInputValue
