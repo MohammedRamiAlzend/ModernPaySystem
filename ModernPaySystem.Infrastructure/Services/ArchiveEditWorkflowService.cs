@@ -328,7 +328,7 @@ public class ArchiveEditWorkflowService(
                     : JsonSerializer.Deserialize<List<ArchiveRecordFormInputValueDto>>(requestEntity.RequestedChangesJson, JsonOptions) ?? [];
 
                 var record = requestEntity.ArchiveRecord;
-                if (record != null && record.ArchiveRecordTemplateValuesId != null)
+                if (record != null && record.ArchiveRecordTemplateValuesId != null && changes.Count !=0 )
                 {
                     // Use RemoveRange to explicitly DELETE old values instead of Clear()
                     // Clear() with a nullable FK tries to SET FK = null (UPDATE), which causes
