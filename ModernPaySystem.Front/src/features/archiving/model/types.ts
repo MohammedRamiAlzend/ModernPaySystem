@@ -19,6 +19,7 @@ export interface PhysicalFile {
     fileSize: number;
     contentType: string;
     isDeleted: boolean;
+    isQrPage?: boolean;
     deletedAt?: string | null;
     createdByUserId?: string | null;
     createdAt?: string | null;

@@ -644,6 +644,17 @@ public class ArchiveRecordService(
                 return ApplicationErrors.ArchiveRecordNotFound;
             }
 
+            var isUploadingQr = files.Any(f => f.FileName.StartsWith("QR_Cover_", StringComparison.OrdinalIgnoreCase) || 
+                                               f.FileName.Contains("QR_Cover", StringComparison.OrdinalIgnoreCase));
+            if (isUploadingQr)
+            {
+                var hasQrPage = record.PhysicalFiles.Any(f => f.IsQrPage && !f.IsDeleted);
+                if (hasQrPage)
+                {
+                    return ApplicationErrors.QrPageAlreadyExists;
+                }
+            }
+
             var newPhysicalFiles = await StoreFilesAsync(record, files, uploadedPaths);
             if (newPhysicalFiles.IsError)
             {
@@ -1701,6 +1712,9 @@ public class ArchiveRecordService(
 
             storedPaths.Add(saveResult.Value!.FilePath);
 
+            var isQr = file.FileName.StartsWith("QR_Cover_", StringComparison.OrdinalIgnoreCase) ||
+                       file.FileName.Contains("QR_Cover", StringComparison.OrdinalIgnoreCase);
+
             physicalFiles.Add(new PhysicalFile
             {
                 Id = Guid.NewGuid(),
@@ -1712,6 +1726,7 @@ public class ArchiveRecordService(
                 FileSize = saveResult.Value.FileSize,
                 ContentType = saveResult.Value.ContentType,
                 IsDeleted = false,
+                IsQrPage = isQr,
                 DeletedAt = null
             });
         }
