@@ -20,6 +20,7 @@ try
     builder.Services.AddSerilog((services, lc) => lc.ReadFrom.Configuration(builder.Configuration)
         .ReadFrom.Services(services));
     builder.Logging.ClearProviders();
+    builder.Services.AddHealthChecks();
 
 
 #if DEBUG == false
@@ -55,13 +56,13 @@ try
     // 1. Remove Multipart Form Limit
     builder.Services.Configure<FormOptions>(options =>
     {
-        options.MultipartBodyLengthLimit = 10_737_418_240; 
+        options.MultipartBodyLengthLimit = 10_737_418_240;
     });
 
     // 2. Remove Kestrel Max Request Body Size Limit
     builder.WebHost.ConfigureKestrel(serverOptions =>
     {
-        serverOptions.Limits.MaxRequestBodySize = 10_737_418_240; 
+        serverOptions.Limits.MaxRequestBodySize = 10_737_418_240;
     });
 
     var app = builder.Build();
@@ -109,6 +110,7 @@ try
     app.UseStaticFiles();
     app.MapFallbackToFile("index.html");
     app.MapControllers();
+    app.MapHealthChecks("/healthz");
     app.Run();
 }
 catch (Exception ex)
