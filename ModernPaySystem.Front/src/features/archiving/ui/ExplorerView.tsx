@@ -23,7 +23,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onRecordClick,
     onFolderEdit,
     onFolderDelete,
-    onRecordEdit,
+    // onRecordEdit,
     onRecordDelete,
     onRecordDownloadZip,
     onRecordRequestEdit,
@@ -127,7 +127,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                 <span>عرض وتحميل</span>
                                                 <Eye className="h-3.5 w-3.5" />
                                             </button>
-                                            {onRecordEdit && (
+                                            {/* {onRecordEdit && (
                                                 <button
                                                     onClick={() => handleAction(() => onRecordEdit(record))}
                                                     className="w-full px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-end gap-2"
@@ -135,7 +135,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                     <span>تعديل</span>
                                                     <Edit3 className="h-3.5 w-3.5" />
                                                 </button>
-                                            )}
+                                            )} */}
                                             {onRecordRequestEdit && (
                                                 <button
                                                     onClick={() => handleAction(() => onRecordRequestEdit(record))}

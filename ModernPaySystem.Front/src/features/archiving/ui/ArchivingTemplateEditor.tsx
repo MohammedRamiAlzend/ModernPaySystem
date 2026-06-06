@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/shared/ui/button';
@@ -307,24 +307,16 @@ export const ArchivingTemplateEditor: React.FC<ArchivingTemplateEditorProps> = (
                                         {/* مطلوب */}
                                         <div className="flex items-center gap-2 self-center sm:self-auto shrink-0 mt-2 sm:mt-0">
                                             <span className="text-xs text-muted-foreground font-medium">مطلوب</span>
-                                            <Switch 
-                                                checked={field.required}
-                                                // نستخدم الـ input المباشر أو الـ switch بطريقة سليمة مع react-hook-form
-                                                // أو من خلال controller. هنا نقوم باستخدام Switch مع onChange المباشر:
-                                                onCheckedChange={(checked) => {
-                                                    const input = document.getElementById(`fields.${idx}.required`) as HTMLInputElement;
-                                                    if (input) {
-                                                        input.checked = checked;
-                                                        input.dispatchEvent(new Event('change', { bubbles: true }));
-                                                    }
-                                                }}
-                                                disabled={isSaving}
-                                            />
-                                            <input 
-                                                type="checkbox"
-                                                id={`fields.${idx}.required`}
-                                                {...register(`fields.${idx}.required`)}
-                                                className="hidden"
+                                            <Controller
+                                                control={control}
+                                                name={`fields.${idx}.required`}
+                                                render={({ field: { value, onChange } }) => (
+                                                    <Switch 
+                                                        checked={value}
+                                                        onCheckedChange={onChange}
+                                                        disabled={isSaving}
+                                                    />
+                                                )}
                                             />
                                         </div>
 
