@@ -23,7 +23,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onRecordClick,
     onFolderEdit,
     onFolderDelete,
-    onRecordEdit,
+    // onRecordEdit,
     onRecordDelete,
     onRecordDownloadZip,
     onRecordRequestEdit,
