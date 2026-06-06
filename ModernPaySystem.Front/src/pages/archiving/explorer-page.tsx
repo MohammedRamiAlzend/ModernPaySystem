@@ -265,7 +265,7 @@ export default function ExplorerPage() {
             {/* 3. Modal: Document Gallery Preview */}
             {previewingRecord && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in animate-duration-300">
-                    <div className="bg-card border border-border rounded-3xl w-full max-w-5xl h-[90vh] shadow-2xl flex flex-col overflow-hidden text-right">
+                    <div className="bg-card border border-border rounded-3xl w-full max-w-7xl h-[90vh] shadow-2xl flex flex-col overflow-hidden text-right">
                         <div className="p-6 border-b border-border flex items-center justify-between">
                             <button
                                 onClick={() => setPreviewingRecord(null)}

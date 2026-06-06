@@ -1,5 +1,5 @@
 import { EditArchiveRequest } from '../model/types';
-import { X, Calendar, User, FileText, Download } from 'lucide-react';
+import { X, Calendar, User, FileText, Download, ExternalLink } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { archivingService } from '@/features/archiving/api/archivingService';
 
@@ -68,9 +68,20 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
         }
     };
 
+    const handleViewFile = async (fileId: string) => {
+        try {
+            const blob = await archivingService.viewFileBlobById(fileId);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => window.URL.revokeObjectURL(url), 30000); // Revoke after 30 seconds to allow the new tab to load
+        } catch (error) {
+            console.error('Failed to view file', error);
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
-            <div className="bg-card border border-border rounded-3xl p-6 max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col gap-6 text-right overflow-hidden">
+            <div className="bg-card border border-border rounded-3xl p-6 max-w-3xl w-full max-h-[90vh] shadow-2xl flex flex-col gap-6 text-right overflow-hidden" dir="rtl">
 
                 {/* Header */}
                 <div className="flex justify-between items-start border-b border-border pb-4 flex-shrink-0">
@@ -92,25 +103,25 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
 
                     {/* Meta info card */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-muted/20 border border-border p-4 rounded-2xl">
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 items-start">
                             <span className="text-[10px] font-bold text-muted-foreground">مقدم الطلب</span>
-                            <div className="flex items-center gap-1.5 justify-end text-xs font-semibold text-foreground">
-                                <span>{request.requesterName}</span>
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                                 <User className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span>{request.requesterName}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 items-start">
                             <span className="text-[10px] font-bold text-muted-foreground">تاريخ التقديم</span>
-                            <div className="flex items-center gap-1.5 justify-end text-xs font-semibold text-foreground">
-                                <span>{request.createdAt ? new Date(request.createdAt).toLocaleString('ar-EG') : '-'}</span>
+                            <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                                <span>{request.createdAt ? new Date(request.createdAt).toLocaleString('ar-EG') : '-'}</span>
                             </div>
                         </div>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-1 items-start">
                             <span className="text-[10px] font-bold text-muted-foreground">رقم المستند الأرشيفي</span>
-                            <div className="flex items-center gap-1.5 justify-end text-xs font-bold text-primary">
-                                <span>{request.archiveRecordArchivalNumber}</span>
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
                                 <FileText className="h-3.5 w-3.5 text-primary" />
+                                <span>{request.archiveRecordArchivalNumber}</span>
                             </div>
                         </div>
                     </div>
@@ -186,16 +197,28 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                                                 {Math.round(file.fileSize / 1024)} KB | {file.fileExtension.replace('.', '').toUpperCase()}
                                             </span>
                                         </div>
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleDownloadFile(file.id, file.fileName)}
-                                            className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary hover:text-primary-foreground transition-colors"
-                                        >
-                                            <Download className="h-3.5 w-3.5" />
-                                            <span>تحميل</span>
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleViewFile(file.id)}
+                                                className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary/10 transition-colors"
+                                            >
+                                                <ExternalLink className="h-3.5 w-3.5" />
+                                                <span>معاينة</span>
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => handleDownloadFile(file.id, file.fileName)}
+                                                className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary hover:text-primary-foreground transition-colors"
+                                            >
+                                                <Download className="h-3.5 w-3.5" />
+                                                <span>تحميل</span>
+                                            </Button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
