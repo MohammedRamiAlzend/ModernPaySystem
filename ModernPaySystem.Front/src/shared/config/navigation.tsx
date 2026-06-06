@@ -101,11 +101,6 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 icon: <LayoutDashboard className="h-4 w-4" />,
             },
             {
-                title: "إدارة النماذج الديناميكية",
-                path: "/archiving/templates",
-                icon: <Settings className="h-4 w-4" />,
-            },
-            {
                 title: "طلبات تعديل الأرشيف",
                 path: "/archiving/edit-requests",
                 icon: <Clock className="h-4 w-4 text-amber-500" />,

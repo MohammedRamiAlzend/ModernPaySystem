@@ -9,6 +9,7 @@ import {
     Palette,
     Wrench,
     GitBranch,
+    Archive,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -17,6 +18,7 @@ const LookUpManagement = lazyWithPreload(() => import('@/features/lookup-managem
 const UserManagement = lazyWithPreload(() => import('@/features/users/ui/UserManagement').then(m => ({ default: m.UserManagement })));
 const TemplatesList = lazyWithPreload(() => import('@/features/form-builder/ui/TemplatesList').then(m => ({ default: m.TemplatesList })));
 const DepartmentDashboardWidget = lazyWithPreload(() => import('@/widgets/department-dashboard').then(m => ({ default: m.DepartmentDashboardWidget })));
+const ArchivingTemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 
 export interface SettingsTab {
     id: string;
@@ -26,6 +28,7 @@ export interface SettingsTab {
     component: ReactNode;
     preload?: () => void;
     showDescription?: boolean;
+    category: 'services' | 'archiving';
 }
 
 export const SETTINGS_CONFIG: SettingsTab[] = [
@@ -36,7 +39,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         icon: GitBranch,
         component: <DepartmentDashboardWidget />,
         preload: () => DepartmentDashboardWidget.preload(),
-        showDescription: false
+        showDescription: false,
+        category: 'services'
     },
     {
         id: 'lookup',
@@ -45,7 +49,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         icon: Database,
         component: <LookUpManagement />,
         preload: () => LookUpManagement.preload(),
-        showDescription: true
+        showDescription: true,
+        category: 'services'
     },
     {
         id: 'users',
@@ -54,7 +59,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         icon: Users,
         component: <UserManagement />,
         preload: () => UserManagement.preload(),
-        showDescription: false
+        showDescription: false,
+        category: 'services'
     },
     {
         id: 'templates',
@@ -63,7 +69,18 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         icon: FileStack,
         component: <TemplatesList />,
         preload: () => TemplatesList.preload(),
-        showDescription: false
+        showDescription: false,
+        category: 'services'
+    },
+    {
+        id: 'archiving-templates',
+        label: 'النماذج الأرشيفية',
+        description: 'إدارة وتخصيص نماذج الأرشفة الديناميكية وحقولها',
+        icon: Archive,
+        component: <ArchivingTemplatesPage />,
+        preload: () => ArchivingTemplatesPage.preload(),
+        showDescription: false,
+        category: 'archiving'
     },
     {
         id: 'appearance',
@@ -71,7 +88,8 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'تحكم في كيفية ظهور التطبيق والخيارات الشخصية',
         icon: Palette,
         component: <AppearanceSettings />,
-        showDescription: true
+        showDescription: true,
+        category: 'services'
     },
     {
         id: 'tools',
@@ -79,6 +97,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'تحميل الأدوات المساعدة وبرامج التشغيل للنظام',
         icon: Wrench,
         component: <ToolsSettings />,
-        showDescription: false
+        showDescription: false,
+        category: 'services'
     }
 ];

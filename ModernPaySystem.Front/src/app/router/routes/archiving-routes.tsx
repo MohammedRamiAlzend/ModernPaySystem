@@ -1,4 +1,4 @@
-import { type RouteObject, Outlet } from 'react-router-dom';
+import { type RouteObject, Outlet, Navigate } from 'react-router-dom';
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { RoutePermissions } from '../route-permissions';
 import { ErrorBoundary } from '@/shared/ui/common/error-boundary';
@@ -34,15 +34,7 @@ export const archivingRoutes: RouteObject = {
     },
     {
       path: 'templates',
-      element: (
-        <Suspense fallback={<LoadingSpinner />}>
-          <TemplatesPage />
-        </Suspense>
-      ),
-      handle: {
-        crumb: () => 'إدارة النماذج الأرشيفية',
-        preload: () => TemplatesPage.preload(),
-      }
+      element: <Navigate to="/settings?tab=archiving-templates" replace />,
     },
     {
       path: 'edit-requests',
