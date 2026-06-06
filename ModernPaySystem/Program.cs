@@ -3,6 +3,7 @@ global using ModernPaySystem.Infrastructure.Auth;
 global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.Seeding;
 global using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Http.Features;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -51,7 +52,17 @@ try
     {
         options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
     });
+    // 1. Remove Multipart Form Limit
+    builder.Services.Configure<FormOptions>(options =>
+    {
+        options.MultipartBodyLengthLimit = 10_737_418_240; 
+    });
 
+    // 2. Remove Kestrel Max Request Body Size Limit
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.Limits.MaxRequestBodySize = 10_737_418_240; 
+    });
 
     var app = builder.Build();
 

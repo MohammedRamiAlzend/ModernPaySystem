@@ -1,4 +1,5 @@
 using ModernPaySystem.Domain.Entities.Abstraction;
+using System.Diagnostics.Contracts;
 using System.IO;
 
 namespace ModernPaySystem.Domain.Entities.Archiving;
@@ -74,6 +75,8 @@ public class PhysicalFile : Entity<Guid>, IAuditableEntity
     public string StoragePath { get; set; } = string.Empty;
     public long FileSize { get; set; }
     public string ContentType { get; set; } = string.Empty;
+    public bool IsQrPage { get; set; } = false;
+
     public bool IsDeleted { get; set; }
     public DateTime? DeletedAt { get; set; }
     public string? DeletedByUserId { get; set; }
@@ -96,6 +99,7 @@ public class PhysicalFile : Entity<Guid>, IAuditableEntity
             FileSize = FileSize,
             ContentType = ContentType,
             IsDeleted = IsDeleted,
+            IsQrPage = IsQrPage,
             DeletedAt = DeletedAt,
             DeletedByUserId = DeletedByUserId,
             CreatedByUserId = CreatedByUserId,
@@ -117,6 +121,7 @@ public class PhysicalFileDto
     public long FileSize { get; set; }
     public string ContentType { get; set; } = string.Empty;
     public bool IsDeleted { get; set; }
+    public bool IsQrPage { get; set; }
     public DateTime? DeletedAt { get; set; }
     public string? DeletedByUserId { get; set; }
     public string? CreatedByUserId { get; set; }
@@ -131,6 +136,7 @@ public class PhysicalFileMetadataDto
     public string OriginalFileName { get; set; } = string.Empty;
     public long FileSize { get; set; }
     public string ContentType { get; set; } = string.Empty;
+    public required bool IsQrPage { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string StoragePath { get; set; } = string.Empty;
     public Guid ArchiveRecordId { get; set; }
@@ -160,6 +166,7 @@ public class ArchivePhysicalFilePageItemDto
     public string FileExtension { get; set; } = string.Empty;
     public string ContentType { get; set; } = string.Empty;
     public long FileSize { get; set; }
+    public required bool IsQrPage { get; set; }
     public DateTime? CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string? DownloadUrl { get; set; }
@@ -187,6 +194,7 @@ public class ArchivePhysicalFileDownloadDto
 {
     public Guid FileId { get; set; }
     public Guid ArchiveRecordId { get; set; }
+    public required bool IsQrPage { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string ContentType { get; set; } = "application/octet-stream";
     public long ContentLength { get; set; }

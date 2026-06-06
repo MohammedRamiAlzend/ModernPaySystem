@@ -1016,11 +1016,11 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
-            if (file.Length > UploadSettings.MaxFileSize)
-            {
-                logger.LogWarning("File validation failed: File exceeds max size limit. Name: {FileName}, Size: {Size}, MaxSize: {MaxSize}", file.FileName, file.Length, UploadSettings.MaxFileSize);
-                return ApplicationErrors.AttachmentTooLarge;
-            }
+            //if (file.Length > UploadSettings.MaxFileSize)
+            //{
+            //    logger.LogWarning("File validation failed: File exceeds max size limit. Name: {FileName}, Size: {Size}, MaxSize: {MaxSize}", file.FileName, file.Length, UploadSettings.MaxFileSize);
+            //    return ApplicationErrors.AttachmentTooLarge;
+            //}
 
             var extension = Path.GetExtension(file.FileName);
             if (!filesManagerService.IsValidFileExtension(extension, UploadSettings.AllowedExtensions))
@@ -1110,6 +1110,7 @@ public class ArchiveRecordService(
                     OriginalFileName = x.FileName,
                     FileSize = x.FileSize,
                     ContentType = x.ContentType,
+                    IsQrPage = x.IsQrPage,
                     CreatedAt = x.CreatedAt,
                     StoragePath = x.StoragePath,
                     ArchiveRecordId = x.ArchiveRecordId
@@ -1192,6 +1193,7 @@ public class ArchiveRecordService(
                 FileId = physicalFile.Id,
                 ArchiveRecordId = physicalFile.ArchiveRecordId,
                 FileName = physicalFile.FileName,
+                IsQrPage = physicalFile.IsQrPage,
                 ContentType = contentType,
                 ContentLength = physicalFile.FileSize,
                 ContentStream = streamResult.Value!
@@ -1647,6 +1649,7 @@ public class ArchiveRecordService(
             FileExtension = file.FileExtension,
             ContentType = file.ContentType,
             FileSize = file.FileSize,
+            IsQrPage = file.IsQrPage,
             CreatedAt = file.CreatedAt,
             UpdatedAt = file.UpdatedAt
         };
