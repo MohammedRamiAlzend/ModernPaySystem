@@ -123,6 +123,7 @@ public static class ApplicationErrors
     public static readonly Error DepartmentHeadMissing = new("10035", "The department does not have a department head assigned.", ErrorKind.Validation, "لا يوجد رئيس قسم معين.");
     public static readonly Error EditRequestNotFound = new("10036", "The specified edit request was not found.", ErrorKind.NotFound, "لم يتم العثور على طلب التعديل المحدد.");
     public static readonly Error EditRequestAlreadyHandled = new("10037", "The edit request has already been processed.", ErrorKind.Conflict, "تمت معالجة طلب التعديل بالفعل.");
+    public static readonly Error QrPageAlreadyExists = new("10038", "A QR cover page already exists for this archive record.", ErrorKind.Conflict, "توجد بالفعل صفحة غلاف QR لهذا المستند.");
 
 
     // File Operation Errors (1000-1099)

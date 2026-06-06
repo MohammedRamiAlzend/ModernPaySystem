@@ -11,6 +11,7 @@ export interface User {
     departmentId: string | null;
     departmentName: string | null;
     isDepartmentHead: boolean;
+    isArchiveLeader: boolean;
     createdByUserId: string | null;
     createdAt: string | null;
     updatedByUserId: string | null;
@@ -21,6 +22,8 @@ export interface UserCreateDto {
     userName: string;
     password?: string;
     subSystem: number;
+    departmentId?: string | null;
+    isArchiveLeader?: boolean;
 }
 
 export interface SubSystem {
