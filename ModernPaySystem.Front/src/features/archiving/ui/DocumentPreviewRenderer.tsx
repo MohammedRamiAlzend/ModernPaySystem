@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PhysicalFile } from '../model/types';
 import { Button } from '@/shared/ui/button';
 import { 
@@ -15,16 +15,9 @@ import {
     AlertCircle, 
     FileIcon 
 } from 'lucide-react';
-
-interface DocumentPreviewRendererProps {
-    selectedFile: PhysicalFile | null;
-    loading: boolean;
-    previewBlobUrl: string | null;
-    textContent: string | null;
-    downloadingFileId: string | null;
-    downloadProgress: number;
-    onDownload: (file: PhysicalFile) => void;
-}
+// @ts-ignore
+import { renderAsync } from 'docx-preview';
+import { read, utils } from 'xlsx';
 
 const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
@@ -33,6 +26,192 @@ const formatBytes = (bytes: number, decimals = 2) => {
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+};
+
+// ==========================================
+// 1. Local Docx Preview Component (Offline)
+// ==========================================
+interface DocxPreviewProps {
+    blobUrl: string;
+}
+
+const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const renderDocx = async () => {
+            if (!containerRef.current) return;
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await fetch(blobUrl);
+                const blob = await response.blob();
+                
+                containerRef.current.innerHTML = '';
+                
+                await renderAsync(blob, containerRef.current, undefined, {
+                    className: "docx",
+                    inWrapper: true,
+                    ignoreWidth: false,
+                    ignoreHeight: false,
+                    ignoreFonts: false,
+                    breakPages: true,
+                    experimental: false,
+                    useRtlAlign: true,
+                });
+            } catch (err) {
+                console.error("Error rendering docx:", err);
+                setError("حدث خطأ أثناء رندرة مستند الوورد محلياً.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        renderDocx();
+    }, [blobUrl]);
+
+    return (
+        <div className="flex-1 flex flex-col bg-card border border-border rounded-2xl overflow-hidden h-[550px] relative">
+            <div className="flex items-center justify-between border-b p-3 bg-muted/20">
+                <span className="text-xs text-muted-foreground/60 font-bold">معاينة مباشرة لمستند الوورد (أوفلاين)</span>
+            </div>
+            {loading && (
+                <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            )}
+            {error ? (
+                <div className="flex-1 flex items-center justify-center p-6 text-destructive gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    <span>{error}</span>
+                </div>
+            ) : (
+                <div 
+                    ref={containerRef} 
+                    className="flex-1 overflow-auto p-6 bg-slate-100 dark:bg-slate-900 docx-container text-right"
+                    style={{ direction: 'rtl' }}
+                />
+            )}
+        </div>
+    );
+};
+
+// ==========================================
+// 2. Local Excel Preview Component (Offline)
+// ==========================================
+interface ExcelPreviewProps {
+    blobUrl: string;
+}
+
+const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
+    const [sheets, setSheets] = useState<{ name: string; html: string }[]>([]);
+    const [activeSheetIndex, setActiveSheetIndex] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const renderExcel = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await fetch(blobUrl);
+                const blob = await response.blob();
+                const arrayBuffer = await blob.arrayBuffer();
+                
+                const workbook = read(arrayBuffer, { type: 'array' });
+                
+                const sheetsData = workbook.SheetNames.map(name => {
+                    const sheet = workbook.Sheets[name];
+                    const html = utils.sheet_to_html(sheet, {
+                        editable: false,
+                        header: '',
+                        footer: ''
+                    });
+                    
+                    return { name, html };
+                });
+                
+                setSheets(sheetsData);
+                setActiveSheetIndex(0);
+            } catch (err) {
+                console.error("Error rendering excel:", err);
+                setError("حدث خطأ أثناء رندرة ملف الإكسل محلياً.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        renderExcel();
+    }, [blobUrl]);
+
+    return (
+        <div className="flex-1 flex flex-col bg-card border border-border rounded-2xl overflow-hidden h-[550px]">
+            {loading && (
+                <div className="flex-1 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            )}
+            
+            {error && (
+                <div className="flex-1 flex items-center justify-center p-6 text-destructive gap-2">
+                    <AlertCircle className="h-5 w-5" />
+                    <span>{error}</span>
+                </div>
+            )}
+            
+            {!loading && !error && sheets.length > 0 && (
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Sheet Tabs */}
+                    <div className="flex border-b border-border bg-muted/40 overflow-x-auto flex-shrink-0">
+                        {sheets.map((sheet, index) => (
+                            <button
+                                key={index}
+                                className={`px-4 py-2.5 text-xs font-bold transition-colors border-b-2 flex-shrink-0 ${
+                                    activeSheetIndex === index
+                                        ? 'border-primary text-primary bg-background'
+                                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                                }`}
+                                onClick={() => setActiveSheetIndex(index)}
+                            >
+                                {sheet.name}
+                            </button>
+                        ))}
+                    </div>
+                    
+                    {/* Active Sheet Content */}
+                    <div className="flex-1 overflow-auto p-4 bg-background excel-table-container relative">
+                        <style dangerouslySetInnerHTML={{ __html: `
+                            .excel-table-container table {
+                                border-collapse: collapse;
+                                width: 100%;
+                                font-size: 13px;
+                                color: var(--foreground);
+                            }
+                            .excel-table-container th, .excel-table-container td {
+                                border: 1px solid rgba(120, 120, 120, 0.2);
+                                padding: 6px 12px;
+                                text-align: center;
+                                min-width: 80px;
+                            }
+                            .excel-table-container tr:nth-child(even) {
+                                background-color: rgba(120, 120, 120, 0.05);
+                            }
+                            .excel-table-container tr:hover {
+                                background-color: rgba(120, 120, 120, 0.1);
+                            }
+                        `}} />
+                        <div 
+                            dangerouslySetInnerHTML={{ __html: sheets[activeSheetIndex].html }}
+                            className="excel-table prose dark:prose-invert max-w-none"
+                            style={{ direction: 'rtl' }}
+                        />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = ({
@@ -118,8 +297,18 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
         );
     }
 
-    // 5. Office Preview (Card representation without active frame)
+    // 5. Office Preview (Local rendering for Word and Excel, fallback card for others)
     if (isOfficeFile(selectedFile.fileName)) {
+        if (previewBlobUrl) {
+            const ext = selectedFile.fileName.split('.').pop()?.toLowerCase() || '';
+            if (['doc', 'docx'].includes(ext)) {
+                return <DocxPreview blobUrl={previewBlobUrl} />;
+            }
+            if (['xls', 'xlsx'].includes(ext)) {
+                return <ExcelPreview blobUrl={previewBlobUrl} />;
+            }
+        }
+
         return (
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/55 to-muted/20 border border-border rounded-3xl p-12">
                 <div className="max-w-md w-full bg-card border border-border rounded-3xl p-8 shadow-xl shadow-background/30 flex flex-col items-center text-center gap-6 relative overflow-hidden">
@@ -164,7 +353,7 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
                             )}
                         </Button>
                         <span className="text-[10px] text-muted-foreground/60">
-                            * لا يدعم النظام المعاينة التفاعلية المباشرة لملفات الأوفيس لضمان الأمان والسرعة.
+                            * مستندات البوربوينت غير مدعومة للمعاينة المباشرة أوفلاين. يرجى تحميل الملف لعرضه محلياً.
                         </span>
                     </div>
                 </div>

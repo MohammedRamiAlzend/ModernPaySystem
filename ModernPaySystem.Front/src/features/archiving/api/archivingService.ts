@@ -100,7 +100,7 @@ export const archivingService = {
         id: string,
         data: {
             folderId: string;
-            formId: string;
+            formId: string | null;
             archivalNumber: string;
             files?: File[];
             content: { key: string; value: string | null }[];
@@ -111,7 +111,9 @@ export const archivingService = {
     ): Promise<ArchiveRecord> => {
         const formData = new FormData();
         formData.append('FolderId', data.folderId);
-        formData.append('FormId', data.formId);
+        if (data.formId) {
+            formData.append('FormId', data.formId);
+        }
         formData.append('ArchivalNumber', data.archivalNumber);
 
         data.content.forEach((item, index) => {

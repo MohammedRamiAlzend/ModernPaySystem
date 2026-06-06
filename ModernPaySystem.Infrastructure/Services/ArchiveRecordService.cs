@@ -313,20 +313,7 @@ public class ArchiveRecordService(
             return ApplicationErrors.InternalServerError;
         }
     }
-    private Result<Success> ValidateCreateRequest(CreateArchiveRecordDto dto)
-    {
-        if (dto == null || dto.FolderId == Guid.Empty || string.IsNullOrWhiteSpace(dto.ArchivalNumber))
-        {
-            return ApplicationErrors.InvalidInput;
-        }
 
-        if (dto.FormId.HasValue && dto.FormId.Value == Guid.Empty)
-        {
-            return ApplicationErrors.InvalidInput;
-        }
-
-        return Result.Success;
-    }
 
     private async Task<Result<Success>> EnsureFolderExistsAsync(Guid folderId)
     {
@@ -450,8 +437,9 @@ public class ArchiveRecordService(
 
         try
         {
-            if (id == Guid.Empty || dto == null || dto.FolderId == Guid.Empty || dto.FormId == Guid.Empty || string.IsNullOrWhiteSpace(dto.ArchivalNumber))
+            if (id == Guid.Empty || dto == null || dto.FolderId == Guid.Empty || (dto.FormId.HasValue && dto.FormId.Value == Guid.Empty) || string.IsNullOrWhiteSpace(dto.ArchivalNumber))
             {
+                logger.LogWarning("Update request validation failed: Invalid id, folder, form, or archival number.");
                 return ApplicationErrors.InvalidInput;
             }
 
@@ -501,16 +489,9 @@ public class ArchiveRecordService(
                 return ApplicationErrors.ArchiveRecordArchivalNumberAlreadyInUse;
             }
 
-            var formResult = await unitOfWork.DynamicForms.GetByIdAsync(dto.FormId);
-            if (formResult.IsError)
-            {
-                return formResult.Errors;
-            }
-
-            if (formResult.Value == null)
-            {
-                return ApplicationErrors.DynamicFormNotFound;
-            }
+            var formResolutionResult = await ResolveFormAsync(dto.FormId);
+            if (formResolutionResult is not null && formResolutionResult.IsError)
+                return formResolutionResult.Errors;
 
             var filesToRemove = ResolveFilesToRemove(record, dto);
             var newPhysicalFiles = await StoreFilesAsync(record, dto.Files, uploadedPaths);
@@ -532,22 +513,38 @@ public class ArchiveRecordService(
 
                 if (record.ArchiveRecordTemplateValuesId == null)
                 {
-                    record.ArchiveRecordTemplateValuesId = BuildTemplateValues(record, dto);
-                    var addTemplateValuesResult = await unitOfWork.ArchiveRecordTemplateValues.AddAsync(record.ArchiveRecordTemplateValuesId);
-                    if (addTemplateValuesResult.IsError)
+                    if (dto.FormId.HasValue)
                     {
-                        await unitOfWork.RollbackTransactionAsync();
-                        return addTemplateValuesResult.Errors;
+                        record.ArchiveRecordTemplateValuesId = BuildTemplateValues(record, dto);
+                        var addTemplateValuesResult = await unitOfWork.ArchiveRecordTemplateValues.AddAsync(record.ArchiveRecordTemplateValuesId);
+                        if (addTemplateValuesResult.IsError)
+                        {
+                            await unitOfWork.RollbackTransactionAsync();
+                            return addTemplateValuesResult.Errors;
+                        }
                     }
                 }
                 else
                 {
-                    record.ArchiveRecordTemplateValuesId.ArchiveFormTemplateId = dto.FormId;
-                    record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues = [.. dto.Content.Select(x => new ArchiveRecordFormInputValue
+                    if (dto.FormId.HasValue)
                     {
-                        Key = x.Key,
-                        Value = x.Value
-                    })];
+                        record.ArchiveRecordTemplateValuesId.ArchiveFormTemplateId = dto.FormId.Value;
+                        record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues = [.. dto.Content.Select(x => new ArchiveRecordFormInputValue
+                        {
+                            Key = x.Key,
+                            Value = x.Value
+                        })];
+                    }
+                    else
+                    {
+                        var removeResult = await unitOfWork.ArchiveRecordTemplateValues.RemoveAsync(x => x.Id == record.ArchiveRecordTemplateValuesId.Id);
+                        if (removeResult.IsError)
+                        {
+                            await unitOfWork.RollbackTransactionAsync();
+                            return removeResult.Errors;
+                        }
+                        record.ArchiveRecordTemplateValuesId = null!;
+                    }
                 }
 
                 var addFiles = newPhysicalFiles.Value!.ToList();
@@ -975,6 +972,35 @@ public class ArchiveRecordService(
         }
     }
 
+    private Result<Success> ValidateCreateRequest(CreateArchiveRecordDto dto)
+    {
+        if (dto == null)
+        {
+            logger.LogWarning("Create request validation failed: DTO is null.");
+            return ApplicationErrors.InvalidInput;
+        }
+
+        if (dto.FolderId == Guid.Empty)
+        {
+            logger.LogWarning("Create request validation failed: FolderId is Guid.Empty.");
+            return ApplicationErrors.InvalidInput;
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.ArchivalNumber))
+        {
+            logger.LogWarning("Create request validation failed: ArchivalNumber is null or empty.");
+            return ApplicationErrors.InvalidInput;
+        }
+
+        if (dto.FormId.HasValue && dto.FormId.Value == Guid.Empty)
+        {
+            logger.LogWarning("Create request validation failed: FormId is Guid.Empty.");
+            return ApplicationErrors.InvalidInput;
+        }
+
+        return Result.Success;
+    }
+
     private Result<Success> ValidateFiles(IFormFileCollection? files)
     {
         if (files == null)
@@ -986,17 +1012,20 @@ public class ArchiveRecordService(
         {
             if (file == null || file.Length <= 0)
             {
+                logger.LogWarning("File validation failed: File is null or has length <= 0. Name: {FileName}", file?.FileName ?? "Unknown");
                 return ApplicationErrors.InvalidInput;
             }
 
             if (file.Length > UploadSettings.MaxFileSize)
             {
+                logger.LogWarning("File validation failed: File exceeds max size limit. Name: {FileName}, Size: {Size}, MaxSize: {MaxSize}", file.FileName, file.Length, UploadSettings.MaxFileSize);
                 return ApplicationErrors.AttachmentTooLarge;
             }
 
             var extension = Path.GetExtension(file.FileName);
             if (!filesManagerService.IsValidFileExtension(extension, UploadSettings.AllowedExtensions))
             {
+                logger.LogWarning("File validation failed: File extension is not allowed. Name: {FileName}, Extension: {Extension}", file.FileName, extension);
                 return ApplicationErrors.InvalidAttachmentType;
             }
         }
@@ -1030,7 +1059,7 @@ public class ArchiveRecordService(
         {
             Id = Guid.NewGuid(),
             ArchiveRecordId = record.Id,
-            ArchiveFormTemplateId = dto.FormId,
+            ArchiveFormTemplateId = dto.FormId!.Value,
             ArchiveRecord = record,
             ArchiveRecordFormInputValues = [.. dto.Content.Select(x => new ArchiveRecordFormInputValue
             {

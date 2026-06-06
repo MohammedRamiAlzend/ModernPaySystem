@@ -98,11 +98,12 @@ export function useDocumentPreview({
             const isImg = isImageFile(selectedFile.fileName);
             const isVid = isVideoFile(selectedFile.fileName);
             const isPdf = isPdfFile(selectedFile.fileName);
+            const isOffice = isOfficeFile(selectedFile.fileName);
 
             if (isText) {
                 setPreviewBlobUrl(null);
                 fetchTextContent(selectedFile);
-            } else if (isImg || isVid || isPdf) {
+            } else if (isImg || isVid || isPdf || isOffice) {
                 setTextContent(null);
                 setLoading(true);
                 try {
