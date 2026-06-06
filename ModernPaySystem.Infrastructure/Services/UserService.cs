@@ -308,7 +308,23 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
                 {
                     Name = nameof(SubSystem.None),
                     Value = ((int)SubSystem.None).ToString()
-                }
+                },
+                new SubSystemDto
+                {
+                    Name = nameof(SubSystem.Diwan),
+                    Value = ((int)SubSystem.Diwan).ToString()
+                },
+new SubSystemDto
+                {
+                    Name = nameof(SubSystem.Archiving),
+                    Value = ((int)SubSystem.Archiving).ToString()
+                },
+new SubSystemDto
+                {
+                    Name = nameof(SubSystem.Shared),
+                    Value = ((int)SubSystem.Shared).ToString()
+                },
+
 
             ];
         }
