@@ -29,11 +29,11 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
             }}
         >
             {/* الخلفية المائية */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
+            {/* <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
                 <svg className="w-96 h-96 text-primary" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20 6h-8l-2-2H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-1 11H5V8h14v9z" />
                 </svg>
-            </div>
+            </div> */}
 
             {/* الهيدر */}
             <div className="border-b-2 border-primary/20 pb-6 flex items-center justify-between">
@@ -41,11 +41,11 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
                     <h1 className="text-xl font-bold text-primary tracking-wide">نظام الأرشفة الإلكتروني الحديث</h1>
                     <span className="text-xs text-muted-foreground mt-1">وثيقة غلاف أرشيفية معتمدة</span>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                {/* <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                </div>
+                </div> */}
             </div>
 
             {/* الجزء الأوسط: معلومات المستند */}
@@ -70,14 +70,14 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
 
                 {content && content.length > 0 && (
                     <div>
-                        <h2 className="text-sm font-semibold text-slate-500 mb-2">بيانات النموذج التفصيلية:</h2>
+                        <h2 className="text-sm font-semibold text-slate-500 mb-2">بيانات :</h2>
                         <div className="max-h-[300px] overflow-hidden border border-slate-100 rounded-xl">
                             <table className="w-full text-right text-xs">
                                 <thead className="bg-slate-50 text-slate-500 border-b border-slate-100">
-                                    <tr>
-                                        <th className="p-3 font-semibold">الحقل</th>
-                                        <th className="p-3 font-semibold">القيمة المدخلة</th>
-                                    </tr>
+                                    {/* <tr>
+                                        <th className="p-3 font-semibold"></th>
+                                        <th className="p-3 font-semibold"> </th>
+                                    </tr> */}
                                 </thead>
                                 <tbody className="divide-y divide-slate-100">
                                     {content.map((item, idx) => (
@@ -117,7 +117,7 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
                             لا يوجد رمز
                         </div>
                     )}
-                    <span className="text-[10px] font-mono font-bold text-slate-400">GUID VERIFIED</span>
+                    {/* <span className="text-[10px] font-mono font-bold text-slate-400">GUID VERIFIED</span> */}
                 </div>
             </div>
         </div>
