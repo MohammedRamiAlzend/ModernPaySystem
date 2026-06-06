@@ -354,7 +354,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(x => x.User)
-                .WithMany()
+                .WithMany(x => x.DepartmentArchiveLeaders)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 

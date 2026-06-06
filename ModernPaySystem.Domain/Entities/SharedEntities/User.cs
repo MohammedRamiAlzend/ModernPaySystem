@@ -1,4 +1,6 @@
+using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+using System.Linq;
 
 namespace ModernPaySystem.Domain.Entities.SharedEntities;
 
@@ -22,6 +24,7 @@ public class User : Entity<Guid>, IAuditableEntity
     public ICollection<Request> RequestsAsRequester { get; set; } = new List<Request>();
     public ICollection<Request> RequestsAsApprover { get; set; } = new List<Request>();
     public ICollection<Request>? MentionedRequests { get; set; } = new List<Request>();
+    public ICollection<DepartmentArchiveLeader>? DepartmentArchiveLeaders { get; set; } = new List<DepartmentArchiveLeader>();
     public ICollection<UserTemplateOwnership>? TemplateOwnerships { get; set; } = null;
     public ICollection<Role> Roles { get; set; } = [];
 
@@ -41,10 +44,11 @@ public class User : Entity<Guid>, IAuditableEntity
             DepartmentId = this.DepartmentId,
             DepartmentName = this.Department?.Name,
             IsDepartmentHead = this.IsDepartmentHead,
+            IsArchiveLeader = DepartmentArchiveLeaders?.Any(x => x.UserId == Id) ?? false,
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
-            UpdatedAt = this.UpdatedAt
+            UpdatedAt = this.UpdatedAt,
         };
     }
 }
@@ -58,6 +62,7 @@ public class UserDto
     public Guid? DepartmentId { get; set; }
     public string? DepartmentName { get; set; }
     public bool IsDepartmentHead { get; set; }
+    public bool IsArchiveLeader { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -71,4 +76,5 @@ public class CreateUserDto
     public SubSystem? SubSystem { get; set; }
     public Guid? DepartmentId { get; set; }
     public bool IsDepartmentHead { get; set; }
+    public bool IsArchiveLeader { get; set; }
 }
