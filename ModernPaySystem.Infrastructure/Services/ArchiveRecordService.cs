@@ -1146,7 +1146,7 @@ public class ArchiveRecordService(
         }
     }
 
-    public async Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null)
+    public async Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null, bool includeDeleted = false)
     {
         try
         {
@@ -1165,7 +1165,8 @@ public class ArchiveRecordService(
             }
 
             var fileResult = await unitOfWork.PhysicalFiles.GetAsync(
-                x => x.Id == fileId && !x.IsDeleted && (!recordId.HasValue || x.ArchiveRecordId == recordId.Value));
+                x => x.Id == fileId && (includeDeleted || !x.IsDeleted) &&
+                     (!recordId.HasValue || x.ArchiveRecordId == recordId.Value));
 
             if (fileResult.IsError)
             {

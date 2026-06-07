@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { EditArchiveRequest } from '../model/types';
 import { X, Calendar, User, FileText, Download, ExternalLink } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { archivingService } from '@/features/archiving/api/archivingService';
+import { useUIStore } from '@/app/store/uiStore';
 
 interface EditRequestDetailsProps {
     isOpen: boolean;
@@ -10,6 +12,9 @@ interface EditRequestDetailsProps {
 }
 
 export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDetailsProps) {
+    const [previewStates, setPreviewStates] = useState<Record<string, string | null>>({});
+    const { showStatus } = useUIStore();
+
     if (!isOpen || !request) return null;
 
     let originalData: { 
@@ -74,14 +79,40 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
         }
     };
 
-    const handleViewFile = async (fileId: string) => {
+    const handleViewFile = async (fileId: string, fileName: string, includeDeleted: boolean = false) => {
         try {
-            const blob = await archivingService.viewFileBlobById(fileId);
+            if (previewStates[fileId]) {
+                window.URL.revokeObjectURL(previewStates[fileId]!);
+                setPreviewStates(prev => {
+                    const newState = { ...prev };
+                    delete newState[fileId];
+                    return newState;
+                });
+                return;
+            }
+
+            const ext = fileName.split('.').pop()?.toLowerCase() || '';
+            const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext);
+
+            const normalizedId = fileId.toLowerCase().replace(/[{}]/g, '');
+            const blob = await archivingService.viewFileBlobById(normalizedId, includeDeleted);
             const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            setTimeout(() => window.URL.revokeObjectURL(url), 30000); // Revoke after 30 seconds to allow the new tab to load
-        } catch (error) {
-            console.error('Failed to view file', error);
+            
+            if (isImage) {
+                setPreviewStates(prev => ({ ...prev, [fileId]: url }));
+            } else {
+                window.open(url, '_blank');
+                setTimeout(() => window.URL.revokeObjectURL(url), 30000);
+            }
+        } catch (error: any) {
+            const status = error?.response?.status;
+            showStatus({
+                type: 'error',
+                title: 'تعذّر معاينة الملف',
+                message: status === 404
+                    ? 'الملف غير موجود أو ربما تم حذفه مسبقاً من المستند.'
+                    : 'حدث خطأ أثناء تحميل الملف. يرجى المحاولة مرة أخرى.'
+            });
         }
     };
 
@@ -194,37 +225,54 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                             <span className="text-xs font-bold text-foreground">الملفات المرفقة الجديدة مع طلب التعديل:</span>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {request.attachedFiles.map((file) => (
-                                    <div key={file.id} className="flex items-center justify-between border border-border p-3 rounded-2xl bg-muted/10 hover:bg-muted/20 transition-colors">
-                                        <div className="flex flex-col text-right truncate pl-2">
-                                            <span className="text-xs font-bold text-foreground truncate animate-fade-in" title={file.fileName}>
-                                                {file.fileName}
-                                            </span>
-                                            <span className="text-[10px] text-muted-foreground font-semibold mt-0.5">
-                                                {Math.round(file.fileSize / 1024)} KB | {file.fileExtension.replace('.', '').toUpperCase()}
-                                            </span>
+                                    <div key={file.id} className="flex flex-col gap-2 w-full">
+                                        <div className="flex items-center justify-between border border-border p-3 rounded-2xl bg-muted/10 hover:bg-muted/20 transition-colors">
+                                            <div className="flex flex-col text-right truncate pl-2">
+                                                <span className="text-xs font-bold text-foreground truncate animate-fade-in" title={file.fileName}>
+                                                    {file.fileName}
+                                                </span>
+                                                <span className="text-[10px] text-muted-foreground font-semibold mt-0.5">
+                                                    {Math.round(file.fileSize / 1024)} KB | {file.fileExtension.replace('.', '').toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleViewFile(file.id, file.fileName)}
+                                                    className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary/10 transition-colors"
+                                                >
+                                                    <ExternalLink className="h-3.5 w-3.5" />
+                                                    <span>معاينة</span>
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleDownloadFile(file.id, file.fileName)}
+                                                    className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary hover:text-primary-foreground transition-colors"
+                                                >
+                                                    <Download className="h-3.5 w-3.5" />
+                                                    <span>تحميل</span>
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleViewFile(file.id)}
-                                                className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary/10 transition-colors"
-                                            >
-                                                <ExternalLink className="h-3.5 w-3.5" />
-                                                <span>معاينة</span>
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleDownloadFile(file.id, file.fileName)}
-                                                className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-primary hover:text-primary-foreground transition-colors"
-                                            >
-                                                <Download className="h-3.5 w-3.5" />
-                                                <span>تحميل</span>
-                                            </Button>
-                                        </div>
+                                        {previewStates[file.id] && (
+                                            <div className="relative mt-2">
+                                                <button onClick={() => {
+                                                    window.URL.revokeObjectURL(previewStates[file.id]!);
+                                                    setPreviewStates(prev => {
+                                                        const newState = { ...prev };
+                                                        delete newState[file.id];
+                                                        return newState;
+                                                    });
+                                                }} className="absolute top-2 right-2 bg-background border border-border rounded-full p-1 text-muted-foreground hover:text-foreground">
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                                <img src={previewStates[file.id]!} alt="Preview" className="max-h-[200px] w-full rounded-xl object-contain border border-border" />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -240,24 +288,41 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                                     const originalFile = originalData?.PhysicalFiles?.find(f => f.id.toLowerCase() === fileId.toLowerCase() || f.id === fileId);
                                     const fileName = originalFile ? originalFile.fileName : 'ملف غير معروف (أو تم حذفه مسبقاً)';
                                     return (
-                                        <div key={fileId} className="flex items-center justify-between border border-destructive/20 p-3 rounded-2xl bg-destructive/5 hover:bg-destructive/10 transition-colors">
-                                            <div className="flex flex-col text-right truncate pl-2">
-                                                <span className="text-xs font-bold text-destructive truncate animate-fade-in" title={fileName}>
-                                                    {fileName}
-                                                </span>
+                                        <div key={fileId} className="flex flex-col gap-2 w-full">
+                                            <div className="flex items-center justify-between border border-destructive/20 p-3 rounded-2xl bg-destructive/5 hover:bg-destructive/10 transition-colors">
+                                                <div className="flex flex-col text-right truncate pl-2">
+                                                    <span className="text-xs font-bold text-destructive truncate animate-fade-in" title={fileName}>
+                                                        {fileName}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleViewFile(fileId, fileName, true)}
+                                                        className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-destructive hover:text-destructive-foreground transition-colors border-destructive/30 text-destructive"
+                                                    >
+                                                        <ExternalLink className="h-3.5 w-3.5" />
+                                                        <span>معاينة للتحقق</span>
+                                                    </Button>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleViewFile(fileId)}
-                                                    className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-destructive hover:text-destructive-foreground transition-colors border-destructive/30 text-destructive"
-                                                >
-                                                    <ExternalLink className="h-3.5 w-3.5" />
-                                                    <span>معاينة للتحقق</span>
-                                                </Button>
-                                            </div>
+                                            {previewStates[fileId] && (
+                                                <div className="relative mt-2">
+                                                    <button onClick={() => {
+                                                        window.URL.revokeObjectURL(previewStates[fileId]!);
+                                                        setPreviewStates(prev => {
+                                                            const newState = { ...prev };
+                                                            delete newState[fileId];
+                                                            return newState;
+                                                        });
+                                                    }} className="absolute top-2 right-2 bg-background border border-border rounded-full p-1 text-muted-foreground hover:text-foreground">
+                                                        <X className="h-4 w-4" />
+                                                    </button>
+                                                    <img src={previewStates[fileId]!} alt="Preview" className="max-h-[200px] w-full rounded-xl object-contain border border-border" />
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}

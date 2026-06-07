@@ -83,11 +83,10 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                                     type="button"
                                     onClick={onGenerateAndAddQrCover}
                                     disabled={hasQrPage}
-                                    className={`p-1.5 rounded-lg transition-colors ${
-                                        hasQrPage
-                                            ? 'text-muted-foreground opacity-55 cursor-not-allowed'
-                                            : 'text-amber-500 hover:bg-amber-500/10 cursor-pointer'
-                                    }`}
+                                    className={`p-1.5 rounded-lg transition-colors ${hasQrPage
+                                        ? 'text-muted-foreground opacity-55 cursor-not-allowed'
+                                        : 'text-amber-500 hover:bg-amber-500/10 cursor-pointer'
+                                        }`}
                                     title={hasQrPage ? "تم توليد صفحة غلاف لهذا المستند بالفعل" : "توليد وإدراج صفحة الغلاف (QR)"}
                                 >
                                     <QrCode className="h-4 w-4" />
@@ -154,7 +153,7 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
                                     <div className="flex items-center gap-0.5">
-                                        <button
+                                        {/* <button
                                             type="button"
                                             onClick={(e) => {
                                                 e.stopPropagation();
@@ -164,7 +163,7 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                                             title="حذف الملف"
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
-                                        </button>
+                                        </button> */}
                                         <button
                                             type="button"
                                             onClick={(e) => {

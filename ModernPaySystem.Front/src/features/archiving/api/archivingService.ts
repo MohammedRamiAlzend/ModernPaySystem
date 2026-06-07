@@ -200,9 +200,9 @@ export const archivingService = {
         return `${baseURL}/archive-records/files/${fileId}?download=false&access_token=${token || ''}`;
     },
 
-    viewFileBlobById: async (fileId: string): Promise<Blob> => {
+    viewFileBlobById: async (fileId: string, includeDeleted: boolean = false): Promise<Blob> => {
         const response = await api.get(`/archive-records/files/${fileId}`, {
-            params: { download: false },
+            params: { download: false, includeDeleted },
             responseType: 'blob'
         });
         return response.data;

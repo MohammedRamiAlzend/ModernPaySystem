@@ -203,10 +203,10 @@ public class ArchiveRecordsController(
 
     [HttpGet("files/{fileId}")]
     [EndpointPermission("archiving.records.download-file", SubSystem.Archiving, PermissionType.Read)]
-    public async Task<IActionResult> DownloadFileById(Guid fileId, [FromQuery] bool download = false)
+    public async Task<IActionResult> DownloadFileById(Guid fileId, [FromQuery] bool download = false, [FromQuery] bool includeDeleted = false)
     {
-        logger.LogInformation("Downloading file {FileId}. ForcedDownload: {Download}", fileId, download);
-        return await StreamArchiveFileAsync(fileId, download);
+        logger.LogInformation("Downloading file {FileId}. ForcedDownload: {Download}, IncludeDeleted: {IncludeDeleted}", fileId, download, includeDeleted);
+        return await StreamArchiveFileAsync(fileId, download, includeDeleted: includeDeleted);
     }
 
     [HttpDelete("{id}")]
@@ -236,9 +236,9 @@ public class ArchiveRecordsController(
         return result.ToActionResult();
     }
 
-    private async Task<IActionResult> StreamArchiveFileAsync(Guid fileId, bool download, Guid? recordId = null)
+    private async Task<IActionResult> StreamArchiveFileAsync(Guid fileId, bool download, Guid? recordId = null, bool includeDeleted = false)
     {
-        var result = await archiveRecordService.GetPhysicalFileStreamAsync(fileId, recordId);
+        var result = await archiveRecordService.GetPhysicalFileStreamAsync(fileId, recordId, includeDeleted);
         if (result.IsError)
         {
             var topError = result.TopError;
