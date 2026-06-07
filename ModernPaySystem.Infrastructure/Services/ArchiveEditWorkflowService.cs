@@ -313,6 +313,12 @@ public class ArchiveEditWorkflowService(
                 return ApplicationErrors.UserNotFound;
             }
 
+            var isLeaderResult = await archiveLeaderService.IsArchiveLeaderAsync(approverId, requestEntity.DepartmentId);
+            if (isLeaderResult.IsError || !isLeaderResult.Value)
+            {
+                return ApplicationErrors.InsufficientPermissions;
+            }
+
             await unitOfWork.BeginTransactionAsync();
             try
             {
@@ -322,23 +328,18 @@ public class ArchiveEditWorkflowService(
                 requestEntity.ApprovedAt = DateTime.UtcNow;
                 requestEntity.ApprovalNotes = notes;
 
-                // Apply changes to the ArchiveRecord's template values
                 var changes = string.IsNullOrEmpty(requestEntity.RequestedChangesJson)
                     ? []
                     : JsonSerializer.Deserialize<List<ArchiveRecordFormInputValueDto>>(requestEntity.RequestedChangesJson, JsonOptions) ?? [];
 
                 var record = requestEntity.ArchiveRecord;
-                if (record != null && record.ArchiveRecordTemplateValuesId != null && changes.Count !=0 )
+                if (record != null && record.ArchiveRecordTemplateValuesId != null && changes.Count != 0)
                 {
-                    // Use RemoveRange to explicitly DELETE old values instead of Clear()
-                    // Clear() with a nullable FK tries to SET FK = null (UPDATE), which causes
-                    // DbUpdateConcurrencyException. RemoveRange generates proper DELETE statements.
                     var oldValues = record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.ToList();
                     if (oldValues.Count > 0)
                     {
                         unitOfWork.Context.RemoveRange(oldValues);
                     }
-
                     ICollection<ArchiveRecordFormInputValue> ArchiveRecordFormInputValues = [];
                     foreach (var change in changes)
                     {
@@ -356,7 +357,6 @@ public class ArchiveEditWorkflowService(
 
                 }
 
-                // Mark any files attached to this request as permanent by clearing EditArchiveRequestId
                 var attachedFiles = await unitOfWork.PhysicalFiles.GetAllAsync(x => x.EditArchiveRequestId == requestId);
                 if (!attachedFiles.IsError && attachedFiles.Value != null)
                 {
@@ -366,7 +366,6 @@ public class ArchiveEditWorkflowService(
                     }
                 }
 
-                // Process file deletions requested in the edit request
                 var fileDeletionIds = string.IsNullOrEmpty(requestEntity.RequestedFileDeletionIdsJson)
                     ? null
                     : JsonSerializer.Deserialize<List<Guid>>(requestEntity.RequestedFileDeletionIdsJson, JsonOptions);
@@ -388,8 +387,6 @@ public class ArchiveEditWorkflowService(
                         }
                     }
                 }
-
-                // Removed manual RowVersion update since it conflicts with ValueGeneratedOnAddOrUpdate in EF Core
 
                 var saveResult = await unitOfWork.SaveChangesAsync();
                 if (saveResult <= 0)
