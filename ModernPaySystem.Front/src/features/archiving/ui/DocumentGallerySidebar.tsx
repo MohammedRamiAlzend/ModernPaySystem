@@ -16,7 +16,6 @@ import {
     Loader2,
     QrCode,
     // Upload,
-    Trash2,
     Download
 } from 'lucide-react';
 
@@ -63,7 +62,6 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
     downloadProgress,
     onGenerateAndAddQrCover,
     // onAddFiles,
-    onDeleteFile,
     onDownload
 }) => {
     const hasQrPage = localFiles.some((file) => file.isQrPage);

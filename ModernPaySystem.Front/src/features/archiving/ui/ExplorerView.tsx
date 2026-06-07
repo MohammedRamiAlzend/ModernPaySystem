@@ -1,6 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Folder, ArchiveRecord } from '../model/types';
-import { Folder as FolderIcon, FileText, MoreVertical, Edit3, Trash2, Download, Eye } from 'lucide-react';
+import { 
+    Folder as FolderIcon, 
+    FileText, 
+    MoreVertical, 
+    Edit3, 
+    Trash2, 
+    Download, 
+    Eye,
+    Plus,
+    FolderPlus
+} from 'lucide-react';
 
 interface ExplorerViewProps {
     folders: Folder[];
@@ -13,6 +23,8 @@ interface ExplorerViewProps {
     onRecordDelete?: (record: ArchiveRecord) => void;
     onRecordDownloadZip?: (record: ArchiveRecord) => void;
     onRecordRequestEdit?: (record: ArchiveRecord) => void;
+    onCreateFolder?: () => void;
+    onCreateRecord?: () => void;
 }
 
 
@@ -27,12 +39,31 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onRecordDelete,
     onRecordDownloadZip,
     onRecordRequestEdit,
+    onCreateFolder,
+    onCreateRecord,
 }) => {
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [contextMenu, setContextMenu] = useState<{
+        x: number;
+        y: number;
+        type: 'empty' | 'folder' | 'record';
+        targetId: string;
+    } | null>(null);
+
+    useEffect(() => {
+        const handleCloseMenu = () => setContextMenu(null);
+        window.addEventListener('click', handleCloseMenu);
+        window.addEventListener('contextmenu', handleCloseMenu);
+        return () => {
+            window.removeEventListener('click', handleCloseMenu);
+            window.removeEventListener('contextmenu', handleCloseMenu);
+        };
+    }, []);
 
     const toggleMenu = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
         setActiveMenuId(activeMenuId === id ? null : id);
+        setContextMenu(null);
     };
 
     const handleAction = (action: () => void) => {
@@ -40,8 +71,30 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
         setActiveMenuId(null);
     };
 
+    const handleContextMenu = (e: React.MouseEvent, type: 'empty' | 'folder' | 'record', targetId: string = '') => {
+        e.preventDefault();
+        e.stopPropagation();
+        setActiveMenuId(null);
+        setContextMenu({
+            x: e.clientX,
+            y: e.clientY,
+            type,
+            targetId
+        });
+    };
+
+    const targetFolder = folders.find(f => f.id === contextMenu?.targetId);
+    const targetRecord = records.find(r => r.id === contextMenu?.targetId);
+
     return (
-        <div className="flex flex-col gap-6" onClick={() => setActiveMenuId(null)}>
+        <div 
+            className="flex flex-col gap-6 min-h-[350px] w-full pb-12 select-none" 
+            onClick={() => {
+                setActiveMenuId(null);
+                setContextMenu(null);
+            }}
+            onContextMenu={(e) => handleContextMenu(e, 'empty')}
+        >
             {/* Folders Section */}
             {folders.length > 0 && (
                 <div className="flex flex-col gap-3">
@@ -51,6 +104,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                             <div
                                 key={folder.id}
                                 onDoubleClick={() => onFolderDoubleClick(folder)}
+                                onContextMenu={(e) => handleContextMenu(e, 'folder', folder.id)}
                                 className="group relative bg-muted/20 hover:bg-amber-500/5 border border-border/80 hover:border-amber-500/30 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 select-none text-center"
                             >
                                 {/* Context Menu Button */}
@@ -107,6 +161,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                             <div
                                 key={record.id}
                                 onClick={() => onRecordClick(record)}
+                                onContextMenu={(e) => handleContextMenu(e, 'record', record.id)}
                                 className="group relative bg-muted/20 hover:bg-primary/5 border border-border/80 hover:border-primary/20 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 select-none text-center"
                             >
                                 {/* Context Menu Button */}
@@ -190,6 +245,128 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                     </svg>
                     <span className="text-sm font-semibold">المجلد فارغ تماماً</span>
                     <span className="text-xs text-muted-foreground/60">يمكنك إنشاء مجلدات فرعية أو أرشفة مستندات جديدة هنا.</span>
+                </div>
+            )}
+
+            {/* Context Menu */}
+            {contextMenu && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        left: `${contextMenu.x}px`,
+                        top: `${contextMenu.y}px`,
+                        zIndex: 1000,
+                    }}
+                    className="w-48 bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl shadow-xl shadow-black/10 py-1.5 animate-in fade-in zoom-in-95 duration-100 select-none text-right"
+                    dir="rtl"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {contextMenu.type === 'empty' && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    onCreateFolder?.();
+                                    setContextMenu(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                            >
+                                <span>إنشاء مجلد جديد</span>
+                                <FolderPlus className="h-4 w-4 text-amber-500" />
+                            </button>
+                            {onCreateRecord && (
+                                <button
+                                    onClick={() => {
+                                        onCreateRecord?.();
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>أرشفة مستند جديد</span>
+                                    <Plus className="h-4 w-4 text-primary" />
+                                </button>
+                            )}
+                        </>
+                    )}
+
+                    {contextMenu.type === 'folder' && targetFolder && (
+                        <>
+                            {onFolderEdit && (
+                                <button
+                                    onClick={() => {
+                                        onFolderEdit(targetFolder);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>تعديل الاسم</span>
+                                    <Edit3 className="h-4 w-4 text-amber-500" />
+                                </button>
+                            )}
+                            {onFolderDelete && (
+                                <button
+                                    onClick={() => {
+                                        onFolderDelete(targetFolder);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive/10 flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>حذف المجلد</span>
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            )}
+                        </>
+                    )}
+
+                    {contextMenu.type === 'record' && targetRecord && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    onRecordClick(targetRecord);
+                                    setContextMenu(null);
+                                }}
+                                className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                            >
+                                <span>عرض وتحميل</span>
+                                <Eye className="h-4 w-4 text-sky-500" />
+                            </button>
+                            {onRecordRequestEdit && (
+                                <button
+                                    onClick={() => {
+                                        onRecordRequestEdit(targetRecord);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-amber-500 hover:bg-amber-500/10 flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>طلب تعديل</span>
+                                    <Edit3 className="h-4 w-4" />
+                                </button>
+                            )}
+                            {onRecordDownloadZip && (
+                                <button
+                                    onClick={() => {
+                                        onRecordDownloadZip(targetRecord);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>تحميل الكل (ZIP)</span>
+                                    <Download className="h-4 w-4 text-emerald-500" />
+                                </button>
+                            )}
+                            {onRecordDelete && (
+                                <button
+                                    onClick={() => {
+                                        onRecordDelete(targetRecord);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive/10 flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>حذف المستند</span>
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
             )}
         </div>

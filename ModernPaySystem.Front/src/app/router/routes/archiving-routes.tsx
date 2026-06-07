@@ -6,7 +6,7 @@ import { Suspense } from 'react';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 
 const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-page'));
-const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
+// const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
 
 export const archivingRoutes: RouteObject = {

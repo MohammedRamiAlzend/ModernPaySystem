@@ -1,21 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PhysicalFile } from '../model/types';
 import { Button } from '@/shared/ui/button';
-import { 
-    isImageFile, 
-    isVideoFile, 
-    isPdfFile, 
-    isTextFile, 
-    isOfficeFile 
+import {
+    isImageFile,
+    isVideoFile,
+    isPdfFile,
+    isTextFile,
+    isOfficeFile
 } from '../hooks/useDocumentPreview';
-import { 
-    Loader2, 
-    FileSpreadsheet, 
-    Download, 
-    AlertCircle, 
-    FileIcon 
+import {
+    Loader2,
+    FileSpreadsheet,
+    Download,
+    AlertCircle,
+    FileIcon
 } from 'lucide-react';
-// @ts-ignore
 import { renderAsync } from 'docx-preview';
 import { read, utils } from 'xlsx';
 
@@ -48,9 +47,9 @@ const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
             try {
                 const response = await fetch(blobUrl);
                 const blob = await response.blob();
-                
+
                 containerRef.current.innerHTML = '';
-                
+
                 await renderAsync(blob, containerRef.current, undefined, {
                     className: "docx",
                     inWrapper: true,
@@ -59,7 +58,6 @@ const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
                     ignoreFonts: false,
                     breakPages: true,
                     experimental: false,
-                    useRtlAlign: true,
                 });
             } catch (err) {
                 console.error("Error rendering docx:", err);
@@ -88,8 +86,8 @@ const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
                     <span>{error}</span>
                 </div>
             ) : (
-                <div 
-                    ref={containerRef} 
+                <div
+                    ref={containerRef}
                     className="flex-1 overflow-auto p-6 bg-slate-100 dark:bg-slate-900 docx-container text-right"
                     style={{ direction: 'rtl' }}
                 />
@@ -119,9 +117,9 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                 const response = await fetch(blobUrl);
                 const blob = await response.blob();
                 const arrayBuffer = await blob.arrayBuffer();
-                
+
                 const workbook = read(arrayBuffer, { type: 'array' });
-                
+
                 const sheetsData = workbook.SheetNames.map(name => {
                     const sheet = workbook.Sheets[name];
                     const html = utils.sheet_to_html(sheet, {
@@ -129,10 +127,10 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                         header: '',
                         footer: ''
                     });
-                    
+
                     return { name, html };
                 });
-                
+
                 setSheets(sheetsData);
                 setActiveSheetIndex(0);
             } catch (err) {
@@ -153,14 +151,14 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             )}
-            
+
             {error && (
                 <div className="flex-1 flex items-center justify-center p-6 text-destructive gap-2">
                     <AlertCircle className="h-5 w-5" />
                     <span>{error}</span>
                 </div>
             )}
-            
+
             {!loading && !error && sheets.length > 0 && (
                 <div className="flex-1 flex flex-col overflow-hidden">
                     {/* Sheet Tabs */}
@@ -168,21 +166,21 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                         {sheets.map((sheet, index) => (
                             <button
                                 key={index}
-                                className={`px-4 py-2.5 text-xs font-bold transition-colors border-b-2 flex-shrink-0 ${
-                                    activeSheetIndex === index
-                                        ? 'border-primary text-primary bg-background'
-                                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                                }`}
+                                className={`px-4 py-2.5 text-xs font-bold transition-colors border-b-2 flex-shrink-0 ${activeSheetIndex === index
+                                    ? 'border-primary text-primary bg-background'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                                    }`}
                                 onClick={() => setActiveSheetIndex(index)}
                             >
                                 {sheet.name}
                             </button>
                         ))}
                     </div>
-                    
+
                     {/* Active Sheet Content */}
                     <div className="flex-1 overflow-auto p-4 bg-background excel-table-container relative">
-                        <style dangerouslySetInnerHTML={{ __html: `
+                        <style dangerouslySetInnerHTML={{
+                            __html: `
                             .excel-table-container table {
                                 border-collapse: collapse;
                                 width: 100%;
@@ -202,7 +200,7 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                                 background-color: rgba(120, 120, 120, 0.1);
                             }
                         `}} />
-                        <div 
+                        <div
                             dangerouslySetInnerHTML={{ __html: sheets[activeSheetIndex].html }}
                             className="excel-table prose dark:prose-invert max-w-none"
                             style={{ direction: 'rtl' }}
@@ -213,6 +211,15 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
         </div>
     );
 };
+interface DocumentPreviewRendererProps {
+    selectedFile: PhysicalFile | null;
+    loading: boolean;
+    previewBlobUrl: string | null;
+    textContent: string | null;
+    downloadingFileId: string | null;
+    downloadProgress: number;
+    onDownload: (file: PhysicalFile) => void;
+}
 
 export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = ({
     selectedFile,
@@ -247,8 +254,8 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
     if (isImageFile(selectedFile.fileName) && previewBlobUrl) {
         return (
             <div className="flex-1 flex items-center justify-center bg-slate-900 border border-slate-800 rounded-2xl p-4 overflow-hidden relative group">
-                <img 
-                    src={previewBlobUrl} 
+                <img
+                    src={previewBlobUrl}
                     alt={selectedFile.fileName}
                     className="max-h-[500px] max-w-full object-contain rounded-lg shadow-lg group-hover:scale-[1.01] transition-transform duration-300"
                 />
@@ -260,9 +267,9 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
     if (isVideoFile(selectedFile.fileName) && previewBlobUrl) {
         return (
             <div className="flex-1 flex items-center justify-center bg-slate-900 border border-slate-800 rounded-2xl p-2">
-                <video 
-                    src={previewBlobUrl} 
-                    controls 
+                <video
+                    src={previewBlobUrl}
+                    controls
                     className="max-h-[500px] w-full rounded-lg shadow-lg"
                 />
             </div>
@@ -273,8 +280,8 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
     if (isPdfFile(selectedFile.fileName) && previewBlobUrl) {
         return (
             <div className="flex-1 flex flex-col bg-card border border-border rounded-2xl overflow-hidden h-[500px]">
-                <iframe 
-                    src={previewBlobUrl} 
+                <iframe
+                    src={previewBlobUrl}
                     className="w-full h-full border-none"
                     title={selectedFile.fileName}
                 />
@@ -313,11 +320,11 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
             <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-muted/55 to-muted/20 border border-border rounded-3xl p-12">
                 <div className="max-w-md w-full bg-card border border-border rounded-3xl p-8 shadow-xl shadow-background/30 flex flex-col items-center text-center gap-6 relative overflow-hidden">
                     <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
-                    
+
                     <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shadow-inner scale-110">
                         <FileSpreadsheet className="h-10 w-10" />
                     </div>
-                    
+
                     <div className="flex flex-col gap-2">
                         <h3 className="text-base font-bold text-foreground break-all px-4">{selectedFile.fileName}</h3>
                         <span className="text-xs text-muted-foreground font-bold">مستند أوفيس (Office Document)</span>
@@ -335,7 +342,7 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
                     </div>
 
                     <div className="w-full flex flex-col gap-3">
-                        <Button 
+                        <Button
                             className="w-full rounded-2xl py-6 font-bold shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center gap-2"
                             onClick={() => onDownload(selectedFile)}
                             disabled={downloadingFileId === selectedFile.id}
@@ -368,13 +375,13 @@ export const DocumentPreviewRenderer: React.FC<DocumentPreviewRendererProps> = (
                 <div className="w-20 h-20 rounded-2xl bg-muted text-muted-foreground flex items-center justify-center shadow-inner">
                     <AlertCircle className="h-10 w-10" />
                 </div>
-                
+
                 <div className="flex flex-col gap-2">
                     <h3 className="text-base font-bold text-foreground break-all px-4">{selectedFile.fileName}</h3>
                     <span className="text-xs text-muted-foreground font-bold">الملف غير مدعوم للمعاينة المباشرة</span>
                 </div>
 
-                <Button 
+                <Button
                     className="w-full rounded-2xl py-6 font-bold flex items-center justify-center gap-2"
                     onClick={() => onDownload(selectedFile)}
                     disabled={downloadingFileId === selectedFile.id}
