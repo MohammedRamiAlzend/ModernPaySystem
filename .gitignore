@@ -370,5 +370,5 @@ FodyWeavers.xsd
 
 ModernPaySystem/ModernPaySystem/Diwan/
 
-.agents/
-skills-lock.json
+# .agents/
+# skills-lock.json
