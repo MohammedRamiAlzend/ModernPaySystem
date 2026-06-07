@@ -20,6 +20,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
     const [justification, setJustification] = useState('');
     const [fields, setFields] = useState<Record<string, string>>({});
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [fileIdsToRemove, setFileIdsToRemove] = useState<string[]>([]);
 
     // Track previous props to synchronize state during render (avoids setState in useEffect)
     const [prevRecordId, setPrevRecordId] = useState<string | null>(null);
@@ -30,6 +31,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
         setPrevRecordId(record ? record.id : null);
         setJustification('');
         setSelectedFiles([]);
+        setFileIdsToRemove([]);
 
         // Populate fields from current template values
         const initialFields: Record<string, string> = {};
@@ -61,6 +63,13 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleToggleExistingFile = (id: string) => {
+        setFileIdsToRemove(prev => prev.includes(id) 
+            ? prev.filter(x => x !== id) 
+            : [...prev, id]
+        );
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -83,7 +92,8 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                 archiveRecordId: record.id,
                 justification: justification.trim(),
                 requestedChanges,
-                files: selectedFiles
+                files: selectedFiles,
+                fileIdsToDelete: fileIdsToRemove
             },
             {
                 onSuccess: () => {
@@ -154,6 +164,34 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                                             />
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Existing Files to Delete */}
+                        {record.physicalFiles && record.physicalFiles.length > 0 && (
+                            <div className="flex flex-col gap-2 bg-muted/20 border border-border p-4 rounded-2xl">
+                                <Label className="text-xs font-semibold text-muted-foreground mb-1">
+                                    الملفات الموجودة حالياً بالمستند (اختر لحذفها):
+                                </Label>
+                                <div className="flex flex-col gap-1.5 max-h-[150px] overflow-y-auto">
+                                    {record.physicalFiles.map(f => {
+                                        const isRemoved = fileIdsToRemove.includes(f.id);
+                                        return (
+                                            <div key={f.id} className="flex items-center justify-between text-xs p-2 rounded-xl hover:bg-muted/40 transition-colors border border-border bg-background">
+                                                <span className={`truncate flex-1 text-right ${isRemoved ? 'line-through text-destructive font-bold' : 'font-semibold text-foreground'}`}>
+                                                    {f.fileName}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    className={`p-1.5 rounded-lg transition-colors ${isRemoved ? 'text-primary hover:bg-primary/10' : 'text-destructive hover:bg-destructive/10'}`}
+                                                    onClick={() => handleToggleExistingFile(f.id)}
+                                                >
+                                                    {isRemoved ? <span className="font-bold">تراجع عن الحذف</span> : <Trash2 className="h-4 w-4" />}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}

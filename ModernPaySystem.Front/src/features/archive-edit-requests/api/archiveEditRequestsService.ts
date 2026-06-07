@@ -26,6 +26,12 @@ export const archiveEditRequestsService = {
             });
         }
 
+        if (dto.fileIdsToDelete) {
+            dto.fileIdsToDelete.forEach((id) => {
+                formData.append('FileIdsToDelete', id);
+            });
+        }
+
         const response = await api.post<any>('/archive-edit-requests', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',

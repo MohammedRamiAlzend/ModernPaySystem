@@ -28,6 +28,7 @@ export interface EditArchiveRequest {
     createdByUserId?: string;
     createdAt?: string;
     attachedFiles?: PhysicalFile[];
+    fileIdsToDelete?: string[];
 }
 
 export interface CreateEditArchiveRequestDto {
@@ -35,6 +36,7 @@ export interface CreateEditArchiveRequestDto {
     justification: string;
     requestedChanges: ArchiveRecordFormInputValue[];
     files: File[];
+    fileIdsToDelete?: string[];
 }
 
 export interface EditArchiveRequestDecisionDto {

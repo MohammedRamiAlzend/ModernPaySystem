@@ -12,7 +12,12 @@ interface EditRequestDetailsProps {
 export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDetailsProps) {
     if (!isOpen || !request) return null;
 
-    let originalData: { ArchivalNumber: string; FormId: string | null; Content: Array<{ key: string; value: string | null }> } | null = null;
+    let originalData: { 
+        ArchivalNumber: string; 
+        FormId: string | null; 
+        Content: Array<{ key: string; value: string | null }>;
+        PhysicalFiles: Array<{ id: string; fileName: string }>;
+    } | null = null;
     try {
         if (request.originalSnapshotJson) {
             const parsed = JSON.parse(request.originalSnapshotJson);
@@ -27,7 +32,8 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
             originalData = {
                 ArchivalNumber: parsed.ArchivalNumber || parsed.archivalNumber || '',
                 FormId: parsed.FormId || parsed.formId || null,
-                Content: content
+                Content: content,
+                PhysicalFiles: parsed.PhysicalFiles || parsed.physicalFiles || []
             };
         }
     } catch (e) {
@@ -221,6 +227,40 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Files Requested for Deletion Section */}
+                    {request.fileIdsToDelete && request.fileIdsToDelete.length > 0 && (
+                        <div className="flex flex-col gap-2 border-t border-border pt-4">
+                            <span className="text-xs font-bold text-destructive">الملفات المطلوب حذفها من المستند:</span>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {request.fileIdsToDelete.map((fileId) => {
+                                    const originalFile = originalData?.PhysicalFiles?.find(f => f.id.toLowerCase() === fileId.toLowerCase() || f.id === fileId);
+                                    const fileName = originalFile ? originalFile.fileName : 'ملف غير معروف (أو تم حذفه مسبقاً)';
+                                    return (
+                                        <div key={fileId} className="flex items-center justify-between border border-destructive/20 p-3 rounded-2xl bg-destructive/5 hover:bg-destructive/10 transition-colors">
+                                            <div className="flex flex-col text-right truncate pl-2">
+                                                <span className="text-xs font-bold text-destructive truncate animate-fade-in" title={fileName}>
+                                                    {fileName}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleViewFile(fileId)}
+                                                    className="rounded-xl px-3 font-bold text-xs h-8 flex items-center gap-1 hover:bg-destructive hover:text-destructive-foreground transition-colors border-destructive/30 text-destructive"
+                                                >
+                                                    <ExternalLink className="h-3.5 w-3.5" />
+                                                    <span>معاينة للتحقق</span>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
