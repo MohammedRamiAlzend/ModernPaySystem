@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ArchiveRecord, DynamicFormTemplate, PhysicalFile } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
+import { v4 } from '@/shared/utils/uuid';
 import * as htmlToImage from 'html-to-image';
 
 const printQrCover = (blob: Blob) => {
@@ -160,7 +161,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
         setSelectedFiles([]);
         setExistingFiles([]);
         setFileIdsToRemove([]);
-        setQrCoverGuid(crypto.randomUUID());
+        setQrCoverGuid(v4());
         setGenerateQrCover(true);
         setRecordModalMode('create');
         setShowRecordModal(true);
@@ -203,7 +204,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
             // Generate QR Cover if required
             if (recordModalMode === 'create' && generateQrCover) {
-                const recordId = qrCoverGuid || crypto.randomUUID();
+                const recordId = qrCoverGuid || v4();
                 setQrCoverGuid(recordId);
 
                 // Give template a moment to render with the correct guid
@@ -227,7 +228,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
             }
 
             if (recordModalMode === 'create') {
-                const recordId = qrCoverGuid || crypto.randomUUID();
+                const recordId = qrCoverGuid || v4();
                 await archivingService.createArchiveRecord({
                     id: recordId,
                     folderId: currentFolderId,
