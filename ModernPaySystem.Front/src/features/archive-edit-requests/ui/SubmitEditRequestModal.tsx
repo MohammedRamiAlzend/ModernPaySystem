@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { ArchiveRecord } from '@/features/archiving/model/types';
+import { archivingService } from '@/features/archiving/api/archivingService';
 import { useSubmitEditRequest } from '../model/mutations';
 import { useUIStore } from '@/app/store/uiStore';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
-import { Upload, Trash2, X } from 'lucide-react';
+import { Upload, Trash2, X, Eye } from 'lucide-react';
 
 interface SubmitEditRequestModalProps {
     isOpen: boolean;
@@ -68,6 +69,17 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
             ? prev.filter(x => x !== id) 
             : [...prev, id]
         );
+    };
+
+    const handleViewFile = async (fileId: string) => {
+        try {
+            const blob = await archivingService.viewFileBlobById(fileId);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => window.URL.revokeObjectURL(url), 30000);
+        } catch (err) {
+            console.error('Failed to view file', err);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -182,13 +194,23 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                                                 <span className={`truncate flex-1 text-right ${isRemoved ? 'line-through text-destructive font-bold' : 'font-semibold text-foreground'}`}>
                                                     {f.fileName}
                                                 </span>
-                                                <button
-                                                    type="button"
-                                                    className={`p-1.5 rounded-lg transition-colors ${isRemoved ? 'text-primary hover:bg-primary/10' : 'text-destructive hover:bg-destructive/10'}`}
-                                                    onClick={() => handleToggleExistingFile(f.id)}
-                                                >
-                                                    {isRemoved ? <span className="font-bold">تراجع عن الحذف</span> : <Trash2 className="h-4 w-4" />}
-                                                </button>
+                                                <div className="flex items-center gap-1.5 mr-2">
+                                                    <button
+                                                        type="button"
+                                                        className={`p-1.5 rounded-lg transition-colors border ${isRemoved ? 'border-primary text-primary hover:bg-primary/10' : 'border-destructive/30 text-destructive hover:bg-destructive/10'}`}
+                                                        onClick={() => handleToggleExistingFile(f.id)}
+                                                    >
+                                                        {isRemoved ? <span className="font-bold text-[10px] px-1">تراجع</span> : <Trash2 className="h-4 w-4" />}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition-colors"
+                                                        onClick={() => handleViewFile(f.id)}
+                                                        title="معاينة الملف"
+                                                    >
+                                                        <Eye className="h-4 w-4" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         );
                                     })}
