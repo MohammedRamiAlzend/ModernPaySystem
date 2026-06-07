@@ -9,7 +9,7 @@ import {
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Shield, Archive } from 'lucide-react';
+import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Archive } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/constants/query-keys';
@@ -487,7 +487,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                 {archiveLeaderUserIds.has(user.id) ? (
                                                                     <div className="flex items-center gap-1">
                                                                         <div className="flex items-center gap-1 text-emerald-600 bg-emerald-600/10 dark:text-emerald-400 dark:bg-emerald-400/10 px-2 py-1 rounded text-[10px] font-bold">
-                                                                            <Shield className="w-3 h-3" />
+                                                                            <Archive className="w-3 h-3" />
                                                                             مدير الأرشيف
                                                                         </div>
                                                                         <Button
