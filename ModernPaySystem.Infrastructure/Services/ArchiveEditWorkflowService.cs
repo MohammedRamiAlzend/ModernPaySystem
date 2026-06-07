@@ -338,20 +338,15 @@ public class ArchiveEditWorkflowService(
                     var oldValues = record.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues.ToList();
                     if (oldValues.Count > 0)
                     {
-                        unitOfWork.Context.RemoveRange(oldValues);
-                    }
-                    ICollection<ArchiveRecordFormInputValue> ArchiveRecordFormInputValues = [];
-                    foreach (var change in changes)
-                    {
-                        var addResult = await unitOfWork.ArchiveRecordFormInputValues.AddAsync(new ArchiveRecordFormInputValue
+                        foreach (var change in changes)
                         {
-                            Id = Guid.NewGuid(),
-                            Key = change.Key,
-                            Value = change.Value
-                        });
-                        if (addResult.IsError)
-                        {
-                            return addResult.Errors;
+                            var existingValue = oldValues.Find(x => x.Key == change.Key);
+                            existingValue!.Value = change.Value;
+                            var updateResult = await unitOfWork.ArchiveRecordFormInputValues.UpdateAsync(existingValue);
+                            if (updateResult.IsError)
+                            {
+                                return updateResult.Errors;
+                            }
                         }
                     }
 
