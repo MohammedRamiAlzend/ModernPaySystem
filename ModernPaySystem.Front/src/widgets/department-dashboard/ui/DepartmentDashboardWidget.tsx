@@ -1,15 +1,15 @@
 import React, { useState, useMemo } from 'react';
-import { 
-    useDepartmentTree, 
-    DepartmentMermaidTree, 
-    DepartmentForm, 
-    useDepartmentActions, 
-    DepartmentTemplatesTab 
+import {
+    useDepartmentTree,
+    DepartmentMermaidTree,
+    DepartmentForm,
+    useDepartmentActions,
+    DepartmentTemplatesTab
 } from '@/features/department-management';
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Shield } from 'lucide-react';
+import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Shield, Archive } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/constants/query-keys';
@@ -19,7 +19,7 @@ import { useTheme } from '@/app/providers/theme-context';
 import { useSearchParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/shared/ui/sheet';
 import { Building2 as BuildingIcon, Users as UsersIcon, FileStack } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
+// import { Avatar, AvatarFallback } from '@/shared/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/ui/tabs';
 import { User, UserForm, UserFormValues, useUserMutations, useSubSystems, useUsers } from '@/features/users';
 import { UserPlus } from 'lucide-react';
@@ -428,11 +428,11 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                     {(deptUsers as User[]).map((user) => (
                                                         <div key={user.id} className="flex items-center justify-between p-3 rounded-lg border bg-card hover:shadow-md transition-all group">
                                                             <div className="flex items-center gap-3">
-                                                                <Avatar className="h-10 w-10 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
+                                                                {/* <Avatar className="h-10 w-10 border-2 border-primary/10 group-hover:border-primary/30 transition-colors">
                                                                     <AvatarFallback className="bg-primary/5 text-primary font-bold">
                                                                         {user.userName.substring(0, 2).toUpperCase()}
                                                                     </AvatarFallback>
-                                                                </Avatar>
+                                                                </Avatar> */}
                                                                 <div className="text-right">
                                                                     <p className="text-sm font-bold">{user.userName}</p>
                                                                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
@@ -442,101 +442,101 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="flex items-center gap-2">
-                                                                <Button 
-                                                                    variant="ghost" 
-                                                                    size="icon" 
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
                                                                     className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:bg-primary/10 hover:text-primary transition-colors"
                                                                     title="ملف المستخدم"
                                                                 >
                                                                     <RefreshCw className="w-4 h-4" />
                                                                 </Button>
 
-                                                            {/* Department Head Assignment */}
-                                                            {currentDepartment?.departmentHeadId === user.id ? (
-                                                                <div className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded text-[10px] font-bold">
-                                                                    <Crown className="w-3 h-3" />
-                                                                    رئيس القسم
-                                                                </div>
-                                                            ) : (
-                                                                <Button 
-                                                                    variant="ghost" 
-                                                                    size="icon" 
-                                                                    className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:text-amber-500 hover:bg-amber-500/10 transition-colors"
-                                                                    title="تعيين كرئيس قسم"
-                                                                    onClick={() => {
-                                                                        showConfirm({
-                                                                            title: 'تعيين رئيس قسم',
-                                                                            message: `هل أنت متأكد من تعيين "${user.userName}" رئيساً لقسم "${selectedDeptName}"؟`,
-                                                                            variant: 'warning',
-                                                                            confirmLabel: 'تعيين كرئيس',
-                                                                            onConfirm: async () => {
-                                                                                await assignDepartmentHead({
-                                                                                    departmentId: selectedDeptForUsers!,
-                                                                                    userId: user.id
-                                                                                });
-                                                                                queryClient.invalidateQueries({ queryKey: ['department', selectedDeptForUsers] });
-                                                                            }
-                                                                        });
-                                                                    }}
-                                                                >
-                                                                    <Crown className="w-4 h-4" />
-                                                                </Button>
-                                                            )}
-
-                                                            {/* Archive Leader Assignment */}
-                                                            {archiveLeaderUserIds.has(user.id) ? (
-                                                                <div className="flex items-center gap-1">
-                                                                    <div className="flex items-center gap-1 text-emerald-600 bg-emerald-600/10 dark:text-emerald-400 dark:bg-emerald-400/10 px-2 py-1 rounded text-[10px] font-bold">
-                                                                        <Shield className="w-3 h-3" />
-                                                                        مدير الأرشيف
+                                                                {/* Department Head Assignment */}
+                                                                {currentDepartment?.departmentHeadId === user.id ? (
+                                                                    <div className="flex items-center gap-1 text-amber-500 bg-amber-500/10 px-2 py-1 rounded text-[10px] font-bold">
+                                                                        <Crown className="w-3 h-3" />
+                                                                        رئيس القسم
                                                                     </div>
-                                                                    <Button 
-                                                                        variant="ghost" 
-                                                                        size="icon" 
-                                                                        className="h-8 w-8 rounded-lg hidden group-hover:inline-flex text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                                                ) : (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:text-amber-500 hover:bg-amber-500/10 transition-colors"
+                                                                        title="تعيين كرئيس قسم"
                                                                         onClick={() => {
                                                                             showConfirm({
-                                                                                title: 'إلغاء تعيين مدير الأرشيف',
-                                                                                message: `هل أنت متأكد من إلغاء تعيين "${user.userName}" كمدير أرشيف لقسم "${selectedDeptName}"؟`,
-                                                                                variant: 'destructive',
-                                                                                confirmLabel: 'إلغاء التعيين',
+                                                                                title: 'تعيين رئيس قسم',
+                                                                                message: `هل أنت متأكد من تعيين "${user.userName}" رئيساً لقسم "${selectedDeptName}"؟`,
+                                                                                variant: 'warning',
+                                                                                confirmLabel: 'تعيين كرئيس',
+                                                                                onConfirm: async () => {
+                                                                                    await assignDepartmentHead({
+                                                                                        departmentId: selectedDeptForUsers!,
+                                                                                        userId: user.id
+                                                                                    });
+                                                                                    queryClient.invalidateQueries({ queryKey: ['department', selectedDeptForUsers] });
+                                                                                }
+                                                                            });
+                                                                        }}
+                                                                    >
+                                                                        <Crown className="w-4 h-4" />
+                                                                    </Button>
+                                                                )}
+
+                                                                {/* Archive Leader Assignment */}
+                                                                {archiveLeaderUserIds.has(user.id) ? (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <div className="flex items-center gap-1 text-emerald-600 bg-emerald-600/10 dark:text-emerald-400 dark:bg-emerald-400/10 px-2 py-1 rounded text-[10px] font-bold">
+                                                                            <Shield className="w-3 h-3" />
+                                                                            مدير الأرشيف
+                                                                        </div>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-8 w-8 rounded-lg hidden group-hover:inline-flex text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                                                            onClick={() => {
+                                                                                showConfirm({
+                                                                                    title: 'إلغاء تعيين مدير الأرشيف',
+                                                                                    message: `هل أنت متأكد من إلغاء تعيين "${user.userName}" كمدير أرشيف لقسم "${selectedDeptName}"؟`,
+                                                                                    variant: 'destructive',
+                                                                                    confirmLabel: 'إلغاء التعيين',
+                                                                                    onConfirm: () => {
+                                                                                        unassignArchiveLeaderMutation.mutate({
+                                                                                            departmentId: selectedDeptForUsers!,
+                                                                                            userId: user.id
+                                                                                        });
+                                                                                    }
+                                                                                });
+                                                                            }}
+                                                                            title="إلغاء تعيين كمدير أرشيف"
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:text-emerald-400 dark:hover:bg-emerald-400/10 transition-colors"
+                                                                        title="تعيين كمدير أرشيف"
+                                                                        onClick={() => {
+                                                                            showConfirm({
+                                                                                title: 'تعيين مدير الأرشيف',
+                                                                                message: `هل أنت متأكد من تعيين "${user.userName}" كمدير أرشيف لقسم "${selectedDeptName}"؟`,
+                                                                                variant: 'warning',
+                                                                                confirmLabel: 'تعيين كمدير أرشيف',
                                                                                 onConfirm: () => {
-                                                                                    unassignArchiveLeaderMutation.mutate({
+                                                                                    assignArchiveLeaderMutation.mutate({
                                                                                         departmentId: selectedDeptForUsers!,
                                                                                         userId: user.id
                                                                                     });
                                                                                 }
                                                                             });
                                                                         }}
-                                                                        title="إلغاء تعيين كمدير أرشيف"
                                                                     >
-                                                                        <Trash2 className="w-4 h-4" />
+                                                                        <Archive className="w-4 h-4" />
                                                                     </Button>
-                                                                </div>
-                                                            ) : (
-                                                                <Button 
-                                                                    variant="ghost" 
-                                                                    size="icon" 
-                                                                    className="h-8 w-8 rounded-lg hidden group-hover:inline-flex hover:text-emerald-600 hover:bg-emerald-600/10 dark:hover:text-emerald-400 dark:hover:bg-emerald-400/10 transition-colors"
-                                                                    title="تعيين كمدير أرشيف"
-                                                                    onClick={() => {
-                                                                        showConfirm({
-                                                                            title: 'تعيين مدير الأرشيف',
-                                                                            message: `هل أنت متأكد من تعيين "${user.userName}" كمدير أرشيف لقسم "${selectedDeptName}"؟`,
-                                                                            variant: 'warning',
-                                                                            confirmLabel: 'تعيين كمدير أرشيف',
-                                                                            onConfirm: () => {
-                                                                                assignArchiveLeaderMutation.mutate({
-                                                                                    departmentId: selectedDeptForUsers!,
-                                                                                    userId: user.id
-                                                                                });
-                                                                            }
-                                                                        });
-                                                                    }}
-                                                                >
-                                                                    <Shield className="w-4 h-4" />
-                                                                </Button>
-                                                            )}
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -602,6 +602,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                         onSubmit={handleSaveUser}
                         subSystems={subSystems as any}
                         isLoading={createUser.isPending}
+                        departmentOptions={departmentOptions}
                     />
                 </DialogContent>
             </Dialog>
