@@ -16,7 +16,7 @@ import {
     FileIcon
 } from 'lucide-react';
 import { renderAsync } from 'docx-preview';
-import { read, utils } from 'xlsx';
+import * as XLSX from 'xlsx';
 
 const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
@@ -118,11 +118,14 @@ const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                 const blob = await response.blob();
                 const arrayBuffer = await blob.arrayBuffer();
 
-                const workbook = read(arrayBuffer, { type: 'array' });
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 
                 const sheetsData = workbook.SheetNames.map(name => {
                     const sheet = workbook.Sheets[name];
-                    const html = utils.sheet_to_html(sheet, {
+                    if (!sheet || !sheet['!ref']) {
+                        return { name, html: '<div class="p-8 text-center text-muted-foreground text-xs font-semibold">ورقة العمل هذه فارغة ولا تحتوي على بيانات.</div>' };
+                    }
+                    const html = XLSX.utils.sheet_to_html(sheet, {
                         editable: false,
                         header: '',
                         footer: ''

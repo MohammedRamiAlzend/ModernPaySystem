@@ -36,6 +36,16 @@ export default function ExplorerPage() {
         setShowSubmitEditModal(true);
     };
 
+    const handleRecordClick = async (record: ArchiveRecord) => {
+        setPreviewingRecord(record);
+        try {
+            const fullRecord = await archivingService.getArchiveRecordById(record.id);
+            setPreviewingRecord(fullRecord);
+        } catch (e) {
+            console.error('Failed to load full record details:', e);
+        }
+    };
+
     const {
         folders,
         currentFolder,
@@ -192,7 +202,7 @@ export default function ExplorerPage() {
                         folders={filteredFolders}
                         records={filteredRecords}
                         onFolderDoubleClick={handleNavigate}
-                        onRecordClick={setPreviewingRecord}
+                        onRecordClick={handleRecordClick}
                         onFolderEdit={handleOpenEditFolder}
                         onFolderDelete={handleDeleteFolder}
                         onRecordEdit={handleOpenEditRecord}
@@ -209,7 +219,7 @@ export default function ExplorerPage() {
                         onFolderClick={handleNavigate}
                         onFolderEdit={handleOpenEditFolder}
                         onFolderDelete={handleDeleteFolder}
-                        onView={setPreviewingRecord}
+                        onView={handleRecordClick}
                         onEdit={handleOpenEditRecord}
                         onDelete={handleDeleteRecord}
                         onDownloadZip={handleDownloadRecordZip}

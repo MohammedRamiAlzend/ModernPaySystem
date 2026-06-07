@@ -118,6 +118,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 selectedFile={selectedFile}
                 setSelectedFile={setSelectedFile}
                 record={record}
+                formName={formName}
                 isUploading={isUploading}
                 uploadProgress={uploadProgress}
                 downloadingFileId={downloadingFileId}
