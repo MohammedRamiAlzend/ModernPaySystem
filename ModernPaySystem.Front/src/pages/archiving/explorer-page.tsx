@@ -199,6 +199,8 @@ export default function ExplorerPage() {
                         onRecordDelete={handleDeleteRecord}
                         onRecordDownloadZip={handleDownloadRecordZip}
                         onRecordRequestEdit={handleOpenRequestEdit}
+                        onCreateFolder={handleOpenCreateFolder}
+                        onCreateRecord={currentFolder ? handleOpenCreateRecord : undefined}
                     />
                 ) : (
                     <ListView
