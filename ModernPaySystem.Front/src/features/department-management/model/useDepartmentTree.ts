@@ -68,8 +68,6 @@ export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, 
 
         if (node.id === highlightId) {
             mermaidText += `    class ${nodeId} highlight\n`;
-        } else if (node.level === 1) {
-            mermaidText += `    class ${nodeId} root\n`;
         }
 
         // Add click handler for each node
