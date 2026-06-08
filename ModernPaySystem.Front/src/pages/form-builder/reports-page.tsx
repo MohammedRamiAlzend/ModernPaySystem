@@ -5,7 +5,6 @@ import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
 import {
-    BarChart3,
     Filter,
     Download,
     CheckCircle2,
@@ -254,8 +253,7 @@ export const ReportsPage: React.FC = () => {
             {/* Header section (replaces flashy banners with standard enterprise look) */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6">
                 <div className="space-y-1.5">
-                    <h1 className="text-3xl font-bold flex items-center gap-2 text-foreground">
-                        <BarChart3 className="w-8 h-8 text-primary" />
+                    <h1 className="text-3xl font-bold text-primary tracking-tight">
                         التقارير والإحصائيات
                     </h1>
                     <p className="text-muted-foreground text-sm">

@@ -28,6 +28,7 @@ export type UserFormValues = z.infer<typeof userFormSchema>;
 interface UserFormProps {
     onSubmit: (data: UserFormValues) => void;
     initialData?: User | null;
+    defaultDepartmentId?: string;
     subSystems: SubSystem[];
     currentUserSubsystem?: number | null;
     isLoading?: boolean;
@@ -37,6 +38,7 @@ interface UserFormProps {
 export const UserForm: React.FC<UserFormProps> = ({
     onSubmit,
     initialData,
+    defaultDepartmentId,
     subSystems,
     currentUserSubsystem,
     isLoading,
@@ -48,7 +50,7 @@ export const UserForm: React.FC<UserFormProps> = ({
             userName: '',
             password: '',
             subSystem: currentUserSubsystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
-            departmentId: '',
+            departmentId: defaultDepartmentId || '',
             isArchiveLeader: false,
         },
     });
@@ -68,11 +70,11 @@ export const UserForm: React.FC<UserFormProps> = ({
                 userName: '',
                 password: '',
                 subSystem: currentUserSubsystem?.toString() || APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
-                departmentId: '',
+                departmentId: defaultDepartmentId || '',
                 isArchiveLeader: false,
             });
         }
-    }, [initialData, form, currentUserSubsystem]);
+    }, [initialData, form, currentUserSubsystem, defaultDepartmentId]);
 
     return (
         <Form {...form}>

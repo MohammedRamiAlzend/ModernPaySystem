@@ -28,6 +28,7 @@ interface ReferralCardProps {
 
 const ReferralAttachments = ({ referral }: { referral: RequestTransactionDto }) => {
     const {
+        zipFiles,
         zipImages,
         isLoading,
         isAllImages,
@@ -43,6 +44,7 @@ const ReferralAttachments = ({ referral }: { referral: RequestTransactionDto }) 
 
     return (
         <AttachmentsGallery
+            files={zipFiles}
             images={zipImages}
             isLoading={isLoading}
             isAllImages={isAllImages}

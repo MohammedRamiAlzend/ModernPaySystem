@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ className, onItemClick }) => {
                                     {headerConfig.icon}
                                 </div>
                                 {!isCollapsed && (
-                                    <span className="text-lg font-black text-foreground drop-shadow-sm whitespace-nowrap animate-in fade-in slide-in-from-right-4">
+                                    <span className="text-lg font-black text-primary dark:text-[#2cff79] drop-shadow-sm whitespace-nowrap animate-in fade-in slide-in-from-right-4">
                                         {headerConfig.title}
                                     </span>
                                 )}

@@ -130,7 +130,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
             />
 
             {/* Main Preview Area */}
-            <div className="flex-1 flex flex-col gap-4">
+            <div className="flex-1 flex flex-col gap-4 min-w-0">
                 {selectedFile ? (
                     <>
                         <div className="flex items-center justify-between bg-muted/50 p-4 rounded-2xl border border-border">

@@ -41,6 +41,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
     const { data: transactions = [] } = useRequestTransactionsHistory(request?.id || null);
 
     const {
+        zipFiles,
         zipImages,
         isLoading: isLoadingImages,
         isAllImages,
@@ -308,6 +309,7 @@ export const SelectedRequestPreview = ({ request, template }: SelectedRequestPre
                             </div>
 
                             <AttachmentsGallery
+                                files={zipFiles}
                                 images={zipImages}
                                 isLoading={isLoadingImages}
                                 isAllImages={isAllImages}

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/button';
-import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, FileDown, Printer } from 'lucide-react';
+import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, FileDown, Printer, FileText, FileSpreadsheet, FileIcon } from 'lucide-react';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
-import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
+import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipFile, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
 import { printImage, downloadImage } from '@/shared/utils/image-actions';
 import type { TemplateResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
@@ -10,44 +10,46 @@ import { useUIStore } from '@/app/store/uiStore';
 
 interface ResponseItemProps {
     response: TemplateResponse;
-    onViewImage: (img: ZipImage) => void;
+    onViewImage: (img: ZipFile) => void;
 }
 
 export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
     const { showStatus } = useUIStore();
     const [showAttachments, setShowAttachments] = useState(false);
-    const [images, setImages] = useState<ZipImage[]>([]);
+    const [files, setFiles] = useState<ZipFile[]>([]);
+    const [images, setImages] = useState<ZipFile[]>([]);
     const [isLoadingImages, setIsLoadingImages] = useState(false);
     const [isAllImages, setIsAllImages] = useState(false);
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
     useEffect(() => {
         return () => {
-            if (images.length > 0) {
-                revokeZipImages(images);
+            if (files.length > 0) {
+                revokeZipImages(files);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [files]);
 
     const handleToggleAttachments = async () => {
         const willShow = !showAttachments;
         setShowAttachments(willShow);
 
-        if (willShow && images.length === 0) {
+        if (willShow && files.length === 0) {
             setIsLoadingImages(true);
             try {
                 const blob = await formEndpoints.fetchResponseAttachmentsBlob(response.id);
                 const content: ZipContent = await extractImagesFromZip(blob);
+                setFiles(content.files);
                 setImages(content.images);
                 setIsAllImages(content.isAllImages);
                 
-                // Fallback for empty images if totalFiles > 0
-                if (content.images.length === 0 && content.totalFiles > 0) {
-                    console.warn("Images not found in ZIP, total files:", content.totalFiles);
+                // Fallback for empty files if totalFiles > 0
+                if (content.files.length === 0 && content.totalFiles > 0) {
+                    console.warn("Files not found in ZIP, total files:", content.totalFiles);
                 }
             } catch (error) {
-                console.error('Failed to load response images', error);
+                console.error('Failed to load response files', error);
                 showStatus({
                     type: 'error',
                     title: 'خطأ في التحميل',
@@ -159,35 +161,49 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {images.length > 0 ? (
+                                    {files.length > 0 ? (
                                         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                                            {images.map((img, idx) => (
+                                            {files.map((file, idx) => (
                                                 <div
                                                     key={idx}
                                                     className="relative aspect-square rounded-lg overflow-hidden border border-emerald-100 cursor-pointer group"
-                                                    onClick={() => onViewImage(img)}
+                                                    onClick={() => onViewImage(file)}
                                                 >
-                                                    <img
-                                                        src={img.url}
-                                                        alt={img.name}
-                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                                    />
+                                                    {file.type === 'image' ? (
+                                                        <img
+                                                            src={file.url}
+                                                            alt={file.name}
+                                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex flex-col items-center justify-center h-full p-3 bg-muted/40 text-center gap-2 group-hover:bg-muted/60 transition-all select-none">
+                                                            {file.type === 'pdf' && <FileText className="w-8 h-8 text-red-500 stroke-[1.5]" />}
+                                                            {file.type === 'docx' && <FileText className="w-8 h-8 text-blue-500 stroke-[1.5]" />}
+                                                            {file.type === 'xlsx' && <FileSpreadsheet className="w-8 h-8 text-emerald-600 stroke-[1.5]" />}
+                                                            {file.type === 'other' && <FileIcon className="w-8 h-8 text-muted-foreground stroke-[1.5]" />}
+                                                            <span className="text-[10px] font-bold text-foreground truncate max-w-full px-1" title={file.name}>
+                                                                {file.name}
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                        {file.type === 'image' && (
+                                                            <button 
+                                                                className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    printImage(file.url);
+                                                                }}
+                                                                title="طباعة"
+                                                            >
+                                                                <Printer className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )}
                                                         <button 
                                                             className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                printImage(img.url);
-                                                            }}
-                                                            title="طباعة"
-                                                        >
-                                                            <Printer className="w-3.5 h-3.5" />
-                                                        </button>
-                                                        <button 
-                                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                downloadImage(img.url, img.name);
+                                                                downloadImage(file.url, file.name);
                                                             }}
                                                             title="تنزيل"
                                                         >
@@ -195,7 +211,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                                                         </button>
                                                         <button 
                                                             className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                            onClick={() => onViewImage(img)}
+                                                            onClick={() => onViewImage(file)}
                                                             title="تكبير"
                                                         >
                                                             <Maximize2 className="w-3.5 h-3.5" />

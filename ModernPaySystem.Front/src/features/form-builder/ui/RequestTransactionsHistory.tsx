@@ -11,6 +11,7 @@ interface TransactionItemProps {
 
 const TransactionItem = ({ transaction }: TransactionItemProps) => {
     const {
+        zipFiles,
         zipImages,
         isLoading: isLoadingImages,
         isAllImages,
@@ -53,6 +54,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
                 {transaction.requestTransactionAttachments && transaction.requestTransactionAttachments.length > 0 && (
                     <div className="mt-4">
                         <AttachmentsGallery
+                            files={zipFiles}
                             images={zipImages}
                             isLoading={isLoadingImages}
                             isAllImages={isAllImages}

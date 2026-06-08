@@ -1,24 +1,27 @@
-
 import { useState } from 'react';
 import { 
     Image as ImageIcon, 
     Printer, 
     Download, 
-    ExternalLink, 
     Loader2, 
     FileText, 
     ChevronDown, 
     ChevronUp,
-    FileDown
+    FileDown,
+    FileSpreadsheet,
+    FileIcon,
+    Maximize2
 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { printImage, downloadImage } from '@/shared/utils/image-actions';
 import { imagesToPdf } from '@/shared/utils/zip-handler';
-import type { ZipImage } from '@/shared/utils/zip-handler';
+import type { ZipFile } from '@/shared/utils/zip-handler';
 import { cn } from '@/shared/lib/utils';
+import { ImagePreview } from '@/widgets/form-editor/ui/response-details/ImagePreview';
 
 interface AttachmentsGalleryProps {
-    images: ZipImage[];
+    files?: ZipFile[];
+    images?: ZipFile[]; // fallback for backward compatibility
     isLoading: boolean;
     isAllImages: boolean;
     totalFiles: number;
@@ -30,7 +33,8 @@ interface AttachmentsGalleryProps {
 }
 
 export const AttachmentsGallery = ({
-    images,
+    files,
+    images: propImages,
     isLoading,
     isAllImages,
     totalFiles,
@@ -42,12 +46,16 @@ export const AttachmentsGallery = ({
 }: AttachmentsGalleryProps) => {
     const [isExpanded, setIsExpanded] = useState(initialExpanded);
     const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [selectedPreviewFile, setSelectedPreviewFile] = useState<ZipFile | null>(null);
+
+    const displayFiles = files || propImages || [];
+    const imageFiles = displayFiles.filter(f => f.type === 'image');
 
     const handleDownloadImagesPDF = async () => {
-        if (images.length === 0) return;
+        if (imageFiles.length === 0) return;
         setIsGeneratingPDF(true);
         try {
-            await imagesToPdf(images, `Attachments_${requestId?.split('-')[0] || 'files'}`);
+            await imagesToPdf(imageFiles, `Attachments_${requestId?.split('-')[0] || 'files'}`);
         } catch (error) {
             console.error('Error generating images PDF:', error);
         } finally {
@@ -70,7 +78,7 @@ export const AttachmentsGallery = ({
                 </button>
 
                 <div className="flex items-center gap-2">
-                    {isAllImages && images.length > 0 && isExpanded && (
+                    {isAllImages && imageFiles.length > 0 && isExpanded && (
                         <Button
                             variant="ghost"
                             size="sm"
@@ -106,57 +114,73 @@ export const AttachmentsGallery = ({
                         </div>
                     ) : (
                         <>
-                            {images.length > 0 ? (
+                            {displayFiles.length > 0 ? (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {images.map((img, idx) => (
-                                        <div key={idx} className="group relative aspect-video bg-muted rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-xl">
-                                            <img 
-                                                src={img.url} 
-                                                alt={img.name} 
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            />
+                                    {displayFiles.map((file, idx) => (
+                                        <div 
+                                            key={idx} 
+                                            className="group relative aspect-video bg-muted rounded-2xl overflow-hidden border-2 border-transparent hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-xl cursor-pointer"
+                                            onClick={() => setSelectedPreviewFile(file)}
+                                        >
+                                            {file.type === 'image' ? (
+                                                <img 
+                                                    src={file.url} 
+                                                    alt={file.name} 
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center h-full p-4 bg-muted/40 text-center gap-2 group-hover:bg-muted/60 transition-all select-none">
+                                                    {file.type === 'pdf' && <FileText className="w-10 h-10 text-red-500 stroke-[1.5]" />}
+                                                    {file.type === 'docx' && <FileText className="w-10 h-10 text-blue-500 stroke-[1.5]" />}
+                                                    {file.type === 'xlsx' && <FileSpreadsheet className="w-10 h-10 text-emerald-600 stroke-[1.5]" />}
+                                                    {file.type === 'other' && <FileIcon className="w-10 h-10 text-muted-foreground stroke-[1.5]" />}
+                                                    <span className="text-xs font-bold text-foreground truncate max-w-full px-2 mt-1" title={file.name}>
+                                                        {file.name}
+                                                    </span>
+                                                </div>
+                                            )}
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                                                 {file.type === 'image' && (
+                                                     <button 
+                                                         onClick={(e) => {
+                                                             e.stopPropagation();
+                                                             printImage(file.url);
+                                                         }}
+                                                         className="p-3 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-white/40 transition-all hover:scale-110 shadow-lg"
+                                                         title="طباعة"
+                                                     >
+                                                         <Printer className="w-5 h-5" />
+                                                     </button>
+                                                 )}
                                                  <button 
                                                      onClick={(e) => {
                                                          e.stopPropagation();
-                                                         printImage(img.url);
-                                                     }}
-                                                     className="p-3 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-white/40 transition-all hover:scale-110 shadow-lg"
-                                                     title="طباعة"
-                                                 >
-                                                     <Printer className="w-5 h-5" />
-                                                 </button>
-                                                 <button 
-                                                     onClick={(e) => {
-                                                         e.stopPropagation();
-                                                         downloadImage(img.url, img.name);
+                                                         downloadImage(file.url, file.name);
                                                      }}
                                                      className="p-3 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-white/40 transition-all hover:scale-110 shadow-lg"
                                                      title="تنزيل"
                                                  >
                                                      <Download className="w-5 h-5" />
                                                  </button>
-                                                 <a 
-                                                     href={img.url} 
-                                                     target="_blank" 
-                                                     rel="noreferrer" 
+                                                 <button 
+                                                     onClick={(e) => {
+                                                         e.stopPropagation();
+                                                         setSelectedPreviewFile(file);
+                                                     }}
                                                      className="p-3 bg-white/20 backdrop-blur-md rounded-2xl text-white hover:bg-white/40 transition-all hover:scale-110 shadow-lg"
-                                                     title="عرض الحجم الكامل"
+                                                     title="معاينة"
                                                  >
-                                                     <ExternalLink className="w-5 h-5" />
-                                                 </a>
+                                                     <Maximize2 className="w-5 h-5" />
+                                                 </button>
                                             </div>
                                             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                                                 <p className="text-[10px] text-white font-medium truncate drop-shadow-sm">{img.name}</p>
+                                                 <p className="text-[10px] text-white font-medium truncate drop-shadow-sm">{file.name}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                             ) : totalFiles > 0 && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                    {/* Placeholder or fallback for non-image files if needed, 
-                                        though extractImagesFromZip only returns images for now.
-                                        But we can at least show that files are available. */}
                                     <div className="col-span-full p-8 text-center border-2 border-dashed rounded-3xl bg-muted/5">
                                         <FileText className="w-10 h-10 mx-auto mb-3 text-muted-foreground opacity-20" />
                                         <p className="text-sm font-bold text-muted-foreground">توجد ملفات مرفقة غير صور</p>
@@ -167,6 +191,12 @@ export const AttachmentsGallery = ({
                         </>
                     )}
                 </div>
+            )}
+            {selectedPreviewFile && (
+                <ImagePreview 
+                    image={selectedPreviewFile} 
+                    onClose={() => setSelectedPreviewFile(null)} 
+                />
             )}
         </div>
     );

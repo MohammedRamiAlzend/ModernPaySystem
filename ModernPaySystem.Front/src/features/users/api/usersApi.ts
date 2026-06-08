@@ -1,6 +1,7 @@
 import api from '@/shared/api/baseApi';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
+import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 
 // User type definition
 export interface User {
@@ -74,8 +75,7 @@ export const useUser = (userId: string | null | undefined) => {
         queryKey: queryKeys.user.detail(userId || ''),
         queryFn: () => fetchUserById(userId!),
         enabled: !!userId,
-        staleTime: 5 * 60 * 1000,
-        retry: 1,
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND],
     });
 };
 
@@ -85,6 +85,7 @@ export const useUsers = (subSystemId?: string) => {
     return useQuery({
         queryKey: queryKeys.user.list({ subSystemId: subSystemId || 'all' }),
         queryFn: () => subSystemId && subSystemId !== 'all' ? fetchUsersBySubSystem(subSystemId) : fetchUsers(),
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND],
     });
 };
 
@@ -92,6 +93,7 @@ export const useSubSystems = () => {
     return useQuery({
         queryKey: queryKeys.lookup.list('subsystems'),
         queryFn: fetchSubSystems,
+        ...QUERY_STRATEGIES[UpdateStrategy.STATIC],
     });
 };
 

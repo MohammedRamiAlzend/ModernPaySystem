@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useUsers, useSubSystems, useUserMutations, User, UserCreateDto } from '../api/usersApi';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent } from '@/shared/ui/card';
@@ -45,6 +46,9 @@ export const UserManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
     const { assignDepartmentHead } = useDepartmentActions();
     const currentUserSubsystem = useAuthStore((state) => state.user?.subsystem);
+    const [searchParams] = useSearchParams();
+    const currentTab = searchParams.get('tab');
+    
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(APP_CONFIG.DEFAULT_SUB_SYSTEM_ID);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState<string>('all');
     const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
@@ -53,8 +57,15 @@ export const UserManagement = () => {
     const [isAssigningAsHead, setIsAssigningAsHead] = useState(false);
     const [managingTemplatesUser, setManagingTemplatesUser] = useState<User | null>(null);
 
-    const { data: usersData = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
-    const { data: subSystemsData = [], isLoading: isLoadingSubSystems } = useSubSystems();
+    const { data: usersData = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useUsers(selectedSubSystem);
+    const { data: subSystemsData = [], isLoading: isLoadingSubSystems, refetch: refetchSubSystems } = useSubSystems();
+
+    useEffect(() => {
+        if (currentTab === 'users') {
+            refetchUsers();
+            refetchSubSystems();
+        }
+    }, [currentTab, refetchUsers, refetchSubSystems]);
     const { departmentOptions } = useDepartments();
     const { createUser, updateUser, deleteUser } = useUserMutations();
 

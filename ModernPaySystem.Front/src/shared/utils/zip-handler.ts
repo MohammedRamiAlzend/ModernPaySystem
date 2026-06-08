@@ -1,51 +1,69 @@
 import JSZip from 'jszip';
 import { jsPDF } from 'jspdf';
 
-export interface ZipImage {
+export interface ZipFile {
     name: string;
     url: string;
+    type: 'image' | 'pdf' | 'docx' | 'xlsx' | 'other';
 }
 
+export type ZipImage = ZipFile;
+
 export interface ZipContent {
-    images: ZipImage[];
+    files: ZipFile[];
+    images: ZipFile[];
     isAllImages: boolean;
     totalFiles: number;
 }
 
 const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+const PDF_EXTENSIONS = ['.pdf'];
+const DOCX_EXTENSIONS = ['.docx', '.doc'];
+const XLSX_EXTENSIONS = ['.xlsx', '.xls'];
 
 /**
- * Parses a ZIP blob and extracts all images as Object URLs
+ * Parses a ZIP blob and extracts all files as Object URLs
  */
 export const extractImagesFromZip = async (zipBlob: Blob): Promise<ZipContent> => {
     const zip = new JSZip();
     const contents = await zip.loadAsync(zipBlob);
-    const images: ZipImage[] = [];
+    const files: ZipFile[] = [];
 
     // Filter out directories and get only real files
     const fileNames = Object.keys(contents.files).filter(name => !contents.files[name].dir);
-    let imageCount = 0;
 
     const filePromises = fileNames.map(async (filename) => {
         const file = contents.files[filename];
         const lowerFilename = filename.toLowerCase();
 
+        let type: ZipFile['type'] = 'other';
         if (IMAGE_EXTENSIONS.some(ext => lowerFilename.endsWith(ext))) {
-            imageCount++;
-            const blob = await file.async('blob');
-            const url = URL.createObjectURL(blob);
-            images.push({
-                name: filename,
-                url
-            });
+            type = 'image';
+        } else if (PDF_EXTENSIONS.some(ext => lowerFilename.endsWith(ext))) {
+            type = 'pdf';
+        } else if (DOCX_EXTENSIONS.some(ext => lowerFilename.endsWith(ext))) {
+            type = 'docx';
+        } else if (XLSX_EXTENSIONS.some(ext => lowerFilename.endsWith(ext))) {
+            type = 'xlsx';
         }
+
+        const blob = await file.async('blob');
+        const url = URL.createObjectURL(blob);
+        files.push({
+            name: filename,
+            url,
+            type
+        });
     });
 
     await Promise.all(filePromises);
 
+    const images = files.filter(f => f.type === 'image');
+
     return {
+        files,
         images,
-        isAllImages: imageCount === fileNames.length && fileNames.length > 0,
+        isAllImages: images.length === fileNames.length && fileNames.length > 0,
         totalFiles: fileNames.length
     };
 };

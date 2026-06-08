@@ -32,7 +32,7 @@ export const RequestPage = () => {
     const [uploadProgress, setUploadProgress] = useState(0);
     const [relatedRequests, setRelatedRequests] = useState<CreateRequestRelatedRequestDto[]>([]);
 
-    
+
     const currentUser = useAuthStore((state) => state.user);
 
     const selectedTemplate = useMemo(() =>
@@ -51,7 +51,7 @@ export const RequestPage = () => {
 
 
     const submitMutation = useMutation({
-        mutationFn: (data: CreateRequestDto) => 
+        mutationFn: (data: CreateRequestDto) =>
             formEndpoints.createRequest(data, (progressEvent) => {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                 setUploadProgress(percentCompleted);
@@ -119,7 +119,7 @@ export const RequestPage = () => {
 
     return (
         <AnimatedContainer className="container mx-auto p-6 space-y-6">
-            <h1 className="text-3xl font-bold mb-6">تقديم طلب جديد</h1>
+            <h1 className="text-3xl font-bold mb-6 text-primary tracking-tight">تقديم طلب جديد</h1>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <div className="lg:col-span-2">
@@ -191,14 +191,14 @@ export const RequestPage = () => {
                                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <button 
+                                        <button
                                             onClick={() => printImage(URL.createObjectURL(file))}
                                             className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
                                             title="طباعة"
                                         >
                                             <Printer className="w-4 h-4" />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => downloadImage(URL.createObjectURL(file), file.name)}
                                             className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
                                             title="تنزيل"

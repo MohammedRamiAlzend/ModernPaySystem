@@ -34,7 +34,7 @@ interface DocxPreviewProps {
     blobUrl: string;
 }
 
-const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
+export const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -103,7 +103,7 @@ interface ExcelPreviewProps {
     blobUrl: string;
 }
 
-const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
+export const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
     const [sheets, setSheets] = useState<{ name: string; html: string }[]>([]);
     const [activeSheetIndex, setActiveSheetIndex] = useState(0);
     const [loading, setLoading] = useState(true);

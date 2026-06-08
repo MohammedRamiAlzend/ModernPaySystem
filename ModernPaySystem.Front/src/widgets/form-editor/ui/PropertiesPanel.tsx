@@ -81,7 +81,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
                 </select>
             </div>
 
-            {(field.type === 'select' || field.type === 'radio') && (
+            {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && (
                 <div className="space-y-2 border-t pt-4">
                     <div className="flex flex-col gap-1 mb-2">
                         <Label className="font-semibold text-primary">الخيارات (Options)</Label>
@@ -100,17 +100,17 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
                                     className="h-8"
                                     onChange={(e) => {
                                         const newOptions = [...(field.dataSource?.options || [])];
-                                        newOptions[idx] = { ...opt, label: e.target.value };
+                                        newOptions[idx] = { ...opt, label: e.target.value, value: e.target.value };
                                         onChange({ dataSource: { type: 'static', options: newOptions } });
                                     }}
                                 />
                                 <Input
                                     placeholder="Value"
-                                    value={opt.value}
-                                    className="h-8"
-                                    onChange={(e) => {
+                                    value={opt.label}
+                                    className="h-8 hidden"
+                                    onChange={() => {
                                         const newOptions = [...(field.dataSource?.options || [])];
-                                        newOptions[idx] = { ...opt, value: e.target.value };
+                                        newOptions[idx] = { ...opt, value: opt.label };
                                         onChange({ dataSource: { type: 'static', options: newOptions } });
                                     }}
                                 />
@@ -130,7 +130,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ field, allFiel
                             size="sm"
                             className="w-full mt-1 border-dashed"
                             onClick={() => {
-                                const newOptions = [...(field.dataSource?.options || []), { label: 'New Option', value: 'value' }];
+                                const newOptions = [...(field.dataSource?.options || []), { label: 'New Option', value: 'New Option' }];
                                 onChange({ dataSource: { type: 'static', options: newOptions } });
                             }}
                         >

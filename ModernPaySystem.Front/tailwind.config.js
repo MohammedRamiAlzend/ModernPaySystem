@@ -62,6 +62,10 @@ export default {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        'sidebar-active': {
+          DEFAULT: "hsl(var(--sidebar-active-bg))",
+          foreground: "hsl(var(--sidebar-active-text))",
+        },
       }
     }
   },
