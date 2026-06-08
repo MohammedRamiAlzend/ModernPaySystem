@@ -27,6 +27,7 @@ public class ResponseService(
                 pageSize,
                 transform: x => x
                 .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
+                    .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department)
                 .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                 .Include(x => x.Request).ThenInclude(r => r!.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.ByRespondedByUserId(currentUserId) });
@@ -57,6 +58,8 @@ public class ResponseService(
                 transform: x => x
                 .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                 .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                    .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department)
+
                 .Include(x => x.Request).ThenInclude(r => r!.OutgoingRelations).ThenInclude(r => r.TargetRequest)
                 .Include(x => x.ResponseAttachments),
                 additionalFilters: [ResponseExpressions.CanReadByUserId(currentUserId)]);
@@ -113,6 +116,8 @@ public class ResponseService(
                 i.Include(r => r.ResponseAttachments)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                    .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department)
+
                 .Include(r => r.Request).ThenInclude(r => r!.OutgoingRelations).ThenInclude(r => r.TargetRequest),
                 additionalFilters: filters);
 
@@ -170,7 +175,8 @@ public class ResponseService(
                 transform: i => i.Include(r => r.ResponseAttachments)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                .Include(r => r.Request).ThenInclude(r => r!.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                .Include(r => r.Request).ThenInclude(r => r!.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                .Include(r => r.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department),
                 additionalFilters: filters);
 
             if (pagedResponses.IsError)
@@ -227,6 +233,7 @@ public class ResponseService(
                  .Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                  .Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                  .Include(x => x.Request).ThenInclude(r => r!.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                 .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department)
                  ,
                 additionalFilters: filters);
 
@@ -365,6 +372,7 @@ public class ResponseService(
                 transform: x => x
                 .Include(x => x.ResponseAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                 .Include(x => x.ResponseAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department)
                 , additionalFilters: new List<Expression<Func<Response, bool>>> { ResponseExpressions.CanMakeUpdateByUserId(currentUserId) });
 
             if (existingResponse.IsError)
@@ -467,7 +475,8 @@ public class ResponseService(
             var updatedResponse = await unitOfWork.Responses.GetAsync(
                 filter: r => r.Id == responseId,
                 transform: x => x.Include(x => x.Request)
-                                 .Include(x => x.ResponseAttachments));
+                                 .Include(x => x.ResponseAttachments)
+                                 .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department));
 
             if (updatedResponse.IsError)
                 return updatedResponse.Errors;
