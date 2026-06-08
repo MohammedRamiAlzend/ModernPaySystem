@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, FileDown, Printer, FileText, FileSpreadsheet, FileIcon } from 'lucide-react';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
-import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipFile, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
+import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipFile, type ZipContent } from '@/shared/utils/zip-handler';
 import { printImage, downloadImage } from '@/shared/utils/image-actions';
 import type { TemplateResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
@@ -43,7 +43,7 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 setFiles(content.files);
                 setImages(content.images);
                 setIsAllImages(content.isAllImages);
-                
+
                 // Fallback for empty files if totalFiles > 0
                 if (content.files.length === 0 && content.totalFiles > 0) {
                     console.warn("Files not found in ZIP, total files:", content.totalFiles);
@@ -113,143 +113,143 @@ export const ResponseItem = ({ response, onViewImage }: ResponseItemProps) => {
                 {response.comment}
             </p>
 
-            {((response.responseAttachments && response.responseAttachments.length > 0) || 
-               ((response as any).responseAttachmentDtos && (response as any).responseAttachmentDtos.length > 0) || 
-               (response.attachmentCount > 0)) && (
-                <div className="pt-3 border-t border-emerald-50">
-                    <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                            <FileArchive className="w-3 h-3" />
-                            {(response.responseAttachments?.length || (response as any).responseAttachmentDtos?.length || response.attachmentCount || 0)} مرفقات
-                        </span>
+            {((response.responseAttachments && response.responseAttachments.length > 0) ||
+                ((response as any).responseAttachmentDtos && (response as any).responseAttachmentDtos.length > 0) ||
+                (response.attachmentCount > 0)) && (
+                    <div className="pt-3 border-t border-emerald-50">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                <FileArchive className="w-3 h-3" />
+                                {(response.responseAttachments?.length || (response as any).responseAttachmentDtos?.length || response.attachmentCount || 0)} مرفقات
+                            </span>
 
-                        <div className="flex gap-2">
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={handleToggleAttachments}
-                                className="h-7 text-xs gap-1 text-emerald-700 "
-                            >
-                                {showAttachments ? (
-                                    <>
-                                        <ChevronUp className="w-3 h-3" /> إخفاء المعاينة
-                                    </>
-                                ) : (
-                                    <>
-                                        <ChevronDown className="w-3 h-3" /> معاينة المرفقات
-                                    </>
-                                )}
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={handleToggleAttachments}
+                                    className="h-7 text-xs gap-1 text-emerald-700 "
+                                >
+                                    {showAttachments ? (
+                                        <>
+                                            <ChevronUp className="w-3 h-3" /> إخفاء المعاينة
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronDown className="w-3 h-3" /> معاينة المرفقات
+                                        </>
+                                    )}
+                                </Button>
 
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="h-7 gap-2 text-xs border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700"
-                                onClick={handleDownloadOriginal}
-                            >
-                                <Download className="w-3 h-3" />
-                                تحميل zip
-                            </Button>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-7 gap-2 text-xs border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700"
+                                    onClick={handleDownloadOriginal}
+                                >
+                                    <Download className="w-3 h-3" />
+                                    تحميل zip
+                                </Button>
+                            </div>
                         </div>
-                    </div>
 
-                    {showAttachments && (
-                        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                            {isLoadingImages ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {files.length > 0 ? (
-                                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                                            {files.map((file, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="relative aspect-square rounded-lg overflow-hidden border border-emerald-100 cursor-pointer group"
-                                                    onClick={() => onViewImage(file)}
-                                                >
-                                                    {file.type === 'image' ? (
-                                                        <img
-                                                            src={file.url}
-                                                            alt={file.name}
-                                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                                                        />
-                                                    ) : (
-                                                        <div className="flex flex-col items-center justify-center h-full p-3 bg-muted/40 text-center gap-2 group-hover:bg-muted/60 transition-all select-none">
-                                                            {file.type === 'pdf' && <FileText className="w-8 h-8 text-red-500 stroke-[1.5]" />}
-                                                            {file.type === 'docx' && <FileText className="w-8 h-8 text-blue-500 stroke-[1.5]" />}
-                                                            {file.type === 'xlsx' && <FileSpreadsheet className="w-8 h-8 text-emerald-600 stroke-[1.5]" />}
-                                                            {file.type === 'other' && <FileIcon className="w-8 h-8 text-muted-foreground stroke-[1.5]" />}
-                                                            <span className="text-[10px] font-bold text-foreground truncate max-w-full px-1" title={file.name}>
-                                                                {file.name}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                                        {file.type === 'image' && (
-                                                            <button 
+                        {showAttachments && (
+                            <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                {isLoadingImages ? (
+                                    <div className="flex items-center justify-center py-8">
+                                        <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {files.length > 0 ? (
+                                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                                {files.map((file, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="relative aspect-square rounded-lg overflow-hidden border border-emerald-100 cursor-pointer group"
+                                                        onClick={() => onViewImage(file)}
+                                                    >
+                                                        {file.type === 'image' ? (
+                                                            <img
+                                                                src={file.url}
+                                                                alt={file.name}
+                                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                            />
+                                                        ) : (
+                                                            <div className="flex flex-col items-center justify-center h-full p-3 bg-muted/40 text-center gap-2 group-hover:bg-muted/60 transition-all select-none">
+                                                                {file.type === 'pdf' && <FileText className="w-8 h-8 text-red-500 stroke-[1.5]" />}
+                                                                {file.type === 'docx' && <FileText className="w-8 h-8 text-blue-500 stroke-[1.5]" />}
+                                                                {file.type === 'xlsx' && <FileSpreadsheet className="w-8 h-8 text-emerald-600 stroke-[1.5]" />}
+                                                                {file.type === 'other' && <FileIcon className="w-8 h-8 text-muted-foreground stroke-[1.5]" />}
+                                                                <span className="text-[10px] font-bold text-foreground truncate max-w-full px-1" title={file.name}>
+                                                                    {file.name}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                                            {file.type === 'image' && (
+                                                                <button
+                                                                    className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        printImage(file.url);
+                                                                    }}
+                                                                    title="طباعة"
+                                                                >
+                                                                    <Printer className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            )}
+                                                            <button
                                                                 className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    printImage(file.url);
+                                                                    downloadImage(file.url, file.name);
                                                                 }}
-                                                                title="طباعة"
+                                                                title="تنزيل"
                                                             >
-                                                                <Printer className="w-3.5 h-3.5" />
+                                                                <Download className="w-3.5 h-3.5" />
                                                             </button>
-                                                        )}
-                                                        <button 
-                                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                downloadImage(file.url, file.name);
-                                                            }}
-                                                            title="تنزيل"
-                                                        >
-                                                            <Download className="w-3.5 h-3.5" />
-                                                        </button>
-                                                        <button 
-                                                            className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
-                                                            onClick={() => onViewImage(file)}
-                                                            title="تكبير"
-                                                        >
-                                                            <Maximize2 className="w-3.5 h-3.5" />
-                                                        </button>
+                                                            <button
+                                                                className="p-1.5 bg-white/20 backdrop-blur-md rounded-lg text-white hover:bg-white/40 transition-all hover:scale-110"
+                                                                onClick={() => onViewImage(file)}
+                                                                title="تكبير"
+                                                            >
+                                                                <Maximize2 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-4 text-xs text-muted-foreground rounded-lg">
-                                            لا يمكن عرض المرفقات (قد تكون ملفات غير مدعومة للمعاينة)
-                                        </div>
-                                    )}
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-4 text-xs text-muted-foreground rounded-lg">
+                                                لا يمكن عرض المرفقات (قد تكون ملفات غير مدعومة للمعاينة)
+                                            </div>
+                                        )}
 
-                                    {isAllImages && images.length > 0 && (
-                                        <Button
-                                            onClick={handleDownloadPdf}
-                                            disabled={isGeneratingPdf}
-                                            variant="secondary"
-                                            className="w-full h-9 text-xs font-bold gap-2 "
-                                        >
-                                            {isGeneratingPdf ? (
-                                                <>
-                                                    <Loader2 className="w-3 h-3 animate-spin" /> جاري الدمج...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <FileDown className="w-3 h-3" /> تحميل الصور كملف PDF
-                                                </>
-                                            )}
-                                        </Button>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            )}
+                                        {isAllImages && images.length > 0 && (
+                                            <Button
+                                                onClick={handleDownloadPdf}
+                                                disabled={isGeneratingPdf}
+                                                variant="secondary"
+                                                className="w-full h-9 text-xs font-bold gap-2 "
+                                            >
+                                                {isGeneratingPdf ? (
+                                                    <>
+                                                        <Loader2 className="w-3 h-3 animate-spin" /> جاري الدمج...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FileDown className="w-3 h-3" /> تحميل الصور كملف PDF
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
         </div>
     );
 };

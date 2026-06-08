@@ -411,7 +411,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasForeignKey(x => x.ApproverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Removed concurrency token because Npgsql throws DbUpdateConcurrencyException due to missing trigger for bytea
             entity.Property(x => x.RowVersion)
                 .IsConcurrencyToken(false)
                 .ValueGeneratedNever();

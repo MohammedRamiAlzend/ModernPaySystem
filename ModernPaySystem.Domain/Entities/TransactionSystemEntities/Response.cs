@@ -23,6 +23,7 @@ public class Response : Entity<Guid>, IAuditableEntity
             RequestId = this.RequestId,
             RespondedByUserId = this.RespondedByUserId,
             Comment = this.Comment,
+            DepartmentName = Request?.Approver?.Department?.Name ?? "Unknown",
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
@@ -39,6 +40,7 @@ public class ResponseDto
 {
     public Guid Id { get; set; }
     public Guid RequestId { get; set; }
+    public required string DepartmentName { get; set; }
     public Guid RespondedByUserId { get; set; }
     public string? Comment { get; set; }
     public string? CreatedByUserId { get; set; }
