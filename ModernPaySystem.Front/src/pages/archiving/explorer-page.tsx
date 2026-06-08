@@ -347,7 +347,7 @@ export default function ExplorerPage() {
             )}
 
             {/* Off-screen QR Preview Template for canvas generation */}
-            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }}>
+            <div style={{ position: 'fixed', left: '-9999px', top: '-9999px' }}>
                 <QRPreviewTemplate
                     ref={qrCoverRef}
                     guid={qrCoverGuid}
