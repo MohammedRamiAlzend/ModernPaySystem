@@ -91,7 +91,7 @@ export default function ArchiveEditRequestsPage() {
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 border-b border-border pb-6">
                 <div className="flex flex-col gap-1.5">
-                    <h1 className="text-xl font-black text-foreground">طلبات تعديل الأرشيف</h1>
+                    <h1 className="text-xl font-black text-primary">طلبات تعديل الأرشيف</h1>
                     <p className="text-xs text-muted-foreground font-semibold">
                         مراجعة وإدارة طلبات التعديل على السجلات والمستندات المؤرشفة
                     </p>

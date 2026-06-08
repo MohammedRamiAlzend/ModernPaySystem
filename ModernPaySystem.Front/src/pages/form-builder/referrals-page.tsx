@@ -1,6 +1,6 @@
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import { Card } from '@/shared/ui/card';
-import { Forward, Send, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/shared/ui/common/skeleton';
 import { Pagination } from '@/shared/ui/common/pagination';
 import { ProcessRequestModal } from '@/features/form-builder/ui/ProcessRequestModal';
@@ -46,11 +46,9 @@ export const ReferralsPage = ({ status }: ReferralsPageProps) => {
             {/* Header section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-primary/10">
                 <div className="flex items-center gap-4">
-                    <div className={`p-4 rounded-3xl ${isPending ? 'bg-amber-500/10 text-amber-600' : 'bg-sky-500/10 text-sky-600'} shadow-sm`}>
-                        {isPending ? <Forward className="w-8 h-8" /> : <Send className="w-8 h-8" />}
-                    </div>
+
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight">
+                        <h1 className="text-3xl font-black text-primary tracking-tight">
                             {isPending ? 'الرد على الإحالات' : 'الإحالات الصادرة'}
                         </h1>
                         <p className="text-muted-foreground text-sm mt-1 font-medium">

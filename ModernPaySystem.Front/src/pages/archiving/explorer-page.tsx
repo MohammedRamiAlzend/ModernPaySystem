@@ -169,7 +169,7 @@ export default function ExplorerPage() {
             {/* Top Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1 text-right">
-                    <h1 className="text-xl font-bold text-foreground">مستكشف ونظام الأرشفة</h1>
+                    <h1 className="text-xl font-bold text-primary">مستكشف ونظام الأرشفة</h1>
                     <p className="text-xs text-muted-foreground font-medium">إدارة وتصنيف المجلدات والمستندات المؤرشفة والملفات المرفقة بها</p>
                 </div>
 
