@@ -101,10 +101,6 @@ public class ResponseService(
                         {
                             filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
                         }
-                        else
-                        {
-                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
-                        }
                     }
                 }
             }
@@ -112,6 +108,7 @@ public class ResponseService(
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 filterDto!.Page,
                 filterDto.PageSize,
+                filter: x => x.RequestId == requestId,
                 transform: i =>
                 i.Include(r => r.ResponseAttachments)
                 .Include(r => r.Request).ThenInclude(r => r!.RequestAttachments).Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
