@@ -73,7 +73,7 @@ const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
     return (
         <div className="flex-1 flex flex-col bg-card border border-border rounded-2xl overflow-hidden h-[550px] relative">
             <div className="flex items-center justify-between border-b p-3 bg-muted/20">
-                <span className="text-xs text-muted-foreground/60 font-bold">معاينة مباشرة لمستند الوورد (أوفلاين)</span>
+                <span className="text-xs text-muted-foreground/60 font-bold">معاينة مباشرة لمستند الوورد</span>
             </div>
             {loading && (
                 <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10">
