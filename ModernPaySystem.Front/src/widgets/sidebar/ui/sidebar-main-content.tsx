@@ -79,7 +79,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                         {
                             title: "الخدمات المتاحة",
                             path: "templates-section",
-                            icon: <FileText className="h-4 w-4 text-primary" />,
+                            icon: <FileText className="h-4 w-4" />,
                             children: templateChildren
                         },
                         ...children
@@ -161,14 +161,14 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                         className={() => cn(
                                             "group/item flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 relative",
                                             isActive && (!hasChildren || isCollapsed)
-                                                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                                                ? "sidebar-active-item shadow-md"
                                                 : "text-foreground hover:bg-accent",
                                             isCollapsed && "justify-center"
                                         )}
                                     >
                                         <div className={cn(
                                             "transition-transform duration-300 group-hover/item:scale-110",
-                                            hasChildren ? "text-primary" : isActive ? "text-primary-foreground" : "text-current"
+                                            hasChildren ? "text-primary" : "text-current"
                                         )}>
                                             {item.icon}
                                         </div>
@@ -176,8 +176,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                             <>
                                                 <span className={cn(
                                                     "text-sm tracking-tight flex-1 animate-in fade-in slide-in-from-right-3",
-                                                    hasChildren ? "font-black text-primary" : "font-bold",
-                                                    isActive && !hasChildren && "text-primary-foreground"
+                                                    hasChildren ? "font-black text-primary" : "font-bold"
                                                 )}>
                                                     {item.title}
                                                 </span>
@@ -313,7 +312,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                                                         return cn(
                                                             "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all relative overflow-hidden",
                                                             isStrictlyActive
-                                                                ? "bg-primary text-primary-foreground font-bold shadow-md shadow-primary/10"
+                                                                ? "sidebar-active-item font-bold shadow-md"
                                                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
                                                         );
                                                     }}

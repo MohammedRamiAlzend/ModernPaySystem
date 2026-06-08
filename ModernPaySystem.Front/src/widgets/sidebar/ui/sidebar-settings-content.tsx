@@ -60,7 +60,7 @@ export const SidebarSettingsContent: React.FC<SidebarContentProps> = ({
                             className={cn(
                                 "w-full flex items-center gap-3 px-3 py-3 rounded-2xl transition-all duration-300 group/item relative",
                                 isActive
-                                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                                    ? "sidebar-active-item shadow-md"
                                     : "text-muted-foreground hover:bg-accent hover:text-foreground",
                                 isCollapsed && "justify-center px-2"
                             )}
@@ -74,7 +74,7 @@ export const SidebarSettingsContent: React.FC<SidebarContentProps> = ({
                                     </span>
                                     <span className={cn(
                                         "text-[10px] truncate w-full opacity-70",
-                                        isActive ? "text-primary-foreground" : "text-muted-foreground"
+                                        "text-muted-foreground"
                                     )}>
                                         {section.description}
                                     </span>

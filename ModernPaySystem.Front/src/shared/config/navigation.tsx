@@ -68,12 +68,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             {
                 title: "الرد على الإحالات",
                 path: "/form-builder/referrals/pending",
-                icon: <Forward className="h-4 w-4 text-amber-500" />,
+                icon: <Forward className="h-4 w-4" />,
             },
             {
                 title: "الإحالات الصادرة",
                 path: "/form-builder/referrals/sent",
-                icon: <Send className="h-4 w-4 text-sky-500" />,
+                icon: <Send className="h-4 w-4" />,
             },
             {
                 title: "الطلبات المعلقة",
@@ -83,7 +83,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             {
                 title: "التقارير والإحصائيات",
                 path: "/form-builder/reports",
-                icon: <BarChart3 className="h-4 w-4 text-emerald-500" />,
+                icon: <BarChart3 className="h-4 w-4" />,
             }
 
         ]
@@ -103,7 +103,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             {
                 title: "طلبات تعديل الأرشيف",
                 path: "/archiving/edit-requests",
-                icon: <Clock className="h-4 w-4 text-amber-500" />,
+                icon: <Clock className="h-4 w-4" />,
             }
         ]
     }
