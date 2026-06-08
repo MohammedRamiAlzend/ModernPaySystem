@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/shared/ui/button';
 import { Download, Loader2, FileArchive, ChevronDown, ChevronUp, Maximize2, FileDown, Printer, FileText, FileSpreadsheet, FileIcon } from 'lucide-react';
 import { formEndpoints } from '@/features/form-builder/api/formEndpoints';
-import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipFile, type ZipImage, type ZipContent } from '@/shared/utils/zip-handler';
+import { extractImagesFromZip, revokeZipImages, imagesToPdf, type ZipFile, type ZipContent } from '@/shared/utils/zip-handler';
 import { printImage, downloadImage } from '@/shared/utils/image-actions';
 import type { TemplateResponse } from '@/entities/form/model/types';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
