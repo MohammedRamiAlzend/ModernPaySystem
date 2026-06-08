@@ -26,6 +26,10 @@ export default function ExplorerPage() {
     const [viewMode, setViewMode] = useState<'explorer' | 'list'>('explorer');
     const [previewingRecord, setPreviewingRecord] = useState<ArchiveRecord | null>(null);
 
+    // Navigation History
+    const [navHistory, setNavHistory] = useState<(Folder | null)[]>([null]);
+    const [historyIndex, setHistoryIndex] = useState(0);
+
     const qrCoverRef = useRef<HTMLDivElement>(null);
 
     const [showSubmitEditModal, setShowSubmitEditModal] = useState(false);
@@ -120,9 +124,32 @@ export default function ExplorerPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [setShowRecordModal, setShowFolderModal]);
 
-    const handleNavigate = (folder: Folder | null) => {
+    const handleNavigate = (folder: Folder | null, isFromHistory = false) => {
         navigateToFolder(folder);
         setSearchTerm('');
+
+        if (!isFromHistory) {
+            const newHistory = navHistory.slice(0, historyIndex + 1);
+            newHistory.push(folder);
+            setNavHistory(newHistory);
+            setHistoryIndex(newHistory.length - 1);
+        }
+    };
+
+    const handleGoBack = () => {
+        if (historyIndex > 0) {
+            const newIndex = historyIndex - 1;
+            setHistoryIndex(newIndex);
+            handleNavigate(navHistory[newIndex], true);
+        }
+    };
+
+    const handleGoForward = () => {
+        if (historyIndex < navHistory.length - 1) {
+            const newIndex = historyIndex + 1;
+            setHistoryIndex(newIndex);
+            handleNavigate(navHistory[newIndex], true);
+        }
     };
 
     // Filter folder and records based on search term
@@ -138,7 +165,7 @@ export default function ExplorerPage() {
         : [];
 
     return (
-        <div className="flex flex-col gap-6 p-6" dir="rtl">
+        <div className="flex flex-col gap-6 p-6 w-full max-w-full overflow-x-hidden min-w-0" dir="rtl">
             {/* Top Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1 text-right">
@@ -188,6 +215,10 @@ export default function ExplorerPage() {
                 onViewModeChange={setViewMode}
                 breadcrumbs={breadcrumbs}
                 onNavigateToFolder={handleNavigate}
+                canGoBack={historyIndex > 0}
+                canGoForward={historyIndex < navHistory.length - 1}
+                onGoBack={handleGoBack}
+                onGoForward={handleGoForward}
             />
 
             {/* Main Content Area */}
