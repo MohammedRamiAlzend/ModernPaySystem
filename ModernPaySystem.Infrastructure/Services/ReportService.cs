@@ -124,6 +124,7 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
                 pageSize,
                 transform: i => i
                     .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments)
+                    .Include(x => x.Request).ThenInclude(r => r!.Approver).ThenInclude(a => a!.Department)
                     .Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.Template)
                     .Include(x => x.Request).ThenInclude(r => r!.RequestAttachments)
                     .Include(x => x.Request).ThenInclude(r => r!.RequestTemplateValues).ThenInclude(x => x!.InputValues),
