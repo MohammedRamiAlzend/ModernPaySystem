@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { extractImagesFromZip, revokeZipImages, type ZipImage } from '@/shared/utils/zip-handler';
+import { extractImagesFromZip, revokeZipImages, type ZipFile } from '@/shared/utils/zip-handler';
 
 /**
  * Hook to handle fetching and extracting images from a ZIP blob
@@ -11,15 +11,17 @@ export const useAttachments = (
     blobFetcher: (() => Promise<Blob>) | null,
     dependencies: any[] = []
 ) => {
-    const [zipImages, setZipImages] = useState<ZipImage[]>([]);
+    const [zipFiles, setZipFiles] = useState<ZipFile[]>([]);
+    const [zipImages, setZipImages] = useState<ZipFile[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isAllImages, setIsAllImages] = useState(false);
     const [totalFiles, setTotalFiles] = useState(0);
     
-    const zipImagesRef = useRef<ZipImage[]>([]);
+    const zipFilesRef = useRef<ZipFile[]>([]);
 
     // Reset state if blobFetcher becomes null - sync during render
-    if (!blobFetcher && (zipImages.length > 0 || totalFiles > 0)) {
+    if (!blobFetcher && (zipFiles.length > 0 || totalFiles > 0)) {
+        setZipFiles([]);
         setZipImages([]);
         setIsAllImages(false);
         setTotalFiles(0);
@@ -42,8 +44,9 @@ export const useAttachments = (
                 }
 
                 const data = await extractImagesFromZip(blob);
+                setZipFiles(data.files);
                 setZipImages(data.images);
-                zipImagesRef.current = data.images;
+                zipFilesRef.current = data.files;
                 setIsAllImages(data.isAllImages);
                 setTotalFiles(data.totalFiles);
             } catch (error: any) {
@@ -57,9 +60,10 @@ export const useAttachments = (
         loadAttachments();
 
         return () => {
-            if (zipImagesRef.current.length > 0) {
-                revokeZipImages(zipImagesRef.current);
-                zipImagesRef.current = [];
+            if (zipFilesRef.current.length > 0) {
+                revokeZipImages(zipFilesRef.current);
+                zipFilesRef.current = [];
+                setZipFiles([]);
                 setZipImages([]);
             }
         };
@@ -67,6 +71,7 @@ export const useAttachments = (
     }, [...dependencies]);
 
     return {
+        zipFiles,
         zipImages,
         isLoading,
         isAllImages,
