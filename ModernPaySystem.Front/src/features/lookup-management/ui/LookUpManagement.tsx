@@ -28,10 +28,10 @@ export const LookUpManagement = () => {
     const { showStatus, showConfirm } = useUIStore();
     const { data: fields = [], isLoading: isLoadingFields } = useLookUpFields();
     const [fieldId, setFieldId] = useQueryState('field', parseAsString.withDefault(''));
-    
-    const selectedField = useMemo(() => 
+
+    const selectedField = useMemo(() =>
         fields.find(f => f.id === fieldId) || null
-    , [fields, fieldId]);
+        , [fields, fieldId]);
 
     const setSelectedField = (field: LookUpField | null) => {
         setFieldId(field?.id || null);
@@ -311,7 +311,9 @@ export const LookUpManagement = () => {
                         </div>
                     </div>
                     <DialogFooter className="gap-2 sm:gap-0">
-                        <Button onClick={handleSaveField} className="rounded-xl px-8 flex-1 sm:flex-none">
+                        <Button
+                            disabled={updateField.isPending || createField.isPending}
+                            onClick={handleSaveField} className="rounded-xl px-8 flex-1 sm:flex-none">
                             {updateField.isPending || createField.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ'}
                         </Button>
                         <Button variant="outline" onClick={() => setIsFieldDialogOpen(false)} className="rounded-xl border-none bg-muted hover:bg-muted/80 flex-1 sm:flex-none">
@@ -341,7 +343,9 @@ export const LookUpManagement = () => {
                         </div>
                     </div>
                     <DialogFooter className="gap-2 sm:gap-0">
-                        <Button onClick={handleSaveValue} className="rounded-xl px-8 flex-1 sm:flex-none">
+                        <Button onClick={handleSaveValue}
+                            disabled={updateValue.isPending || createValue.isPending}
+                            className="rounded-xl px-8 flex-1 sm:flex-none">
                             {updateValue.isPending || createValue.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'حفظ'}
                         </Button>
                         <Button variant="outline" onClick={() => setIsValueDialogOpen(false)} className="rounded-xl border-none bg-muted hover:bg-muted/80 flex-1 sm:flex-none">

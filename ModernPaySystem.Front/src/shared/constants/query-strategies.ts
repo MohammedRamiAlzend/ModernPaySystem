@@ -41,10 +41,10 @@ export const QUERY_STRATEGIES: Record<UpdateStrategy, QueryConfigOptions> = {
         refetchOnWindowFocus: true, // تحديث بمجرد فتح المستخدم للمتصفح
     },
     [UpdateStrategy.BACKGROUND]: {
-        staleTime: 1000 * 60 * 10, // البيانات تعتبر طازجة لمدة 10 دقائق
+        staleTime: 1000 * 60 * 3, // البيانات تعتبر طازجة لمدة 3 دقائق
         gcTime: 1000 * 60 * 30,    // كاش لمدة 30 دقيقة
         retry: 1,                  // إعادة محاولة واحدة فقط
-        refetchOnWindowFocus: false, // لا داعي للإزعاج عند التنقل بين النوافذ
+        refetchOnWindowFocus: true, // لا داعي للإزعاج عند التنقل بين النوافذ
     },
     [UpdateStrategy.STATIC]: {
         staleTime: 1000 * 60 * 60 * 24, // طازجة لمدة يوم كامل

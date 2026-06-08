@@ -603,6 +603,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                         subSystems={subSystems as any}
                         isLoading={createUser.isPending}
                         departmentOptions={departmentOptions}
+                        defaultDepartmentId={selectedDeptForUsers || undefined}
                     />
                 </DialogContent>
             </Dialog>
