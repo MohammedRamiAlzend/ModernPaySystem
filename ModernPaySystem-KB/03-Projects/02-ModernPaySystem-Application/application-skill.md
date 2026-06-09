@@ -18,6 +18,7 @@ The Application layer is a **contract-only layer**. It contains ZERO implementat
 | **Auth Interfaces** | `IAuthenticationService`, `ITokenService`, `IPasswordHasher` |
 | **DTO References** | DTOs are defined in Domain, but Application references them in interface signatures |
 | **Specifications** | Query specifications if used (currently minimal) |
+| **Validators** | FluentValidation validators for input DTOs, registered via `AddValidators()` in DI |
 
 ---
 
@@ -65,6 +66,11 @@ ModernPaySystem.Application/
 ├── DTOs/
 │   └── Auth/
 │       └── AuthDtos.cs        # LoginRequest, etc.
+├── Validators/
+│   ├── DependencyInjection.cs          # AddValidators() DI extension
+│   ├── CreateRoleDtoValidator.cs
+│   ├── CreateDepartmentDtoValidator.cs
+│   └── CreateUserDtoValidator.cs
 ├── ModernPaySystem.Application.csproj
 └── (NO DependencyInjection.cs — registration is in Infrastructure)
 ```
@@ -100,6 +106,10 @@ namespace ModernPaySystem.Application.Repos;
 public interface IRepositoryBase<TEntity, TKey> where TEntity : Entity<TKey>
 {
     Task<Result<Success>> AddAsync(TEntity entity, bool bypassAuth = false);
+    Task<Result<List<TEntity>>> GetAllByIdsAsync(
+        List<TKey> ids,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        bool bypassAuth = false);
     Task<Result<List<TEntity>>> GetAllAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,

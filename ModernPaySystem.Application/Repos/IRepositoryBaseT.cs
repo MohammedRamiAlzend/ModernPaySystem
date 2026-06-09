@@ -8,6 +8,11 @@ public interface IRepositoryBase<TEntity, TKey>
 {
     Task<Result<Success>> AddAsync(TEntity entity, bool bypassAuth = false);
 
+    Task<Result<List<TEntity>>> GetAllByIdsAsync(
+        List<TKey> ids,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        bool bypassAuth = false);
+
     Task<Result<List<TEntity>>> GetAllAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,

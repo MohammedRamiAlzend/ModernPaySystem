@@ -95,5 +95,5 @@ public interface IDepartmentService
     /// <summary>
     /// Check if a parent assignment is valid (prevents circular references)
     /// </summary>
-    bool CanAssignParent(Guid departmentId, Guid parentDepartmentId);
+    Task<Result<bool>> CanAssignParentAsync(Guid departmentId, Guid parentDepartmentId);
 }

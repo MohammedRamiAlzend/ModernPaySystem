@@ -109,7 +109,6 @@ public class ResponseService(
                     }
                 }
             }
-            filters.AddRange(filters);
             var pagedResponses = await unitOfWork.Responses.GetPagedAsync(
                 filterDto!.Page,
                 filterDto.PageSize,

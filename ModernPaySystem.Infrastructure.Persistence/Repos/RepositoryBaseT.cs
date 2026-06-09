@@ -57,6 +57,29 @@ public class RepositoryBase<TEntity, TKey>(AppDbContext dbcontext,
         }
     }
 
+    public async Task<Result<List<TEntity>>> GetAllByIdsAsync(
+        List<TKey> ids,
+        Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+        bool bypassAuth = false)
+    {
+        try
+        {
+            IQueryable<TEntity> query = dbcontext.Set<TEntity>();
+            query = query.Where(e => ids.Contains(e.Id));
+
+            if (transform != null)
+                query = transform(query);
+
+            query = ApplyDefaultOrdering(query);
+            return await query.ToListAsync();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Error retrieving entities by ids of type {EntityType}.", typeof(TEntity).Name);
+            return new Error("00", $"Error retrieving entities by ids of type {typeof(TEntity).Name}. Exception: {e.Message}", ErrorKind.Failure);
+        }
+    }
+
     public async Task<Result<List<TEntity>>> GetAllAsync(
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,

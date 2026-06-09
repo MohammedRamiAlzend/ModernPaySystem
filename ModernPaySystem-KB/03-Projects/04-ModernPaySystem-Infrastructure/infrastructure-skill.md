@@ -32,6 +32,8 @@ ModernPaySystem.Infrastructure/
 │   ├── JwtTokenGenerator.cs
 │   ├── PasswordHasher.cs
 │   └── CurrentUserService.cs
+├── Specifications/
+│   └── RequestIncludes.cs             # Shared .Include() extension methods for IQueryable<T>
 ├── Email/
 │   ├── SendGridEmailService.cs
 │   └── SmtpEmailService.cs
@@ -47,6 +49,8 @@ ModernPaySystem.Infrastructure/
 │   └── TaxCalculatorClient.cs
 ├── Logging/
 │   └── SerilogExtensions.cs
+├── Specifications/
+│   └── RequestIncludes.cs           # Shared Include extension methods
 ├── ModernPaySystem.Infrastructure.csproj
 └── DependencyInjection.cs
 ```

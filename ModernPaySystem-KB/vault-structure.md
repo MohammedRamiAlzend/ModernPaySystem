@@ -9,6 +9,7 @@ ModernPaySystem-KB/
 │   └── dependency-rules.md                # Allowed/forbidden dependencies, import audit
 ├── 02-Code-Conventions/
 │   ├── csharp-conventions.md              # C# patterns: file-scoped namespaces, primary constructors, naming
+│   │                                      # .editorconfig, dotnet format, coding conventions
 │   ├── entity-patterns.md                 # Entity<T>, private setters, expression helpers, ToDto()
 │   ├── repository-pattern.md              # RepositoryBase<T, TKey>, IUnitOfWork, expression filtering
 │   ├── service-patterns.md                # Infrastructure service patterns, DI, error handling
@@ -42,13 +43,13 @@ ModernPaySystem-KB/
 ├── 05-Shared-Knowledge/
 │   ├── authentication.md                  # JWT flow, PermissionAuthorizationHandler, EndpointPermission
 │   ├── error-handling.md                  # Result<T> pattern, ApplicationErrors, ErrorKind
-│   ├── pagination.md                      # PagedList<T>, GetPagedAsync, RequestPagedFilterDto
+│   ├── pagination.md                      # PagedList<T>, GetPagedAsync, RequestPagedFilterDto, filter DTOs
 │   ├── soft-delete.md                     # Query filters, ISoftDeletable, interceptors
-│   └── query-building.md                  # ExpressionCombiner, dynamic filters, AndAll/OrAll
+│   └── query-building.md                  # ExpressionCombiner, dynamic filters, AndAll/OrAll, anti-patterns
 ├── 06-Roadmap/
 │   └── roadmap.md
 ├── 07-Dependencies/
-│   └── third-party-libs.md                # Npgsql, Tesseract, BCrypt, Serilog, Scalar, Bogus
+│   └── third-party-libs.md                # Npgsql, Tesseract, BCrypt, Serilog, Scalar, Bogus, FluentValidation
 ├── 08-Templates/
 │   ├── new-controller.md                  # Template for new API controller
 │   ├── new-service.md                     # Template for new Infrastructure service

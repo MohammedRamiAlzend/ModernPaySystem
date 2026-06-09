@@ -275,25 +275,26 @@ public class DepartmentService(
     {
         try
         {
-            // جلب الأقسام بفلتر بسيط أو كلها، ثم الفلترة في الذاكرة
-            // يتجنب هذا مشكلة ترجمة string.IsNullOrEmpty داخل EF Core Expressions
+            List<Expression<Func<Department, bool>>> filters = [];
+
+            if (level > 0)
+                filters.Add(d => d.Level == level);
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm;
+                filters.Add(d => d.Name.Contains(term) || (d.Code != null && d.Code.Contains(term)));
+            }
+
             var result = await unitOfWork.Departments.GetAllAsync(
-                filter: level > 0 ? (d => d.Level == level) : null
+                additionalFilters: filters.Count > 0 ? filters : null,
+                transform: q => q.Include(d => d.DepartmentHead)
             );
 
             if (result.IsError)
                 return result.Errors;
 
-            var filtered = result.Value!.AsEnumerable();
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                filtered = filtered.Where(d =>
-                    d.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    (d.Code != null && d.Code.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
-            }
-
-            return filtered.Select(MapToDto).ToList();
+            return result.Value!.Select(MapToDto).ToList();
         }
         catch (Exception ex)
         {
@@ -487,7 +488,7 @@ public class DepartmentService(
         }
     }
 
-    public bool CanAssignParent(Guid departmentId, Guid parentDepartmentId)
+    public async Task<Result<bool>> CanAssignParentAsync(Guid departmentId, Guid parentDepartmentId)
     {
         if (departmentId == parentDepartmentId)
             return false;
@@ -495,12 +496,12 @@ public class DepartmentService(
         try
         {
             var currentId = parentDepartmentId;
-            var maxDepth = 100;
+            const int maxDepth = 100;
             var depth = 0;
 
             while (currentId != Guid.Empty && depth < maxDepth)
             {
-                var result = unitOfWork.Departments.GetByIdAsync(currentId).GetAwaiter().GetResult();
+                var result = await unitOfWork.Departments.GetByIdAsync(currentId);
                 if (result.IsError || result.Value == null || !result.Value.ParentDepartmentId.HasValue)
                     break;
 
@@ -513,8 +514,9 @@ public class DepartmentService(
 
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Error checking parent assignment for department {DepartmentId}", departmentId);
             return true;
         }
     }

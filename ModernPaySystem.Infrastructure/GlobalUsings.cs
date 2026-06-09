@@ -9,6 +9,7 @@ global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
 global using System.IdentityModel.Tokens.Jwt;
+global using System.Linq.Expressions;
 global using System.Security.Claims;
 global using System.Text;
 

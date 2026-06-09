@@ -49,7 +49,7 @@
 | Layer | Allowed Packages |
 |-------|-----------------|
 | Domain | None (zero-package policy). Exception: `Microsoft.AspNetCore.Http` (for IFormFile in DTOs) |
-| Application | None (contract-only project). Exception: `Microsoft.AspNetCore.Http` (for IFormFile) |
+| Application | None (contract-only project). Exception: `Microsoft.AspNetCore.Http` (for IFormFile), `FluentValidation` (for input validation) |
 | Infrastructure | JWT auth packages, EF Core (for Include/ThenInclude in services), BCrypt, Serilog, Npgsql, Tesseract, library packages |
 | Persistence | `Microsoft.EntityFrameworkCore`, `Npgsql.EntityFrameworkCore.PostgreSQL`, EF tools, Bogus (for seeding), library packages |
 | API | `Scalar.AspNetCore`, `Serilog.AspNetCore`, JWT auth middleware packages, Swashbuckle alternative via Scalar |

@@ -141,7 +141,29 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 }
 ```
 
-### 3. Repository Implementation
+### 3. Repository Implementation — GetAllByIdsAsync
+
+For bulk retrieval by primary keys, use `GetAllByIdsAsync`:
+
+```csharp
+// RepositoryBase<T, TKey>
+public async Task<Result<List<TEntity>>> GetAllByIdsAsync(
+    List<TKey> ids,
+    Func<IQueryable<TEntity>, IQueryable<TEntity>>? transform = null,
+    bool bypassAuth = false)
+{
+    IQueryable<TEntity> query = dbcontext.Set<TEntity>();
+    query = query.Where(e => ids.Contains(e.Id));
+
+    if (transform != null)
+        query = transform(query);
+
+    query = ApplyDefaultOrdering(query);
+    return await query.ToListAsync();
+}
+```
+
+### 4. Legacy Repository Implementation
 
 ```csharp
 // Repositories/BaseRepository.cs

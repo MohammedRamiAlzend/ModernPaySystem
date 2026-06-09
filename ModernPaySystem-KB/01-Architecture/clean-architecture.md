@@ -77,7 +77,9 @@ Controller returns Result.ToActionResult()
 
 ## UnitOfWork as Mandatory Gateway
 
-All data access MUST go through `IUnitOfWork`. Direct injection of `IRepositoryBase<TEntity, TKey>` in services is **forbidden**.
+All data access MUST go through `IUnitOfWork` or a domain-specific sub-interface (`IUnitOfWorkArchiving`, `IUnitOfWorkTransactionSystem`). Sub-interfaces inherit the transaction contract and expose only the repositories relevant to their domain.
+
+Direct injection of `IRepositoryBase<TEntity, TKey>` in services is **forbidden**.
 
 ```
 Service (Infrastructure)
@@ -124,6 +126,7 @@ public class RequestService(IUnitOfWork unitOfWork) : IRequestService
 - **Single registration point**: New entities are registered once in `IUnitOfWork`
 - **Cleaner service constructors**: Services inject one dependency (`IUnitOfWork`) instead of many repositories
 - **Easier testing**: Mock one `IUnitOfWork` instead of N repositories
+- **Sub-interfaces allowed**: Domain-specific sub-interfaces (e.g., `IUnitOfWorkArchiving`) may be used for ISP compliance, but they must inherit the transaction contract from the base `IUnitOfWork`
 
 ---
 
@@ -232,7 +235,7 @@ The persistence layer uses PostgreSQL via Npgsql. No SQL Server packages in Pers
 Use **Scalar.AspNetCore** (not Swashbuckle/Swagger UI). Configured in `Program.cs` via `AddOpenApi("v1")` with `BearerSecuritySchemeTransformer`.
 
 ### Rule 9: UnitOfWork Is the Only Data Access Gateway
-All data access goes through IUnitOfWork. Services never inject IRepositoryBase<T, TKey> directly. IUnitOfWork exposes one IRepositoryBase<T, TKey> property per entity.
+All data access goes through IUnitOfWork or domain-specific sub-interfaces. Services never inject IRepositoryBase<T, TKey> directly. IUnitOfWork exposes one IRepositoryBase<T, TKey> property per entity. Sub-interfaces (e.g., `IUnitOfWorkArchiving`) are allowed for Interface Segregation.
 
 ---
 
