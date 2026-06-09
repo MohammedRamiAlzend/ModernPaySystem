@@ -69,12 +69,17 @@ export const RequestPage = () => {
             setRelatedRequests([]);
             setUploadProgress(0);
         },
-        onError: () => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ',
-                message: 'حدث خطأ أثناء تقديم الطلب'
-            });
+        onError: (error: any) => {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ',
+                    message: 'حدث خطأ أثناء تقديم الطلب'
+                });
+            }
             setUploadProgress(0);
         }
     });

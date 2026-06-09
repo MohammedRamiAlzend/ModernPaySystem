@@ -88,11 +88,16 @@ export const useDepartmentActions = () => {
             });
         },
         onError: (error: any) => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ في الحذف',
-                message: error.response?.data?.message || 'لا يمكن حذف هذا القسم لأنه قد يحتوي على أقسام فرعية أو بيانات مرتبطة'
-            });
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في الحذف',
+                    message: error.response?.data?.message || 'لا يمكن حذف هذا القسم لأنه قد يحتوي على أقسام فرعية أو بيانات مرتبطة'
+                });
+            }
         }
     });
 
@@ -109,11 +114,16 @@ export const useDepartmentActions = () => {
             });
         },
         onError: (error: any) => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ في التعيين',
-                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين المستخدم للقسم'
-            });
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في التعيين',
+                    message: error.response?.data?.message || 'حدث خطأ أثناء تعيين المستخدم للقسم'
+                });
+            }
         }
     });
 
@@ -130,11 +140,17 @@ export const useDepartmentActions = () => {
             });
         },
         onError: (error: any) => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ في تعيين المدير',
-                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير القسم'
-            });
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في تعيين المدير',
+                    message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير القسم'
+                });
+            }
+
         }
     });
 

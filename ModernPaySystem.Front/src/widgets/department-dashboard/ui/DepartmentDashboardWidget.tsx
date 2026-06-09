@@ -135,11 +135,16 @@ export const DepartmentDashboardWidget: React.FC = () => {
             });
         },
         onError: (error: any) => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ في التعيين',
-                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير الأرشيف'
-            });
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في التعيين',
+                    message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير الأرشيف'
+                });
+            }
         }
     });
 
@@ -155,11 +160,16 @@ export const DepartmentDashboardWidget: React.FC = () => {
             });
         },
         onError: (error: any) => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ في إلغاء التعيين',
-                message: error.response?.data?.message || 'حدث خطأ أثناء إلغاء تعيين مدير الأرشيف'
-            });
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ في إلغاء التعيين',
+                    message: error.response?.data?.message || 'حدث خطأ أثناء إلغاء تعيين مدير الأرشيف'
+                });
+            }
         }
     });
 

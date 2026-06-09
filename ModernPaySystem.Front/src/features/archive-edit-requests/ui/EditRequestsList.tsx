@@ -37,12 +37,18 @@ export function EditRequestsList({ requests, isLoading, onViewDetails }: EditReq
                     setActiveActionId(null);
                     setActionType(null);
                 },
-                onError: (err: any) => {
-                    showStatus({
-                        type: 'error',
-                        title: 'خطأ',
-                        message: err?.response?.data?.message || 'حدث خطأ أثناء معالجة الطلب.'
-                    });
+
+                onError: (error: any) => {
+                    if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                        showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+                    }
+                    else {
+                        showStatus({
+                            type: 'error',
+                            title: 'خطأ',
+                            message: error?.response?.data?.message || 'حدث خطأ أثناء معالجة الطلب.'
+                        });
+                    }
                 }
             }
         );
@@ -71,12 +77,17 @@ export function EditRequestsList({ requests, isLoading, onViewDetails }: EditReq
                     setActiveActionId(null);
                     setActionType(null);
                 },
-                onError: (err: any) => {
-                    showStatus({
-                        type: 'error',
-                        title: 'خطأ',
-                        message: err?.response?.data?.message || 'حدث خطأ أثناء رفض الطلب.'
-                    });
+                onError: (error: any) => {
+                    if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                        showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+                    }
+                    else {
+                        showStatus({
+                            type: 'error',
+                            title: 'خطأ',
+                            message: error?.response?.data?.message || 'حدث خطأ أثناء رفض الطلب.'
+                        });
+                    }
                 }
             }
         );

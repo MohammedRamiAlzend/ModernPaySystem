@@ -36,12 +36,16 @@ export const useLogin = () => {
             navigate(decodeURIComponent(redirectUrl), { replace: true });
         },
         onError: (error: any) => {
-            showStatusState({
-                type: 'error',
-                title: 'فشل تسجيل الدخول',
-                message: error.response?.data?.message || 'تأكد من صحة البيانات وحاول مرة أخرى'
-            });
-            console.error('Login failed:', error);
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatusState({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatusState({
+                    type: 'error',
+                    title: 'فشل تسجيل الدخول',
+                    message: error.response?.data?.message || 'تأكد من صحة البيانات وحاول مرة أخرى'
+                });
+            }
         },
     });
 };

@@ -36,8 +36,13 @@ export const useReferralsLogic = (status: number) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
             handleCloseProcessModal();
         },
-        onError: () => {
-            showStatus({ type: 'error', title: 'خطأ', message: 'فشل إرسال الرد' });
+        onError: (error: any) => {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({ type: 'error', title: 'خطأ', message: 'فشل إرسال الرد' });
+            }
         }
     });
 
@@ -49,8 +54,13 @@ export const useReferralsLogic = (status: number) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
             handleCloseProcessModal();
         },
-        onError: () => {
-            showStatus({ type: 'error', title: 'خطأ', message: 'فشل إحالة الطلب' });
+        onError: (error: any) => {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({ type: 'error', title: 'خطأ', message: 'فشل إحالة الطلب' });
+            }
         }
     });
 

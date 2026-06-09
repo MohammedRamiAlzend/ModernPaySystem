@@ -65,12 +65,17 @@ export const useResponsePageLogic = () => {
             setRequestId('');
             setFiles([]);
         },
-        onError: () => {
-            showStatus({
-                type: 'error',
-                title: 'خطأ',
-                message: 'فشل إرسال الرد'
-            });
+        onError: (error: any) => {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({
+                    type: 'error',
+                    title: 'خطأ',
+                    message: 'فشل إرسال الرد'
+                });
+            }
         }
     });
 
