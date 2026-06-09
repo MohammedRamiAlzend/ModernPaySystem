@@ -207,7 +207,7 @@ export function ArchiveSearchPage() {
 
                     {/* Record ID */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-muted-foreground">معرف السجل (Record ID)</label>
+                        <label className="text-xs font-bold text-muted-foreground">معرف السجل </label>
                         <div className="relative">
                             <Input
                                 value={recordId}
