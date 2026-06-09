@@ -28,6 +28,58 @@ export const isOfficeFile = (fileName: string) => {
     return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext || '');
 };
 
+interface FileCacheEntry {
+    blob: Blob;
+    objectUrl: string | null;
+    textContent: string | null;
+}
+
+const documentFileCache = new Map<string, FileCacheEntry>();
+const cacheOrder: string[] = [];
+const MAX_CACHE_SIZE = 30;
+
+const addToCache = (fileId: string, blob: Blob, objectUrl: string | null, textContent: string | null = null) => {
+    if (documentFileCache.has(fileId)) {
+        const idx = cacheOrder.indexOf(fileId);
+        if (idx > -1) cacheOrder.splice(idx, 1);
+    } else {
+        if (cacheOrder.length >= MAX_CACHE_SIZE) {
+            const oldestId = cacheOrder.shift();
+            if (oldestId) {
+                const entry = documentFileCache.get(oldestId);
+                if (entry) {
+                    if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+                    documentFileCache.delete(oldestId);
+                }
+            }
+        }
+    }
+    documentFileCache.set(fileId, { blob, objectUrl, textContent });
+    cacheOrder.push(fileId);
+};
+
+const getFromCache = (fileId: string): FileCacheEntry | undefined => {
+    const entry = documentFileCache.get(fileId);
+    if (entry) {
+        const idx = cacheOrder.indexOf(fileId);
+        if (idx > -1) {
+            cacheOrder.splice(idx, 1);
+            cacheOrder.push(fileId);
+        }
+    }
+    return entry;
+};
+
+const removeFromCache = (fileId: string) => {
+    const entry = documentFileCache.get(fileId);
+    if (entry) {
+        if (entry.objectUrl) URL.revokeObjectURL(entry.objectUrl);
+        documentFileCache.delete(fileId);
+        const idx = cacheOrder.indexOf(fileId);
+        if (idx > -1) cacheOrder.splice(idx, 1);
+    }
+};
+
 interface UseDocumentPreviewParams {
     recordId: string;
     files: PhysicalFile[];
@@ -71,11 +123,18 @@ export function useDocumentPreview({
     const [isUploading, setIsUploading] = useState<boolean>(false);
 
     const fetchTextContent = useCallback(async (file: PhysicalFile) => {
+        const cached = getFromCache(file.id);
+        if (cached && cached.textContent !== null) {
+            setTextContent(cached.textContent);
+            return;
+        }
+
         setLoading(true);
         try {
             const blob = await archivingService.downloadFile(recordId, file.id);
             const text = await blob.text();
             setTextContent(text);
+            addToCache(file.id, blob, null, text);
         } catch (error) {
             console.error('Failed to load text content:', error);
             setTextContent('فشل تحميل محتوى الملف نصي.');
@@ -85,8 +144,6 @@ export function useDocumentPreview({
     }, [recordId]);
 
     useEffect(() => {
-        let activeUrl: string | null = null;
-
         const loadPreview = async () => {
             if (!selectedFile) {
                 setPreviewBlobUrl(null);
@@ -105,11 +162,18 @@ export function useDocumentPreview({
                 fetchTextContent(selectedFile);
             } else if (isImg || isVid || isPdf || isOffice) {
                 setTextContent(null);
+
+                const cached = getFromCache(selectedFile.id);
+                if (cached && cached.objectUrl) {
+                    setPreviewBlobUrl(cached.objectUrl);
+                    return;
+                }
+
                 setLoading(true);
                 try {
                     const blob = await archivingService.viewFileBlob(recordId, selectedFile.id);
                     const url = URL.createObjectURL(blob);
-                    activeUrl = url;
+                    addToCache(selectedFile.id, blob, url);
                     setPreviewBlobUrl(url);
                 } catch (error: any) {
                     console.error('Failed to load preview blob:', error);
@@ -131,12 +195,6 @@ export function useDocumentPreview({
         };
 
         loadPreview();
-
-        return () => {
-            if (activeUrl) {
-                URL.revokeObjectURL(activeUrl);
-            }
-        };
     }, [selectedFile, recordId, fetchTextContent, showStatus]);
 
     const handleDeleteFile = (file: PhysicalFile) => {
@@ -148,6 +206,7 @@ export function useDocumentPreview({
             onConfirm: async () => {
                 try {
                     await archivingService.removeFileFromArchiveRecord(recordId, file.id);
+                    removeFromCache(file.id);
                     setLocalFiles(prev => {
                         const updated = prev.filter(f => f.id !== file.id);
                         if (selectedFile?.id === file.id) {
@@ -224,10 +283,19 @@ export function useDocumentPreview({
         setDownloadingFileId(file.id);
         setDownloadProgress(0);
         try {
-            const blob = await archivingService.downloadFile(recordId, file.id, (progressEvent: any) => {
-                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                setDownloadProgress(percentCompleted);
-            });
+            let blob: Blob;
+            
+            const cached = getFromCache(file.id);
+            if (cached) {
+                blob = cached.blob;
+            } else {
+                blob = await archivingService.downloadFile(recordId, file.id, (progressEvent: any) => {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+                    setDownloadProgress(percentCompleted);
+                });
+                const url = isTextFile(file.fileName) ? null : URL.createObjectURL(blob);
+                addToCache(file.id, blob, url);
+            }
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
