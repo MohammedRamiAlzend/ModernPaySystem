@@ -93,8 +93,13 @@ export const useAddTemplateOwnership = () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.template.byDepartment(variables.departmentId) });
             showStatus({ type: 'success', title: 'نجاح', message: 'تم إسناد النموذج للقسم بنجاح.' });
         },
-        onError: () => {
-            showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إسناد النموذج.' });
+        onError: (error: any) => {
+            if (error.response.data.errors[0].arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إسناد النموذج.' });
+            }
         }
     });
 };
@@ -111,8 +116,13 @@ export const useRemoveTemplateOwnership = () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.template.byDepartment(variables.departmentId) });
             showStatus({ type: 'success', title: 'نجاح', message: 'تمت إزالة صلاحية القسم للنموذج بنجاح.' });
         },
-        onError: () => {
-            showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إزالة صلاحية النموذج.' });
+        onError: (error: any) => {
+            if (error.response?.data?.errors[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إزالة صلاحية النموذج.' });
+            }
         }
     });
 };
@@ -129,8 +139,13 @@ export const useAddUserTemplateOwnership = () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.template.byUser(variables.userId) });
             showStatus({ type: 'success', title: 'نجاح', message: 'تم منح صلاحية للنموذج للمستخدم بنجاح.' });
         },
-        onError: () => {
-            showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء منح الصلاحية للمستخدم.' });
+        onError: (error: any) => {
+            if (error.response?.data?.errors[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء منح الصلاحية للمستخدم.' });
+            }
         }
     });
 };
@@ -147,8 +162,13 @@ export const useRemoveUserTemplateOwnership = () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.template.byUser(variables.userId) });
             showStatus({ type: 'success', title: 'نجاح', message: 'تمت إزالة صلاحية المستخدم للنموذج بنجاح.' });
         },
-        onError: () => {
-            showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إزالة صلاحية المستخدم.' });
+        onError: (error: any) => {
+            if (error.response?.data?.errors[0]?.arabicDescription) {
+                showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
+            }
+            else {
+                showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إزالة صلاحية المستخدم.' });
+            }
         }
     });
 };
