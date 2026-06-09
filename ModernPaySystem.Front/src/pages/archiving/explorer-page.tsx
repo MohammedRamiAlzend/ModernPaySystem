@@ -242,6 +242,9 @@ export default function ExplorerPage() {
                         onRecordRequestEdit={handleOpenRequestEdit}
                         onCreateFolder={handleOpenCreateFolder}
                         onCreateRecord={currentFolder ? handleOpenCreateRecord : undefined}
+                        isLoading={loadingRecords}
+                        hasMore={hasMoreRecords}
+                        onLoadMore={loadMoreRecords}
                     />
                 ) : (
                     <ListView

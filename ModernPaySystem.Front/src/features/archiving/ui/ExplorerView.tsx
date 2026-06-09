@@ -12,6 +12,8 @@ import {
     FolderPlus
 } from 'lucide-react';
 
+import { Button } from '@/shared/ui/button';
+
 interface ExplorerViewProps {
     folders: Folder[];
     records: ArchiveRecord[];
@@ -25,6 +27,9 @@ interface ExplorerViewProps {
     onRecordRequestEdit?: (record: ArchiveRecord) => void;
     onCreateFolder?: () => void;
     onCreateRecord?: () => void;
+    isLoading?: boolean;
+    hasMore?: boolean;
+    onLoadMore?: () => void;
 }
 
 
@@ -41,6 +46,9 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onRecordRequestEdit,
     onCreateFolder,
     onCreateRecord,
+    isLoading = false,
+    hasMore = false,
+    onLoadMore
 }) => {
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [contextMenu, setContextMenu] = useState<{
@@ -245,6 +253,20 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                     </svg>
                     <span className="text-sm font-semibold">المجلد فارغ تماماً</span>
                     <span className="text-xs text-muted-foreground/60">يمكنك إنشاء مجلدات فرعية أو أرشفة مستندات جديدة هنا.</span>
+                </div>
+            )}
+
+            {/* Pagination / Load More */}
+            {hasMore && onLoadMore && (
+                <div className="flex justify-center py-6 mt-4">
+                    <Button
+                        variant="outline"
+                        onClick={onLoadMore}
+                        disabled={isLoading}
+                        className="rounded-xl px-8 border-border text-foreground hover:bg-muted font-bold transition-all hover:scale-[1.02]"
+                    >
+                        {isLoading ? 'جاري التحميل...' : 'تحميل المزيد'}
+                    </Button>
                 </div>
             )}
 
