@@ -64,7 +64,7 @@ export const ActionedRequestsPage = () => {
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم الخدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">البيانات المقدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم</th>
-                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">مسار الأقسام</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">مسار الخدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ التقديم</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">الإجراءات</th>
                             </tr>
