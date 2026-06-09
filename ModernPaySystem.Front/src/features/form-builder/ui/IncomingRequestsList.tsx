@@ -87,13 +87,21 @@ export const IncomingRequestsList = ({
                                                 <span className="px-1.5 py-0.5 bg-primary text-[10px] text-white rounded-md">جديد</span>
                                             )}
                                         </div>
-                                        <div className="text-[10px] mt-0.5">
+                                        <div className="text-[10px] mt-0.5 flex items-center gap-1.5 text-muted-foreground flex-wrap">
                                             <UserDisplay
                                                 userId={request.requesterId}
                                                 showIcon={true}
                                                 iconClassName="w-3 h-3"
-                                                className="text-muted-foreground"
+                                                className="inline-flex"
                                             />
+                                            {request.requester?.departmentName && (
+                                                <>
+                                                    <span className="text-muted-foreground/30">|</span>
+                                                    <span className="font-semibold bg-primary/10 px-1.5 py-0.5 rounded text-primary text-[9px]">
+                                                        القسم المرسل: {request.requester.departmentName}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

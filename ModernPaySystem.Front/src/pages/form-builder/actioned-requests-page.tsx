@@ -64,6 +64,7 @@ export const ActionedRequestsPage = () => {
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">اسم الخدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">البيانات المقدمة</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">المستخدم</th>
+                                <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">مسار الأقسام</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-right">تاريخ التقديم</th>
                                 <th className="px-6 py-4 font-bold text-sm text-muted-foreground border-b text-center">الإجراءات</th>
                             </tr>
@@ -112,6 +113,22 @@ export const ActionedRequestsPage = () => {
                                                 iconClassName="w-3 h-3"
                                                 className="text-sm"
                                             />
+                                        </td>
+                                        <td className="px-6 py-4 text-xs">
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-muted-foreground text-[10px]">من:</span>
+                                                    <span className="font-semibold text-foreground bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">
+                                                        {request.requester?.departmentName || 'غير محدد'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <span className="text-muted-foreground text-[10px]">إلى:</span>
+                                                    <span className="font-semibold text-foreground bg-emerald-500/5 px-1.5 py-0.5 rounded border border-emerald-500/10">
+                                                        {request.approver?.departmentName || 'غير محدد'}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-xs text-muted-foreground">
                                             {request.createdAt ? new Date(request.createdAt).toLocaleDateString('ar-EG') : '---'}
