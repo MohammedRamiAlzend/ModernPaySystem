@@ -94,7 +94,7 @@ export const useAddTemplateOwnership = () => {
             showStatus({ type: 'success', title: 'نجاح', message: 'تم إسناد النموذج للقسم بنجاح.' });
         },
         onError: (error: any) => {
-            if (error.response?.data?.errors[0]?.arabicDescription) {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
                 showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
             }
             else {
@@ -117,7 +117,7 @@ export const useRemoveTemplateOwnership = () => {
             showStatus({ type: 'success', title: 'نجاح', message: 'تمت إزالة صلاحية القسم للنموذج بنجاح.' });
         },
         onError: (error: any) => {
-            if (error.response?.data?.errors[0]?.arabicDescription) {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
                 showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
             }
             else {
@@ -140,7 +140,7 @@ export const useAddUserTemplateOwnership = () => {
             showStatus({ type: 'success', title: 'نجاح', message: 'تم منح صلاحية للنموذج للمستخدم بنجاح.' });
         },
         onError: (error: any) => {
-            if (error.response?.data?.errors[0]?.arabicDescription) {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
                 showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
             }
             else {
@@ -163,7 +163,7 @@ export const useRemoveUserTemplateOwnership = () => {
             showStatus({ type: 'success', title: 'نجاح', message: 'تمت إزالة صلاحية المستخدم للنموذج بنجاح.' });
         },
         onError: (error: any) => {
-            if (error.response?.data?.errors[0]?.arabicDescription) {
+            if (error.response?.data?.errors?.[0]?.arabicDescription) {
                 showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
             }
             else {
