@@ -16,7 +16,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching all roles");
+            logger.LogError(ex, "Error fetching all roles");
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -25,7 +25,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
     {
         try
         {
-            _logger.LogInformation("Fetching paged roles, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogInformation("Fetching paged roles, page: {Page}, size: {PageSize}", page, pageSize);
 
             // Validate parameters
             if (page <= 0)
@@ -44,7 +44,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching paged roles, page: {Page}, size: {PageSize}", page, pageSize);
+            logger.LogError(ex, "Error fetching paged roles, page: {Page}, size: {PageSize}", page, pageSize);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -53,7 +53,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
     {
         try
         {
-            _logger.LogInformation("Fetching role by id: {RoleId}", id);
+            logger.LogInformation("Fetching role by id: {RoleId}", id);
             var role = await unitOfWork.Roles.GetAsync(
                 filter: RoleExpressions.ById(id),
                 transform: x => x.Include(r => r.Permissions)
@@ -69,7 +69,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching role by id: {RoleId}", id);
+            logger.LogError(ex, "Error fetching role by id: {RoleId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -81,7 +81,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
             if (string.IsNullOrWhiteSpace(name))
                 return ApplicationErrors.InvalidInput;
 
-            _logger.LogInformation("Fetching role by name: {RoleName}", name);
+            logger.LogInformation("Fetching role by name: {RoleName}", name);
             var role = await unitOfWork.Roles.GetAsync(
                 filter: RoleExpressions.ByName(name),
                 transform: x => x.Include(r => r.Permissions)
@@ -97,7 +97,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error fetching role by name: {RoleName}", name);
+            logger.LogError(ex, "Error fetching role by name: {RoleName}", name);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -112,7 +112,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
             if (string.IsNullOrWhiteSpace(role.Name))
                 return ApplicationErrors.MissingRequiredField;
 
-            _logger.LogInformation("Creating new role: {RoleName}", role.Name);
+            logger.LogInformation("Creating new role: {RoleName}", role.Name);
 
             var roleEntity = new Role
             {
@@ -128,12 +128,12 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
-            _logger.LogInformation("Successfully created role: {RoleName}", role.Name);
+            logger.LogInformation("Successfully created role: {RoleName}", role.Name);
             return roleEntity.ToDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating role");
+            logger.LogError(ex, "Error creating role");
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -156,7 +156,7 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
             if (existingRole.Value == null)
                 return ApplicationErrors.RoleNotFound;
 
-            _logger.LogInformation("Updating role: {RoleId}", id);
+            logger.LogInformation("Updating role: {RoleId}", id);
 
             existingRole.Value.Name = role.Name;
             existingRole.Value.Description = role.Description;
@@ -169,12 +169,12 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
-            _logger.LogInformation("Successfully updated role: {RoleId}", id);
+            logger.LogInformation("Successfully updated role: {RoleId}", id);
             return existingRole.Value.ToDto();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating role: {RoleId}", id);
+            logger.LogError(ex, "Error updating role: {RoleId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }
@@ -195,19 +195,19 @@ public class RoleService(IUnitOfWork unitOfWork, ILogger<RoleService> logger) : 
             if (role.Value == null)
                 return ApplicationErrors.RoleNotFound;
 
-            _logger.LogInformation("Deleting role: {RoleId}", id);
+            logger.LogInformation("Deleting role: {RoleId}", id);
 
             await unitOfWork.Roles.RemoveAsync(RoleExpressions.ById(id));
             int result = await unitOfWork.SaveChangesAsync();
             if (result <= 0)
                 return ApplicationErrors.DatabaseError;
 
-            _logger.LogInformation("Successfully deleted role: {RoleId}", id);
+            logger.LogInformation("Successfully deleted role: {RoleId}", id);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting role: {RoleId}", id);
+            logger.LogError(ex, "Error deleting role: {RoleId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }

@@ -239,6 +239,129 @@ public class AttachmentService(
         return await fileManager.GetFileBytesAsync(attachment.Value!.Path);
     }
 
+    public async Task<Result<byte[]>> DownloadFilesFromRequestAsync(Guid requestId)
+    {
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request.IsError)
+            return ApplicationErrors.RequestNotFound;
+
+        var attachments = await unitOfWork.RequestAttachments.GetAllAsync(
+            filter: AttachmentExpressions.RequestAttachmentByRequestId(requestId),
+            transform: q => q.Include(x => x.Attachment));
+        if (attachments.IsError)
+            return attachments.Errors;
+
+        using var zipStream = new MemoryStream();
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
+        foreach (var ra in attachments.Value!)
+        {
+            if (ra.Attachment == null) continue;
+            var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
+            if (fileBytes.IsError) continue;
+            var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
+            using var entryStream = entry.Open();
+            await entryStream.WriteAsync(fileBytes.Value!);
+        }
+        return zipStream.ToArray();
+    }
+
+    public async Task<Result<byte[]>> DownloadFilesFromResponseAsync(Guid responseId)
+    {
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+            return ApplicationErrors.ResponseNotFound;
+
+        var attachments = await unitOfWork.ResponseAttachments.GetAllAsync(
+            filter: AttachmentExpressions.ResponseAttachmentByResponseId(responseId),
+            transform: q => q.Include(x => x.Attachment));
+        if (attachments.IsError)
+            return attachments.Errors;
+
+        using var zipStream = new MemoryStream();
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
+        foreach (var ra in attachments.Value!)
+        {
+            if (ra.Attachment == null) continue;
+            var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
+            if (fileBytes.IsError) continue;
+            var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
+            using var entryStream = entry.Open();
+            await entryStream.WriteAsync(fileBytes.Value!);
+        }
+        return zipStream.ToArray();
+    }
+
+    public async Task<Result<byte[]>> DownloadFilesFromTransactionAsync(Guid transactionId)
+    {
+        var transaction = await unitOfWork.RequestTransactions.GetByIdAsync(transactionId);
+        if (transaction.IsError)
+            return ApplicationErrors.RequestTransactionNotFound;
+
+        var attachments = await unitOfWork.RequestTransactionAttachments.GetAllAsync(
+            filter: AttachmentExpressions.RequestTransactionAttachmentByTransactionId(transactionId),
+            transform: q => q.Include(x => x.Attachment));
+        if (attachments.IsError)
+            return attachments.Errors;
+
+        using var zipStream = new MemoryStream();
+        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
+        foreach (var ra in attachments.Value!)
+        {
+            if (ra.Attachment == null) continue;
+            var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
+            if (fileBytes.IsError) continue;
+            var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
+            using var entryStream = entry.Open();
+            await entryStream.WriteAsync(fileBytes.Value!);
+        }
+        return zipStream.ToArray();
+    }
+
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForRequestAsync(Guid requestId)
+    {
+        var request = await unitOfWork.Requests.GetByIdAsync(requestId);
+        if (request.IsError)
+            return ApplicationErrors.RequestNotFound;
+
+        var attachments = await unitOfWork.RequestAttachments.GetAllAsync(
+            filter: AttachmentExpressions.RequestAttachmentByRequestId(requestId),
+            transform: q => q.Include(x => x.Attachment));
+        if (attachments.IsError)
+            return attachments.Errors;
+
+        return attachments.Value!.Where(ra => ra.Attachment != null).Select(ra => ra.Attachment!.ToDto()).ToList();
+    }
+
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForResponseAsync(Guid responseId)
+    {
+        var response = await unitOfWork.Responses.GetByIdAsync(responseId);
+        if (response.IsError)
+            return ApplicationErrors.ResponseNotFound;
+
+        var attachments = await unitOfWork.ResponseAttachments.GetAllAsync(
+            filter: AttachmentExpressions.ResponseAttachmentByResponseId(responseId),
+            transform: q => q.Include(x => x.Attachment));
+        if (attachments.IsError)
+            return attachments.Errors;
+
+        return attachments.Value!.Where(ra => ra.Attachment != null).Select(ra => ra.Attachment!.ToDto()).ToList();
+    }
+
+    public async Task<Result<IEnumerable<AttachmentDto>>> GetAttachmentsForTransactionAsync(Guid transactionId)
+    {
+        var transaction = await unitOfWork.RequestTransactions.GetByIdAsync(transactionId);
+        if (transaction.IsError)
+            return ApplicationErrors.RequestTransactionNotFound;
+
+        var attachments = await unitOfWork.RequestTransactionAttachments.GetAllAsync(
+            filter: AttachmentExpressions.RequestTransactionAttachmentByTransactionId(transactionId),
+            transform: q => q.Include(x => x.Attachment));
+        if (attachments.IsError)
+            return attachments.Errors;
+
+        return attachments.Value!.Where(ra => ra.Attachment != null).Select(ra => ra.Attachment!.ToDto()).ToList();
+    }
+
     /// <summary>
     /// Removes a file attachment from a request.
     /// </summary>
