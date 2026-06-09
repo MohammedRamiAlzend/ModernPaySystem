@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
@@ -62,10 +62,7 @@ export function ArchiveSearchPage() {
         }
     })() : [];
 
-    // Clear filters when template changes
-    useEffect(() => {
-        setDynamicFilters({});
-    }, [selectedTemplateId]);
+    // Clear filters when template changes dynamically in select change handler
 
     // Handle dynamic filter input change
     const handleDynamicFilterChange = (fieldLabel: string, value: string) => {
@@ -81,7 +78,7 @@ export function ArchiveSearchPage() {
         try {
             // Build input value filters array
             const inputValueFilters = Object.entries(dynamicFilters)
-                .filter(([_, value]) => value.trim() !== '')
+                .filter(([, value]) => value.trim() !== '')
                 .map(([key, value]) => ({ key, value }));
 
             const filterDto = {
@@ -239,7 +236,10 @@ export function ArchiveSearchPage() {
                         <label className="text-xs font-bold text-muted-foreground">نوع المستند (النموذج الديناميكي)</label>
                         <select
                             value={selectedTemplateId}
-                            onChange={(e) => setSelectedTemplateId(e.target.value)}
+                            onChange={(e) => {
+                                setSelectedTemplateId(e.target.value);
+                                setDynamicFilters({});
+                            }}
                             className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <option value="">-- اختر النموذج لمطابقة حقوله --</option>
