@@ -44,12 +44,10 @@ public class RequestService(
                         if (!string.IsNullOrWhiteSpace(ivf.Value))
                         {
                             filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
-                            //filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key == ivf.Key && iv.Value == ivf.Value));
                         }
                         else
                         {
                             filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
-                            //filters.Add(r => r.RequestTemplateValues != null && r.RequestTemplateValues.InputValues.Any(iv => iv.Key == ivf.Key));
                         }
                     }
                 }

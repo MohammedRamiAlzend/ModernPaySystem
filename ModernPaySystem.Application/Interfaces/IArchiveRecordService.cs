@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.Archiving;
 
 namespace ModernPaySystem.Application.Interfaces;
@@ -10,6 +11,7 @@ public interface IArchiveRecordService
     Task<Result<ArchiveRecordDto>> GetByIdAsync(Guid id);
     Task<Result<PagedList<ArchiveRecordDto>>> GetByFolderIdAsync(Guid folderId, int page, int pageSize);
     Task<Result<PagedList<ArchiveRecordDto>>> GetByFormIdAsync(Guid formId, int page, int pageSize);
+    Task<Result<PagedList<ArchiveRecordDto>>> GetPagedAsync(ArchiveRecordPagedFilterDto? filterDto = null);
     Task<Result<ArchiveRecordDto>> CreateAsync(CreateArchiveRecordDto dto);
     Task<Result<ArchiveRecordDto>> UpdateAsync(Guid id, UpdateArchiveRecordDto dto);
     Task<Result<ArchiveRecordDto>> AddFilesAsync(Guid id, IFormFileCollection files);

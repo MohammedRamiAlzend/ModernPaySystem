@@ -5,8 +5,11 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Domain.Commons;
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Infrastructure.Options;
+using System.Linq.Expressions;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Collections.Concurrent;
 using System.IO;
@@ -193,6 +196,82 @@ public class ArchiveRecordService(
         }
     }
 
+
+    public async Task<Result<PagedList<ArchiveRecordDto>>> GetPagedAsync(ArchiveRecordPagedFilterDto? filterDto = null)
+    {
+        try
+        {
+            var page = filterDto?.Page ?? 1;
+            var pageSize = filterDto?.PageSize ?? 10;
+
+            logger.LogInformation("Fetching paged archive records, page: {Page}, size: {PageSize}", page, pageSize);
+
+            if (page <= 0)
+                return ApplicationErrors.InvalidInput;
+            if (pageSize <= 0 || pageSize > 100)
+                return ApplicationErrors.InvalidInput;
+
+            List<Expression<Func<ArchiveRecord, bool>>> filters = [];
+            if (filterDto != null)
+            {
+                if (!string.IsNullOrWhiteSpace(filterDto.ArchivalNumber))
+                    filters.Add(r => r.ArchivalNumber.Contains(filterDto.ArchivalNumber));
+
+                if (!string.IsNullOrWhiteSpace(filterDto.SearchText))
+                {
+                    if (Guid.TryParse(filterDto.SearchText, out var searchId))
+                        filters.Add(r => r.ArchivalNumber.Contains(filterDto.SearchText) || r.Id == searchId);
+                    else
+                        filters.Add(r => r.ArchivalNumber.Contains(filterDto.SearchText));
+                }
+
+                if (!string.IsNullOrWhiteSpace(filterDto.RecordId) && Guid.TryParse(filterDto.RecordId, out var recordId))
+                    filters.Add(r => r.Id == recordId);
+
+                if (filterDto.InputValueFilters is { Count: > 0 })
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.ArchiveRecordTemplateValuesId != null
+                                && r.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues
+                                    .Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.ArchiveRecordTemplateValuesId != null
+                                && r.ArchiveRecordTemplateValuesId.ArchiveRecordFormInputValues
+                                    .Any(iv => iv.Key.Contains(ivf.Key)));
+                        }
+                    }
+                }
+            }
+
+            var pagedRecords = await unitOfWork.ArchiveRecords.GetPagedAsync(
+                page,
+                pageSize,
+                transform: query => query.Include(x => x.Folder)
+                                         .Include(x => x.Form)
+                                         .Include(x => x.ArchiveRecordTemplateValuesId)!.ThenInclude(x => x!.ArchiveRecordFormInputValues)
+                                         .Include(x => x.PhysicalFiles),
+                additionalFilters: filters,
+                logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or
+                    ? ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or
+                    : ExpressionBuilderLib.src.Core.Enums.LogicalOperator.And);
+
+            if (pagedRecords.IsError)
+                return pagedRecords.Errors;
+
+            var items = pagedRecords.Value!.Items.Select(x => x.ToDto()).ToList();
+            return new PagedList<ArchiveRecordDto>(items, pagedRecords.Value.TotalItems, page, pageSize);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching paged archive records, page: {Page}, size: {PageSize}", filterDto?.Page, filterDto?.PageSize);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
 
     public async Task<Result<ArchiveRecordDto>> CreateAsync(CreateArchiveRecordDto dto)
     {

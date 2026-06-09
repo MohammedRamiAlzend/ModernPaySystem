@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Net.Http.Headers;
 using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Infrastructure.Auth;
 using ModernPaySystem.Infrastructure.Extensions;
@@ -35,14 +36,14 @@ public class ArchiveRecordsController(
     //    return result.ToActionResult();
     //}
 
-    //[HttpGet("paged")]
-    //[EndpointPermission("archiving.records.get-paged", SubSystem.Archiving, PermissionType.Read)]
-    //public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
-    //{
-    //    logger.LogInformation("Getting paged archive records, page: {Page}, size: {PageSize}", page, pageSize);
-    //    var result = await archiveRecordService.GetPagedAsync(page, pageSize);
-    //    return result.ToActionResult();
-    //}
+    [HttpGet("paged")]
+    [EndpointPermission("archiving.records.get-paged", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetPaged([FromQuery] ArchiveRecordPagedFilterDto filterDto)
+    {
+        logger.LogInformation("Getting paged archive records with filters");
+        var result = await archiveRecordService.GetPagedAsync(filterDto);
+        return result.ToActionResult();
+    }
 
     [HttpGet("{id}")]
     [EndpointPermission("archiving.records.get-by-id", SubSystem.Archiving, PermissionType.Read)]
