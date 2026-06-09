@@ -152,6 +152,39 @@ export const archivingService = {
         await api.delete(`/archive-records/${id}`);
     },
 
+    getPagedArchiveRecords: async (filter: {
+        page?: number;
+        pageSize?: number;
+        searchText?: string;
+        archivalNumber?: string;
+        recordId?: string;
+        inputValueFilters?: { key: string; value: string }[];
+        logicalOperator?: number;
+    }): Promise<{ items: ArchiveRecord[], totalItems: number }> => {
+        const params: any = {
+            page: filter.page ?? 1,
+            pageSize: filter.pageSize ?? 10,
+            searchText: filter.searchText || undefined,
+            archivalNumber: filter.archivalNumber || undefined,
+            recordId: filter.recordId || undefined,
+            logicalOperator: filter.logicalOperator ?? 0,
+        };
+
+        if (filter.inputValueFilters) {
+            filter.inputValueFilters.forEach((f, index) => {
+                params[`InputValueFilters[${index}].Key`] = f.key;
+                params[`InputValueFilters[${index}].Value`] = f.value;
+            });
+        }
+
+        const response = await api.get<any>('/archive-records/paged', { params });
+        const data = response.data.data;
+        return {
+            items: data?.items || [],
+            totalItems: data?.totalItems || 0
+        };
+    },
+
     // ---------------------------------------------
     // File Operations API
     // ---------------------------------------------

@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-page'));
 // const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
+const ArchiveSearchPage = lazyWithPreload(() => import('@/pages/archiving/search-page'));
 
 export const archivingRoutes: RouteObject = {
   path: 'archiving',
@@ -30,6 +31,18 @@ export const archivingRoutes: RouteObject = {
       ),
       handle: {
         preload: () => ExplorerPage.preload(),
+      }
+    },
+    {
+      path: 'search',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ArchiveSearchPage />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'البحث المتقدم في الأرشيف',
+        preload: () => ArchiveSearchPage.preload(),
       }
     },
     {
