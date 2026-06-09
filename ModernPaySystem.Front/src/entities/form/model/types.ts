@@ -201,6 +201,8 @@ export interface UserReference {
     userName: string;
     subSystemUserId: string | null;
     subSystem: number | null;
+    departmentId?: string | null;
+    departmentName?: string | null;
 }
 
 export interface TemplateRequest {
