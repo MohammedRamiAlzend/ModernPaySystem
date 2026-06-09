@@ -94,7 +94,7 @@ export const useAddTemplateOwnership = () => {
             showStatus({ type: 'success', title: 'نجاح', message: 'تم إسناد النموذج للقسم بنجاح.' });
         },
         onError: (error: any) => {
-            if (error.response.data.errors[0].arabicDescription) {
+            if (error.response?.data?.errors[0]?.arabicDescription) {
                 showStatus({ type: 'error', title: 'خطأ', message: error.response.data.errors[0].arabicDescription });
             }
             else {
