@@ -54,7 +54,8 @@ public class ReportService(IUnitOfWork unitOfWork, ILogger<ReportService> logger
                 pageNumber,
                 pageSize,
                 transform: i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues),
+                                .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                                .Include(x => x.Approver!.Department),
                 additionalFilters: filters);
 
             if (pagedRequests.IsError)

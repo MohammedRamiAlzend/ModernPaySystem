@@ -58,7 +58,8 @@ public class RequestService(
                 page, pageSize,
                 transform: i => i.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                                .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                                .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                                .Include(x => x.Approver!.Department),
                 additionalFilters: filters
             //logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or ? LogicalOperator.Or : LogicalOperator.And
             );
@@ -87,7 +88,7 @@ public class RequestService(
                 filter: r => r.Id == id,
                 transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                                 .Include(x => x.Approver)
+                                 .Include(x => x.Approver).ThenInclude(x => x.Department)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments)
                                  .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
@@ -149,7 +150,8 @@ public class RequestService(
                 transform: i => i.Include(r => r.RequestAttachments)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                  .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
-                                 .Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                                 .Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                                 .Include(r => r.Approver).ThenInclude(a => a!.Department),
                 additionalFilters: filters);
 
             if (pagedRequests.IsError)
@@ -182,7 +184,8 @@ public class RequestService(
                 transform: i => i.Include(r => r.RequestAttachments)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                  .Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
-                 .Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                 .Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                 .Include(r => r.Approver).ThenInclude(a => a!.Department),
                 additionalFilters: new List<Expression<Func<Request, bool>>> { RequestExpressions.ByApproverId(approverId) });
 
             if (pagedRequests.IsError)
@@ -212,7 +215,7 @@ public class RequestService(
             var pagedRequests = await unitOfWork.Requests.GetPagedAsync(
                 page,
                 pageSize,
-                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues).Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                transform: i => i.Include(r => r.RequestAttachments).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template).Include(r => r.RequestTemplateValues).ThenInclude(x => x!.InputValues).Include(r => r.OutgoingRelations).ThenInclude(r => r.TargetRequest).Include(r => r.Approver).ThenInclude(a => a!.Department),
                 additionalFilters: RequestExpressions.ByTemplateIdWithIncludes(templateId));
 
             if (pagedRequests.IsError)
@@ -397,7 +400,8 @@ public class RequestService(
                                      .Include(x => x.Approver)
                                      .Include(x => x.Requester)
                                      .Include(x => x.RequestAttachments)
-                                     .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest));
+                                     .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                                     .Include(x => x.Approver).ThenInclude(a => a!.Department));
 
                 if (createdRequest.IsError)
                     return createdRequest.Errors;
@@ -499,7 +503,8 @@ public class RequestService(
                                  .Include(x => x.Approver)
                                  .Include(x => x.Requester)
                                  .Include(x => x.RequestAttachments)
-                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest));
+                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                                 .Include(x => x.Approver).ThenInclude(a => a!.Department));
 
             if (updatedRequest.IsError)
                 return updatedRequest.Errors;
@@ -555,7 +560,8 @@ public class RequestService(
                 pageSize,
                 transform: i => i.Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!.Include(r => r.RequestTemplateValues).ThenInclude(x => x!.Template)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
-                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                                 .Include(x => x.Approver).ThenInclude(a => a!.Department),
                 additionalFilters: filters,
                 logicalOperator: filterDto?.LogicalOperator == FilterLogicalOperator.Or ? ExpressionBuilderLib.src.Core.Enums.LogicalOperator.Or : ExpressionBuilderLib.src.Core.Enums.LogicalOperator.And);
 
@@ -600,7 +606,8 @@ public class RequestService(
                        .Include(x => x.Approver)
                        .Include(x => x.Requester)
                        .Include(x => x.RequestAttachments).ThenInclude(x => x.Attachment)!
-                       .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)!);
+                       .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)!
+                       .Include(x => x.Approver).ThenInclude(a => a!.Department));
 
             if (pagedRequests.IsError)
                 return pagedRequests.Errors;
