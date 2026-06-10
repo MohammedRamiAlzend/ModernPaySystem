@@ -27,6 +27,7 @@ public class ArchiveRecordService(
     IMemoryCache memoryCache,
     IArchiveAuthorizationService archiveAuthorizationService,
     IArchiveDeletionWorkflowService archiveDeletionWorkflowService,
+    ISemanticSearchService semanticSearchService,
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
     IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger) : IArchiveRecordService
@@ -372,6 +373,9 @@ public class ArchiveRecordService(
                     }
 
                     await unitOfWork.CommitTransactionAsync();
+
+                    await TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
+
                     return await GetByIdAsync(record.Id);
                 }
                 catch
@@ -665,6 +669,8 @@ public class ArchiveRecordService(
 
                 await unitOfWork.CommitTransactionAsync();
 
+                await TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
+
                 foreach (var file in filesToRemove)
                 {
                     var deleteResult = await DeleteStoredFileAsync(file.StoragePath);
@@ -773,6 +779,7 @@ public class ArchiveRecordService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+                await TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
                 return await GetByIdAsync(record.Id);
             });
         }
@@ -1886,5 +1893,35 @@ public class ArchiveRecordService(
         }
 
         return Path.GetFullPath(Path.Combine(fileManager.RootDirectory, path));
+    }
+
+    private async Task TryAutoIndexPhysicalFilesAsync(IEnumerable<PhysicalFile> files)
+    {
+        foreach (var file in files)
+        {
+            var ext = file.FileExtension.ToLowerInvariant();
+            if (file.IsQrPage || !IsIndexableExtension(ext))
+                continue;
+
+            try
+            {
+                var result = await semanticSearchService.IndexPhysicalFileAsync(file.Id);
+                if (result.IsError)
+                {
+                    logger.LogWarning("Auto-indexing skipped for file {FileId} ({FileName}): {Error}",
+                        file.Id, file.FileName, result.TopError.Description);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Auto-indexing failed for file {FileId} ({FileName})",
+                    file.Id, file.FileName);
+            }
+        }
+    }
+
+    private static bool IsIndexableExtension(string extension)
+    {
+        return extension is ".docx" or ".xlsx" or ".txt" or ".md" or ".pdf" or ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".tiff" or ".tif";
     }
 }

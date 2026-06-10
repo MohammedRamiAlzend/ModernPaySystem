@@ -8,8 +8,11 @@ using ModernPaySystem.Infrastructure.Auth.Services;
 using ModernPaySystem.Infrastructure.Persistence.Interceptors;
 using ModernPaySystem.Infrastructure.Options;
 using ModernPaySystem.Infrastructure.Services;
+using ModernPaySystem.Infrastructure.Services.Qdrant;
+using Qdrant.Client;
 using NumberSpelling;
 using OcrReader;
+using SemanticSearchLib.Extensions;
 
 namespace ModernPaySystem.Infrastructure;
 
@@ -85,6 +88,12 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuthorizationHandler, DepartmentArchiveLeaderAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, DepartmentHeadAuthorizationHandler>();
         services.AddScoped<IAuthorizationHandler, DeleteArchiveRequestHeadAuthorizationHandler>();
+
+        services.Configure<QdrantOptions>(configuration.GetSection(QdrantOptions.SectionName));
+        services.AddSingleton<IQdrantVectorStore, QdrantVectorStore>();
+
+        services.AddSemanticSearchLib(configuration);
+        services.AddScoped<ISemanticSearchService, SemanticSearchAppService>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {

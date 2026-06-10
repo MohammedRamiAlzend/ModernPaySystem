@@ -30,6 +30,7 @@
     <ProjectReference Include="..\ModernPaySystem.Domain\ModernPaySystem.Domain.csproj" />
     <ProjectReference Include="..\ModernPaySystem.Infrastructure.Persistence\ModernPaySystem.Infrastructure.Persistence.csproj" />
     <ProjectReference Include="..\ModernPaySystem.Infrastructure\ModernPaySystem.Infrastructure.csproj" />
+    <ProjectReference Include="..\SemanticSearchLib\SemanticSearchLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

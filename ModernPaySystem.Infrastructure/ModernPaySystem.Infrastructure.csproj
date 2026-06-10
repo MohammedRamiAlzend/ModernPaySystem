@@ -31,5 +31,6 @@
     <ProjectReference Include="..\\ModernPaySystem.Domain\\ModernPaySystem.Domain.csproj" />
     <ProjectReference Include="..\OcrReader\OcrReader.csproj" />
     <ProjectReference Include="..\NumberSpelling\NumberSpelling.csproj" />
+    <ProjectReference Include="..\SemanticSearchLib\SemanticSearchLib.csproj" />
   </ItemGroup>
 </Project>

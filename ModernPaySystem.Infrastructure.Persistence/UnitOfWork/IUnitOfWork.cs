@@ -54,6 +54,8 @@ public interface IUnitOfWork
     IRepositoryBase<ArchiveRecordFormInputValue, Guid> ArchiveRecordFormInputValues { get; }
     IRepositoryBase<PhysicalFile, Guid> PhysicalFiles { get; }
     IRepositoryBase<FolderPermission, Guid> FolderPermissions { get; }
+    IRepositoryBase<Document, Guid> Documents { get; }
+    IRepositoryBase<DocumentChunk, Guid> DocumentChunks { get; }
 
     Task<int> SaveChangesAsync();
     //Task<int> GetNextRequestNumberAsync(Guid departmentId);

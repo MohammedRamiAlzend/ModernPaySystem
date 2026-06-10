@@ -26,6 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ArchiveRecordFormInputValue> ArchiveRecordFormInputValues { get; set; }
     public DbSet<PhysicalFile> PhysicalFiles { get; set; }
     public DbSet<FolderPermission> FolderPermissions { get; set; }
+    public DbSet<Document> Documents { get; set; }
+    public DbSet<DocumentChunk> DocumentChunks { get; set; }
 
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
@@ -307,6 +309,39 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithOne()
             .HasForeignKey<ArchiveRecordTemplateValues>(artv => artv.ArchiveRecordId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.HasIndex(e => e.SourceType);
+            entity.HasIndex(e => e.PhysicalFileId);
+            entity.HasIndex(e => e.ArchiveRecordId);
+            entity.HasIndex(e => e.FileType);
+            entity.HasIndex(e => e.CreatedAt);
+
+            entity.Property(e => e.FileName).HasMaxLength(500);
+            entity.Property(e => e.FileType).HasMaxLength(10);
+            entity.Property(e => e.ExtractedText).HasColumnType("text");
+
+            entity.HasOne(e => e.PhysicalFile)
+                .WithMany()
+                .HasForeignKey(e => e.PhysicalFileId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.ArchiveRecord)
+                .WithMany()
+                .HasForeignKey(e => e.ArchiveRecordId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<DocumentChunk>(entity =>
+        {
+            entity.Property(e => e.Content).HasColumnType("text");
+
+            entity.HasOne(e => e.Document)
+                .WithMany(d => d.Chunks)
+                .HasForeignKey(e => e.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<PhysicalFile>()
             .HasIndex(pf => new { pf.ArchiveRecordId, pf.CreatedAt })
