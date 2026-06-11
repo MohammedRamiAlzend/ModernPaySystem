@@ -61,6 +61,11 @@ public class QdrantVectorStore(
         Guid documentId,
         IReadOnlyList<DocumentChunk> chunks,
         float[][] embeddings,
+        SearchSourceType sourceType,
+        string fileName,
+        Guid? physicalFileId,
+        Guid? archiveRecordId,
+        string? archiveRecordNumber = null,
         CancellationToken ct = default)
     {
         await InitializeAsync(ct);
@@ -80,7 +85,12 @@ public class QdrantVectorStore(
                     ["document_id"] = documentId.ToString(),
                     ["chunk_index"] = (ulong)chunk.ChunkIndex,
                     ["content"] = chunk.Content,
-                    ["token_count"] = (ulong)chunk.TokenCount
+                    ["token_count"] = (ulong)chunk.TokenCount,
+                    ["file_name"] = fileName,
+                    ["source_type"] = ((int)sourceType).ToString(),
+                    ["physical_file_id"] = physicalFileId?.ToString() ?? "",
+                    ["archive_record_id"] = archiveRecordId?.ToString() ?? "",
+                    ["archive_record_number"] = archiveRecordNumber ?? ""
                 }
             };
 
@@ -125,7 +135,7 @@ public class QdrantVectorStore(
                 ChunkIndex = (int)(payload["chunk_index"]?.IntegerValue ?? 0),
                 Content = payload["content"]?.StringValue ?? "",
                 FileName = payload["file_name"]?.StringValue ?? "",
-                SourceType = (SearchSourceType)(payload["source_type"]?.IntegerValue ?? 0),
+                SourceType = payload["source_type"]?.StringValue is { } st && Enum.TryParse<SearchSourceType>(st, out var parsed) ? parsed : SearchSourceType.PhysicalFile,
                 PhysicalFileId = TryParseGuid(payload["physical_file_id"]?.StringValue),
                 ArchiveRecordId = TryParseGuid(payload["archive_record_id"]?.StringValue),
                 ArchiveRecordNumber = payload["archive_record_number"]?.StringValue
@@ -160,13 +170,13 @@ public class QdrantVectorStore(
         if (filter.SourceType.HasValue)
             qdrantFilter.Must.Add(MatchKeyword("source_type", ((int)filter.SourceType.Value).ToString()));
 
-        if (filter.ArchiveRecordId.HasValue)
-            qdrantFilter.Must.Add(MatchKeyword("archive_record_id", filter.ArchiveRecordId.Value.ToString()));
+        if (filter.ArchiveRecordIds?.Count > 0)
+        {
+            foreach (var id in filter.ArchiveRecordIds)
+                qdrantFilter.Should.Add(MatchKeyword("archive_record_id", id.ToString()));
+        }
 
-        if (filter.PhysicalFileId.HasValue)
-            qdrantFilter.Must.Add(MatchKeyword("physical_file_id", filter.PhysicalFileId.Value.ToString()));
-
-        return qdrantFilter.Must.Count > 0 ? qdrantFilter : null;
+        return qdrantFilter.Must.Count > 0 || qdrantFilter.Should.Count > 0 ? qdrantFilter : null;
     }
 
     private static Guid? TryParseGuid(string? value)

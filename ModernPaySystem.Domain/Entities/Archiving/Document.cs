@@ -80,7 +80,7 @@ public class SearchQueryDto
     public double MinScore { get; set; } = 0.7;
     public SearchSourceType? SourceType { get; set; }
     public Guid? ArchiveRecordId { get; set; }
-    public Guid? PhysicalFileId { get; set; }
+    public Guid? FolderId { get; set; }
 }
 
 public class SearchResultDto

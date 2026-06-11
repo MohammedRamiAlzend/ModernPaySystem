@@ -108,7 +108,9 @@ public class SemanticSearchAppService(
 
             await unitOfWork.SaveChangesAsync();
 
-            await qdrantVectorStore.UpsertChunksAsync(document.Id, docChunks, embeddings.ToArray(), ct);
+            await qdrantVectorStore.UpsertChunksAsync(document.Id, docChunks, embeddings.ToArray(),
+                document.SourceType, document.FileName, document.PhysicalFileId, document.ArchiveRecordId,
+                archiveRecordNumber: null, ct);
 
             logger.LogInformation("Indexed physical file {FileId} as document {DocId} with {ChunkCount} chunks",
                 physicalFileId, document.Id, chunks.Count);
@@ -196,7 +198,9 @@ public class SemanticSearchAppService(
 
             await unitOfWork.SaveChangesAsync();
 
-            await qdrantVectorStore.UpsertChunksAsync(document.Id, docChunks, embeddings.ToArray(), ct);
+            await qdrantVectorStore.UpsertChunksAsync(document.Id, docChunks, embeddings.ToArray(),
+                document.SourceType, document.FileName, null, document.ArchiveRecordId,
+                archiveRecordNumber: archiveRecord.ArchivalNumber, ct);
 
             logger.LogInformation("Indexed archive record {RecordId} as document {DocId} with {ChunkCount} chunks",
                 archiveRecordId, document.Id, chunks.Count);
@@ -222,11 +226,24 @@ public class SemanticSearchAppService(
             var topK = Math.Clamp(query.TopK, 1, 100);
             var minScore = Math.Clamp(query.MinScore, 0.0, 1.0);
 
+            List<Guid>? archiveRecordIds = null;
+
+            if (query.ArchiveRecordId.HasValue)
+            {
+                archiveRecordIds = [query.ArchiveRecordId.Value];
+            }
+            else if (query.FolderId.HasValue)
+            {
+                var folderResult = await unitOfWork.ArchiveRecords.FindAsync(
+                    ar => ar.FolderId == query.FolderId.Value);
+                if (folderResult.IsSuccess)
+                    archiveRecordIds = folderResult.Value!.Select(ar => ar.Id).ToList();
+            }
+
             var filter = new SearchFilter
             {
                 SourceType = query.SourceType,
-                ArchiveRecordId = query.ArchiveRecordId,
-                PhysicalFileId = query.PhysicalFileId
+                ArchiveRecordIds = archiveRecordIds
             };
 
             var results = await qdrantVectorStore.SearchAsync(queryEmbedding, topK, minScore, filter, ct);

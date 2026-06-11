@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260516141739_AddRequesterAndApproverDepartmentIdAtRequest")]
-    partial class AddRequesterAndApproverDepartmentIdAtRequest
+    [Migration("20260611085946_InetialCreate")]
+    partial class InetialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,638 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveFormTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentAsJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FormDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FormName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DynamicForms");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ApprovedByRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ArchivalNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ArchiveRecordTemplateValues")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeletedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FolderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("FormId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("FolderId");
+
+                    b.HasIndex("FormId");
+
+                    b.ToTable("ArchiveRecords");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordFormInputValue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ArchiveRecordTemplateValuesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArchiveRecordTemplateValuesId");
+
+                    b.ToTable("ArchiveRecordFormInputValues");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordTemplateValues", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArchiveFormTemplateId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArchiveRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ArchiveRecordId1")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArchiveFormTemplateId");
+
+                    b.HasIndex("ArchiveRecordId")
+                        .IsUnique();
+
+                    b.HasIndex("ArchiveRecordId1");
+
+                    b.ToTable("ArchiveRecordTemplateValues");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.DeleteArchiveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ActivitySnapshotJson")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("ApprovalNotes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ApproverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DependenciesSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("ExecutedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ExecutedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Justification")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RejectedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequesterNotificationMessage")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RequesterNotifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<Guid?>("SourceFolderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TargetDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("TargetSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApproverId");
+
+                    b.HasIndex("RequesterId");
+
+                    b.HasIndex("DepartmentId", "TargetType", "TargetId", "Status");
+
+                    b.ToTable("DeleteArchiveRequests");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.DepartmentArchiveLeader", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("DepartmentId", "UserId")
+                        .IsUnique()
+                        .HasFilter("\"IsDeleted\" = false");
+
+                    b.ToTable("DepartmentArchiveLeaders");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.Document", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ArchiveRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ExtractedText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<Guid?>("PhysicalFileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SourceType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalChunks")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ArchiveRecordId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("FileType");
+
+                    b.HasIndex("PhysicalFileId");
+
+                    b.HasIndex("SourceType");
+
+                    b.ToTable("Documents");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.DocumentChunk", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ChunkIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TokenCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId");
+
+                    b.ToTable("DocumentChunks");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.EditArchiveRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ApprovalNotes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ApproverId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArchiveRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Justification")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OriginalSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("RejectedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("RequestedChangesJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("RequestedFileDeletionIdsJson")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApproverId");
+
+                    b.HasIndex("ArchiveRecordId");
+
+                    b.HasIndex("RequesterId");
+
+                    b.HasIndex("DepartmentId", "ArchiveRecordId", "Status");
+
+                    b.ToTable("EditArchiveRequests");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.Folder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeletedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Folders");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.FolderPermission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AccessLevel")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("FolderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsInherited")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolderId");
+
+                    b.ToTable("FolderPermissions");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.PhysicalFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ArchiveRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeletedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("EditArchiveRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("FileExtension")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsQrPage")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EditArchiveRequestId");
+
+                    b.HasIndex("ArchiveRecordId", "CreatedAt")
+                        .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_CreatedAt");
+
+                    b.HasIndex("ArchiveRecordId", "IsDeleted", "FileExtension")
+                        .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_IsDeleted_FileExtension_Covering");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("ArchiveRecordId", "IsDeleted", "FileExtension"), new[] { "FileSize", "ContentType", "FileName", "CreatedAt", "UpdatedAt" });
+
+                    b.ToTable("PhysicalFiles");
+                });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.PaySystemEntities.FastOperations.Client", b =>
                 {
@@ -331,6 +963,31 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.ToTable("Departments");
                 });
 
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.DepartmentTemplateNumber", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("LastRequestNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateId");
+
+                    b.HasIndex("DepartmentId", "TemplateId")
+                        .IsUnique();
+
+                    b.ToTable("DepartmentTemplateNumbers");
+                });
+
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.LookUpField", b =>
                 {
                     b.Property<Guid>("Id")
@@ -495,7 +1152,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("Value")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -529,6 +1185,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("FirstTransactionId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("RequestNumber")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("RequestTemplateValuesId")
                         .HasColumnType("uuid");
@@ -600,6 +1259,46 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("AttachmentId");
 
                     b.ToTable("RequestAttachments");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestRelation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<int>("RelationType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("SourceRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TargetRequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TargetRequestId");
+
+                    b.HasIndex("SourceRequestId", "TargetRequestId", "RelationType")
+                        .IsUnique();
+
+                    b.ToTable("RequestRelations", (string)null);
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTemplateValues", b =>
@@ -919,6 +1618,216 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.ToTable("UserVisitedTemplates", (string)null);
                 });
 
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.Folder", "Folder")
+                        .WithMany("ArchiveRecords")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveFormTemplate", "Form")
+                        .WithMany("ArchiveRecords")
+                        .HasForeignKey("FormId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Folder");
+
+                    b.Navigation("Form");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordFormInputValue", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordTemplateValues", null)
+                        .WithMany("ArchiveRecordFormInputValues")
+                        .HasForeignKey("ArchiveRecordTemplateValuesId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordTemplateValues", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveFormTemplate", "ArchiveFormTemplate")
+                        .WithMany()
+                        .HasForeignKey("ArchiveFormTemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", null)
+                        .WithOne("ArchiveRecordTemplateValuesId")
+                        .HasForeignKey("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordTemplateValues", "ArchiveRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", "ArchiveRecord")
+                        .WithMany()
+                        .HasForeignKey("ArchiveRecordId1");
+
+                    b.Navigation("ArchiveFormTemplate");
+
+                    b.Navigation("ArchiveRecord");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.DeleteArchiveRequest", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "Approver")
+                        .WithMany()
+                        .HasForeignKey("ApproverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Approver");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Requester");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.DepartmentArchiveLeader", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "User")
+                        .WithMany("DepartmentArchiveLeaders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.Document", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", "ArchiveRecord")
+                        .WithMany()
+                        .HasForeignKey("ArchiveRecordId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.PhysicalFile", "PhysicalFile")
+                        .WithMany()
+                        .HasForeignKey("PhysicalFileId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ArchiveRecord");
+
+                    b.Navigation("PhysicalFile");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.DocumentChunk", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.Document", "Document")
+                        .WithMany("Chunks")
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.EditArchiveRequest", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "Approver")
+                        .WithMany()
+                        .HasForeignKey("ApproverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", "ArchiveRecord")
+                        .WithMany()
+                        .HasForeignKey("ArchiveRecordId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Approver");
+
+                    b.Navigation("ArchiveRecord");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Requester");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.Folder", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.Folder", "Parent")
+                        .WithMany("SubFolders")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.FolderPermission", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.Folder", "Folder")
+                        .WithMany("Permissions")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Folder");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.PhysicalFile", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", "ArchiveRecord")
+                        .WithMany("PhysicalFiles")
+                        .HasForeignKey("ArchiveRecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.Archiving.EditArchiveRequest", "EditArchiveRequest")
+                        .WithMany("PhysicalFiles")
+                        .HasForeignKey("EditArchiveRequestId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ArchiveRecord");
+
+                    b.Navigation("EditArchiveRequest");
+                });
+
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.PaySystemEntities.FastOperations.Client", b =>
                 {
                     b.HasOne("ModernPaySystem.Domain.Entities.PaySystemEntities.FastOperations.Gender", "Gender")
@@ -1004,6 +1913,25 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("DepartmentHead");
 
                     b.Navigation("ParentDepartment");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.DepartmentTemplateNumber", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.Department", "Department")
+                        .WithMany("DepartmentTemplateNumbers")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Template", "Template")
+                        .WithMany("DepartmentTemplateNumbers")
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.LookUpField", b =>
@@ -1117,6 +2045,25 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Attachment");
 
                     b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestRelation", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", "SourceRequest")
+                        .WithMany("OutgoingRelations")
+                        .HasForeignKey("SourceRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", "TargetRequest")
+                        .WithMany("IncomingRelations")
+                        .HasForeignKey("TargetRequestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SourceRequest");
+
+                    b.Navigation("TargetRequest");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestTemplateValues", b =>
@@ -1311,6 +2258,42 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveFormTemplate", b =>
+                {
+                    b.Navigation("ArchiveRecords");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecord", b =>
+                {
+                    b.Navigation("ArchiveRecordTemplateValuesId");
+
+                    b.Navigation("PhysicalFiles");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.ArchiveRecordTemplateValues", b =>
+                {
+                    b.Navigation("ArchiveRecordFormInputValues");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.Document", b =>
+                {
+                    b.Navigation("Chunks");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.EditArchiveRequest", b =>
+                {
+                    b.Navigation("PhysicalFiles");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.Archiving.Folder", b =>
+                {
+                    b.Navigation("ArchiveRecords");
+
+                    b.Navigation("Permissions");
+
+                    b.Navigation("SubFolders");
+                });
+
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.Attachment", b =>
                 {
                     b.Navigation("RequestAttachments");
@@ -1321,6 +2304,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.Department", b =>
                 {
                     b.Navigation("ChildDepartments");
+
+                    b.Navigation("DepartmentTemplateNumbers");
 
                     b.Navigation("TemplateOwnerships");
 
@@ -1334,6 +2319,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.SharedEntities.User", b =>
                 {
+                    b.Navigation("DepartmentArchiveLeaders");
+
                     b.Navigation("HeadedDepartment")
                         .IsRequired();
 
@@ -1348,6 +2335,10 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", b =>
                 {
+                    b.Navigation("IncomingRelations");
+
+                    b.Navigation("OutgoingRelations");
+
                     b.Navigation("RequestAttachments");
 
                     b.Navigation("RequestTemplateValues");
@@ -1375,6 +2366,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Template", b =>
                 {
                     b.Navigation("DepartmentOwnerships");
+
+                    b.Navigation("DepartmentTemplateNumbers");
 
                     b.Navigation("LookUpFields");
 
