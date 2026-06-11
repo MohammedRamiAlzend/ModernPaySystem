@@ -9,7 +9,7 @@ import { SubmitEditRequestModal } from '@/features/archive-edit-requests/ui/Subm
 import { ExplorerToolbar } from '@/features/archiving/ui/ExplorerToolbar';
 import { ExplorerView } from '@/features/archiving/ui/ExplorerView';
 import { ListView } from '@/features/archiving/ui/ListView';
-import { DocumentGallery } from '@/features/archiving/ui/DocumentGallery';
+import { DocumentGalleryModal } from '@/features/archiving/ui/DocumentGalleryModal';
 import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
@@ -17,8 +17,7 @@ import {
     Plus,
     FolderPlus,
     Loader2,
-    ChevronLeft,
-    FileText
+    ChevronLeft
 } from 'lucide-react';
 
 export default function ExplorerPage() {
@@ -306,45 +305,16 @@ export default function ExplorerPage() {
             />
 
             {/* 3. Modal: Document Gallery Preview */}
-            {previewingRecord && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in animate-duration-300">
-                    <div className="bg-card border border-border rounded-3xl w-full max-w-7xl h-[90vh] shadow-2xl flex flex-col overflow-hidden text-right">
-                        <div className="p-6 border-b border-border flex items-center justify-between">
-                            <button
-                                onClick={() => setPreviewingRecord(null)}
-                                className="text-muted-foreground hover:text-foreground font-bold p-1 rounded-lg hover:bg-muted transition-all"
-                            >
-                                إغلاق المعاينة
-                            </button>
-                            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-                                <FileText className="h-5 w-5 text-primary" />
-                                <span>تفاصيل المستند ورقم الأرشفة: {previewingRecord.archivalNumber}</span>
-                            </h2>
-                        </div>
-                        <div className="flex-1 overflow-hidden p-6">
-                            <DocumentGallery
-                                recordId={previewingRecord.id}
-                                files={previewingRecord.physicalFiles || []}
-                                record={previewingRecord}
-                                formName={dynamicTemplates.find(t => t.id === previewingRecord.formId)?.templateFormName}
-                                onFilesChanged={async () => {
-                                    if (currentFolder) {
-                                        // Update record lists to refresh counters and sizes
-                                        await loadRecords(currentFolder.id, recordsPage);
-                                        // Refresh the open record to display updates immediately in the gallery view
-                                        try {
-                                            const updated = await archivingService.getArchiveRecordById(previewingRecord.id);
-                                            setPreviewingRecord(updated);
-                                        } catch (e) {
-                                            console.error(e);
-                                        }
-                                    }
-                                }}
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DocumentGalleryModal
+                record={previewingRecord}
+                dynamicTemplates={dynamicTemplates}
+                onClose={() => setPreviewingRecord(null)}
+                onFilesChanged={async () => {
+                    if (currentFolder) {
+                        await loadRecords(currentFolder.id, recordsPage);
+                    }
+                }}
+            />
 
             {/* Off-screen QR Preview Template for canvas generation */}
             <div style={{ position: 'fixed', left: '-9999px', top: '-9999px' }}>

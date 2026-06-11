@@ -81,3 +81,26 @@ export interface UpdateDynamicFormTemplateDto {
     templateFormName: string;
     contentAsJson: string;
 }
+
+// Semantic Search
+export interface SemanticSearchRequest {
+    query: string;
+    topK: number;
+    minScore: number;
+    sourceType: number | null;
+    archiveRecordId: string | null;
+    folderId: string | null;
+}
+
+export interface SemanticSearchResultItem {
+    documentId: string;
+    chunkId: string;
+    sourceType: number;
+    physicalFileId: string;
+    archiveRecordId: string;
+    archiveRecordNumber: string;
+    fileName: string;
+    chunkIndex: number;
+    content: string;
+    score: number;
+}

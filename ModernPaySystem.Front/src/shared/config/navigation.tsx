@@ -1,5 +1,5 @@
 
-import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3, Search } from "lucide-react";
+import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3, Search, Brain } from "lucide-react";
 // import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive,List } from "lucide-react";
 
 export interface NavigationItem {
@@ -104,6 +104,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "البحث المتقدم",
                 path: "/archiving/search",
                 icon: <Search className="h-4 w-4" />,
+            },
+            {
+                title: "البحث الدلالي",
+                path: "/archiving/semantic-search",
+                icon: <Brain className="h-4 w-4" />,
             },
             {
                 title: "طلبات تعديل الأرشيف",

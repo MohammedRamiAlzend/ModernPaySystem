@@ -1,5 +1,5 @@
 import api from '@/shared/api/baseApi';
-import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto } from '../model/types';
+import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, SemanticSearchRequest, SemanticSearchResultItem } from '../model/types';
 
 export const archivingService = {
     // ---------------------------------------------
@@ -321,5 +321,13 @@ export const archivingService = {
 
     deleteDynamicForm: async (id: string): Promise<void> => {
         await api.delete(`/ArchiveSystem/DynamicForms/${id}`);
+    },
+
+    // ---------------------------------------------
+    // Semantic Search API
+    // ---------------------------------------------
+    semanticSearch: async (request: SemanticSearchRequest): Promise<SemanticSearchResultItem[]> => {
+        const response = await api.post<any>('/semantic-search/search', request);
+        return response.data.data;
     }
 };

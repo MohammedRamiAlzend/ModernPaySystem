@@ -9,6 +9,7 @@ const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-pa
 // const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
 const ArchiveSearchPage = lazyWithPreload(() => import('@/pages/archiving/search-page'));
+const SemanticSearchPage = lazyWithPreload(() => import('@/pages/archiving/semantic-search-page'));
 
 export const archivingRoutes: RouteObject = {
   path: 'archiving',
@@ -43,6 +44,18 @@ export const archivingRoutes: RouteObject = {
       handle: {
         crumb: () => 'البحث المتقدم في الأرشيف',
         preload: () => ArchiveSearchPage.preload(),
+      }
+    },
+    {
+      path: 'semantic-search',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <SemanticSearchPage />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'البحث الدلالي',
+        preload: () => SemanticSearchPage.preload(),
       }
     },
     {
