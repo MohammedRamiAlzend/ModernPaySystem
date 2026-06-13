@@ -30,7 +30,8 @@ public class ArchiveRecordService(
     ISemanticSearchService semanticSearchService,
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
     IOptions<ArchiveRecordZipOptions> zipOptions,
-    ILogger<ArchiveRecordService> logger) : IArchiveRecordService
+    ILogger<ArchiveRecordService> logger,
+    IOptions<ServerSettings> serverSettings) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string UploadsDirectory = "Uploads";
@@ -39,6 +40,7 @@ public class ArchiveRecordService(
 
     private ArchiveRecordFileUploadOptions UploadSettings => uploadOptions.Value;
     private ArchiveRecordZipOptions ZipSettings => zipOptions.Value;
+    private ServerSettings ServerSettingsValue => serverSettings.Value;
 
     public async Task<Result<IEnumerable<ArchiveRecordDto>>> GetAllAsync()
     {
@@ -374,7 +376,8 @@ public class ArchiveRecordService(
 
                     await unitOfWork.CommitTransactionAsync();
 
-                    await TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
+                    if (ServerSettingsValue.ActivateSemanticSearch)
+                        _ = TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
 
                     return await GetByIdAsync(record.Id);
                 }
@@ -669,7 +672,8 @@ public class ArchiveRecordService(
 
                 await unitOfWork.CommitTransactionAsync();
 
-                await TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
+                if (ServerSettingsValue.ActivateSemanticSearch)
+                    _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
 
                 foreach (var file in filesToRemove)
                 {
@@ -779,7 +783,8 @@ public class ArchiveRecordService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
-                await TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
+                if (ServerSettingsValue.ActivateSemanticSearch)
+                    _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
                 return await GetByIdAsync(record.Id);
             });
         }

@@ -90,6 +90,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuthorizationHandler, DeleteArchiveRequestHeadAuthorizationHandler>();
 
         services.Configure<QdrantOptions>(configuration.GetSection(QdrantOptions.SectionName));
+        services.Configure<ServerSettings>(configuration.GetSection(ServerSettings.SectionName));
         services.AddSingleton<IQdrantVectorStore, QdrantVectorStore>();
 
         services.AddSemanticSearchLib(configuration);
