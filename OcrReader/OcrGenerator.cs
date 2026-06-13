@@ -1,180 +1,98 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using Tesseract;
+using System.Text.Json;
 
 namespace OcrReader;
 
 public class OcrGenerator : IOcrGenerator
 {
-    private static readonly HashSet<string> SupportedImageFormats = new(StringComparer.OrdinalIgnoreCase)
-        { ".png", ".jpg", ".jpeg", ".tiff" };
+    private readonly string _scriptPath;
+    private readonly string _tesseractDir;
 
     private static readonly HashSet<string> SupportedFormats = new(StringComparer.OrdinalIgnoreCase)
         { ".png", ".jpg", ".jpeg", ".tiff", ".pdf" };
 
-    private const int MaxPixelDimension = 4000;
-    private const int OcrDpi = 300;
-
-    private readonly string _tessdataPath;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+    };
 
     public OcrGenerator()
     {
         var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        _tessdataPath = Path.Combine(baseDir, "Tesseract-OCR", "tessdata");
+        _scriptPath = Path.Combine(baseDir, "ocr.py");
+        _tesseractDir = Path.Combine(baseDir, "Tesseract-OCR");
 
-        if (!Directory.Exists(_tessdataPath))
+        if (!File.Exists(_scriptPath))
         {
             var assemblyDir = Path.GetDirectoryName(typeof(OcrGenerator).Assembly.Location);
-            _tessdataPath = Path.Combine(assemblyDir!, "Tesseract-OCR", "tessdata");
+            _scriptPath = Path.Combine(assemblyDir!, "ocr.py");
+            _tesseractDir = Path.Combine(assemblyDir!, "Tesseract-OCR");
         }
     }
 
-    public Task<string> ExtractTextFromImageAsync(string path, string language)
+    public async Task<string> ExtractTextFromImageAsync(string path, string language)
     {
-        ValidateFile(path);
-        using var engine = CreateEngine(language);
-        using var img = LoadAndPreprocessImage(path);
-        using var page = engine.Process(img);
-        return Task.FromResult((page.GetText() ?? "").Trim());
+        return await RunPythonOcrAsync(path, language, "text");
     }
 
     public async Task<string> ExtractTextFromPdfAsync(string pdfPath, string language)
     {
-        ValidateFile(pdfPath);
-        using var engine = CreateEngine(language);
-        var result = new StringBuilder();
-        var pageNum = 1;
-
-        await foreach (var img in ConvertPdfToImagesAsync(pdfPath))
-        {
-            using var page = engine.Process(img);
-            var text = (page.GetText() ?? "").Trim();
-            result.AppendLine($"[Page {pageNum}]");
-            result.AppendLine(text);
-            pageNum++;
-        }
-
-        return result.ToString().Trim();
+        return await RunPythonOcrAsync(pdfPath, language, "text");
     }
 
     public async Task<OcrResult> ExtractStructuredAsync(string filePath, string language = "ara+eng")
     {
+        var json = await RunPythonOcrAsync(filePath, language, "json");
+        return JsonSerializer.Deserialize<OcrResult>(json, JsonOptions)
+            ?? throw new InvalidOperationException("Failed to parse OCR result JSON.");
+    }
+
+    private async Task<string> RunPythonOcrAsync(string filePath, string language, string outputFormat)
+    {
         ValidateFile(filePath);
-        var path = new FileInfo(filePath);
-        var pages = new List<OcrPage>();
-        var pageNum = 1;
 
-        await foreach (var img in LoadImagesAsync(path))
+        var startInfo = new ProcessStartInfo
         {
-            pages.Add(ExtractPageData(img, language, pageNum));
-            pageNum++;
+            FileName = "python",
+            Arguments = $"\"{_scriptPath}\" \"{filePath}\" --lang {language} --output {outputFormat}",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
+        };
+
+        startInfo.EnvironmentVariables["PYTHONIOENCODING"] = "utf-8";
+
+        if (Directory.Exists(_tesseractDir))
+        {
+            var tessdataDir = Path.Combine(_tesseractDir, "tessdata");
+            startInfo.EnvironmentVariables["PATH"] = _tesseractDir + ";" + Environment.GetEnvironmentVariable("PATH");
+            startInfo.EnvironmentVariables["TESSDATA_PREFIX"] = tessdataDir;
         }
 
-        return new OcrResult(path.FullName, pages);
-    }
+        using var process = new Process { StartInfo = startInfo };
+        process.Start();
 
-    private TesseractEngine CreateEngine(string language)
-    {
-        var lang = string.IsNullOrWhiteSpace(language) ? "ara+eng" : language;
-        var engine = new TesseractEngine(_tessdataPath, lang, EngineMode.Default);
-        engine.SetVariable("tessedit_pageseg_mode", "3");
-        return engine;
-    }
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
 
-    private Pix LoadAndPreprocessImage(string path)
-    {
-        var img = Pix.LoadFromFile(path);
-        if (Math.Max(img.Width, img.Height) > MaxPixelDimension)
+        await Task.WhenAll(stdoutTask, stderrTask);
+        await process.WaitForExitAsync();
+
+        var stdout = stdoutTask.Result.Trim();
+        var stderr = stderrTask.Result.Trim();
+
+        if (process.ExitCode != 0)
         {
-            var scale = (float)MaxPixelDimension / Math.Max(img.Width, img.Height);
-            var scaled = img.Scale(scale, scale);
-            img.Dispose();
-            return scaled ?? throw new InvalidOperationException("Failed to scale image");
-        }
-        return img;
-    }
-
-    private OcrPage ExtractPageData(Pix img, string language, int pageNum)
-    {
-        using var engine = CreateEngine(language);
-        using var page = engine.Process(img);
-
-        var fullText = (page.GetText() ?? "").Trim();
-        var words = new List<OcrWord>();
-
-        using var iter = page.GetIterator();
-        if (iter is not null)
-        {
-            iter.Begin();
-            do
-            {
-                var word = iter.GetText(PageIteratorLevel.Word)?.Trim();
-                if (string.IsNullOrEmpty(word))
-                    continue;
-
-                var confidence = iter.GetConfidence(PageIteratorLevel.Word);
-                if (confidence < 0)
-                    continue;
-
-                if (iter.TryGetBoundingBox(PageIteratorLevel.Word, out var rect))
-                {
-                    var detectedLang = word.Any(c => c >= 0x0600 && c <= 0x06FF) ? "ara" : "eng";
-                    words.Add(new OcrWord(
-                        word,
-                        [rect.X1, rect.Y1, rect.X2, rect.Y2],
-                        Math.Round(confidence, 1),
-                        detectedLang
-                    ));
-                }
-            } while (iter.Next(PageIteratorLevel.Word));
+            var message = stderr.Length > 0 ? stderr : $"OCR process exited with code {process.ExitCode}";
+            throw new InvalidOperationException(message);
         }
 
-        return new OcrPage(pageNum, fullText, words);
-    }
-
-    private async IAsyncEnumerable<Pix> LoadImagesAsync(FileInfo file)
-    {
-        var ext = file.Extension.ToLowerInvariant();
-        if (ext == ".pdf")
-        {
-            await foreach (var img in ConvertPdfToImagesAsync(file.FullName))
-                yield return img;
-        }
-        else
-        {
-            yield return LoadAndPreprocessImage(file.FullName);
-        }
-    }
-
-    private async IAsyncEnumerable<Pix> ConvertPdfToImagesAsync(string pdfPath)
-    {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDir);
-
-        try
-        {
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "pdftoppm",
-                    Arguments = $"-jpeg -r {OcrDpi} \"{pdfPath}\" \"{Path.Combine(tempDir, "page")}\"",
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-            process.Start();
-            await process.WaitForExitAsync();
-
-            foreach (var imagePath in Directory.GetFiles(tempDir, "page*.jpg"))
-                yield return LoadAndPreprocessImage(imagePath);
-        }
-        finally
-        {
-            if (Directory.Exists(tempDir))
-                Directory.Delete(tempDir, true);
-        }
+        return stdout;
     }
 
     private static void ValidateFile(string path)

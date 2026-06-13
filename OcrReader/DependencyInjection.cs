@@ -4,7 +4,7 @@ namespace OcrReader;
 
 public static class DependencyInjection
 {
-    public static void AddOcrTesseract(this IServiceCollection services)
+    public static void AddOcrReader(this IServiceCollection services)
     {
         services.AddSingleton<IOcrGenerator, OcrGenerator>();
     }

@@ -57,6 +57,17 @@ def _die(message: str, code: int) -> None:
     sys.exit(code)
 
 
+def _find_tesseract() -> str | None:
+    """Return the path to bundled tesseract.exe if available, else None."""
+    script_dir = Path(__file__).resolve().parent
+    tesseract_exe = script_dir / "Tesseract-OCR" / "tesseract.exe"
+    if tesseract_exe.is_file():
+        tessdata_dir = tesseract_exe.parent / "tessdata"
+        os.environ.setdefault("TESSDATA_PREFIX", str(tessdata_dir))
+        return str(tesseract_exe)
+    return None
+
+
 def _validate_file(filepath: str) -> Path:
     path = Path(filepath)
     if not path.exists():
@@ -220,6 +231,9 @@ examples:
 
 
 def main() -> None:
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+
     parser = _build_parser()
     args = parser.parse_args()
 
@@ -228,6 +242,11 @@ def main() -> None:
 
     # Now load heavy imports
     _lazy_imports()
+
+    # Point pytesseract at the bundled engine if available
+    bundled_tesseract = _find_tesseract()
+    if bundled_tesseract:
+        pytesseract.pytesseract.tesseract_cmd = bundled_tesseract
 
     try:
         if args.output == "text":

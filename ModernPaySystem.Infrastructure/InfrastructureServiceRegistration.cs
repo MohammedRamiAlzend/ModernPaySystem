@@ -73,7 +73,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<ILookUpFiledValuesService, LookUpFiledValuesService>();
 
         // Register OCR Service
-        services.AddOcrTesseract();
+        services.AddOcrReader();
         services.AddScoped<IOcrService, OcrService>();
 
         // Register Number Spelling Service
