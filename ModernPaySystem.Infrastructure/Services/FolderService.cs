@@ -153,6 +153,27 @@ public class FolderService(
                 return ApplicationErrors.DatabaseError;
             }
 
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var ownerPermission = new FolderPermission
+            {
+                FolderId = folder.Id,
+                UserId = currentUserId.ToString(),
+                AccessLevel = AccessLevel.FullControl,
+                IsInherited = true
+            };
+
+            var permResult = await unitOfWork.FolderPermissions.AddAsync(ownerPermission);
+            if (permResult.IsError)
+            {
+                return permResult.Errors;
+            }
+
+            var permSaveResult = await unitOfWork.SaveChangesAsync();
+            if (permSaveResult <= 0)
+            {
+                return ApplicationErrors.DatabaseError;
+            }
+
             return folder.ToDto();
         }
         catch (Exception ex)
