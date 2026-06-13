@@ -31,7 +31,8 @@ public class ArchiveRecordService(
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
     IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger,
-    IOptions<ServerSettings> serverSettings) : IArchiveRecordService
+    IOptions<ServerSettings> serverSettings,
+    SystemHealthService healthService) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string UploadsDirectory = "Uploads";
@@ -41,6 +42,11 @@ public class ArchiveRecordService(
     private ArchiveRecordFileUploadOptions UploadSettings => uploadOptions.Value;
     private ArchiveRecordZipOptions ZipSettings => zipOptions.Value;
     private ServerSettings ServerSettingsValue => serverSettings.Value;
+    private SystemHealthService HealthService => healthService;
+
+    private bool CanAutoIndex => ServerSettingsValue.ActivateSemanticSearch
+                                 && HealthService.IsOllamaHealthy
+                                 && HealthService.IsQdrantHealthy;
 
     public async Task<Result<IEnumerable<ArchiveRecordDto>>> GetAllAsync()
     {
@@ -376,7 +382,7 @@ public class ArchiveRecordService(
 
                     await unitOfWork.CommitTransactionAsync();
 
-                    if (ServerSettingsValue.ActivateSemanticSearch)
+                    if (CanAutoIndex)
                         _ = TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
 
                     return await GetByIdAsync(record.Id);
@@ -672,7 +678,7 @@ public class ArchiveRecordService(
 
                 await unitOfWork.CommitTransactionAsync();
 
-                if (ServerSettingsValue.ActivateSemanticSearch)
+                if (CanAutoIndex)
                     _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
 
                 foreach (var file in filesToRemove)
@@ -783,7 +789,7 @@ public class ArchiveRecordService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
-                if (ServerSettingsValue.ActivateSemanticSearch)
+                if (CanAutoIndex)
                     _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
                 return await GetByIdAsync(record.Id);
             });

@@ -95,6 +95,7 @@ public static class InfrastructureServiceRegistration
 
         services.AddSemanticSearchLib(configuration);
         services.AddScoped<ISemanticSearchService, SemanticSearchAppService>();
+        services.AddSingleton<SystemHealthService>();
 
         services.AddTransient<IPermissionSeederService>(provider =>
         {

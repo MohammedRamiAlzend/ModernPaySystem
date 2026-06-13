@@ -1,4 +1,5 @@
 global using ModernPaySystem.Infrastructure;
+global using ModernPaySystem.Infrastructure.Services;
 global using ModernPaySystem.Infrastructure.Auth;
 global using ModernPaySystem.Infrastructure.Persistence;
 global using ModernPaySystem.Infrastructure.Persistence.Seeding;
@@ -64,6 +65,14 @@ try
     });
 
     var app = builder.Build();
+
+    // Run startup health checks (throws if DB is unreachable)
+    using (var healthScope = app.Services.CreateScope())
+    {
+        var healthService = healthScope.ServiceProvider.GetRequiredService<SystemHealthService>();
+        var dbContext = healthScope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await healthService.CheckAsync(dbContext);
+    }
 
     if (builder.Configuration.GetValue<bool>("Seeding:Enabled"))
     {
