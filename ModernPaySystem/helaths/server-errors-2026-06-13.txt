@@ -1,0 +1,1 @@
+[2026-06-13T08:00:02.1118331Z] QDRANT: Status(StatusCode="Unavailable", Detail="Error connecting to subchannel.", DebugException="System.Net.Sockets.SocketException: No connection could be made because the target machine actively refused it.")
