@@ -74,6 +74,13 @@ public class CreateFolderDto
     public string Name { get; set; } = string.Empty;
     public Guid? ParentId { get; set; }
     public Guid? DepartmentId { get; set; }
+    public List<InitialFolderPermissionDto> InitialPermissions { get; set; } = [];
+}
+
+public class InitialFolderPermissionDto
+{
+    public Guid UserId { get; set; }
+    public AccessLevel AccessLevel { get; set; } = AccessLevel.View;
 }
 
 public class UpdateFolderDto

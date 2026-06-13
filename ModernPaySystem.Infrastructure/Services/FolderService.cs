@@ -168,6 +168,32 @@ public class FolderService(
                 return permResult.Errors;
             }
 
+            if (dto.InitialPermissions.Count != 0)
+            {
+                foreach (var initial in dto.InitialPermissions)
+                {
+                    if (initial.UserId == Guid.Empty)
+                        continue;
+
+                    var existing = await unitOfWork.FolderPermissions.AnyAsync(x =>
+                        x.FolderId == folder.Id && x.UserId == initial.UserId.ToString());
+
+                    if (!existing)
+                    {
+                        var addResult = await unitOfWork.FolderPermissions.AddAsync(new FolderPermission
+                        {
+                            FolderId = folder.Id,
+                            UserId = initial.UserId.ToString(),
+                            AccessLevel = initial.AccessLevel,
+                            IsInherited = true
+                        });
+
+                        if (addResult.IsError)
+                            return addResult.Errors;
+                    }
+                }
+            }
+
             var permSaveResult = await unitOfWork.SaveChangesAsync();
             if (permSaveResult <= 0)
             {
