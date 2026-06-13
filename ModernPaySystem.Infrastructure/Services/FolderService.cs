@@ -9,13 +9,23 @@ public class FolderService(
     IUnitOfWork unitOfWork,
     IHttpContextServiceManager httpContextServiceManager,
     IArchiveDeletionWorkflowService archiveDeletionWorkflowService,
+    IArchiveResourceAuthorizationService resourceAuth,
     ILogger<FolderService> logger) : IFolderService
 {
     public async Task<Result<IEnumerable<FolderDto>>> GetAllAsync()
     {
         try
         {
-            var result = await unitOfWork.Folders.GetAllAsync();
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var accessibleIdsResult = await resourceAuth.GetAccessibleFolderIdsAsync(userId);
+            if (accessibleIdsResult.IsError)
+                return accessibleIdsResult.Errors;
+
+            var accessibleIds = accessibleIdsResult.Value!;
+            if (accessibleIds.Count == 0)
+                return new List<FolderDto>();
+
+            var result = await unitOfWork.Folders.GetAllAsync(filter: f => accessibleIds.Contains(f.Id));
             if (result.IsError)
             {
                 return result.Errors;
@@ -51,6 +61,13 @@ public class FolderService(
             {
                 return ApplicationErrors.InvalidInput;
             }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, id, AccessLevel.View);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
 
             var result = await unitOfWork.Folders.GetAsync(x => x.Id == id, query => query.Include(x => x.Parent).Include(x => x.SubFolders));
             if (result.IsError)
@@ -154,6 +171,13 @@ public class FolderService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, id, AccessLevel.Write);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
             var folderResult = await unitOfWork.Folders.GetAsync(x => x.Id == id, query => query.Include(x => x.SubFolders));
             if (folderResult.IsError)
             {
@@ -196,6 +220,21 @@ public class FolderService(
             {
                 return ApplicationErrors.InvalidInput;
             }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+
+            var sourceAccess = await resourceAuth.CanAccessFolderAsync(userId, folderId, AccessLevel.FullControl);
+            if (sourceAccess.IsError)
+                return sourceAccess.Errors;
+            if (!sourceAccess.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            var destAccess = await resourceAuth.CanAccessFolderAsync(userId, destinationFolderId, AccessLevel.Write);
+            if (destAccess.IsError)
+                return destAccess.Errors;
+            if (!destAccess.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
             var folderResult = await unitOfWork.Folders.GetAsync(x => x.Id == folderId, query => query.Include(x => x.SubFolders).Include(x => x.ArchiveRecords));
             if (folderResult.IsError)
             {
@@ -382,11 +421,196 @@ public class FolderService(
     {
         try
         {
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, id, AccessLevel.FullControl);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
             return await archiveDeletionWorkflowService.DeleteFolderAsync(id);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting folder {FolderId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<List<FolderPermissionDto>>> GetPermissionsByFolderAsync(Guid folderId)
+    {
+        try
+        {
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, folderId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            var permissions = await unitOfWork.Context.FolderPermissions
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(p => p.FolderId == folderId)
+                .Select(p => new FolderPermissionDto
+                {
+                    Id = p.Id,
+                    FolderId = p.FolderId,
+                    UserId = p.UserId,
+                    AccessLevel = p.AccessLevel,
+                    IsInherited = p.IsInherited,
+                    CreatedByUserId = p.CreatedByUserId,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedByUserId = p.UpdatedByUserId,
+                    UpdatedAt = p.UpdatedAt
+                })
+                .ToListAsync();
+
+            return permissions;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching permissions for folder {FolderId}", folderId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<FolderPermissionDto>> GetPermissionByIdAsync(Guid id)
+    {
+        try
+        {
+            var permission = await unitOfWork.FolderPermissions.GetByIdAsync(id);
+            if (permission.IsError || permission.Value == null)
+                return ApplicationErrors.FolderPermissionNotFound;
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, permission.Value.FolderId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            return permission.Value.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching folder permission {PermissionId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<FolderPermissionDto>> CreatePermissionAsync(CreateFolderPermissionDto dto)
+    {
+        try
+        {
+            if (dto == null || dto.FolderId == Guid.Empty || dto.UserId == Guid.Empty)
+                return ApplicationErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(currentUserId, dto.FolderId, AccessLevel.FullControl);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            var exists = await unitOfWork.FolderPermissions.AnyAsync(x =>
+                x.FolderId == dto.FolderId && x.UserId == dto.UserId.ToString());
+            if (exists)
+                return ApplicationErrors.FolderPermissionAlreadyExists;
+
+            var permission = new FolderPermission
+            {
+                FolderId = dto.FolderId,
+                UserId = dto.UserId.ToString(),
+                AccessLevel = dto.AccessLevel,
+                IsInherited = dto.IsInherited
+            };
+
+            var addResult = await unitOfWork.FolderPermissions.AddAsync(permission);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
+                return ApplicationErrors.DatabaseError;
+
+            return permission.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating folder permission");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<FolderPermissionDto>> UpdatePermissionAsync(Guid id, UpdateFolderPermissionDto dto)
+    {
+        try
+        {
+            if (dto == null)
+                return ApplicationErrors.InvalidInput;
+
+            var permissionResult = await unitOfWork.FolderPermissions.GetByIdAsync(id);
+            if (permissionResult.IsError || permissionResult.Value == null)
+                return ApplicationErrors.FolderPermissionNotFound;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(currentUserId, permissionResult.Value.FolderId, AccessLevel.FullControl);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            var permission = permissionResult.Value;
+            permission.AccessLevel = dto.AccessLevel;
+            permission.IsInherited = dto.IsInherited;
+
+            var updateResult = await unitOfWork.FolderPermissions.UpdateAsync(permission);
+            if (updateResult.IsError)
+                return updateResult.Errors;
+
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            if (saveResult <= 0)
+                return ApplicationErrors.DatabaseError;
+
+            return permission.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error updating folder permission {PermissionId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<bool>> DeletePermissionAsync(Guid id)
+    {
+        try
+        {
+            var permissionResult = await unitOfWork.FolderPermissions.GetByIdAsync(id);
+            if (permissionResult.IsError || permissionResult.Value == null)
+                return ApplicationErrors.FolderPermissionNotFound;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            if (permissionResult.Value.UserId == currentUserId.ToString())
+                return ApplicationErrors.CannotRemoveOwnFolderPermission;
+
+            var access = await resourceAuth.CanAccessFolderAsync(currentUserId, permissionResult.Value.FolderId, AccessLevel.FullControl);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            var removeResult = await unitOfWork.FolderPermissions.RemoveAsync(x => x.Id == id);
+            if (removeResult.IsError)
+                return removeResult.Errors;
+
+            var saveResult = await unitOfWork.SaveChangesAsync();
+            return saveResult > 0;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting folder permission {PermissionId}", id);
             return ApplicationErrors.InternalServerError;
         }
     }

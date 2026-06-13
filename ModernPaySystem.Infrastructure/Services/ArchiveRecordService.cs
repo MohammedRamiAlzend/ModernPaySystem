@@ -32,7 +32,9 @@ public class ArchiveRecordService(
     IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger,
     IOptions<ServerSettings> serverSettings,
-    SystemHealthService healthService) : IArchiveRecordService
+    SystemHealthService healthService,
+    IHttpContextServiceManager httpContextServiceManager,
+    IArchiveResourceAuthorizationService resourceAuth) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string UploadsDirectory = "Uploads";
@@ -113,6 +115,13 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.View);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
             var result = await unitOfWork.ArchiveRecords.GetAsync(
                 x => x.Id == id,
                 query => query.Include(x => x.Folder)
@@ -148,6 +157,13 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, folderId, AccessLevel.View);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
             var result = await unitOfWork.ArchiveRecords.GetPagedAsync(
                 page,
                 pageSize,
@@ -181,10 +197,15 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var accessibleFolderIds = await resourceAuth.GetAccessibleFolderIdsAsync(userId);
+            if (accessibleFolderIds.IsError)
+                return accessibleFolderIds.Errors;
+
             var result = await unitOfWork.ArchiveRecords.GetPagedAsync(
                 page,
                 pageSize,
-                filter: x => x.FormId == formId,
+                filter: x => x.FormId == formId && accessibleFolderIds.Value!.Contains(x.FolderId),
                 transform: query => query.Include(x => x.Folder)
                                          .Include(x => x.Form)
                                          .Include(x => x.ArchiveRecordTemplateValuesId)!.ThenInclude(x => x!.ArchiveRecordFormInputValues)
@@ -220,7 +241,16 @@ public class ArchiveRecordService(
             if (pageSize <= 0 || pageSize > 100)
                 return ApplicationErrors.InvalidInput;
 
-            List<Expression<Func<ArchiveRecord, bool>>> filters = [];
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var accessibleFolderIdsResult = await resourceAuth.GetAccessibleFolderIdsAsync(userId);
+            if (accessibleFolderIdsResult.IsError)
+                return accessibleFolderIdsResult.Errors;
+            var accessibleFolderIds = accessibleFolderIdsResult.Value!;
+
+            List<Expression<Func<ArchiveRecord, bool>>> filters =
+            [
+                r => accessibleFolderIds.Contains(r.FolderId)
+            ];
             if (filterDto != null)
             {
                 if (!string.IsNullOrWhiteSpace(filterDto.ArchivalNumber))
@@ -293,6 +323,13 @@ public class ArchiveRecordService(
 
             var validationResult = ValidateFiles(dto.Files);
             if (validationResult.IsError) return validationResult.Errors;
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var folderAccess = await resourceAuth.CanAccessFolderAsync(userId, dto.FolderId, AccessLevel.Write);
+            if (folderAccess.IsError)
+                return folderAccess.Errors;
+            if (!folderAccess.Value)
+                return ApplicationErrors.FolderAccessDenied;
 
             var folderValidationResult = await EnsureFolderExistsAsync(dto.FolderId);
             if (folderValidationResult.IsError) return folderValidationResult.Errors;
@@ -535,6 +572,13 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.Write);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
             dto.Files ??= default!;
 
             var validationResult = ValidateFiles(dto.Files);
@@ -717,6 +761,13 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.Write);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
             var validationResult = ValidateFiles(files);
             if (validationResult.IsError)
             {
@@ -816,6 +867,13 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.Write);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
             var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
                 x => x.Id == id,
                 query => query.Include(x => x.PhysicalFiles));
@@ -903,6 +961,13 @@ public class ArchiveRecordService(
             {
                 return ApplicationErrors.InvalidInput;
             }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
 
             var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
                 x => x.Id == id,
@@ -1011,6 +1076,13 @@ public class ArchiveRecordService(
             {
                 return ApplicationErrors.InvalidInput;
             }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.FullControl);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
 
             var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
                 x => x.Id == id,
@@ -1202,6 +1274,13 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.View);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
             var recordExists = await unitOfWork.ArchiveRecords.AnyAsync(x => x.Id == recordId);
             if (!recordExists)
             {
@@ -1252,18 +1331,15 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
-            if (recordId.HasValue)
-            {
-                var recordExists = await unitOfWork.ArchiveRecords.AnyAsync(x => x.Id == recordId.Value);
-                if (!recordExists)
-                {
-                    return ApplicationErrors.ArchiveRecordNotFound;
-                }
-            }
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessPhysicalFileAsync(userId, fileId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.PhysicalFileAccessDenied;
 
             var fileResult = await unitOfWork.PhysicalFiles.GetAsync(
-                x => x.Id == fileId && (includeDeleted || !x.IsDeleted) &&
-                     (!recordId.HasValue || x.ArchiveRecordId == recordId.Value));
+                x => x.Id == fileId && (includeDeleted || !x.IsDeleted));
 
             if (fileResult.IsError)
             {
@@ -1333,11 +1409,12 @@ public class ArchiveRecordService(
                 return ApplicationErrors.InvalidInput;
             }
 
-            var recordExists = await unitOfWork.ArchiveRecords.AnyAsync(x => x.Id == recordId);
-            if (!recordExists)
-            {
-                return ApplicationErrors.ArchiveRecordNotFound;
-            }
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
 
             var normalizedSearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm.Trim().ToLowerInvariant();
             var normalizedFileTypes = fileTypes?
@@ -1429,6 +1506,13 @@ public class ArchiveRecordService(
             {
                 return ApplicationErrors.InvalidInput;
             }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
 
             var normalizedPassword = string.IsNullOrWhiteSpace(password) ? null : password;
             var recordResult = await unitOfWork.ArchiveRecords.GetAsync(

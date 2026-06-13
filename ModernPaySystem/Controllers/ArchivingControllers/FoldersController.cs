@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ModernPaySystem.Application.Interfaces;
 using ModernPaySystem.Domain.Entities.Archiving;
-using ModernPaySystem.Infrastructure.Auth;
 using ModernPaySystem.Infrastructure.Extensions;
 
 namespace ModernPaySystem.Controllers.ArchivingControllers;
@@ -64,25 +63,53 @@ public class FoldersController(
     public async Task<IActionResult> Delete(Guid id)
     {
         logger.LogInformation("Deleting folder: {FolderId}", id);
-        var folderResult = await folderService.GetByIdAsync(id);
-        if (folderResult.IsError)
-        {
-            return folderResult.ToActionResult();
-        }
-
-        var folder = folderResult.Value!;
-        if (!folder.DepartmentId.HasValue)
-        {
-            return BadRequest("Folder is not scoped to a department.");
-        }
-
-        var authResult = await authorizationService.AuthorizeAsync(User, new ArchiveDepartmentScope(folder.DepartmentId.Value), ArchiveAuthorizationPolicyExtensions.RequireDepartmentArchiveLeader);
-        if (!authResult.Succeeded)
-        {
-            return Forbid();
-        }
-
         var result = await folderService.DeleteAsync(id);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{folderId}/permissions")]
+    [EndpointPermission("archiving.folders.permissions.get", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetPermissions(Guid folderId)
+    {
+        logger.LogInformation("Getting permissions for folder {FolderId}", folderId);
+        var result = await folderService.GetPermissionsByFolderAsync(folderId);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("permissions/{id}")]
+    [EndpointPermission("archiving.folders.permissions.get-by-id", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetPermissionById(Guid id)
+    {
+        logger.LogInformation("Getting folder permission {PermissionId}", id);
+        var result = await folderService.GetPermissionByIdAsync(id);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{folderId}/permissions")]
+    [EndpointPermission("archiving.folders.permissions.create", SubSystem.Archiving, PermissionType.Insert)]
+    public async Task<IActionResult> CreatePermission(Guid folderId, [FromBody] CreateFolderPermissionDto dto)
+    {
+        dto.FolderId = folderId;
+        logger.LogInformation("Creating folder permission for user {UserId} on folder {FolderId}", dto.UserId, folderId);
+        var result = await folderService.CreatePermissionAsync(dto);
+        return result.ToActionResult();
+    }
+
+    [HttpPut("permissions/{id}")]
+    [EndpointPermission("archiving.folders.permissions.update", SubSystem.Archiving, PermissionType.Update)]
+    public async Task<IActionResult> UpdatePermission(Guid id, [FromBody] UpdateFolderPermissionDto dto)
+    {
+        logger.LogInformation("Updating folder permission {PermissionId}", id);
+        var result = await folderService.UpdatePermissionAsync(id, dto);
+        return result.ToActionResult();
+    }
+
+    [HttpDelete("permissions/{id}")]
+    [EndpointPermission("archiving.folders.permissions.delete", SubSystem.Archiving, PermissionType.Delete)]
+    public async Task<IActionResult> DeletePermission(Guid id)
+    {
+        logger.LogInformation("Deleting folder permission {PermissionId}", id);
+        var result = await folderService.DeletePermissionAsync(id);
         return result.ToActionResult();
     }
 }

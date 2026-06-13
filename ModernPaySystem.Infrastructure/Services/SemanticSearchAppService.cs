@@ -22,7 +22,9 @@ public class SemanticSearchAppService(
     IOcrGenerator ocrGenerator,
     IQdrantVectorStore qdrantVectorStore,
     IOptions<SemanticSearchOptions> options,
-    ILogger<SemanticSearchAppService> logger) : ISemanticSearchService
+    ILogger<SemanticSearchAppService> logger,
+    IHttpContextServiceManager httpContextServiceManager,
+    IArchiveResourceAuthorizationService resourceAuth) : ISemanticSearchService
 {
     private readonly SemanticSearchOptions _options = options.Value;
 
@@ -30,6 +32,13 @@ public class SemanticSearchAppService(
     {
         try
         {
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessPhysicalFileAsync(userId, physicalFileId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.PhysicalFileAccessDenied;
+
             var physicalFileResult = await unitOfWork.PhysicalFiles.GetByIdAsync(physicalFileId);
             if (physicalFileResult.IsError)
                 return ApplicationErrors.ArchiveRecordNotFound;
@@ -128,6 +137,13 @@ public class SemanticSearchAppService(
     {
         try
         {
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, archiveRecordId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
             var archiveResult = await unitOfWork.ArchiveRecords.GetAsync(
                 filter: ar => ar.Id == archiveRecordId,
                 transform: q => q.Include(ar => ar.ArchiveRecordTemplateValuesId!)
@@ -221,6 +237,8 @@ public class SemanticSearchAppService(
             if (string.IsNullOrWhiteSpace(query.Query))
                 return Error.Validation("EmptyQuery", "Search query cannot be empty.");
 
+            var userId = httpContextServiceManager.GetCurrentUserId();
+
             var queryEmbedding = await embeddingProvider.GenerateEmbeddingAsync(query.Query, ct);
 
             var topK = Math.Clamp(query.TopK, 1, 100);
@@ -230,10 +248,22 @@ public class SemanticSearchAppService(
 
             if (query.ArchiveRecordId.HasValue)
             {
+                var recordAccess = await resourceAuth.CanAccessArchiveRecordAsync(userId, query.ArchiveRecordId.Value, AccessLevel.View);
+                if (recordAccess.IsError)
+                    return recordAccess.Errors;
+                if (!recordAccess.Value)
+                    return ApplicationErrors.ArchiveRecordAccessDenied;
+
                 archiveRecordIds = [query.ArchiveRecordId.Value];
             }
             else if (query.FolderId.HasValue)
             {
+                var folderAccess = await resourceAuth.CanAccessFolderAsync(userId, query.FolderId.Value, AccessLevel.View);
+                if (folderAccess.IsError)
+                    return folderAccess.Errors;
+                if (!folderAccess.Value)
+                    return ApplicationErrors.FolderAccessDenied;
+
                 var folderResult = await unitOfWork.ArchiveRecords.FindAsync(
                     ar => ar.FolderId == query.FolderId.Value);
                 if (folderResult.IsSuccess)
@@ -248,19 +278,97 @@ public class SemanticSearchAppService(
 
             var results = await qdrantVectorStore.SearchAsync(queryEmbedding, topK, minScore, filter, ct);
 
-            var dtos = results.Select(r => new SearchResultDto
+            var accessibleFolderIdsResult = await resourceAuth.GetAccessibleFolderIdsAsync(userId);
+            if (accessibleFolderIdsResult.IsError)
+                return accessibleFolderIdsResult.Errors;
+            var accessibleFolderIds = accessibleFolderIdsResult.Value!;
+
+            var accessibleRecordIds = new HashSet<Guid>();
+            var accessiblePhysicalFileIds = new HashSet<Guid>();
+
+            var recordIdsToCheck = results
+                .Where(r => r.ArchiveRecordId.HasValue)
+                .Select(r => r.ArchiveRecordId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (recordIdsToCheck.Count != 0)
             {
-                DocumentId = r.DocumentId,
-                ChunkId = r.ChunkId,
-                SourceType = r.SourceType,
-                PhysicalFileId = r.PhysicalFileId,
-                ArchiveRecordId = r.ArchiveRecordId,
-                ArchiveRecordNumber = r.ArchiveRecordNumber,
-                FileName = r.FileName,
-                ChunkIndex = r.ChunkIndex,
-                Content = r.Content,
-                Score = r.Score
-            }).ToList();
+                var records = await unitOfWork.Context.ArchiveRecords
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(ar => recordIdsToCheck.Contains(ar.Id))
+                    .Select(ar => new { ar.Id, ar.FolderId, ar.CreatedByUserId })
+                    .ToListAsync();
+
+                foreach (var record in records)
+                {
+                    if (record.CreatedByUserId == userId.ToString() || accessibleFolderIds.Contains(record.FolderId))
+                        accessibleRecordIds.Add(record.Id);
+                }
+            }
+
+            var fileIdsToCheck = results
+                .Where(r => r.PhysicalFileId.HasValue)
+                .Select(r => r.PhysicalFileId!.Value)
+                .Distinct()
+                .ToList();
+
+            if (fileIdsToCheck.Count != 0)
+            {
+                var files = await unitOfWork.Context.PhysicalFiles
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(pf => fileIdsToCheck.Contains(pf.Id))
+                    .Select(pf => new { pf.Id, pf.ArchiveRecordId, pf.CreatedByUserId })
+                    .ToListAsync();
+
+                var fileRecordIds = files
+                    .Where(f => !accessibleRecordIds.Contains(f.ArchiveRecordId))
+                    .Select(f => f.ArchiveRecordId)
+                    .Distinct()
+                    .ToList();
+
+                if (fileRecordIds.Count != 0)
+                {
+                    var fileRecords = await unitOfWork.Context.ArchiveRecords
+                        .IgnoreQueryFilters()
+                        .AsNoTracking()
+                        .Where(ar => fileRecordIds.Contains(ar.Id))
+                        .Select(ar => new { ar.Id, ar.FolderId, ar.CreatedByUserId })
+                        .ToListAsync();
+
+                    foreach (var fileRecord in fileRecords)
+                    {
+                        if (fileRecord.CreatedByUserId == userId.ToString() || accessibleFolderIds.Contains(fileRecord.FolderId))
+                            accessibleRecordIds.Add(fileRecord.Id);
+                    }
+                }
+
+                foreach (var file in files)
+                {
+                    if (file.CreatedByUserId == userId.ToString() || accessibleRecordIds.Contains(file.ArchiveRecordId))
+                        accessiblePhysicalFileIds.Add(file.Id);
+                }
+            }
+
+            var dtos = results
+                .Where(r =>
+                    (!r.ArchiveRecordId.HasValue || accessibleRecordIds.Contains(r.ArchiveRecordId.Value)) &&
+                    (!r.PhysicalFileId.HasValue || accessiblePhysicalFileIds.Contains(r.PhysicalFileId.Value)))
+                .Select(r => new SearchResultDto
+                {
+                    DocumentId = r.DocumentId,
+                    ChunkId = r.ChunkId,
+                    SourceType = r.SourceType,
+                    PhysicalFileId = r.PhysicalFileId,
+                    ArchiveRecordId = r.ArchiveRecordId,
+                    ArchiveRecordNumber = r.ArchiveRecordNumber,
+                    FileName = r.FileName,
+                    ChunkIndex = r.ChunkIndex,
+                    Content = r.Content,
+                    Score = r.Score
+                }).ToList();
 
             return dtos;
         }
@@ -275,11 +383,20 @@ public class SemanticSearchAppService(
     {
         try
         {
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var accessibleFolderIdsResult = await resourceAuth.GetAccessibleFolderIdsAsync(userId);
+            if (accessibleFolderIdsResult.IsError)
+                return accessibleFolderIdsResult.Errors;
+            var accessibleFolderIds = accessibleFolderIdsResult.Value!;
+
             var result = await unitOfWork.Documents.GetPagedAsync(page, pageSize);
             if (result.IsError) return result.Errors;
 
             var items = result.Value!.Items.Select(d => d.ToDto()).ToList();
-            return PagedList<DocumentDto>.Create(items, result.Value.TotalItems, page, pageSize);
+
+            var filteredItems = await FilterDocumentsByAccessAsync(items, userId, accessibleFolderIds, ct);
+
+            return PagedList<DocumentDto>.Create(filteredItems, filteredItems.Count, page, pageSize);
         }
         catch (Exception ex)
         {
@@ -292,10 +409,37 @@ public class SemanticSearchAppService(
     {
         try
         {
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var docResult = await unitOfWork.Documents.GetByIdAsync(documentId);
+            if (docResult.IsError || docResult.Value == null)
+                return ApplicationErrors.NotFound("DocumentNotFound", "Document not found.");
+
+            var doc = docResult.Value;
+
+            if (doc.CreatedByUserId != userId.ToString())
+            {
+                if (doc.ArchiveRecordId.HasValue)
+                {
+                    var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, doc.ArchiveRecordId.Value, AccessLevel.FullControl);
+                    if (access.IsError)
+                        return access.Errors;
+                    if (!access.Value)
+                        return ApplicationErrors.ArchiveRecordAccessDenied;
+                }
+                else if (doc.PhysicalFileId.HasValue)
+                {
+                    var access = await resourceAuth.CanAccessPhysicalFileAsync(userId, doc.PhysicalFileId.Value, AccessLevel.FullControl);
+                    if (access.IsError)
+                        return access.Errors;
+                    if (!access.Value)
+                        return ApplicationErrors.PhysicalFileAccessDenied;
+                }
+            }
+
             await qdrantVectorStore.DeleteDocumentAsync(documentId, ct);
 
-            var result = await unitOfWork.Documents.RemoveAsync(d => d.Id == documentId);
-            if (result.IsError) return result.Errors;
+            var removeResult = await unitOfWork.Documents.RemoveAsync(d => d.Id == documentId);
+            if (removeResult.IsError) return removeResult.Errors;
 
             await unitOfWork.SaveChangesAsync();
             logger.LogInformation("Deleted document {DocId}", documentId);
@@ -323,6 +467,86 @@ public class SemanticSearchAppService(
             logger.LogError(ex, "Failed to re-index physical file {FileId}", physicalFileId);
             return ApplicationErrors.InternalServerError;
         }
+    }
+
+    private async Task<List<DocumentDto>> FilterDocumentsByAccessAsync(List<DocumentDto> documents, Guid userId, HashSet<Guid> accessibleFolderIds, CancellationToken ct)
+    {
+        if (documents.Count == 0)
+            return documents;
+
+        var recordIds = documents
+            .Where(d => d.ArchiveRecordId.HasValue)
+            .Select(d => d.ArchiveRecordId!.Value)
+            .Distinct()
+            .ToList();
+
+        var fileIds = documents
+            .Where(d => d.PhysicalFileId.HasValue)
+            .Select(d => d.PhysicalFileId!.Value)
+            .Distinct()
+            .ToList();
+
+        var accessibleRecordIds = new HashSet<Guid>();
+        var accessibleFileIds = new HashSet<Guid>();
+
+        if (recordIds.Count != 0)
+        {
+            var records = await unitOfWork.Context.ArchiveRecords
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(ar => recordIds.Contains(ar.Id))
+                .Select(ar => new { ar.Id, ar.FolderId, ar.CreatedByUserId })
+                .ToListAsync();
+
+            foreach (var record in records)
+            {
+                if (record.CreatedByUserId == userId.ToString() || accessibleFolderIds.Contains(record.FolderId))
+                    accessibleRecordIds.Add(record.Id);
+            }
+        }
+
+        if (fileIds.Count != 0)
+        {
+            var files = await unitOfWork.Context.PhysicalFiles
+                .IgnoreQueryFilters()
+                .AsNoTracking()
+                .Where(pf => fileIds.Contains(pf.Id))
+                .Select(pf => new { pf.Id, pf.ArchiveRecordId, pf.CreatedByUserId })
+                .ToListAsync();
+
+            var fileRecordIds = files
+                .Where(f => !accessibleRecordIds.Contains(f.ArchiveRecordId))
+                .Select(f => f.ArchiveRecordId)
+                .Distinct()
+                .ToList();
+
+            if (fileRecordIds.Count != 0)
+            {
+                var fileRecords = await unitOfWork.Context.ArchiveRecords
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(ar => fileRecordIds.Contains(ar.Id))
+                    .Select(ar => new { ar.Id, ar.FolderId, ar.CreatedByUserId })
+                    .ToListAsync();
+
+                foreach (var fileRecord in fileRecords)
+                {
+                    if (fileRecord.CreatedByUserId == userId.ToString() || accessibleFolderIds.Contains(fileRecord.FolderId))
+                        accessibleRecordIds.Add(fileRecord.Id);
+                }
+            }
+
+            foreach (var file in files)
+            {
+                if (file.CreatedByUserId == userId.ToString() || accessibleRecordIds.Contains(file.ArchiveRecordId))
+                    accessibleFileIds.Add(file.Id);
+            }
+        }
+
+        return documents.Where(d =>
+            (!d.ArchiveRecordId.HasValue || accessibleRecordIds.Contains(d.ArchiveRecordId.Value)) &&
+            (!d.PhysicalFileId.HasValue || accessibleFileIds.Contains(d.PhysicalFileId.Value))
+        ).ToList();
     }
 
     private async Task RemoveExistingDocumentByPhysicalFileAsync(Guid physicalFileId, CancellationToken ct)

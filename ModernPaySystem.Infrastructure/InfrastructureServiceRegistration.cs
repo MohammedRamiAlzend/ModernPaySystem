@@ -66,6 +66,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IArchiveDeletionWorkflowService, ArchiveDeletionWorkflowService>();
         services.AddScoped<IArchiveEditWorkflowService, ArchiveEditWorkflowService>();
         services.AddScoped<IArchiveAuthorizationService, ArchiveAuthorizationService>();
+        services.AddScoped<IArchiveResourceAuthorizationService, ArchiveResourceAuthorizationService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 
         // Register Lookup Field Services

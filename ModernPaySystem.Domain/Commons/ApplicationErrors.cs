@@ -125,6 +125,12 @@ public static class ApplicationErrors
     public static readonly Error EditRequestAlreadyHandled = new("10037", "The edit request has already been processed.", ErrorKind.Conflict, "تمت معالجة طلب التعديل بالفعل.");
     public static readonly Error QrPageAlreadyExists = new("10038", "A QR cover page already exists for this archive record.", ErrorKind.Conflict, "توجد بالفعل صفحة غلاف QR لهذا المستند.");
     public static readonly Error ArchiveRecordFileDeletionNotBelongToRecord = new("10039", "One or more files selected for deletion do not belong to this archive record.", ErrorKind.Validation, "ملف أو أكثر من الملفات المحددة للحذف لا ينتمي إلى سجل الأرشفة هذا.");
+    public static readonly Error FolderAccessDenied = new("10040", "You do not have access to this folder.", ErrorKind.Forbidden, "ليس لديك صلاحية الوصول إلى هذا المجلد.");
+    public static readonly Error ArchiveRecordAccessDenied = new("10041", "You do not have access to this archive record.", ErrorKind.Forbidden, "ليس لديك صلاحية الوصول إلى سجل الأرشفة هذا.");
+    public static readonly Error PhysicalFileAccessDenied = new("10042", "You do not have access to this file.", ErrorKind.Forbidden, "ليس لديك صلاحية الوصول إلى هذا الملف.");
+    public static readonly Error FolderPermissionAlreadyExists = new("10043", "This user already has a permission for this folder.", ErrorKind.Conflict, "هذا المستخدم لديه صلاحية لهذا المجلد بالفعل.");
+    public static readonly Error FolderPermissionNotFound = new("10044", "The specified folder permission was not found.", ErrorKind.NotFound, "لم يتم العثور على الصلاحية المحددة للمجلد.");
+    public static readonly Error CannotRemoveOwnFolderPermission = new("10045", "You cannot remove your own permission. Transfer ownership instead.", ErrorKind.Forbidden, "لا يمكنك إزالة صلاحيتك الخاصة. قم بنقل الملكية بدلاً من ذلك.");
 
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");
