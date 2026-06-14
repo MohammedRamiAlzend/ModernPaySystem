@@ -10,6 +10,7 @@ public class FolderService(
     IHttpContextServiceManager httpContextServiceManager,
     IArchiveDeletionWorkflowService archiveDeletionWorkflowService,
     IArchiveResourceAuthorizationService resourceAuth,
+    IArchiveLeaderService archiveLeaderService,
     ILogger<FolderService> logger) : IFolderService
 {
     public async Task<Result<IEnumerable<FolderDto>>> GetAllAsync()
@@ -33,17 +34,33 @@ public class FolderService(
 
             // Return a flat list of all folders directly to avoid missing subfolders 
             // and eliminate reliance on EF Core lazy loading or relationship fix-up for SubFolders.
-            return result.Value!.Select(x => new FolderDto
+            var userIdStr = userId.ToString();
+            var folders = result.Value!.ToList();
+
+            var departmentIds = folders.Where(f => f.DepartmentId.HasValue).Select(f => f.DepartmentId!.Value).Distinct().ToList();
+            var isLeaderTasks = departmentIds.Select(d => archiveLeaderService.IsArchiveLeaderAsync(userId, d));
+            var leaderResults = await Task.WhenAll(isLeaderTasks);
+            var leaderDepartments = new HashSet<Guid>();
+            for (int i = 0; i < departmentIds.Count; i++)
+            {
+                if (!leaderResults[i].IsError && leaderResults[i].Value)
+                    leaderDepartments.Add(departmentIds[i]);
+            }
+
+            return folders.Select(x => new FolderDto
             {
                 Id = x.Id,
                 Name = x.Name,
                 Level = x.Level,
                 ParentId = x.ParentId,
                 FolderDtos = [], // Frontend will handle flat structure
+                DepartmentId = x.DepartmentId,
                 CreatedByUserId = x.CreatedByUserId,
                 CreatedAt = x.CreatedAt,
                 UpdatedByUserId = x.UpdatedByUserId,
-                UpdatedAt = x.UpdatedAt
+                UpdatedAt = x.UpdatedAt,
+                CanManagePermissions = x.CreatedByUserId == userIdStr
+                    || (x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value))
             }).ToList();
         }
         catch (Exception ex)
@@ -80,7 +97,11 @@ public class FolderService(
                 return ApplicationErrors.FolderNotFound;
             }
 
-            return result.Value.ToDto();
+            var folder = result.Value;
+            var canManage = await CanManageFolderPermissionsAsync(userId, id);
+            var dto = folder.ToDto();
+            dto.CanManagePermissions = !canManage.IsError && canManage.Value;
+            return dto;
         }
         catch (Exception ex)
         {
@@ -180,7 +201,7 @@ public class FolderService(
 
                     if (!existing)
                     {
-                        var addResult = await unitOfWork.FolderPermissions.AddAsync(new FolderPermission
+                        var addResult2 = await unitOfWork.FolderPermissions.AddAsync(new FolderPermission
                         {
                             FolderId = folder.Id,
                             UserId = initial.UserId.ToString(),
@@ -188,8 +209,8 @@ public class FolderService(
                             IsInherited = true
                         });
 
-                        if (addResult.IsError)
-                            return addResult.Errors;
+                        if (addResult2.IsError)
+                            return addResult2.Errors;
                     }
                 }
             }
@@ -513,6 +534,17 @@ public class FolderService(
                 })
                 .ToListAsync();
 
+            var userIds = permissions.Select(p => Guid.Parse(p.UserId)).Distinct().ToList();
+            var userMap = await unitOfWork.Context.Users
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id.ToString(), u => u.UserName);
+
+            foreach (var p in permissions)
+            {
+                if (userMap.TryGetValue(p.UserId, out var name))
+                    p.UserName = name;
+            }
+
             return permissions;
         }
         catch (Exception ex)
@@ -554,10 +586,10 @@ public class FolderService(
                 return ApplicationErrors.InvalidInput;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-            var access = await resourceAuth.CanAccessFolderAsync(currentUserId, dto.FolderId, AccessLevel.FullControl);
-            if (access.IsError)
-                return access.Errors;
-            if (!access.Value)
+            var canManage = await CanManageFolderPermissionsAsync(currentUserId, dto.FolderId);
+            if (canManage.IsError)
+                return canManage.Errors;
+            if (!canManage.Value)
                 return ApplicationErrors.FolderAccessDenied;
 
             var exists = await unitOfWork.FolderPermissions.AnyAsync(x =>
@@ -602,10 +634,10 @@ public class FolderService(
                 return ApplicationErrors.FolderPermissionNotFound;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-            var access = await resourceAuth.CanAccessFolderAsync(currentUserId, permissionResult.Value.FolderId, AccessLevel.FullControl);
-            if (access.IsError)
-                return access.Errors;
-            if (!access.Value)
+            var canManage = await CanManageFolderPermissionsAsync(currentUserId, permissionResult.Value.FolderId);
+            if (canManage.IsError)
+                return canManage.Errors;
+            if (!canManage.Value)
                 return ApplicationErrors.FolderAccessDenied;
 
             var permission = permissionResult.Value;
@@ -642,10 +674,10 @@ public class FolderService(
             if (permissionResult.Value.UserId == currentUserId.ToString())
                 return ApplicationErrors.CannotRemoveOwnFolderPermission;
 
-            var access = await resourceAuth.CanAccessFolderAsync(currentUserId, permissionResult.Value.FolderId, AccessLevel.FullControl);
-            if (access.IsError)
-                return access.Errors;
-            if (!access.Value)
+            var canManage = await CanManageFolderPermissionsAsync(currentUserId, permissionResult.Value.FolderId);
+            if (canManage.IsError)
+                return canManage.Errors;
+            if (!canManage.Value)
                 return ApplicationErrors.FolderAccessDenied;
 
             var removeResult = await unitOfWork.FolderPermissions.RemoveAsync(x => x.Id == id);
@@ -660,5 +692,28 @@ public class FolderService(
             logger.LogError(ex, "Error deleting folder permission {PermissionId}", id);
             return ApplicationErrors.InternalServerError;
         }
+    }
+
+    private async Task<Result<bool>> CanManageFolderPermissionsAsync(Guid userId, Guid folderId)
+    {
+        var folderResult = await unitOfWork.Folders.GetByIdAsync(folderId);
+        if (folderResult.IsError || folderResult.Value == null)
+            return ApplicationErrors.FolderNotFound;
+
+        var folder = folderResult.Value;
+
+        if (folder.CreatedByUserId == userId.ToString())
+            return true;
+
+        if (folder.DepartmentId.HasValue)
+        {
+            var isLeader = await archiveLeaderService.IsArchiveLeaderAsync(userId, folder.DepartmentId.Value);
+            if (isLeader.IsError)
+                return isLeader.Errors;
+            if (isLeader.Value)
+                return true;
+        }
+
+        return ApplicationErrors.FolderAccessDenied;
     }
 }

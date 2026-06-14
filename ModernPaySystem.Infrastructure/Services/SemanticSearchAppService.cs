@@ -394,7 +394,7 @@ public class SemanticSearchAppService(
 
             var items = result.Value!.Items.Select(d => d.ToDto()).ToList();
 
-            var filteredItems = await FilterDocumentsByAccessAsync(items, userId, accessibleFolderIds, ct);
+            var filteredItems = await FilterDocumentsByAccessAsync(items, userId, accessibleFolderIds.ToHashSet(), ct);
 
             return PagedList<DocumentDto>.Create(filteredItems, filteredItems.Count, page, pageSize);
         }
@@ -412,7 +412,7 @@ public class SemanticSearchAppService(
             var userId = httpContextServiceManager.GetCurrentUserId();
             var docResult = await unitOfWork.Documents.GetByIdAsync(documentId);
             if (docResult.IsError || docResult.Value == null)
-                return ApplicationErrors.NotFound("DocumentNotFound", "Document not found.");
+                return ApplicationErrors.DocumentNotFound;
 
             var doc = docResult.Value;
 

@@ -67,6 +67,8 @@ public class FolderDto
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    public bool CanManagePermissions { get; set; }
 }
 
 public class CreateFolderDto

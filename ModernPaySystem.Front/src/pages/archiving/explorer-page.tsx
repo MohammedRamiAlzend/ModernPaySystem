@@ -10,6 +10,7 @@ import { ExplorerToolbar } from '@/features/archiving/ui/ExplorerToolbar';
 import { ExplorerView } from '@/features/archiving/ui/ExplorerView';
 import { ListView } from '@/features/archiving/ui/ListView';
 import { DocumentGalleryModal } from '@/features/archiving/ui/DocumentGalleryModal';
+import { FolderPermissionsModal } from '@/features/archiving/ui/FolderPermissionsModal';
 import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
@@ -33,6 +34,14 @@ export default function ExplorerPage() {
 
     const [showSubmitEditModal, setShowSubmitEditModal] = useState(false);
     const [editRequestRecord, setEditRequestRecord] = useState<ArchiveRecord | null>(null);
+
+    const [showFolderPermissionsModal, setShowFolderPermissionsModal] = useState(false);
+    const [permissionsModalFolder, setPermissionsModalFolder] = useState<Folder | null>(null);
+
+    const handleOpenFolderPermissions = (folder: Folder) => {
+        setPermissionsModalFolder(folder);
+        setShowFolderPermissionsModal(true);
+    };
 
     const handleOpenRequestEdit = (record: ArchiveRecord) => {
         setEditRequestRecord(record);
@@ -61,6 +70,8 @@ export default function ExplorerPage() {
         folderName,
         setFolderName,
         isSavingFolder,
+        initialPermissionIds,
+        setInitialPermissionIds,
         handleOpenCreateFolder,
         handleOpenEditFolder,
         handleSaveFolder,
@@ -234,6 +245,7 @@ export default function ExplorerPage() {
                         onFolderDoubleClick={handleNavigate}
                         onRecordClick={handleRecordClick}
                         onFolderEdit={handleOpenEditFolder}
+                        onFolderPermissions={handleOpenFolderPermissions}
                         onFolderDelete={handleDeleteFolder}
                         onRecordEdit={handleOpenEditRecord}
                         onRecordDelete={handleDeleteRecord}
@@ -270,6 +282,8 @@ export default function ExplorerPage() {
                 onClose={() => setShowFolderModal(false)}
                 onSubmit={handleSaveFolder}
                 isSaving={isSavingFolder}
+                initialPermissionIds={initialPermissionIds}
+                onPermissionIdsChange={setInitialPermissionIds}
             />
 
             {/* 2. Modal: Record Create / Edit */}
@@ -348,6 +362,15 @@ export default function ExplorerPage() {
                     </div>
                 </div>
             )}
+            {/* 5. Modal: Folder Permissions */}
+            <FolderPermissionsModal
+                isOpen={showFolderPermissionsModal}
+                folder={permissionsModalFolder}
+                onClose={() => {
+                    setShowFolderPermissionsModal(false);
+                    setPermissionsModalFolder(null);
+                }}
+            />
             {/* 4. Modal: Submit Archive Edit Request */}
             <SubmitEditRequestModal
                 isOpen={showSubmitEditModal}

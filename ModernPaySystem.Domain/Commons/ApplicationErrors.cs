@@ -134,6 +134,7 @@ public static class ApplicationErrors
 
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");
+    public static readonly Error DocumentNotFound = new("1100", "The specified document was not found.", ErrorKind.NotFound, "لم يتم العثور على المستند المحدد.");
 
     public static Error FileOperationFailed(string message)
         => Error.Failure("1001", $"File operation failed: {message}", "فشلت عملية الملف:");

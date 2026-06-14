@@ -28,6 +28,9 @@ export function useArchivingFolders() {
     const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
     const [isSavingFolder, setIsSavingFolder] = useState(false);
 
+    // Initial permissions state (user IDs, always View level)
+    const [initialPermissionIds, setInitialPermissionIds] = useState<string[]>([]);
+
     // Derive currentFolder from currentFolderId and folders list during render
     const currentFolder = useMemo(() => {
         if (!currentFolderId) return null;
@@ -66,6 +69,7 @@ export function useArchivingFolders() {
     const handleOpenCreateFolder = () => {
         setFolderName('');
         setFolderModalMode('create');
+        setInitialPermissionIds([]);
         setShowFolderModal(true);
     };
 
@@ -84,7 +88,10 @@ export function useArchivingFolders() {
             if (folderModalMode === 'create') {
                 await archivingService.createFolder({
                     name: folderName,
-                    parentId: currentFolderId
+                    parentId: currentFolderId,
+                    initialPermissions: initialPermissionIds.length > 0
+                        ? initialPermissionIds.map(id => ({ userId: id, accessLevel: 1 }))
+                        : undefined
                 });
                 showStatus({
                     type: 'success',
@@ -166,6 +173,8 @@ export function useArchivingFolders() {
         selectedFolder,
         setSelectedFolder,
         isSavingFolder,
+        initialPermissionIds,
+        setInitialPermissionIds,
         handleOpenCreateFolder,
         handleOpenEditFolder,
         handleSaveFolder,

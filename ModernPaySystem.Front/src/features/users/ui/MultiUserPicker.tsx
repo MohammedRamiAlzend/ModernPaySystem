@@ -1,4 +1,5 @@
 import { UserPicker } from './UserPicker';
+import { UserDisplay } from './UserDisplay';
 import { Badge } from '@/shared/ui/badge';
 import { X, Users } from 'lucide-react';
 
@@ -47,8 +48,8 @@ export const MultiUserPicker = ({
                             variant="secondary" 
                             className="pl-1 pr-2 py-1 gap-1 flex items-center bg-background/80 backdrop-blur-sm border-primary/10 hover:bg-background transition-colors"
                         >
-                            <Users className="w-3 h-3 text-primary/70" />
-                            <span className="text-[10px] font-medium">{userId.split('-')[0]}...</span>
+                            <Users className="w-3 h-3 text-primary/70 shrink-0" />
+                            <UserDisplay userId={userId} showIcon={false} className="text-[10px] font-medium" />
                             <button 
                                 onClick={() => removeUser(userId)}
                                 className="hover:text-destructive transition-colors p-0.5 rounded-full hover:bg-destructive/10"

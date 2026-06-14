@@ -195,7 +195,7 @@ export const SearchableSelect = (props: SearchableSelectProps) => {
                 </PopoverTrigger>
 
                 <PopoverContent
-                    className="w-[--radix-popover-trigger-width] p-0 rounded-xl border-primary/10"
+                    className="w-[--radix-popover-trigger-width] p-0 rounded-xl border-primary/10 z-[120]"
                     align="start"
                     dir="rtl"
                 >

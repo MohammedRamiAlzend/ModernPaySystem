@@ -8,6 +8,7 @@ export interface Folder {
     createdAt?: string | null;
     updatedByUserId?: string | null;
     updatedAt?: string | null;
+    canManagePermissions?: boolean;
 }
 
 export interface PhysicalFile {
@@ -58,9 +59,15 @@ export interface DynamicFormTemplate {
     createdAt?: string | null;
 }
 
+export interface InitialFolderPermissionDto {
+    userId: string;
+    accessLevel: number;
+}
+
 export interface CreateFolderDto {
     name: string;
     parentId: string | null;
+    initialPermissions?: InitialFolderPermissionDto[];
 }
 
 export interface CreateArchiveRecordDto {
@@ -90,6 +97,26 @@ export interface SemanticSearchRequest {
     sourceType: number | null;
     archiveRecordId: string | null;
     folderId: string | null;
+}
+
+export interface FolderPermissionDto {
+    id: string;
+    folderId: string;
+    userId: string;
+    userName?: string | null;
+    accessLevel: number;
+    isInherited: boolean;
+    createdByUserId?: string | null;
+    createdAt?: string | null;
+    updatedByUserId?: string | null;
+    updatedAt?: string | null;
+}
+
+export interface CreateFolderPermissionDto {
+    folderId: string;
+    userId: string;
+    accessLevel: number;
+    isInherited: boolean;
 }
 
 export interface SemanticSearchResultItem {

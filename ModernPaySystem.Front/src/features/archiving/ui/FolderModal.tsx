@@ -1,7 +1,7 @@
-import React from 'react';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
+import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
 
 interface FolderModalProps {
     isOpen: boolean;
@@ -11,6 +11,8 @@ interface FolderModalProps {
     onClose: () => void;
     onSubmit: (e: React.FormEvent) => void;
     isSaving: boolean;
+    initialPermissionIds?: string[];
+    onPermissionIdsChange?: (ids: string[]) => void;
 }
 
 export function FolderModal({
@@ -20,7 +22,9 @@ export function FolderModal({
     onFolderNameChange,
     onClose,
     onSubmit,
-    isSaving
+    isSaving,
+    initialPermissionIds = [],
+    onPermissionIdsChange
 }: FolderModalProps) {
     if (!isOpen) return null;
 
@@ -49,6 +53,17 @@ export function FolderModal({
                             autoFocus
                         />
                     </div>
+
+                    {mode === 'create' && (
+                        <div className="flex flex-col gap-2 border-t border-border pt-4">
+                            <MultiUserPicker
+                                selectedUserIds={initialPermissionIds}
+                                onUsersChange={onPermissionIdsChange ?? (() => {})}
+                                label="صلاحيات إضافية (اختياري)"
+                                placeholder="اضف مستخدم للاطلاع فقط..."
+                            />
+                        </div>
+                    )}
 
                     <div className="flex justify-end gap-3 pt-2">
                         <Button

@@ -1,5 +1,5 @@
 import api from '@/shared/api/baseApi';
-import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, SemanticSearchRequest, SemanticSearchResultItem } from '../model/types';
+import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, FolderPermissionDto, CreateFolderPermissionDto, SemanticSearchRequest, SemanticSearchResultItem } from '../model/types';
 
 export const archivingService = {
     // ---------------------------------------------
@@ -321,6 +321,23 @@ export const archivingService = {
 
     deleteDynamicForm: async (id: string): Promise<void> => {
         await api.delete(`/ArchiveSystem/DynamicForms/${id}`);
+    },
+
+    // ---------------------------------------------
+    // Folder Permissions API
+    // ---------------------------------------------
+    getFolderPermissions: async (folderId: string): Promise<FolderPermissionDto[]> => {
+        const response = await api.get<any>(`/ArchiveSystem/Folders/${folderId}/permissions`);
+        return response.data.data;
+    },
+
+    createFolderPermission: async (folderId: string, dto: Omit<CreateFolderPermissionDto, 'folderId'>): Promise<FolderPermissionDto> => {
+        const response = await api.post<any>(`/ArchiveSystem/Folders/${folderId}/permissions`, dto);
+        return response.data.data;
+    },
+
+    deleteFolderPermission: async (permissionId: string): Promise<void> => {
+        await api.delete(`/ArchiveSystem/Folders/permissions/${permissionId}`);
     },
 
     // ---------------------------------------------

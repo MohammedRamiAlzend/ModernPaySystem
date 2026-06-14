@@ -9,7 +9,8 @@ import {
     Download, 
     Eye,
     Plus,
-    FolderPlus
+    FolderPlus,
+    Shield
 } from 'lucide-react';
 
 interface ExplorerViewProps {
@@ -18,6 +19,7 @@ interface ExplorerViewProps {
     onFolderDoubleClick: (folder: Folder) => void;
     onRecordClick: (record: ArchiveRecord) => void;
     onFolderEdit?: (folder: Folder) => void;
+    onFolderPermissions?: (folder: Folder) => void;
     onFolderDelete?: (folder: Folder) => void;
     onRecordEdit?: (record: ArchiveRecord) => void;
     onRecordDelete?: (record: ArchiveRecord) => void;
@@ -34,6 +36,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onFolderDoubleClick,
     onRecordClick,
     onFolderEdit,
+    onFolderPermissions,
     onFolderDelete,
     // onRecordEdit,
     onRecordDelete,
@@ -117,7 +120,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                     </button>
 
                                     {activeMenuId === folder.id && (
-                                        <div className="absolute left-0 mt-1 w-32 bg-card border border-border rounded-xl shadow-xl z-20 py-1 text-right" onClick={(e) => e.stopPropagation()}>
+                                        <div className="absolute left-0 mt-1 w-40 bg-card border border-border rounded-xl shadow-xl z-20 py-1 text-right" onClick={(e) => e.stopPropagation()}>
                                             {onFolderEdit && (
                                                 <button
                                                     onClick={() => handleAction(() => onFolderEdit(folder))}
@@ -125,6 +128,15 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                 >
                                                     <span>تعديل الاسم</span>
                                                     <Edit3 className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
+                                            {onFolderPermissions && folder.canManagePermissions && (
+                                                <button
+                                                    onClick={() => handleAction(() => onFolderPermissions(folder))}
+                                                    className="w-full px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-end gap-2"
+                                                >
+                                                    <span>إدارة الصلاحيات</span>
+                                                    <Shield className="h-3.5 w-3.5" />
                                                 </button>
                                             )}
                                             {onFolderDelete && (
@@ -300,6 +312,18 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                 >
                                     <span>تعديل الاسم</span>
                                     <Edit3 className="h-4 w-4 text-amber-500" />
+                                </button>
+                            )}
+                            {onFolderPermissions && targetFolder?.canManagePermissions && (
+                                <button
+                                    onClick={() => {
+                                        onFolderPermissions(targetFolder);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>إدارة الصلاحيات</span>
+                                    <Shield className="h-4 w-4 text-amber-500" />
                                 </button>
                             )}
                             {onFolderDelete && (
