@@ -30,7 +30,12 @@ public class PermissionSeeder : EntitySeederBase<PermissionEntity>
             "ViewPermissions", "AssignPermissions", "RevokePermissions",
             "ViewTemplates", "CreateTemplate", "UpdateTemplate", "DeleteTemplate",
             "ApproveRequest", "RejectRequest",
-            "ViewAuditLogs", "ManageSystem"
+            "ViewAuditLogs", "ManageSystem",
+            "archiving.records.get-paged", "archiving.records.get-by-id", "archiving.records.get-by-folder", "archiving.records.get-by-form",
+            "archiving.records.create", "archiving.records.update", "archiving.records.delete",
+            "archiving.records.add-files", "archiving.records.remove-file", "archiving.records.get-files-metadata",
+            "archiving.records.download-file", "archiving.records.download-zip", "archiving.records.get-files-paginated",
+            "archiving.records.print", "archiving.records.get-audit-logs"
         };
 
         var permissions = new List<PermissionEntity>();

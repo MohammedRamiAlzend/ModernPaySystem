@@ -34,7 +34,8 @@ public class ArchiveRecordService(
     IOptions<ServerSettings> serverSettings,
     SystemHealthService healthService,
     IHttpContextServiceManager httpContextServiceManager,
-    IArchiveResourceAuthorizationService resourceAuth) : IArchiveRecordService
+    IArchiveResourceAuthorizationService resourceAuth,
+    IAuditLogService auditLogService) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string UploadsDirectory = "Uploads";
@@ -49,6 +50,8 @@ public class ArchiveRecordService(
     private bool CanAutoIndex => ServerSettingsValue.ActivateSemanticSearch
                                  && HealthService.IsOllamaHealthy
                                  && HealthService.IsQdrantHealthy;
+
+    private readonly IAuditLogService _auditLogService = auditLogService;
 
     public async Task<Result<IEnumerable<ArchiveRecordDto>>> GetAllAsync()
     {
@@ -138,6 +141,10 @@ public class ArchiveRecordService(
             {
                 return ApplicationErrors.ArchiveRecordNotFound;
             }
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            _ = _auditLogService.LogAsync(id, userId.ToString(), AuditAction.View, "Viewed archive record", ipAddress, userAgent);
 
             return result.Value.ToDto();
         }
@@ -421,6 +428,10 @@ public class ArchiveRecordService(
 
                     if (CanAutoIndex)
                         _ = TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
+
+                    var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                    var userAgent = httpContextServiceManager.GetUserAgent();
+                    _ = _auditLogService.LogAsync(record.Id, userId.ToString(), AuditAction.Create, "Created archive record", ipAddress, userAgent);
 
                     return await GetByIdAsync(record.Id);
                 }
@@ -733,6 +744,10 @@ public class ArchiveRecordService(
                         logger.LogWarning("Record {RecordId} updated, but file cleanup failed for {Path}: {Error}", id, file.StoragePath, deleteResult.Errors);
                     }
                 }
+
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                _ = _auditLogService.LogAsync(id, userId.ToString(), AuditAction.Update, "Updated archive record", ipAddress, userAgent);
 
                 return await GetByIdAsync(record.Id);
             });
@@ -1373,6 +1388,10 @@ public class ArchiveRecordService(
                 ? filesManagerService.GetContentType(physicalFile.FileExtension)
                 : physicalFile.ContentType;
 
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            _ = _auditLogService.LogAsync(physicalFile.ArchiveRecordId, userId.ToString(), AuditAction.Download, $"Downloaded file: {physicalFile.FileName}", ipAddress, userAgent);
+
             return new ArchivePhysicalFileDownloadDto
             {
                 FileId = physicalFile.Id,
@@ -1598,6 +1617,10 @@ public class ArchiveRecordService(
             });
 
             memoryCache.Set(cacheKey, bundle, entryOptions);
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            _ = _auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Download, "Downloaded archive record as ZIP", ipAddress, userAgent);
 
             return new ArchiveRecordZipBundleDto
             {
@@ -2018,5 +2041,34 @@ public class ArchiveRecordService(
     private static bool IsIndexableExtension(string extension)
     {
         return extension is ".docx" or ".xlsx" or ".txt" or ".md" or ".pdf" or ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".tiff" or ".tif";
+    }
+
+    public async Task<Result<Success>> LogPrintAsync(Guid recordId)
+    {
+        try
+        {
+            if (recordId == Guid.Empty)
+            {
+                return ApplicationErrors.InvalidInput;
+            }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.Read);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await _auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Print, "Printed archive record", ipAddress, userAgent);
+
+            return Result.Success;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error logging print action for archive record {RecordId}", recordId);
+            return ApplicationErrors.InternalServerError;
+        }
     }
 }

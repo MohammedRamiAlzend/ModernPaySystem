@@ -28,6 +28,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<FolderPermission> FolderPermissions { get; set; }
     public DbSet<Document> Documents { get; set; }
     public DbSet<DocumentChunk> DocumentChunks { get; set; }
+    public DbSet<ArchiveAuditLog> ArchiveAuditLogs { get; set; }
 
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
@@ -357,6 +358,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasIndex(pf => new { pf.ArchiveRecordId, pf.IsDeleted, pf.FileExtension })
             .IncludeProperties(pf => new { pf.FileSize, pf.ContentType, pf.FileName, pf.CreatedAt, pf.UpdatedAt })
             .HasDatabaseName("IX_PhysicalFiles_ArchiveRecordId_IsDeleted_FileExtension_Covering");
+
+        modelBuilder.Entity<ArchiveAuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.ArchiveRecordId, e.Timestamp })
+                .HasDatabaseName("IX_ArchiveAuditLogs_ArchiveRecordId_Timestamp");
+            entity.HasIndex(e => e.UserId)
+                .HasDatabaseName("IX_ArchiveAuditLogs_UserId");
+            entity.HasIndex(e => e.Action)
+                .HasDatabaseName("IX_ArchiveAuditLogs_Action");
+            entity.Property(e => e.UserId).HasMaxLength(450).IsRequired();
+            entity.Property(e => e.Details).HasColumnType("text");
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+        });
 
         modelBuilder.Entity<Folder>()
             .HasMany(f => f.Permissions)
