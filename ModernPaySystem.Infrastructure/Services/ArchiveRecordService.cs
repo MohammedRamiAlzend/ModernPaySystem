@@ -963,7 +963,7 @@ public class ArchiveRecordService(
             }
 
             var userId = httpContextServiceManager.GetCurrentUserId();
-            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.Read);
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.View);
             if (access.IsError)
                 return access.Errors;
             if (!access.Value)
@@ -1332,7 +1332,7 @@ public class ArchiveRecordService(
             }
 
             var userId = httpContextServiceManager.GetCurrentUserId();
-            var access = await resourceAuth.CanAccessPhysicalFileAsync(userId, fileId, AccessLevel.Read);
+            var access = await resourceAuth.CanAccessPhysicalFileAsync(userId, fileId, AccessLevel.View);
             if (access.IsError)
                 return access.Errors;
             if (!access.Value)
@@ -1410,7 +1410,7 @@ public class ArchiveRecordService(
             }
 
             var userId = httpContextServiceManager.GetCurrentUserId();
-            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.Read);
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.View);
             if (access.IsError)
                 return access.Errors;
             if (!access.Value)
@@ -1508,7 +1508,7 @@ public class ArchiveRecordService(
             }
 
             var userId = httpContextServiceManager.GetCurrentUserId();
-            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.Read);
+            var access = await resourceAuth.CanAccessArchiveRecordAsync(userId, recordId, AccessLevel.View);
             if (access.IsError)
                 return access.Errors;
             if (!access.Value)
