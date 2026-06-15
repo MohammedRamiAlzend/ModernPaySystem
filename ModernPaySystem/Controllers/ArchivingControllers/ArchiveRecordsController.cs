@@ -21,6 +21,8 @@ namespace ModernPaySystem.Controllers.ArchivingControllers;
 [Authorize]
 public class ArchiveRecordsController(
     IArchiveRecordService archiveRecordService,
+    IAuditLogService auditLogService,
+    IArchiveAuthorizationService archiveAuthorizationService,
     IAuthorizationService authorizationService,
     IMemoryCache memoryCache,
     ILogger<ArchiveRecordsController> logger) : ControllerBase
@@ -234,6 +236,63 @@ public class ArchiveRecordsController(
         }
 
         var result = await archiveRecordService.DeleteAsync(id);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("{recordId}/print")]
+    [EndpointPermission("archiving.records.print", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> LogPrint(Guid recordId)
+    {
+        logger.LogInformation("Logging print action for archive record: {RecordId}", recordId);
+        var result = await archiveRecordService.LogPrintAsync(recordId);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("audit-logs")]
+    [EndpointPermission("archiving.records.get-audit-logs", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetAuditLogsByDepartment(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] AuditAction? action = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] Guid? departmentId = null)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+        {
+            return Unauthorized();
+        }
+
+        var leaderDepartmentsResult = await archiveAuthorizationService.GetUserArchiveLeaderDepartmentsAsync(userGuid);
+        if (leaderDepartmentsResult.IsError)
+        {
+            return leaderDepartmentsResult.ToActionResult();
+        }
+
+        var leaderDepartments = leaderDepartmentsResult.Value!;
+        if (leaderDepartments.Count == 0)
+        {
+            return Forbid();
+        }
+
+        Guid targetDepartmentId;
+        if (departmentId.HasValue)
+        {
+            if (!leaderDepartments.Contains(departmentId.Value))
+            {
+                return Forbid();
+            }
+            targetDepartmentId = departmentId.Value;
+        }
+        else
+        {
+            targetDepartmentId = leaderDepartments[0];
+        }
+
+        logger.LogInformation("Getting audit logs for department: {DepartmentId}, page: {Page}, size: {PageSize}", targetDepartmentId, page, pageSize);
+
+        var result = await auditLogService.GetAuditLogsByDepartmentAsync(targetDepartmentId, page, pageSize, action, fromDate, toDate);
         return result.ToActionResult();
     }
 

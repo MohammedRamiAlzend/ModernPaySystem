@@ -91,4 +91,19 @@ public class ArchiveAuthorizationService(IUnitOfWork unitOfWork, ILogger<Archive
 
         return await ResolveFolderDepartmentIdAsync(record.FolderId);
     }
+
+    public async Task<Result<List<Guid>>> GetUserArchiveLeaderDepartmentsAsync(Guid userId)
+    {
+        if (userId == Guid.Empty)
+        {
+            return ApplicationErrors.InvalidInput;
+        }
+
+        var departments = await unitOfWork.Context.DepartmentArchiveLeaders
+            .Where(x => x.UserId == userId && !x.IsDeleted)
+            .Select(x => x.DepartmentId)
+            .ToListAsync();
+
+        return departments;
+    }
 }

@@ -56,6 +56,7 @@ public interface IUnitOfWork
     IRepositoryBase<FolderPermission, Guid> FolderPermissions { get; }
     IRepositoryBase<Document, Guid> Documents { get; }
     IRepositoryBase<DocumentChunk, Guid> DocumentChunks { get; }
+    IRepositoryBase<ArchiveAuditLog, Guid> ArchiveAuditLogs { get; }
 
     Task<int> SaveChangesAsync();
     //Task<int> GetNextRequestNumberAsync(Guid departmentId);

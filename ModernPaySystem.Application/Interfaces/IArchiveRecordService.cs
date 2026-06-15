@@ -32,4 +32,5 @@ public interface IArchiveRecordService
     Task<Result<ArchiveFileConsistencyDto>> CheckFileConsistencyAsync(Guid id);
     //Task<Result<ArchiveFileCleanupDto>> CleanupOrphanFilesAsync();
     Task<Result<bool>> DeleteAsync(Guid id);
+    Task<Result<Success>> LogPrintAsync(Guid recordId);
 }
