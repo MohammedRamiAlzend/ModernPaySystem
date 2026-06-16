@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useScannerSettings } from './use-scanner-settings';
+import { localScannerService } from '../api/localScannerService';
 
 /**
  * تحويل base64 string إلى File object
@@ -22,8 +24,71 @@ export const convertBase64ToFile = (base64String: string, fileName: string): Fil
 export const useScanner = () => {
     const [isScanning, setIsScanning] = useState(false);
     const [scanError, setScanError] = useState<string | null>(null);
+    const { settings } = useScannerSettings();
 
-    const handleScan = (onSuccess: (fileObjects: File[]) => void) => {
+    const handleScanNew = async (onSuccess: (fileObjects: File[]) => void) => {
+        setIsScanning(true);
+        setScanError(null);
+
+        try {
+            let activeDeviceId = settings.deviceId;
+            
+            // Auto-select first device if none is selected
+            if (!activeDeviceId) {
+                const devices = await localScannerService.getDevices();
+                if (devices && devices.length > 0) {
+                    activeDeviceId = devices[0].id;
+                } else {
+                    setScanError('لا يوجد أجهزة ماسح ضوئي متصلة.');
+                    setIsScanning(false);
+                    return;
+                }
+            }
+
+            // 1. Create a session
+            const session = await localScannerService.createSession('Web Session');
+
+            // 2. Start scanning
+            const pages = await localScannerService.scanToSession(session.id, {
+                deviceId: activeDeviceId,
+                dpi: settings.dpi,
+                colorMode: settings.colorMode,
+                duplex: settings.duplex
+            });
+
+            if (!pages || pages.length === 0) {
+                setScanError('لم يتم العثور على صور ممسوحة');
+                setIsScanning(false);
+                return;
+            }
+
+            // 3. Fetch blobs and convert to Files
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10);
+            const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+
+            const fileObjects: File[] = [];
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
+                const blob = await localScannerService.getPageImageBlob(session.id, page.id);
+                const extension = page.format?.toLowerCase() === 'png' ? 'png' : 'jpg';
+                const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+                const fileName = `scan-${dateStr}-${timeStr}-${i + 1}.${extension}`;
+                
+                const file = new File([blob], fileName, { type: mimeType });
+                fileObjects.push(file);
+            }
+
+            onSuccess(fileObjects);
+        } catch (error: any) {
+            console.error('Error in new scanner:', error);
+            setScanError(error.message || 'حدث خطأ أثناء الاتصال بالماسح الضوئي المحلي');
+        } finally {
+            setIsScanning(false);
+        }
+    };
+
+    const handleScanOld = (onSuccess: (fileObjects: File[]) => void) => {
         if (!window.scanner) {
             setScanError('مكتبة المسح الضوئي غير متوفرة. يرجى التأكد من تحميل السكريبت.');
             return;
@@ -33,7 +98,7 @@ export const useScanner = () => {
         setScanError(null);
 
         window.scanner.scan(
-            (successful, mesg, response) => {
+            (successful: boolean, mesg: string, response: any) => {
                 if (!successful) {
                     setScanError('فشل المسح الضوئي: ' + mesg);
                     setIsScanning(false);
@@ -59,7 +124,7 @@ export const useScanner = () => {
                     const dateStr = now.toISOString().slice(0, 10);
                     const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
 
-                    const fileObjects = scannedImages.map((scannedImage, index) => {
+                    const fileObjects = scannedImages.map((scannedImage: any, index: number) => {
                         const fileName = `scan-${dateStr}-${timeStr}-${index + 1}.jpg`;
                         return convertBase64ToFile(scannedImage.src, fileName);
                     });
@@ -84,6 +149,14 @@ export const useScanner = () => {
                 }]
             }
         );
+    };
+
+    const handleScan = (onSuccess: (fileObjects: File[]) => void) => {
+        if (settings.appType === 'new') {
+            handleScanNew(onSuccess);
+        } else {
+            handleScanOld(onSuccess);
+        }
     };
 
     return { handleScan, isScanning, scanError, setScanError };

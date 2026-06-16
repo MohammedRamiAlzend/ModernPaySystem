@@ -12,7 +12,10 @@ export const ScannerModal: React.FC<ScannerModalProps> = ({
     ...contentProps
 }) => {
     return (
-        <OcrModal isOpen={isOpen} onClose={onClose || (() => { })}>
+        <OcrModal 
+            isOpen={isOpen} 
+            onClose={onClose || (() => { })}
+        >
             <OcrScannerContent {...contentProps} onClose={onClose} />
         </OcrModal>
     );

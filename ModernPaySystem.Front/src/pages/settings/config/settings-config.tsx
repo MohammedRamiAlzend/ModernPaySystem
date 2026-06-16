@@ -10,6 +10,7 @@ import {
     Wrench,
     GitBranch,
     Archive,
+    Scan,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -19,6 +20,7 @@ const UserManagement = lazyWithPreload(() => import('@/features/users/ui/UserMan
 const TemplatesList = lazyWithPreload(() => import('@/features/form-builder/ui/TemplatesList').then(m => ({ default: m.TemplatesList })));
 const DepartmentDashboardWidget = lazyWithPreload(() => import('@/widgets/department-dashboard').then(m => ({ default: m.DepartmentDashboardWidget })));
 const ArchivingTemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
+const ScannerSettingsPage = lazyWithPreload(() => import('../ui/ScannerSettingsPage').then(m => ({ default: m.ScannerSettingsPage })));
 
 export interface SettingsTab {
     id: string;
@@ -28,7 +30,7 @@ export interface SettingsTab {
     component: ReactNode;
     preload?: () => void;
     showDescription?: boolean;
-    category: 'services' | 'archiving';
+    category: 'services' | 'archiving' | 'system';
 }
 
 export const SETTINGS_CONFIG: SettingsTab[] = [
@@ -97,6 +99,16 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'تحميل الأدوات المساعدة وبرامج التشغيل للنظام',
         icon: Wrench,
         component: <ToolsSettings />,
+        showDescription: false,
+        category: 'services'
+    },
+    {
+        id: 'scanner-settings',
+        label: 'إعدادات الماسح الضوئي',
+        description: 'إعدادات وتفضيلات المسح الضوئي المحلي',
+        icon: Scan,
+        component: <ScannerSettingsPage />,
+        preload: () => ScannerSettingsPage.preload(),
         showDescription: false,
         category: 'services'
     }

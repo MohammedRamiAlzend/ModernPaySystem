@@ -8,6 +8,7 @@ interface OcrModalProps {
     onClose: () => void;
     title?: string;
     description?: string;
+    headerActions?: React.ReactNode;
     children: React.ReactNode;
 }
 
@@ -30,6 +31,7 @@ export const OcrModal: React.FC<OcrModalProps> = ({
     onClose,
     title = 'استخراج النص وتحرير الصور',
     description = 'قم بمسح، قص واستخراج النصوص بسهولة',
+    headerActions,
     children
 }) => {
     return (
@@ -39,14 +41,21 @@ export const OcrModal: React.FC<OcrModalProps> = ({
             maxWidth="3xl"
             maxHeight="3xl"
             title={
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                        <Scan className="h-5 w-5" />
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <Scan className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <h3 className='text-lg font-bold'>{title}</h3>
+                            <p className="text-[10px] text-muted-foreground font-medium">{description}</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className='text-lg font-bold'>{title}</h3>
-                        <p className="text-[10px] text-muted-foreground font-medium">{description}</p>
-                    </div>
+                    {headerActions && (
+                        <div className="mr-auto pl-8">
+                            {headerActions}
+                        </div>
+                    )}
                 </div>
             }
         >
