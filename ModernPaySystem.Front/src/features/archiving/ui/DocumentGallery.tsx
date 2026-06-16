@@ -1,20 +1,22 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { PhysicalFile, ArchiveRecord } from '../model/types';
 import { archivingService } from '../api/archivingService';
 import { Button } from '@/shared/ui/button';
 import { QRPreviewTemplate } from './QRPreviewTemplate';
-import { 
-    useDocumentPreview, 
-    isImageFile, 
-    isPdfFile 
+import {
+    useDocumentPreview,
+    isImageFile,
+    isPdfFile
 } from '../hooks/useDocumentPreview';
 import { DocumentPreviewRenderer } from './DocumentPreviewRenderer';
 import { DocumentGallerySidebar } from './DocumentGallerySidebar';
-import { 
-    Download, 
-    ExternalLink, 
+import { useUIStore } from '@/app/store/uiStore';
+import {
+    Download,
+    ExternalLink,
     Printer,
-    FileIcon
+    FileIcon,
+    Loader2
 } from 'lucide-react';
 
 interface DocumentGalleryProps {
@@ -44,7 +46,7 @@ const printBlob = (blob: Blob, isPdf: boolean) => {
     iframe.style.height = '0';
     iframe.style.border = '0';
     document.body.appendChild(iframe);
-    
+
     const doc = iframe.contentWindow?.document || iframe.contentDocument;
     if (doc) {
         if (isPdf) {
@@ -72,11 +74,48 @@ const printBlob = (blob: Blob, isPdf: boolean) => {
             doc.close();
         }
     }
-    
+
     setTimeout(() => {
         document.body.removeChild(iframe);
         URL.revokeObjectURL(url);
     }, 5000);
+};
+
+const convertImageBlobToPdfBlob = async (imageBlob: Blob): Promise<Blob> => {
+    const { jsPDF } = await import('jspdf');
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageBlob);
+    });
+
+    if (dataUrl && dataUrl.startsWith('data:')) {
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = dataUrl;
+        });
+
+        const imgWidth = img.width;
+        const imgHeight = img.height;
+
+        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+        const finalWidth = imgWidth * ratio;
+        const finalHeight = imgHeight * ratio;
+
+        const x = (pageWidth - finalWidth) / 2;
+        const y = (pageHeight - finalHeight) / 2;
+
+        pdf.addImage(dataUrl, 'JPEG', x, y, finalWidth, finalHeight, undefined, 'FAST');
+    }
+
+    return pdf.output('blob');
 };
 
 export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
@@ -87,6 +126,10 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
     formName
 }) => {
     const qrCoverRef = useRef<HTMLDivElement>(null);
+    const { showStatus } = useUIStore();
+    const [isConvertingPdf, setIsConvertingPdf] = useState(false);
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
     const {
         localFiles,
@@ -110,6 +153,95 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
         record
     });
 
+    const handleDownloadImagesAsPdf = async () => {
+        const imageFiles = localFiles.filter(f => isImageFile(f.fileName));
+        if (imageFiles.length === 0) {
+            showStatus({
+                type: 'warning',
+                title: 'تنبيه',
+                message: 'لا توجد مرفقات صور في هذا المستند لتجميعها.'
+            });
+            return;
+        }
+
+        setIsConvertingPdf(true);
+        try {
+            const { jsPDF } = await import('jspdf');
+            const pdf = new jsPDF();
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            let isFirstPage = true;
+
+            for (const file of imageFiles) {
+                try {
+                    const imageBlob = await archivingService.viewFileBlob(recordId, file.id, file.fileName);
+                    const dataUrl = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target?.result as string);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(imageBlob);
+                    });
+
+                    if (dataUrl && dataUrl.startsWith('data:')) {
+                        const img = new window.Image();
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                            img.src = dataUrl;
+                        });
+
+                        if (!isFirstPage) {
+                            pdf.addPage();
+                        } else {
+                            isFirstPage = false;
+                        }
+
+                        const imgWidth = img.width;
+                        const imgHeight = img.height;
+
+                        const ratio = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                        const finalWidth = imgWidth * ratio;
+                        const finalHeight = imgHeight * ratio;
+
+                        const x = (pageWidth - finalWidth) / 2;
+                        const y = (pageHeight - finalHeight) / 2;
+
+                        let format = 'JPEG';
+                        const ext = file.fileName.split('.').pop()?.toLowerCase();
+                        if (ext === 'png') format = 'PNG';
+                        else if (ext === 'webp') format = 'WEBP';
+
+                        pdf.addImage(dataUrl, format, x, y, finalWidth, finalHeight, undefined, 'FAST');
+                    }
+                } catch (fileErr) {
+                    console.error(`Failed to process file ${file.fileName} for PDF compilation`, fileErr);
+                }
+            }
+
+            const docName = record?.archivalNumber
+                ? `document_${record.archivalNumber}_images`
+                : `document_images_${recordId.substring(0, 8)}`;
+
+            pdf.save(`${docName}.pdf`);
+
+            showStatus({
+                type: 'success',
+                title: 'نجاح العملية',
+                message: 'تم تجميع وتنزيل صور المرفقات كملف PDF بنجاح.'
+            });
+        } catch (err) {
+            console.error('Failed to generate compiled PDF', err);
+            showStatus({
+                type: 'error',
+                title: 'خطأ',
+                message: 'حدث خطأ أثناء محاولة تجميع وتنزيل الصور كملف PDF.'
+            });
+        } finally {
+            setIsConvertingPdf(false);
+        }
+    };
+
     return (
         <div className="flex flex-col md:flex-row gap-6 bg-card p-2 sm:p-4 rounded-3xl h-full border border-border" dir="rtl">
             {/* Sidebar List of Files */}
@@ -119,7 +251,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 setSelectedFile={setSelectedFile}
                 record={record}
                 formName={formName}
-                isUploading={isUploading}
+                isUploading={isUploading || isConvertingPdf}
                 uploadProgress={uploadProgress}
                 downloadingFileId={downloadingFileId}
                 downloadProgress={downloadProgress}
@@ -127,6 +259,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 onAddFiles={handleAddFiles}
                 onDeleteFile={handleDeleteFile}
                 onDownload={handleDownload}
+                onDownloadImagesAsPdf={handleDownloadImagesAsPdf}
             />
 
             {/* Main Preview Area */}
@@ -138,24 +271,75 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                                 <span className="text-sm font-bold text-foreground break-all">{selectedFile.fileName}</span>
                                 <span className="text-xs text-muted-foreground font-medium">حجم الملف: {formatBytes(selectedFile.fileSize)}</span>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 font-semibold">
                                 {selectedFile && (isImageFile(selectedFile.fileName) || isPdfFile(selectedFile.fileName)) && (
                                     <Button
                                         variant="outline"
                                         size="sm"
                                         className="rounded-xl flex items-center gap-1.5 text-foreground border-border"
+                                        disabled={isPrinting || isDownloadingPdf || downloadingFileId === selectedFile.id || isConvertingPdf}
                                         onClick={async () => {
+                                            if (isPrinting) return;
+                                            setIsPrinting(true);
                                             try {
-                                                const blob = await archivingService.viewFileBlob(recordId, selectedFile.id);
-                                                printBlob(blob, isPdfFile(selectedFile.fileName));
-                                                archivingService.logPrint(recordId).catch(() => {});
+                                                let blob = await archivingService.viewFileBlob(recordId, selectedFile.id, selectedFile.fileName);
+                                                const isImage = isImageFile(selectedFile.fileName);
+                                                const isPdf = isPdfFile(selectedFile.fileName);
+                                                
+                                                if (isImage) {
+                                                    blob = await convertImageBlobToPdfBlob(blob);
+                                                }
+                                                
+                                                printBlob(blob, isPdf || isImage);
+                                                archivingService.logPrint(recordId).catch(() => { });
                                             } catch (err) {
                                                 console.error('Failed to print file', err);
+                                            } finally {
+                                                setIsPrinting(false);
                                             }
                                         }}
                                     >
-                                        <Printer className="h-4 w-4 text-amber-500" />
-                                        <span>طباعة</span>
+                                        {isPrinting ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+                                        ) : (
+                                            <Printer className="h-4 w-4 text-amber-500" />
+                                        )}
+                                        <span>طباعة{isImageFile(selectedFile.fileName) && ' كـ PDF'}</span>
+                                    </Button>
+                                )}
+                                {selectedFile && isImageFile(selectedFile.fileName) && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-xl flex items-center gap-1.5 text-foreground border-border"
+                                        disabled={isPrinting || isDownloadingPdf || downloadingFileId === selectedFile.id || isConvertingPdf}
+                                        onClick={async () => {
+                                            if (isDownloadingPdf) return;
+                                            setIsDownloadingPdf(true);
+                                            try {
+                                                const rawBlob = await archivingService.viewFileBlob(recordId, selectedFile.id, selectedFile.fileName);
+                                                const pdfBlob = await convertImageBlobToPdfBlob(rawBlob);
+                                                const url = URL.createObjectURL(pdfBlob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `${selectedFile.fileName.substring(0, selectedFile.fileName.lastIndexOf('.')) || selectedFile.fileName}.pdf`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                document.body.removeChild(a);
+                                                URL.revokeObjectURL(url);
+                                            } catch (err) {
+                                                console.error('Failed to download image as PDF', err);
+                                            } finally {
+                                                setIsDownloadingPdf(false);
+                                            }
+                                        }}
+                                    >
+                                        {isDownloadingPdf ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-rose-500" />
+                                        ) : (
+                                            <FileIcon className="h-4 w-4 text-rose-500" />
+                                        )}
+                                        <span>تحميل كـ PDF</span>
                                     </Button>
                                 )}
                                 <Button
@@ -163,15 +347,16 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                                     size="sm"
                                     className="rounded-xl flex items-center gap-1.5 text-foreground border-border"
                                     onClick={() => handleDownload(selectedFile)}
-                                    disabled={downloadingFileId === selectedFile.id}
+                                    disabled={isPrinting || isDownloadingPdf || downloadingFileId === selectedFile.id || isConvertingPdf}
                                 >
-                                    <Download className="h-4 w-4" />
+                                    <Download className="h-4 w-4 text-primary" />
                                     <span>تحميل</span>
                                 </Button>
                                 <Button
                                     variant="outline"
                                     size="sm"
                                     className="rounded-xl flex items-center gap-1.5 text-foreground border-border"
+                                    disabled={isPrinting || isDownloadingPdf || downloadingFileId === selectedFile.id || isConvertingPdf}
                                     onClick={() => {
                                         if (previewBlobUrl) {
                                             window.open(previewBlobUrl, '_blank');
@@ -185,6 +370,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                                 </Button>
                             </div>
                         </div>
+
 
                         <DocumentPreviewRenderer
                             selectedFile={selectedFile}

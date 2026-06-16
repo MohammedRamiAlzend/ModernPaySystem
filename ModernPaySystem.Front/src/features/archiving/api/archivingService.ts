@@ -1,6 +1,28 @@
 import api from '@/shared/api/baseApi';
 import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, FolderPermissionDto, CreateFolderPermissionDto, SemanticSearchRequest, SemanticSearchResultItem, ArchiveAuditLog } from '../model/types';
 import { Department } from '@/entities/department/model/types';
+import { attachmentCache } from '../utils/attachmentCache';
+
+const overrideMimeType = (blob: Blob, fileName: string): Blob => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    let mimeType = blob.type;
+    if (!mimeType || mimeType === 'application/octet-stream') {
+        if (ext === 'pdf') mimeType = 'application/pdf';
+        else if (ext === 'png') mimeType = 'image/png';
+        else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+        else if (ext === 'gif') mimeType = 'image/gif';
+        else if (ext === 'webp') mimeType = 'image/webp';
+        else if (ext === 'svg') mimeType = 'image/svg+xml';
+        else if (ext === 'mp4') mimeType = 'video/mp4';
+        else if (ext === 'webm') mimeType = 'video/webm';
+        else if (ext === 'ogg') mimeType = 'video/ogg';
+        
+        if (mimeType !== blob.type) {
+            return new Blob([blob], { type: mimeType });
+        }
+    }
+    return blob;
+};
 
 export const archivingService = {
     // ---------------------------------------------
@@ -192,34 +214,75 @@ export const archivingService = {
     downloadFile: async (
         recordId: string,
         fileId: string,
-        onDownloadProgress?: (progressEvent: any) => void
+        onDownloadProgress?: (progressEvent: any) => void,
+        fileName?: string
     ): Promise<Blob> => {
+        const cached = await attachmentCache.get(fileId);
+        if (cached) {
+            if (onDownloadProgress) {
+                onDownloadProgress({ loaded: 100, total: 100 } as any);
+            }
+            return cached.blob;
+        }
+
         const response = await api.get(`/archive-records/${recordId}/files/${fileId}`, {
             params: { download: true },
             responseType: 'blob',
             onDownloadProgress
         });
-        return response.data;
+
+        let blob = response.data;
+        if (fileName) {
+            blob = overrideMimeType(blob, fileName);
+        }
+        await attachmentCache.set(fileId, blob);
+        return blob;
     },
 
-    viewFileBlob: async (recordId: string, fileId: string): Promise<Blob> => {
+    viewFileBlob: async (recordId: string, fileId: string, fileName?: string): Promise<Blob> => {
+        const cached = await attachmentCache.get(fileId);
+        if (cached) {
+            return cached.blob;
+        }
+
         const response = await api.get(`/archive-records/${recordId}/files/${fileId}`, {
             params: { download: false },
             responseType: 'blob'
         });
-        return response.data;
+
+        let blob = response.data;
+        if (fileName) {
+            blob = overrideMimeType(blob, fileName);
+        }
+        await attachmentCache.set(fileId, blob);
+        return blob;
     },
 
     downloadFileById: async (
         fileId: string,
-        onDownloadProgress?: (progressEvent: any) => void
+        onDownloadProgress?: (progressEvent: any) => void,
+        fileName?: string
     ): Promise<Blob> => {
+        const cached = await attachmentCache.get(fileId);
+        if (cached) {
+            if (onDownloadProgress) {
+                onDownloadProgress({ loaded: 100, total: 100 } as any);
+            }
+            return cached.blob;
+        }
+
         const response = await api.get(`/archive-records/files/${fileId}`, {
             params: { download: true },
             responseType: 'blob',
             onDownloadProgress
         });
-        return response.data;
+
+        let blob = response.data;
+        if (fileName) {
+            blob = overrideMimeType(blob, fileName);
+        }
+        await attachmentCache.set(fileId, blob);
+        return blob;
     },
 
     viewFileInlineUrl: (recordId: string, fileId: string): string => {
@@ -234,12 +297,23 @@ export const archivingService = {
         return `${baseURL}/archive-records/files/${fileId}?download=false&access_token=${token || ''}`;
     },
 
-    viewFileBlobById: async (fileId: string, includeDeleted: boolean = false): Promise<Blob> => {
+    viewFileBlobById: async (fileId: string, includeDeleted = false, fileName?: string): Promise<Blob> => {
+        const cached = await attachmentCache.get(fileId);
+        if (cached) {
+            return cached.blob;
+        }
+
         const response = await api.get(`/archive-records/files/${fileId}`, {
             params: { download: false, includeDeleted },
             responseType: 'blob'
         });
-        return response.data;
+
+        let blob = response.data;
+        if (fileName) {
+            blob = overrideMimeType(blob, fileName);
+        }
+        await attachmentCache.set(fileId, blob);
+        return blob;
     },
 
     downloadZip: async (
@@ -279,6 +353,7 @@ export const archivingService = {
 
     removeFileFromArchiveRecord: async (id: string, fileId: string): Promise<void> => {
         await api.delete(`/archive-records/${id}/files/${fileId}`);
+        await attachmentCache.delete(fileId);
     },
 
     logPrint: async (recordId: string): Promise<void> => {

@@ -73,7 +73,7 @@ export function useDocumentPreview({
     const fetchTextContent = useCallback(async (file: PhysicalFile) => {
         setLoading(true);
         try {
-            const blob = await archivingService.downloadFile(recordId, file.id);
+            const blob = await archivingService.downloadFile(recordId, file.id, undefined, file.fileName);
             const text = await blob.text();
             setTextContent(text);
         } catch (error) {
@@ -107,7 +107,7 @@ export function useDocumentPreview({
                 setTextContent(null);
                 setLoading(true);
                 try {
-                    const blob = await archivingService.viewFileBlob(recordId, selectedFile.id);
+                    const blob = await archivingService.viewFileBlob(recordId, selectedFile.id, selectedFile.fileName);
                     const url = URL.createObjectURL(blob);
                     activeUrl = url;
                     setPreviewBlobUrl(url);
@@ -227,7 +227,7 @@ export function useDocumentPreview({
             const blob = await archivingService.downloadFile(recordId, file.id, (progressEvent: any) => {
                 const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                 setDownloadProgress(percentCompleted);
-            });
+            }, file.fileName);
 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');

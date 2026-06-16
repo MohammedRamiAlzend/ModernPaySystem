@@ -16,7 +16,8 @@ import {
     Loader2,
     QrCode,
     // Upload,
-    Download
+    Download,
+    FileImage
 } from 'lucide-react';
 
 interface DocumentGallerySidebarProps {
@@ -33,6 +34,7 @@ interface DocumentGallerySidebarProps {
     onAddFiles: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onDeleteFile: (file: PhysicalFile) => void;
     onDownload: (file: PhysicalFile) => void;
+    onDownloadImagesAsPdf?: () => void;
 }
 
 const formatBytes = (bytes: number, decimals = 2) => {
@@ -63,11 +65,13 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
     downloadingFileId,
     downloadProgress,
     onGenerateAndAddQrCover,
-    onDownload
+    onDownload,
+    onDownloadImagesAsPdf
 }) => {
     const [activeTab, setActiveTab] = useState<'files' | 'fields'>('files');
     const hasQrPage = localFiles.some((file) => file.isQrPage);
     const hasFields = !!(record?.archiveRecordTemplateValues?.archiveRecordFormInputValues && record.archiveRecordTemplateValues.archiveRecordFormInputValues.length > 0);
+    const imageFilesCount = localFiles.filter(file => isImageFile(file.fileName)).length;
 
     return (
         <div className="w-full md:w-80 border-l border-border pl-0 md:pl-6 flex flex-col gap-4">
@@ -104,6 +108,16 @@ export const DocumentGallerySidebar: React.FC<DocumentGallerySidebarProps> = ({
                             <Loader2 className="h-4 w-4 animate-spin text-primary flex-shrink-0" />
                         ) : (
                             <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {imageFilesCount > 0 && onDownloadImagesAsPdf && (
+                                    <button
+                                        type="button"
+                                        onClick={onDownloadImagesAsPdf}
+                                        className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-500/10 cursor-pointer transition-colors"
+                                        title="تنزيل كافة الصور كملف PDF مجمع"
+                                    >
+                                        <FileImage className="h-4 w-4" />
+                                    </button>
+                                )}
                                 {record && (
                                     <button
                                         type="button"
