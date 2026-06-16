@@ -373,3 +373,8 @@ ModernPaySystem/ModernPaySystem/Diwan/
 # .agents/
 # skills-lock.json
 ROADMAP.md
+
+
+ScannerApp
+ScannerApp/
+ScannerApp/*
