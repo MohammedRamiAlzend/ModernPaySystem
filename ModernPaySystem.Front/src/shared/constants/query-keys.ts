@@ -92,6 +92,14 @@ export const queryKeys = {
             listMy: (page: number, pageSize: number) => [...queryKeys.archiving.editRequests.lists(), 'my', { page, pageSize }] as const,
             details: () => [...queryKeys.archiving.editRequests.all, 'detail'] as const,
             detail: (id: string | null) => [...queryKeys.archiving.editRequests.details(), id] as const,
+        },
+        auditLogs: {
+            all: ['archiving', 'auditLogs'] as const,
+            lists: () => [...queryKeys.archiving.auditLogs.all, 'list'] as const,
+            list: (filters: any) => [...queryKeys.archiving.auditLogs.lists(), filters] as const,
+        },
+        ledDepartments: {
+            all: ['archiving', 'ledDepartments'] as const,
         }
     }
 };

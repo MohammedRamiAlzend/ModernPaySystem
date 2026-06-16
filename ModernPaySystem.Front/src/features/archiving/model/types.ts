@@ -131,3 +131,39 @@ export interface SemanticSearchResultItem {
     content: string;
     score: number;
 }
+
+// Audit Logs
+export enum AuditAction {
+    View = 1,
+    Update = 2,
+    Download = 3,
+    Print = 4,
+    Create = 5,
+    Delete = 6,
+    AddFiles = 7,
+    RemoveFiles = 8,
+}
+
+export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
+    [AuditAction.View]: 'عرض',
+    [AuditAction.Update]: 'تعديل',
+    [AuditAction.Download]: 'تنزيل',
+    [AuditAction.Print]: 'طباعة',
+    [AuditAction.Create]: 'إنشاء',
+    [AuditAction.Delete]: 'حذف',
+    [AuditAction.AddFiles]: 'إضافة ملفات',
+    [AuditAction.RemoveFiles]: 'حذف ملفات',
+};
+
+export interface ArchiveAuditLog {
+    id: string;
+    archiveRecordId: string;
+    userId: string;
+    action: AuditAction;
+    details: string | null;
+    ipAddress: string | null;
+    userAgent: string | null;
+    timestamp: string;
+    createdByUserId?: string | null;
+    createdAt?: string | null;
+}

@@ -12,6 +12,7 @@ using System.Collections.Concurrent;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Net;
+using ModernPaySystem.Domain.Commons;
 using System.Text.Json;
 
 namespace ModernPaySystem.Controllers.ArchivingControllers;
@@ -25,6 +26,7 @@ public class ArchiveRecordsController(
     IArchiveAuthorizationService archiveAuthorizationService,
     IAuthorizationService authorizationService,
     IMemoryCache memoryCache,
+    IDepartmentService departmentService,
     ILogger<ArchiveRecordsController> logger) : ControllerBase
 {
     private static readonly ConcurrentDictionary<string, object> RateLimitLocks = new();
@@ -296,9 +298,40 @@ public class ArchiveRecordsController(
         return result.ToActionResult();
     }
 
+    [HttpGet("departments/led")]
+    public async Task<IActionResult> GetLedDepartments()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+        {
+            return Unauthorized();
+        }
+
+        var leaderDepartmentsResult = await archiveAuthorizationService.GetUserArchiveLeaderDepartmentsAsync(userGuid);
+        if (leaderDepartmentsResult.IsError)
+        {
+            return leaderDepartmentsResult.ToActionResult();
+        }
+
+        var leaderDepartments = leaderDepartmentsResult.Value!;
+        var departmentsList = new List<DepartmentDto>();
+
+        foreach (var depId in leaderDepartments)
+        {
+            var depResult = await departmentService.GetByIdAsync(depId);
+            if (!depResult.IsError && depResult.Value != null)
+            {
+                departmentsList.Add(depResult.Value);
+            }
+        }
+
+        Result<List<DepartmentDto>> result = departmentsList;
+        return result.ToActionResult();
+    }
+
     private async Task<IActionResult> StreamArchiveFileAsync(Guid fileId, bool download, Guid? recordId = null, bool includeDeleted = false)
     {
-        var result = await archiveRecordService.GetPhysicalFileStreamAsync(fileId, recordId, includeDeleted);
+        var result = await archiveRecordService.GetPhysicalFileStreamAsync(fileId, recordId, includeDeleted, isDownload: download);
         if (result.IsError)
         {
             var topError = result.TopError;

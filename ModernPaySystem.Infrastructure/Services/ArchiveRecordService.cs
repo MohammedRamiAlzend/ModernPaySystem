@@ -144,7 +144,7 @@ public class ArchiveRecordService(
 
             var ipAddress = httpContextServiceManager.GetClientIpAddress();
             var userAgent = httpContextServiceManager.GetUserAgent();
-            _ = _auditLogService.LogAsync(id, userId.ToString(), AuditAction.View, "Viewed archive record", ipAddress, userAgent);
+            await _auditLogService.LogAsync(id, userId.ToString(), AuditAction.View, "Viewed archive record", ipAddress, userAgent);
 
             return result.Value.ToDto();
         }
@@ -431,7 +431,7 @@ public class ArchiveRecordService(
 
                     var ipAddress = httpContextServiceManager.GetClientIpAddress();
                     var userAgent = httpContextServiceManager.GetUserAgent();
-                    _ = _auditLogService.LogAsync(record.Id, userId.ToString(), AuditAction.Create, "Created archive record", ipAddress, userAgent);
+                    await _auditLogService.LogAsync(record.Id, userId.ToString(), AuditAction.Create, "Created archive record", ipAddress, userAgent);
 
                     return await GetByIdAsync(record.Id);
                 }
@@ -747,7 +747,7 @@ public class ArchiveRecordService(
 
                 var ipAddress = httpContextServiceManager.GetClientIpAddress();
                 var userAgent = httpContextServiceManager.GetUserAgent();
-                _ = _auditLogService.LogAsync(id, userId.ToString(), AuditAction.Update, "Updated archive record", ipAddress, userAgent);
+                await _auditLogService.LogAsync(id, userId.ToString(), AuditAction.Update, "Updated archive record", ipAddress, userAgent);
 
                 return await GetByIdAsync(record.Id);
             });
@@ -1337,7 +1337,7 @@ public class ArchiveRecordService(
         }
     }
 
-    public async Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null, bool includeDeleted = false)
+    public async Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null, bool includeDeleted = false, bool isDownload = false)
     {
         try
         {
@@ -1390,7 +1390,11 @@ public class ArchiveRecordService(
 
             var ipAddress = httpContextServiceManager.GetClientIpAddress();
             var userAgent = httpContextServiceManager.GetUserAgent();
-            _ = _auditLogService.LogAsync(physicalFile.ArchiveRecordId, userId.ToString(), AuditAction.Download, $"Downloaded file: {physicalFile.FileName}", ipAddress, userAgent);
+            var auditAction = isDownload ? AuditAction.Download : AuditAction.View;
+            var auditDetails = isDownload
+                ? $"Downloaded file: {physicalFile.FileName}"
+                : $"Viewed file: {physicalFile.FileName}";
+            await _auditLogService.LogAsync(physicalFile.ArchiveRecordId, userId.ToString(), auditAction, auditDetails, ipAddress, userAgent);
 
             return new ArchivePhysicalFileDownloadDto
             {
@@ -1620,7 +1624,7 @@ public class ArchiveRecordService(
 
             var ipAddress = httpContextServiceManager.GetClientIpAddress();
             var userAgent = httpContextServiceManager.GetUserAgent();
-            _ = _auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Download, "Downloaded archive record as ZIP", ipAddress, userAgent);
+            await _auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Download, "Downloaded archive record as ZIP", ipAddress, userAgent);
 
             return new ArchiveRecordZipBundleDto
             {

@@ -1,5 +1,6 @@
 import api from '@/shared/api/baseApi';
-import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, FolderPermissionDto, CreateFolderPermissionDto, SemanticSearchRequest, SemanticSearchResultItem } from '../model/types';
+import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, FolderPermissionDto, CreateFolderPermissionDto, SemanticSearchRequest, SemanticSearchResultItem, ArchiveAuditLog } from '../model/types';
+import { Department } from '@/entities/department/model/types';
 
 export const archivingService = {
     // ---------------------------------------------
@@ -280,6 +281,10 @@ export const archivingService = {
         await api.delete(`/archive-records/${id}/files/${fileId}`);
     },
 
+    logPrint: async (recordId: string): Promise<void> => {
+        await api.post(`/archive-records/${recordId}/print`);
+    },
+
     // ---------------------------------------------
     // Dynamic Form Templates API
     // ---------------------------------------------
@@ -345,6 +350,39 @@ export const archivingService = {
     // ---------------------------------------------
     semanticSearch: async (request: SemanticSearchRequest): Promise<SemanticSearchResultItem[]> => {
         const response = await api.post<any>('/semantic-search/search', request);
+        return response.data.data;
+    },
+
+    // ---------------------------------------------
+    // Audit Logs API
+    // ---------------------------------------------
+    getAuditLogs: async (params: {
+        page?: number;
+        pageSize?: number;
+        action?: number | null;
+        fromDate?: string | null;
+        toDate?: string | null;
+        departmentId?: string | null;
+    }): Promise<{ items: ArchiveAuditLog[], totalItems: number }> => {
+        const response = await api.get<any>('/archive-records/audit-logs', {
+            params: {
+                page: params.page ?? 1,
+                pageSize: params.pageSize ?? 50,
+                action: params.action ?? undefined,
+                fromDate: params.fromDate ?? undefined,
+                toDate: params.toDate ?? undefined,
+                departmentId: params.departmentId ?? undefined,
+            }
+        });
+        const data = response.data.data;
+        return {
+            items: data?.items || [],
+            totalItems: data?.totalItems || 0,
+        };
+    },
+
+    getLedDepartments: async (): Promise<Department[]> => {
+        const response = await api.get<any>('/archive-records/departments/led');
         return response.data.data;
     }
 };

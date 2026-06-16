@@ -16,7 +16,7 @@ public interface IArchiveRecordService
     Task<Result<ArchiveRecordDto>> UpdateAsync(Guid id, UpdateArchiveRecordDto dto);
     Task<Result<ArchiveRecordDto>> AddFilesAsync(Guid id, IFormFileCollection files);
     Task<Result<bool>> RemoveFileAsync(Guid id, Guid fileId);
-    Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null, bool includeDeleted = false);
+    Task<Result<ArchivePhysicalFileDownloadDto>> GetPhysicalFileStreamAsync(Guid fileId, Guid? recordId = null, bool includeDeleted = false, bool isDownload = false);
     Task<Result<PagedFileResult<ArchivePhysicalFilePageItemDto>>> GetPaginatedFilesAsync(
         Guid recordId,
         int page = 1,

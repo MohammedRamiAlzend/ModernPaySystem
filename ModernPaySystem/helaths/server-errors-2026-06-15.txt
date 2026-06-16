@@ -1,0 +1,2 @@
+[2026-06-15T17:42:50.4422724Z] OLLAMA: The request was canceled due to the configured HttpClient.Timeout of 5 seconds elapsing.
+[2026-06-15T17:42:56.9301897Z] QDRANT: Status(StatusCode="Unavailable", Detail="Error connecting to subchannel.", DebugException="System.Net.Sockets.SocketException: No connection could be made because the target machine actively refused it.")

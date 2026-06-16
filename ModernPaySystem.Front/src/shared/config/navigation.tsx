@@ -1,6 +1,5 @@
 
-import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3, Search, Brain } from "lucide-react";
-// import { Home, FileText, ClipboardList, LayoutDashboard, Settings, Reply, Archive,List } from "lucide-react";
+import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3, Search, Brain, History } from "lucide-react";
 
 export interface NavigationItem {
     title: string;
@@ -11,37 +10,12 @@ export interface NavigationItem {
 }
 
 export const NAVIGATION_ITEMS: NavigationItem[] = [
-    // {
-    //     title: "الرئيسية",
-    //     path: "/",
-    //     icon: <Home className="h-5 w-5" />,
-    // },
-    // {
-    //     title: "عقود الإيجار",
-    //     path: "/contracts",
-    //     icon: <FileText className="h-5 w-5" />,
-    // },
-    // {
-    //     title: "معاملات سريعة",
-    //     path: "/processes",
-    //     icon: <ClipboardList className="h-5 w-5" />,
-    // },
     {
         title: "منصة خدمات ريف دمشق",
         path: "/form-builder/actioned",
         icon: <LayoutDashboard className="h-5 w-5" />,
         isOpen: true,
         children: [
-            // {
-            //     title: "إدارة النماذج",
-            //     path: "/settings?tab=templates",
-            //     icon: <Settings className="h-4 w-4" />,
-            // },
-            // {
-            //     title: "تقديم طلب",
-            //     path: "/form-builder/requests/new",
-            //     icon: <Send className="h-4 w-4" />,
-            // },
             {
                 title: "الرد على الطلبات",
                 path: "/form-builder/responses",
@@ -114,6 +88,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "طلبات تعديل الأرشيف",
                 path: "/archiving/edit-requests",
                 icon: <Clock className="h-4 w-4" />,
+            },
+            {
+                title: "سجلات النشاط (Audit Logs)",
+                path: "/archiving/audit-logs",
+                icon: <History className="h-4 w-4" />,
             }
         ]
     }

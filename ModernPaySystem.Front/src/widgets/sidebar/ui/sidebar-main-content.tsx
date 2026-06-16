@@ -3,6 +3,7 @@ import { cn } from '@/shared/lib/utils';
 import { PrefetchNavLink } from '@/shared/navigation/prefetch-nav-link';
 import { NAVIGATION_ITEMS } from '@/shared/config/navigation';
 import { FileText, ChevronDown } from 'lucide-react';
+import { useLedDepartments } from '@/features/archiving/model/queries';
 import { useLocation, Link } from 'react-router-dom';
 import { useResponsesByRequester, useRequests, useTemplates, useRequestTransactions } from '@/features/form-builder/api/formEndpoints';
 import { useBadgeCount } from '@/shared/hooks/use-badge-count';
@@ -52,6 +53,10 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
 
     const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
+    // Fetch Led Departments to restrict Audit Logs menu
+    const { data: ledDepartments = [] } = useLedDepartments();
+    const isArchiveLeader = ledDepartments.length > 0;
+
     // Fetch Templates and inject into navigation
     const { data: templates } = useTemplates();
     const navItems = useMemo(() => {
@@ -62,6 +67,10 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                     child.title !== "الرد على الطلبات" &&
                     child.title !== "الردود الصادرة"
                 );
+            }
+
+            if (item.title === "نظام الأرشفة" && !isArchiveLeader) {
+                children = children.filter(child => child.title !== "سجلات النشاط (Audit Logs)");
             }
 
             if (item.title === "منصة خدمات ريف دمشق") {
@@ -92,7 +101,7 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
                 children
             };
         });
-    }, [templates, user]);
+    }, [templates, user, isArchiveLeader]);
 
     // AUTO-EXPAND Logic: Synchronize state with URL during render
     const fullPath = location.pathname + location.search;

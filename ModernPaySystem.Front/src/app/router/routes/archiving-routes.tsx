@@ -4,12 +4,32 @@ import { RoutePermissions } from '../route-permissions';
 import { ErrorBoundary } from '@/shared/ui/common/error-boundary';
 import { Suspense } from 'react';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
+import { useLedDepartments } from '@/features/archiving/model/queries';
 
 const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-page'));
 // const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
 const ArchiveSearchPage = lazyWithPreload(() => import('@/pages/archiving/search-page'));
 const SemanticSearchPage = lazyWithPreload(() => import('@/pages/archiving/semantic-search-page'));
+const AuditLogsPage = lazyWithPreload(() => import('@/pages/archiving/audit-logs-page'));
+
+const ArchiveLeaderRoute = ({ children }: { children: React.ReactNode }) => {
+  const { data: departments = [], isLoading: isLoadingDeps } = useLedDepartments();
+
+  if (isLoadingDeps) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (departments.length === 0) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
 
 export const archivingRoutes: RouteObject = {
   path: 'archiving',
@@ -72,6 +92,20 @@ export const archivingRoutes: RouteObject = {
       handle: {
         crumb: () => 'طلبات تعديل الأرشيف',
         preload: () => ArchiveEditRequestsPage.preload(),
+      }
+    },
+    {
+      path: 'audit-logs',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ArchiveLeaderRoute>
+            <AuditLogsPage />
+          </ArchiveLeaderRoute>
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'سجلات النشاط (Audit Logs)',
+        preload: () => AuditLogsPage.preload(),
       }
     }
   ]

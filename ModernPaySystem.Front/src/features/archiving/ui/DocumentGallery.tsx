@@ -148,6 +148,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                                             try {
                                                 const blob = await archivingService.viewFileBlob(recordId, selectedFile.id);
                                                 printBlob(blob, isPdfFile(selectedFile.fileName));
+                                                archivingService.logPrint(recordId).catch(() => {});
                                             } catch (err) {
                                                 console.error('Failed to print file', err);
                                             }

@@ -75,3 +75,28 @@ export const useDynamicForm = (id: string | null) => {
         enabled: !!id,
     });
 };
+
+// ---------------------------------------------------------
+// Audit Logs Queries
+// ---------------------------------------------------------
+export const useArchiveAuditLogs = (params: {
+    page?: number;
+    pageSize?: number;
+    action?: number | null;
+    fromDate?: string | null;
+    toDate?: string | null;
+    departmentId?: string | null;
+}) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.auditLogs.list(params),
+        queryFn: () => archivingService.getAuditLogs(params),
+        enabled: !!params.departmentId,
+    });
+};
+
+export const useLedDepartments = () => {
+    return useQuery({
+        queryKey: queryKeys.archiving.ledDepartments.all,
+        queryFn: () => archivingService.getLedDepartments(),
+    });
+};
