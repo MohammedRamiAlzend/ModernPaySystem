@@ -5,16 +5,17 @@ import type { ChartDataPoint } from '../../../model/types';
 
 interface TopUsersChartProps {
     data: ChartDataPoint[];
+    axisLabel?: string;
 }
 
-export function TopUsersChart({ data }: TopUsersChartProps) {
+export function TopUsersChart({ data, axisLabel }: TopUsersChartProps) {
     const sorted = [...data].sort((a, b) => b.value - a.value).slice(0, 10);
 
     return (
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={sorted} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis type="number" className="text-xs" />
+                <XAxis type="number" className="text-xs" label={axisLabel ? { value: axisLabel, position: 'bottom' } : undefined} />
                 <YAxis type="category" dataKey="label" className="text-xs" width={120} />
                 <Tooltip
                     contentStyle={{

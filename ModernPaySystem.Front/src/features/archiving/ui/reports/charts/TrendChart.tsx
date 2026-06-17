@@ -13,7 +13,7 @@ export function TrendChart({ data }: TrendChartProps) {
             <AreaChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="label" className="text-xs" />
-                <YAxis className="text-xs" />
+                <YAxis className="text-xs" label={{ value: 'عدد السجلات', angle: -90, position: 'insideLeft' }} />
                 <Tooltip
                     contentStyle={{
                         borderRadius: '8px',

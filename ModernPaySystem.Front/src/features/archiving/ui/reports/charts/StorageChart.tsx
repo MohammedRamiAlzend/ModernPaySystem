@@ -29,22 +29,21 @@ export function StorageChart({ fileTypeBreakdown }: StorageChartProps) {
 
     if (chartData.length === 0) return null;
 
-    const renderLabel = (props: PieLabelRenderProps) => {
-        const { name, percent } = props;
-        return `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`;
-    };
+    const renderLabel = ({ name, percent }: PieLabelRenderProps) =>
+        `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`;
 
     return (
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={350}>
             <PieChart>
                 <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
+                    outerRadius={90}
                     paddingAngle={2}
                     dataKey="value"
                     label={renderLabel}
+                    labelLine
                 >
                     {chartData.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

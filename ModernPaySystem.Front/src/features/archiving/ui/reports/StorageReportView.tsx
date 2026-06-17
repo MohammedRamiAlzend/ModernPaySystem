@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Progress } from '@/shared/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2, HardDrive, FileText } from 'lucide-react';
@@ -72,6 +72,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                 <Card className="border border-border/40 shadow-sm">
                     <CardHeader>
                         <CardTitle className="text-sm font-semibold">توزيع الملفات حسب النوع</CardTitle>
+                        <CardDescription>النسبة المئوية لكل نوع من الملفات المخزنة في النظام</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <StorageChart fileTypeBreakdown={data.fileTypeBreakdown} />
@@ -82,6 +83,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
             <Card className="border border-border/40 shadow-sm">
                 <CardHeader>
                     <CardTitle className="text-sm font-semibold">التخزين لكل مستخدم</CardTitle>
+                    <CardDescription>مساحة التخزين المستخدمة لكل مستخدم ونسبة الاستخدام</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
@@ -121,6 +123,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
             <Card className="border border-border/40 shadow-sm">
                 <CardHeader>
                     <CardTitle className="text-sm font-semibold">توزيع الملفات حسب الامتداد</CardTitle>
+                    <CardDescription>تفاصيل الملفات المخزنة حسب الامتداد مع العدد والمساحة</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>

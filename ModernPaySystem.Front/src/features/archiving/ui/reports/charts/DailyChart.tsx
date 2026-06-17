@@ -19,7 +19,7 @@ export function DailyChart({ hourlyBreakdown }: DailyChartProps) {
             <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" />
+                <YAxis className="text-xs" label={{ value: 'العدد', angle: -90, position: 'insideLeft' }} />
                 <Tooltip
                     contentStyle={{
                         borderRadius: '8px',

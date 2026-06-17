@@ -19,7 +19,7 @@ export function HourlyDistributionChart({ data }: HourlyDistributionChartProps) 
             <LineChart data={sorted}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                 <XAxis dataKey="label" className="text-xs" />
-                <YAxis className="text-xs" />
+                <YAxis className="text-xs" label={{ value: 'عدد الإجراءات', angle: -90, position: 'insideLeft' }} />
                 <Tooltip
                     contentStyle={{
                         borderRadius: '8px',

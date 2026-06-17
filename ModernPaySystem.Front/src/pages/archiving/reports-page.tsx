@@ -20,6 +20,15 @@ import { UserActivityView } from '@/features/archiving/ui/reports/UserActivityVi
 import { ActiveUsersView } from '@/features/archiving/ui/reports/ActiveUsersView';
 import { StorageReportView } from '@/features/archiving/ui/reports/StorageReportView';
 import { ChartsSection } from '@/features/archiving/ui/reports/ChartsSection';
+import { ExportButton } from '@/features/archiving/ui/reports/ExportButton';
+import {
+    exportDashboardToExcel,
+    exportDailyReportToExcel,
+    exportPeriodReportToExcel,
+    exportUserActivityToExcel,
+    exportActiveUsersToExcel,
+    exportStorageReportToExcel,
+} from '@/shared/lib/excel-export';
 import { Calendar, RefreshCw, Loader2 } from 'lucide-react';
 
 type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts';
@@ -87,6 +96,14 @@ export default function ReportsPage() {
                 </div>
 
                 <TabsContent value="dashboard">
+                    <div className="flex justify-end mb-4">
+                        {dashboard && (
+                            <ExportButton
+                                onExport={() => exportDashboardToExcel(dashboard)}
+                                label="تصدير لوحة المعلومات"
+                            />
+                        )}
+                    </div>
                     {isLoadingDashboard ? (
                         <div className="flex h-64 items-center justify-center">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -103,42 +120,58 @@ export default function ReportsPage() {
                 </TabsContent>
 
                 <TabsContent value="daily">
-                    <Card className="border border-border/40 shadow-sm mb-4">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3 max-w-xs">
-                                <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">اختر التاريخ</label>
-                                <div className="relative flex-1">
-                                    <Input
-                                        type="date"
-                                        className="w-full pl-9 text-right"
-                                        value={selectedDate}
-                                        onChange={(e) => setSelectedDate(e.target.value)}
-                                    />
-                                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <Card className="border border-border/40 shadow-sm flex-1">
+                            <CardContent className="pt-6">
+                                <div className="flex items-center gap-3 max-w-xs">
+                                    <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">اختر التاريخ</label>
+                                    <div className="relative flex-1">
+                                        <Input
+                                            type="date"
+                                            className="w-full pl-9 text-right"
+                                            value={selectedDate}
+                                            onChange={(e) => setSelectedDate(e.target.value)}
+                                        />
+                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                        {dailyReport && (
+                            <ExportButton
+                                onExport={() => exportDailyReportToExcel(dailyReport)}
+                                label="تصدير التقرير"
+                            />
+                        )}
+                    </div>
                     <DailyReportView data={dailyReport} isLoading={isLoadingDaily} />
                 </TabsContent>
 
                 <TabsContent value="weekly">
-                    <Card className="border border-border/40 shadow-sm mb-4">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3 max-w-xs">
-                                <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">بداية الأسبوع</label>
-                                <div className="relative flex-1">
-                                    <Input
-                                        type="date"
-                                        className="w-full pl-9 text-right"
-                                        value={weekStart}
-                                        onChange={(e) => setWeekStart(e.target.value)}
-                                    />
-                                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <Card className="border border-border/40 shadow-sm flex-1">
+                            <CardContent className="pt-6">
+                                <div className="flex items-center gap-3 max-w-xs">
+                                    <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">بداية الأسبوع</label>
+                                    <div className="relative flex-1">
+                                        <Input
+                                            type="date"
+                                            className="w-full pl-9 text-right"
+                                            value={weekStart}
+                                            onChange={(e) => setWeekStart(e.target.value)}
+                                        />
+                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                        {weeklyReport && (
+                            <ExportButton
+                                onExport={() => exportPeriodReportToExcel(weeklyReport, 'التقرير الأسبوعي')}
+                                label="تصدير التقرير"
+                            />
+                        )}
+                    </div>
                     <PeriodReportView
                         data={weeklyReport}
                         isLoading={isLoadingWeekly}
@@ -147,38 +180,46 @@ export default function ReportsPage() {
                 </TabsContent>
 
                 <TabsContent value="monthly">
-                    <Card className="border border-border/40 shadow-sm mb-4">
-                        <CardContent className="pt-6">
-                            <div className="flex items-center gap-3">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">السنة</label>
-                                    <select
-                                        className="h-10 px-3 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        value={reportYear}
-                                        onChange={(e) => setReportYear(Number(e.target.value))}
-                                    >
-                                        {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-                                            <option key={y} value={y}>{y}</option>
-                                        ))}
-                                    </select>
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <Card className="border border-border/40 shadow-sm flex-1">
+                            <CardContent className="pt-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">السنة</label>
+                                        <select
+                                            className="h-10 px-3 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                            value={reportYear}
+                                            onChange={(e) => setReportYear(Number(e.target.value))}
+                                        >
+                                            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                                                <option key={y} value={y}>{y}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">الشهر</label>
+                                        <select
+                                            className="h-10 px-3 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                                            value={reportMonth}
+                                            onChange={(e) => setReportMonth(Number(e.target.value))}
+                                        >
+                                            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                                                <option key={m} value={m}>
+                                                    {new Date(2000, m - 1).toLocaleDateString('ar-SY', { month: 'long' })}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">الشهر</label>
-                                    <select
-                                        className="h-10 px-3 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                                        value={reportMonth}
-                                        onChange={(e) => setReportMonth(Number(e.target.value))}
-                                    >
-                                        {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                                            <option key={m} value={m}>
-                                                {new Date(2000, m - 1).toLocaleDateString('ar-SY', { month: 'long' })}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                        {monthlyReport && (
+                            <ExportButton
+                                onExport={() => exportPeriodReportToExcel(monthlyReport, 'التقرير الشهري')}
+                                label="تصدير التقرير"
+                            />
+                        )}
+                    </div>
                     <PeriodReportView
                         data={monthlyReport}
                         isLoading={isLoadingMonthly}
@@ -187,74 +228,98 @@ export default function ReportsPage() {
                 </TabsContent>
 
                 <TabsContent value="user-activity">
-                    <Card className="border border-border/40 shadow-sm mb-4">
-                        <CardContent className="pt-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">من تاريخ</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="date"
-                                            className="w-full pl-9 text-right"
-                                            value={fromDate}
-                                            onChange={(e) => setFromDate(e.target.value)}
-                                        />
-                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <Card className="border border-border/40 shadow-sm flex-1">
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">من تاريخ</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                className="w-full pl-9 text-right"
+                                                value={fromDate}
+                                                onChange={(e) => setFromDate(e.target.value)}
+                                            />
+                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">إلى تاريخ</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                className="w-full pl-9 text-right"
+                                                value={toDate}
+                                                onChange={(e) => setToDate(e.target.value)}
+                                            />
+                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">إلى تاريخ</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="date"
-                                            className="w-full pl-9 text-right"
-                                            value={toDate}
-                                            onChange={(e) => setToDate(e.target.value)}
-                                        />
-                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                        {userActivity && userActivity.length > 0 && (
+                            <ExportButton
+                                onExport={() => exportUserActivityToExcel(userActivity, fromDate, toDate)}
+                                label="تصدير النشاط"
+                            />
+                        )}
+                    </div>
                     <UserActivityView data={userActivity} isLoading={isLoadingUserActivity} />
                 </TabsContent>
 
                 <TabsContent value="active-users">
-                    <Card className="border border-border/40 shadow-sm mb-4">
-                        <CardContent className="pt-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">من تاريخ</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="date"
-                                            className="w-full pl-9 text-right"
-                                            value={fromDate}
-                                            onChange={(e) => setFromDate(e.target.value)}
-                                        />
-                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <Card className="border border-border/40 shadow-sm flex-1">
+                            <CardContent className="pt-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">من تاريخ</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                className="w-full pl-9 text-right"
+                                                value={fromDate}
+                                                onChange={(e) => setFromDate(e.target.value)}
+                                            />
+                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-semibold text-muted-foreground">إلى تاريخ</label>
+                                        <div className="relative">
+                                            <Input
+                                                type="date"
+                                                className="w-full pl-9 text-right"
+                                                value={toDate}
+                                                onChange={(e) => setToDate(e.target.value)}
+                                            />
+                                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-muted-foreground">إلى تاريخ</label>
-                                    <div className="relative">
-                                        <Input
-                                            type="date"
-                                            className="w-full pl-9 text-right"
-                                            value={toDate}
-                                            onChange={(e) => setToDate(e.target.value)}
-                                        />
-                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                    </div>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                        {activeUsers && activeUsers.length > 0 && (
+                            <ExportButton
+                                onExport={() => exportActiveUsersToExcel(activeUsers, fromDate, toDate)}
+                                label="تصدير المستخدمين"
+                            />
+                        )}
+                    </div>
                     <ActiveUsersView data={activeUsers} isLoading={isLoadingActiveUsers} />
                 </TabsContent>
 
                 <TabsContent value="storage">
+                    <div className="flex justify-end mb-4">
+                        {storageReport && (
+                            <ExportButton
+                                onExport={() => exportStorageReportToExcel(storageReport)}
+                                label="تصدير التقرير"
+                            />
+                        )}
+                    </div>
                     <StorageReportView data={storageReport} isLoading={isLoadingStorage} />
                 </TabsContent>
 
