@@ -1,5 +1,13 @@
 import api from '@/shared/api/baseApi';
-import { Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, FolderPermissionDto, CreateFolderPermissionDto, SemanticSearchRequest, SemanticSearchResultItem, ArchiveAuditLog } from '../model/types';
+import {
+    Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto,
+    CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto,
+    FolderPermissionDto, CreateFolderPermissionDto,
+    SemanticSearchRequest, SemanticSearchResultItem, ArchiveAuditLog,
+    DepartmentArchiveDashboard, ArchiveDailyReport, ArchivePeriodReport,
+    UserActivityReportItem, ActiveUserReportItem,
+    StorageConsumptionReport, DepartmentChartsData
+} from '../model/types';
 import { Department } from '@/entities/department/model/types';
 import { attachmentCache } from '../utils/attachmentCache';
 
@@ -458,6 +466,78 @@ export const archivingService = {
 
     getLedDepartments: async (): Promise<Department[]> => {
         const response = await api.get<any>('/archive-records/departments/led');
+        return response.data.data;
+    },
+
+    // ---------------------------------------------
+    // Archive Report API
+    // ---------------------------------------------
+    getMyDepartments: async (): Promise<Department[]> => {
+        const response = await api.get<any>('/archive-report/my-departments');
+        return response.data.data;
+    },
+
+    getDepartmentDashboard: async (): Promise<DepartmentArchiveDashboard> => {
+        const response = await api.get<any>('/archive-report/dashboard');
+        return response.data.data;
+    },
+
+    getDailyReport: async (date?: string | null): Promise<ArchiveDailyReport> => {
+        const response = await api.get<any>('/archive-report/daily', {
+            params: { date: date || undefined }
+        });
+        return response.data.data;
+    },
+
+    getWeeklyReport: async (weekStart?: string | null): Promise<ArchivePeriodReport> => {
+        const response = await api.get<any>('/archive-report/weekly', {
+            params: { weekStart: weekStart || undefined }
+        });
+        return response.data.data;
+    },
+
+    getMonthlyReport: async (year?: number | null, month?: number | null): Promise<ArchivePeriodReport> => {
+        const response = await api.get<any>('/archive-report/monthly', {
+            params: {
+                year: year ?? undefined,
+                month: month ?? undefined,
+            }
+        });
+        return response.data.data;
+    },
+
+    getUserActivityReport: async (fromDate?: string | null, toDate?: string | null): Promise<UserActivityReportItem[]> => {
+        const response = await api.get<any>('/archive-report/user-activity', {
+            params: {
+                fromDate: fromDate || undefined,
+                toDate: toDate || undefined,
+            }
+        });
+        return response.data.data;
+    },
+
+    getActiveUsers: async (fromDate?: string | null, toDate?: string | null): Promise<ActiveUserReportItem[]> => {
+        const response = await api.get<any>('/archive-report/active-users', {
+            params: {
+                fromDate: fromDate || undefined,
+                toDate: toDate || undefined,
+            }
+        });
+        return response.data.data;
+    },
+
+    getStorageReport: async (): Promise<StorageConsumptionReport> => {
+        const response = await api.get<any>('/archive-report/storage');
+        return response.data.data;
+    },
+
+    getChartsData: async (fromDate?: string | null, toDate?: string | null): Promise<DepartmentChartsData> => {
+        const response = await api.get<any>('/archive-report/charts', {
+            params: {
+                fromDate: fromDate || undefined,
+                toDate: toDate || undefined,
+            }
+        });
         return response.data.data;
     }
 };

@@ -1,0 +1,155 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
+import { Progress } from '@/shared/ui/progress';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
+import { Loader2, HardDrive, FileText } from 'lucide-react';
+import type { StorageConsumptionReport } from '../../model/types';
+import { StorageChart } from './charts/StorageChart';
+
+interface StorageReportViewProps {
+    data: StorageConsumptionReport | undefined;
+    isLoading: boolean;
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
+    if (isLoading) {
+        return (
+            <div className="flex h-64 items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    if (!data) {
+        return (
+            <Card>
+                <CardContent className="pt-8 text-center text-muted-foreground">
+                    لا توجد بيانات تخزين متاحة
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <div className="space-y-6" dir="rtl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card className="border border-border/40 shadow-sm">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-muted-foreground font-medium">إجمالي مساحة التخزين</p>
+                                <p className="text-2xl font-bold tracking-tight">{formatBytes(data.totalStorageBytes)}</p>
+                            </div>
+                            <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                                <HardDrive className="w-5 h-5" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border border-border/40 shadow-sm">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-muted-foreground font-medium">إجمالي الملفات</p>
+                                <p className="text-2xl font-bold tracking-tight">{data.totalFiles.toLocaleString()}</p>
+                            </div>
+                            <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                                <FileText className="w-5 h-5" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {data.fileTypeBreakdown.length > 0 && (
+                <Card className="border border-border/40 shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="text-sm font-semibold">توزيع الملفات حسب النوع</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <StorageChart fileTypeBreakdown={data.fileTypeBreakdown} />
+                    </CardContent>
+                </Card>
+            )}
+
+            <Card className="border border-border/40 shadow-sm">
+                <CardHeader>
+                    <CardTitle className="text-sm font-semibold">التخزين لكل مستخدم</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="text-right">المستخدم</TableHead>
+                                <TableHead className="text-right">الملفات</TableHead>
+                                <TableHead className="text-right">المساحة</TableHead>
+                                <TableHead className="text-right">النسبة المئوية</TableHead>
+                                <TableHead className="text-right">آخر إضافة</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {data.perUser.map((u) => (
+                                <TableRow key={u.userId}>
+                                    <TableCell className="font-medium">{u.userName}</TableCell>
+                                    <TableCell>{u.totalFiles}</TableCell>
+                                    <TableCell>{formatBytes(u.totalBytes)}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Progress value={u.percentageOfTotal} className="h-2 w-20" />
+                                            <span className="text-xs text-muted-foreground">{u.percentageOfTotal.toFixed(1)}%</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-xs text-muted-foreground">
+                                        {u.lastFileAddedAt
+                                            ? new Date(u.lastFileAddedAt).toLocaleDateString('ar-SY')
+                                            : '-'}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            <Card className="border border-border/40 shadow-sm">
+                <CardHeader>
+                    <CardTitle className="text-sm font-semibold">توزيع الملفات حسب الامتداد</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="text-right">الامتداد</TableHead>
+                                <TableHead className="text-right">العدد</TableHead>
+                                <TableHead className="text-right">المساحة</TableHead>
+                                <TableHead className="text-right">النسبة المئوية</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {data.fileTypeBreakdown.map((t) => (
+                                <TableRow key={t.extension}>
+                                    <TableCell className="font-medium">.{t.extension}</TableCell>
+                                    <TableCell>{t.count}</TableCell>
+                                    <TableCell>{formatBytes(t.totalBytes)}</TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Progress value={t.percentageOfTotal} className="h-2 w-20" />
+                                            <span className="text-xs text-muted-foreground">{t.percentageOfTotal.toFixed(1)}%</span>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}

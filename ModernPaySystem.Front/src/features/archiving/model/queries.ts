@@ -100,3 +100,69 @@ export const useLedDepartments = () => {
         queryFn: () => archivingService.getLedDepartments(),
     });
 };
+
+// ---------------------------------------------------------
+// Archive Report Queries
+// ---------------------------------------------------------
+export const useMyDepartments = () => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.myDepartments(),
+        queryFn: () => archivingService.getMyDepartments(),
+    });
+};
+
+export const useDepartmentDashboard = () => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.dashboard(),
+        queryFn: () => archivingService.getDepartmentDashboard(),
+    });
+};
+
+export const useDailyReport = (date?: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.daily(date),
+        queryFn: () => archivingService.getDailyReport(date),
+    });
+};
+
+export const useWeeklyReport = (weekStart?: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.weekly(weekStart),
+        queryFn: () => archivingService.getWeeklyReport(weekStart),
+    });
+};
+
+export const useMonthlyReport = (year?: number | null, month?: number | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.monthly(year, month),
+        queryFn: () => archivingService.getMonthlyReport(year, month),
+    });
+};
+
+export const useUserActivityReport = (fromDate?: string | null, toDate?: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.userActivity(fromDate, toDate),
+        queryFn: () => archivingService.getUserActivityReport(fromDate, toDate),
+    });
+};
+
+export const useActiveUsersReport = (fromDate?: string | null, toDate?: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.activeUsers(fromDate, toDate),
+        queryFn: () => archivingService.getActiveUsers(fromDate, toDate),
+    });
+};
+
+export const useStorageReport = () => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.storage(),
+        queryFn: () => archivingService.getStorageReport(),
+    });
+};
+
+export const useChartsData = (fromDate?: string | null, toDate?: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.reports.charts(fromDate, toDate),
+        queryFn: () => archivingService.getChartsData(fromDate, toDate),
+    });
+};

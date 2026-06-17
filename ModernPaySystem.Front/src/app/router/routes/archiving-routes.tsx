@@ -12,6 +12,7 @@ const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/
 const ArchiveSearchPage = lazyWithPreload(() => import('@/pages/archiving/search-page'));
 const SemanticSearchPage = lazyWithPreload(() => import('@/pages/archiving/semantic-search-page'));
 const AuditLogsPage = lazyWithPreload(() => import('@/pages/archiving/audit-logs-page'));
+const ReportsPage = lazyWithPreload(() => import('@/pages/archiving/reports-page'));
 
 const ArchiveLeaderRoute = ({ children }: { children: React.ReactNode }) => {
   const { data: departments = [], isLoading: isLoadingDeps } = useLedDepartments();
@@ -106,6 +107,20 @@ export const archivingRoutes: RouteObject = {
       handle: {
         crumb: () => 'سجلات النشاط (Audit Logs)',
         preload: () => AuditLogsPage.preload(),
+      }
+    },
+    {
+      path: 'reports',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <ArchiveLeaderRoute>
+            <ReportsPage />
+          </ArchiveLeaderRoute>
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'تقارير الأرشيف',
+        preload: () => ReportsPage.preload(),
       }
     }
   ]

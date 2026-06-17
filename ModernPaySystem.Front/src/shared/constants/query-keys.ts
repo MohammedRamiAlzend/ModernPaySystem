@@ -100,6 +100,18 @@ export const queryKeys = {
         },
         ledDepartments: {
             all: ['archiving', 'ledDepartments'] as const,
+        },
+        reports: {
+            all: ['archiving', 'reports'] as const,
+            myDepartments: () => [...queryKeys.archiving.reports.all, 'myDepartments'] as const,
+            dashboard: () => [...queryKeys.archiving.reports.all, 'dashboard'] as const,
+            daily: (date?: string | null) => [...queryKeys.archiving.reports.all, 'daily', date] as const,
+            weekly: (weekStart?: string | null) => [...queryKeys.archiving.reports.all, 'weekly', weekStart] as const,
+            monthly: (year?: number | null, month?: number | null) => [...queryKeys.archiving.reports.all, 'monthly', year, month] as const,
+            userActivity: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.archiving.reports.all, 'userActivity', fromDate, toDate] as const,
+            activeUsers: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.archiving.reports.all, 'activeUsers', fromDate, toDate] as const,
+            storage: () => [...queryKeys.archiving.reports.all, 'storage'] as const,
+            charts: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.archiving.reports.all, 'charts', fromDate, toDate] as const,
         }
     }
 };

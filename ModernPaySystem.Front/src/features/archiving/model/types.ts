@@ -155,6 +155,149 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     [AuditAction.RemoveFiles]: 'حذف ملفات',
 };
 
+// ---------------------------------------------------------
+// Archive Report Types
+// ---------------------------------------------------------
+export interface DepartmentArchiveDashboard {
+    departmentId: string;
+    departmentName: string;
+    totalArchiveRecords: number;
+    totalUsers: number;
+    totalFolders: number;
+    totalPhysicalFiles: number;
+    totalStorageBytes: number;
+    recordsCreatedToday: number;
+    recordsCreatedThisWeek: number;
+    recordsCreatedThisMonth: number;
+    activeUsersToday: number;
+    activeUsersThisWeek: number;
+    activeUsersThisMonth: number;
+    actionTypeBreakdown: Record<string, number>;
+}
+
+export interface HourlyBreakdown {
+    hour: number;
+    recordsCreated: number;
+    actions: number;
+}
+
+export interface ArchiveDailyReport {
+    date: string;
+    recordsCreated: number;
+    recordsDeleted: number;
+    filesAdded: number;
+    filesDownloaded: number;
+    printActions: number;
+    views: number;
+    activeUsers: number;
+    hourlyBreakdown: HourlyBreakdown[];
+}
+
+export interface DailyBreakdownItem {
+    date: string;
+    recordsCreated: number;
+    actions: number;
+    activeUsers: number;
+}
+
+export interface UserActivitySummary {
+    userId: string;
+    userName: string;
+    recordsCreated: number;
+    recordsViewed: number;
+    filesDownloaded: number;
+    printActions: number;
+    totalActions: number;
+    lastActivityDate: string | null;
+}
+
+export interface ArchivePeriodReport {
+    periodStart: string;
+    periodEnd: string;
+    periodLabel: string;
+    totalRecordsCreated: number;
+    totalRecordsDeleted: number;
+    totalFilesAdded: number;
+    totalDownloads: number;
+    totalPrints: number;
+    totalViews: number;
+    uniqueActiveUsers: number;
+    dailyBreakdown: DailyBreakdownItem[];
+    topUsers: UserActivitySummary[];
+}
+
+export interface UserActivityReportItem {
+    userId: string;
+    userName: string;
+    recordsCreated: number;
+    recordsViewed: number;
+    filesDownloaded: number;
+    printActions: number;
+    totalActions: number;
+    lastActivityDate: string | null;
+}
+
+export interface ActiveUserReportItem {
+    userId: string;
+    userName: string;
+    departmentName: string | null;
+    totalActions: number;
+    lastActionDate: string | null;
+    firstActionDate: string | null;
+    actionsPerformed: string[];
+}
+
+export interface StoragePerUser {
+    userId: string;
+    userName: string;
+    totalFiles: number;
+    totalBytes: number;
+    percentageOfTotal: number;
+    fileTypeCounts: Record<string, number>;
+    lastFileAddedAt: string | null;
+}
+
+export interface StoragePerType {
+    extension: string;
+    count: number;
+    totalBytes: number;
+    percentageOfTotal: number;
+}
+
+export interface StorageConsumptionReport {
+    totalStorageBytes: number;
+    totalFiles: number;
+    perUser: StoragePerUser[];
+    fileTypeBreakdown: StoragePerType[];
+}
+
+export interface ChartDataPoint {
+    label: string;
+    value: number;
+    color: string | null;
+}
+
+export interface DepartmentChartsData {
+    dailyActivity: ChartDataPoint[];
+    actionTypeBreakdown: ChartDataPoint[];
+    hourlyDistribution: ChartDataPoint[];
+    topActiveUsers: ChartDataPoint[];
+    topStorageUsers: ChartDataPoint[];
+    trend7Days: ChartDataPoint[];
+}
+
+export interface ReportFiltersState {
+    departmentId: string | null;
+    fromDate: string | null;
+    toDate: string | null;
+    date: string | null;
+    weekStart: string | null;
+    year: number | null;
+    month: number | null;
+}
+
+export type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts';
+
 export interface ArchiveAuditLog {
     id: string;
     archiveRecordId: string;

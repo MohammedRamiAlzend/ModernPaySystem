@@ -93,6 +93,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "سجلات النشاط (Audit Logs)",
                 path: "/archiving/audit-logs",
                 icon: <History className="h-4 w-4" />,
+            },
+            {
+                title: "التقارير والإحصائيات",
+                path: "/archiving/reports",
+                icon: <BarChart3 className="h-4 w-4" />,
             }
         ]
     }
