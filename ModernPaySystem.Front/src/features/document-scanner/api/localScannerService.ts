@@ -20,7 +20,7 @@ export interface ScanSessionDto {
     name: string;
 }
 
-const SCANNER_API_URL = 'http://localhost:3124/api';
+const SCANNER_API_URL = import.meta.env.VITE_SCANNER_API_URL || 'http://localhost:3124/api';
 
 export const localScannerService = {
     async getDevices(): Promise<DeviceDto[]> {
