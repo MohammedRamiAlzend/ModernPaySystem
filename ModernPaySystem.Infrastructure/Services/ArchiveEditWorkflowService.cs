@@ -114,23 +114,25 @@ public class ArchiveEditWorkflowService(
             if (dto.Files != null && dto.Files.Count > 0)
             {
                 var validFiles = dto.Files.Where(f => f != null && f.Length > 0).ToList();
+
+                // Validate all file extensions first and collect rejected names
+                var rejectedFileNames = new List<string>();
                 foreach (var file in validFiles)
                 {
-                    // Validate file size (e.g. 20MB limit)
-                    // if (file.Length > 20 * 1024 * 1024)
-                    // {
-                    //     await CleanupStoredFilesAsync(uploadedPaths);
-                    //     return ApplicationErrors.AttachmentTooLarge;
-                    // }
-
-                    // Validate file extension
                     var extension = Path.GetExtension(file.FileName);
                     if (!filesManagerService.IsValidFileExtension(extension, null))
                     {
-                        await CleanupStoredFilesAsync(uploadedPaths);
-                        return ApplicationErrors.InvalidAttachmentType;
+                        rejectedFileNames.Add(file.FileName);
                     }
+                }
 
+                if (rejectedFileNames.Count > 0)
+                {
+                    return ApplicationErrors.InvalidAttachmentType(rejectedFileNames);
+                }
+
+                foreach (var file in validFiles)
+                {
                     var safeFileName = filesManagerService.GenerateSafeFileName(Path.GetFileName(file.FileName));
                     var storageName = $"{record.Id}_{safeFileName}";
 

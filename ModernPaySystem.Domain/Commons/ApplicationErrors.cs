@@ -59,7 +59,8 @@ public static class ApplicationErrors
 
     // Attachment Errors (600-699)
     public static readonly Error AttachmentNotFound = new("600", "The specified attachment was not found.", ErrorKind.NotFound, "لم يتم العثور على المرفق المحدد.");
-    public static readonly Error InvalidAttachmentType = new("601", "The attachment type is not allowed.", ErrorKind.Validation, "نوع المرفق غير مسموح.");
+    public static Error InvalidAttachmentType(List<string> rejectedFileNames) =>
+        new("601", $"The following file types are not allowed: {string.Join(", ", rejectedFileNames)}.", ErrorKind.Validation, $"أنواع الملفات التالية غير مسموح بها: {string.Join("، ", rejectedFileNames)}.");
     public static readonly Error AttachmentTooLarge = new("602", "The attachment file is too large.", ErrorKind.Validation, "ملف المرفق كبير جداً.");
     public static readonly Error FailedToUploadAttachment = new("603", "Failed to upload the attachment.", ErrorKind.Failure, "فشل في تحميل المرفق.");
     public static readonly Error FailedToDeleteAttachment = new("604", "Failed to delete the attachment.", ErrorKind.Failure, "فشل في حذف المرفق.");

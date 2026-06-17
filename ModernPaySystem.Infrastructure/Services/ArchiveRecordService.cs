@@ -1203,6 +1203,8 @@ public class ArchiveRecordService(
             return Result.Success;
         }
 
+        var rejectedFileNames = new List<string>();
+
         foreach (var file in files)
         {
             if (file == null || file.Length <= 0)
@@ -1221,8 +1223,13 @@ public class ArchiveRecordService(
             if (!filesManagerService.IsValidFileExtension(extension, UploadSettings.AllowedExtensions))
             {
                 logger.LogWarning("File validation failed: File extension is not allowed. Name: {FileName}, Extension: {Extension}", file.FileName, extension);
-                return ApplicationErrors.InvalidAttachmentType;
+                rejectedFileNames.Add(file.FileName);
             }
+        }
+
+        if (rejectedFileNames.Count > 0)
+        {
+            return ApplicationErrors.InvalidAttachmentType(rejectedFileNames);
         }
 
         return Result.Success;
