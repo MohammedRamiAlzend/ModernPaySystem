@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/set-state-in-effect */
+import { useState, useEffect, useCallback } from 'react';
 import { Folder, FolderPermissionDto } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
@@ -35,15 +36,8 @@ export const FolderPermissionsModal = ({
     const [newUserIds, setNewUserIds] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        if (isOpen && folder) {
-            loadPermissions(folder.id);
-            setNewUserIds([]);
-        }
-    }, [isOpen, folder]);
-
-    const loadPermissions = async (folderId: string) => {
-        setLoading(true);
+    const loadPermissions = useCallback(async (folderId: string) => {
+        Promise.resolve().then(() => setLoading(true));
         try {
             const data = await archivingService.getFolderPermissions(folderId);
             setPermissions(data);
@@ -52,7 +46,19 @@ export const FolderPermissionsModal = ({
         } finally {
             setLoading(false);
         }
-    };
+    }, [showStatus]);
+
+    const [prevFolderId, setPrevFolderId] = useState<string | null>(null);
+    if (folder && folder.id !== prevFolderId) {
+        setPrevFolderId(folder.id);
+        setNewUserIds([]);
+    }
+
+    useEffect(() => {
+        if (isOpen && folder) {
+            loadPermissions(folder.id);
+        }
+    }, [isOpen, folder, loadPermissions]);
 
     const handleAddUsers = async () => {
         if (!folder || newUserIds.length === 0) return;

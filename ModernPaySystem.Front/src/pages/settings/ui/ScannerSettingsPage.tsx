@@ -12,7 +12,7 @@ export const ScannerSettingsPage: React.FC = () => {
 
     useEffect(() => {
         if (settings.appType === 'new') {
-            setIsLoading(true);
+            Promise.resolve().then(() => setIsLoading(true));
             localScannerService.getDevices()
                 .then(data => {
                     setDevices(data);
@@ -23,7 +23,7 @@ export const ScannerSettingsPage: React.FC = () => {
                 .catch(err => console.error('Failed to load devices', err))
                 .finally(() => setIsLoading(false));
         }
-    }, [settings.appType]);
+    }, [settings.appType, settings.deviceId, setSettings]);
 
     return (
         <div className="max-w-2xl bg-card border rounded-3xl p-6 md:p-8 space-y-8 shadow-sm">

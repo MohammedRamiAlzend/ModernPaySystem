@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardTitle, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -42,11 +42,13 @@ export default function AuditLogsPage() {
     const { data: dynamicTemplates = [] } = useAllDynamicForms();
 
     // Set default department
-    useEffect(() => {
-        if (departments && departments.length > 0 && !departmentId) {
+    const [prevDepsLength, setPrevDepsLength] = useState(0);
+    if (departments.length !== prevDepsLength) {
+        setPrevDepsLength(departments.length);
+        if (departments.length > 0 && !departmentId) {
             setDepartmentId(departments[0].id);
         }
-    }, [departments, departmentId]);
+    }
 
     const { data, isLoading: isLoadingLogs, isFetching, refetch } = useArchiveAuditLogs({
         page,
