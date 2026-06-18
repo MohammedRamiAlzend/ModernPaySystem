@@ -28,7 +28,9 @@ export const useScannerSettings = () => {
             if (stored) {
                 return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
             }
-        } catch { }
+        } catch {
+            // Use defaults if localStorage is disabled or corrupt
+        }
         return DEFAULT_SETTINGS;
     });
 

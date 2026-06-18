@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { queryKeys } from '@/shared/constants/query-keys';
+import { archivingService } from '@/features/archiving/api/archivingService';
 import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -13,13 +16,7 @@ import {
     useStorageReport,
     useChartsData,
 } from '@/features/archiving/model/queries';
-import { DashboardCards } from '@/features/archiving/ui/reports/DashboardCards';
-import { DailyReportView } from '@/features/archiving/ui/reports/DailyReportView';
-import { PeriodReportView } from '@/features/archiving/ui/reports/PeriodReportView';
-import { UserActivityView } from '@/features/archiving/ui/reports/UserActivityView';
-import { ActiveUsersView } from '@/features/archiving/ui/reports/ActiveUsersView';
-import { StorageReportView } from '@/features/archiving/ui/reports/StorageReportView';
-import { ChartsSection } from '@/features/archiving/ui/reports/ChartsSection';
+import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { ExportButton } from '@/features/archiving/ui/reports/ExportButton';
 import {
     exportDashboardToExcel,
@@ -31,9 +28,38 @@ import {
 } from '@/shared/lib/excel-export';
 import { Calendar, RefreshCw, Loader2 } from 'lucide-react';
 
+const DashboardCards = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/DashboardCards').then(m => ({ default: m.DashboardCards }))
+);
+const DailyReportView = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/DailyReportView').then(m => ({ default: m.DailyReportView }))
+);
+const PeriodReportView = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/PeriodReportView').then(m => ({ default: m.PeriodReportView }))
+);
+const UserActivityView = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/UserActivityView').then(m => ({ default: m.UserActivityView }))
+);
+const ActiveUsersView = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/ActiveUsersView').then(m => ({ default: m.ActiveUsersView }))
+);
+const StorageReportView = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/StorageReportView').then(m => ({ default: m.StorageReportView }))
+);
+const ChartsSection = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/ChartsSection').then(m => ({ default: m.ChartsSection }))
+);
+
+const fallback = (
+    <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+);
+
 type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts';
 
 export default function ReportsPage() {
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<ReportTab>('dashboard');
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
@@ -42,14 +68,75 @@ export default function ReportsPage() {
     const [reportYear, setReportYear] = useState<number>(new Date().getFullYear());
     const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth() + 1);
 
-    const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useDepartmentDashboard();
-    const { data: dailyReport, isLoading: isLoadingDaily } = useDailyReport(selectedDate || null);
-    const { data: weeklyReport, isLoading: isLoadingWeekly } = useWeeklyReport(weekStart || null);
-    const { data: monthlyReport, isLoading: isLoadingMonthly } = useMonthlyReport(reportYear, reportMonth);
-    const { data: userActivity, isLoading: isLoadingUserActivity } = useUserActivityReport(fromDate || null, toDate || null);
-    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null);
-    const { data: storageReport, isLoading: isLoadingStorage } = useStorageReport();
-    const { data: chartsData, isLoading: isLoadingCharts } = useChartsData(fromDate || null, toDate || null);
+    const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useDepartmentDashboard(activeTab === 'dashboard');
+    const { data: dailyReport, isLoading: isLoadingDaily } = useDailyReport(selectedDate || null, activeTab === 'daily');
+    const { data: weeklyReport, isLoading: isLoadingWeekly } = useWeeklyReport(weekStart || null, activeTab === 'weekly');
+    const { data: monthlyReport, isLoading: isLoadingMonthly } = useMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
+    const { data: userActivity, isLoading: isLoadingUserActivity } = useUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
+    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
+    const { data: storageReport, isLoading: isLoadingStorage } = useStorageReport(activeTab === 'storage');
+    const { data: chartsData, isLoading: isLoadingCharts } = useChartsData(fromDate || null, toDate || null, activeTab === 'charts');
+
+    const handlePrefetch = (tab: ReportTab) => {
+        switch (tab) {
+            case 'dashboard':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.dashboard(),
+                    queryFn: () => archivingService.getDepartmentDashboard(),
+                });
+                DashboardCards.preload();
+                break;
+            case 'daily':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.daily(selectedDate || null),
+                    queryFn: () => archivingService.getDailyReport(selectedDate || null),
+                });
+                DailyReportView.preload();
+                break;
+            case 'weekly':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.weekly(weekStart || null),
+                    queryFn: () => archivingService.getWeeklyReport(weekStart || null),
+                });
+                PeriodReportView.preload();
+                break;
+            case 'monthly':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.monthly(reportYear, reportMonth),
+                    queryFn: () => archivingService.getMonthlyReport(reportYear, reportMonth),
+                });
+                PeriodReportView.preload();
+                break;
+            case 'user-activity':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.userActivity(fromDate || null, toDate || null),
+                    queryFn: () => archivingService.getUserActivityReport(fromDate || null, toDate || null),
+                });
+                UserActivityView.preload();
+                break;
+            case 'active-users':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.activeUsers(fromDate || null, toDate || null),
+                    queryFn: () => archivingService.getActiveUsers(fromDate || null, toDate || null),
+                });
+                ActiveUsersView.preload();
+                break;
+            case 'storage':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.storage(),
+                    queryFn: () => archivingService.getStorageReport(),
+                });
+                StorageReportView.preload();
+                break;
+            case 'charts':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.reports.charts(fromDate || null, toDate || null),
+                    queryFn: () => archivingService.getChartsData(fromDate || null, toDate || null),
+                });
+                ChartsSection.preload();
+                break;
+        }
+    };
 
     const allRefetch = () => {
         refetchDashboard();
@@ -88,7 +175,13 @@ export default function ReportsPage() {
                 <div className="overflow-x-auto pb-2">
                     <TabsList className="w-full justify-start gap-1 bg-muted/50 p-1 rounded-lg">
                         {(['dashboard', 'daily', 'weekly', 'monthly', 'user-activity', 'active-users', 'storage', 'charts'] as ReportTab[]).map((tab) => (
-                            <TabsTrigger key={tab} value={tab} className="px-4 py-2 text-sm whitespace-nowrap">
+                            <TabsTrigger 
+                                key={tab} 
+                                value={tab} 
+                                className="px-4 py-2 text-sm whitespace-nowrap"
+                                onMouseEnter={() => handlePrefetch(tab)}
+                                onFocus={() => handlePrefetch(tab)}
+                            >
                                 {getTabLabel(tab)}
                             </TabsTrigger>
                         ))}
@@ -109,7 +202,9 @@ export default function ReportsPage() {
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
                         </div>
                     ) : dashboard ? (
-                        <DashboardCards dashboard={dashboard} />
+                        <Suspense fallback={fallback}>
+                            <DashboardCards dashboard={dashboard} />
+                        </Suspense>
                     ) : (
                         <Card>
                             <CardContent className="pt-8 text-center text-muted-foreground">
@@ -144,7 +239,9 @@ export default function ReportsPage() {
                             />
                         )}
                     </div>
-                    <DailyReportView data={dailyReport} isLoading={isLoadingDaily} />
+                    <Suspense fallback={fallback}>
+                        <DailyReportView data={dailyReport} isLoading={isLoadingDaily} />
+                    </Suspense>
                 </TabsContent>
 
                 <TabsContent value="weekly">
@@ -172,11 +269,13 @@ export default function ReportsPage() {
                             />
                         )}
                     </div>
-                    <PeriodReportView
-                        data={weeklyReport}
-                        isLoading={isLoadingWeekly}
-                        periodLabel="التقرير الأسبوعي"
-                    />
+                    <Suspense fallback={fallback}>
+                        <PeriodReportView
+                            data={weeklyReport}
+                            isLoading={isLoadingWeekly}
+                            periodLabel="التقرير الأسبوعي"
+                        />
+                    </Suspense>
                 </TabsContent>
 
                 <TabsContent value="monthly">
@@ -220,11 +319,13 @@ export default function ReportsPage() {
                             />
                         )}
                     </div>
-                    <PeriodReportView
-                        data={monthlyReport}
-                        isLoading={isLoadingMonthly}
-                        periodLabel="التقرير الشهري"
-                    />
+                    <Suspense fallback={fallback}>
+                        <PeriodReportView
+                            data={monthlyReport}
+                            isLoading={isLoadingMonthly}
+                            periodLabel="التقرير الشهري"
+                        />
+                    </Suspense>
                 </TabsContent>
 
                 <TabsContent value="user-activity">
@@ -266,7 +367,9 @@ export default function ReportsPage() {
                             />
                         )}
                     </div>
-                    <UserActivityView data={userActivity} isLoading={isLoadingUserActivity} />
+                    <Suspense fallback={fallback}>
+                        <UserActivityView data={userActivity} isLoading={isLoadingUserActivity} />
+                    </Suspense>
                 </TabsContent>
 
                 <TabsContent value="active-users">
@@ -308,7 +411,9 @@ export default function ReportsPage() {
                             />
                         )}
                     </div>
-                    <ActiveUsersView data={activeUsers} isLoading={isLoadingActiveUsers} />
+                    <Suspense fallback={fallback}>
+                        <ActiveUsersView data={activeUsers} isLoading={isLoadingActiveUsers} />
+                    </Suspense>
                 </TabsContent>
 
                 <TabsContent value="storage">
@@ -320,11 +425,15 @@ export default function ReportsPage() {
                             />
                         )}
                     </div>
-                    <StorageReportView data={storageReport} isLoading={isLoadingStorage} />
+                    <Suspense fallback={fallback}>
+                        <StorageReportView data={storageReport} isLoading={isLoadingStorage} />
+                    </Suspense>
                 </TabsContent>
 
                 <TabsContent value="charts">
-                    <ChartsSection data={chartsData} isLoading={isLoadingCharts} />
+                    <Suspense fallback={fallback}>
+                        <ChartsSection data={chartsData} isLoading={isLoadingCharts} />
+                    </Suspense>
                 </TabsContent>
             </Tabs>
         </div>

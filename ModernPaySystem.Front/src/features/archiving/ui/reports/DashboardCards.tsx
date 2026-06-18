@@ -38,6 +38,17 @@ function StatCard({ icon, label, value, sublabel }: { icon: React.ReactNode; lab
     );
 }
 
+const ACTION_TRANSLATIONS: Record<string, string> = {
+    'View': 'عرض',
+    'Print': 'طباعة',
+    'Download': 'تحميل',
+    'Create': 'إنشاء',
+    'Update': 'تحديث',
+    'Delete': 'حذف',
+    'Export': 'تصدير',
+    'Upload': 'رفع'
+};
+
 function ActionBreakdownCard({ breakdown }: { breakdown: Record<string, number> }) {
     const entries = Object.entries(breakdown);
     const total = entries.reduce((sum, [, v]) => sum + v, 0);
@@ -56,7 +67,7 @@ function ActionBreakdownCard({ breakdown }: { breakdown: Record<string, number> 
                 {entries.map(([action, count]) => (
                     <div key={action} className="space-y-1">
                         <div className="flex justify-between text-xs">
-                            <span className="font-medium">{action}</span>
+                            <span className="font-medium">{ACTION_TRANSLATIONS[action] || action}</span>
                             <span className="text-muted-foreground">{count}</span>
                         </div>
                         <Progress value={total > 0 ? (count / total) * 100 : 0} className="h-1.5" />

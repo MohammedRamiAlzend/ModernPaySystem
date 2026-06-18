@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { type RouteObject, Outlet, Navigate } from 'react-router-dom';
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { RoutePermissions } from '../route-permissions';

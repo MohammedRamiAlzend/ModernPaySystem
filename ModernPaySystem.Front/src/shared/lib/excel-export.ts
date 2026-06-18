@@ -17,10 +17,21 @@ function formatDateTime(dateStr: string | null | undefined): string {
     });
 }
 
+const ACTION_TRANSLATIONS: Record<string, string> = {
+    'View': 'عرض',
+    'Print': 'طباعة',
+    'Download': 'تحميل',
+    'Create': 'إنشاء',
+    'Update': 'تحديث',
+    'Delete': 'حذف',
+    'Export': 'تصدير',
+    'Upload': 'رفع'
+};
+
 function formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return '0 بايت';
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const sizes = ['بايت', 'كيلوبايت', 'ميغابايت', 'جيجابايت', 'تيرابايت'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
@@ -80,7 +91,7 @@ const NUMBER_ALIGNMENT: Partial<ExcelJS.Alignment> = {
 
 async function createWorkbook(): Promise<ExcelJS.Workbook> {
     const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'ModernPaySystem';
+    workbook.creator = 'نظام إدارة الأرشفة';
     workbook.created = new Date();
     return workbook;
 }
@@ -218,7 +229,8 @@ export async function exportDashboardToExcel(dashboard: {
         addHeaderRow(ws, actionHeaders);
 
         Object.entries(dashboard.actionTypeBreakdown).forEach(([action, count]) => {
-            addDataRow(ws, [action, count, ''], aligns);
+            const translatedAction = ACTION_TRANSLATIONS[action] || action;
+            addDataRow(ws, [translatedAction, count, ''], aligns);
         });
     }
 
@@ -546,7 +558,7 @@ export async function exportActiveUsersToExcel(
             u.totalActions,
             formatDate(u.firstActionDate),
             formatDate(u.lastActionDate),
-            u.actionsPerformed.join('، ') || '-',
+            u.actionsPerformed.map(act => ACTION_TRANSLATIONS[act] || act).join('، ') || '-',
         ], aligns);
     });
 

@@ -1,6 +1,5 @@
 import {
-    PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
-    type PieLabelRenderProps,
+    PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import type { StoragePerType } from '../../../model/types';
 
@@ -29,35 +28,35 @@ export function StorageChart({ fileTypeBreakdown }: StorageChartProps) {
 
     if (chartData.length === 0) return null;
 
-    const renderLabel = ({ name, percent }: PieLabelRenderProps) =>
-        `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`;
-
     return (
-        <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-                <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={90}
-                    paddingAngle={2}
-                    dataKey="value"
-                    label={renderLabel}
-                    labelLine
-                >
-                    {chartData.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
-                <Tooltip
-                    contentStyle={{
-                        borderRadius: '8px',
-                        border: '1px solid hsl(var(--border))',
-                        backgroundColor: 'hsl(var(--card))',
-                    }}
-                />
-                <Legend />
-            </PieChart>
-        </ResponsiveContainer>
+        <div className="w-full h-full" dir="ltr">
+            <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                    <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        paddingAngle={2}
+                        dataKey="value"
+                        nameKey="name"
+                    >
+                        {chartData.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip
+                        contentStyle={{
+                            borderRadius: '8px',
+                            border: '1px solid hsl(var(--border))',
+                            backgroundColor: 'hsl(var(--card))',
+                            textAlign: 'right',
+                            direction: 'rtl'
+                        }}
+                    />
+                    <Legend />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
     );
 }

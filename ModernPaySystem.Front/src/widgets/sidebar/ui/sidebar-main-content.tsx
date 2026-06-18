@@ -70,7 +70,10 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
             }
 
             if (item.title === "نظام الأرشفة" && !isArchiveLeader) {
-                children = children.filter(child => child.title !== "سجلات النشاط (Audit Logs)");
+                children = children.filter(child => 
+                    child.title !== "سجلات النشاط (Audit Logs)" &&
+                    child.title !== "التقارير والإحصائيات"
+                );
             }
 
             if (item.title === "منصة خدمات ريف دمشق") {
