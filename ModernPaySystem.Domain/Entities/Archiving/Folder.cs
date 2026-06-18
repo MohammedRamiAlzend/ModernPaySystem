@@ -84,7 +84,6 @@ public class CreateFolderDto
     public string Name { get; set; } = string.Empty;
     public string? DefaultStoragePath { get; set; }
     public Guid? ParentId { get; set; }
-    public Guid? DepartmentId { get; set; }
     public List<InitialFolderPermissionDto> InitialPermissions { get; set; } = [];
 }
 

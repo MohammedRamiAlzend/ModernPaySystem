@@ -120,7 +120,7 @@ public class FolderService(
                 return ApplicationErrors.InvalidInput;
             }
 
-            Guid? departmentId = dto.DepartmentId;
+            Guid? departmentId = null;
 
             if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty)
             {
