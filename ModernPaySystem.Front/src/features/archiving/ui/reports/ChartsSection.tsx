@@ -79,7 +79,7 @@ export function ChartsSection({ data, isLoading }: ChartsSectionProps) {
                             <CardDescription>المستخدمون الأكثر نشاطاً في إدارة السجلات</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <TopUsersChart data={data.topActiveUsers} axisLabel="عدد الإجراءات" />
+                            <TopUsersChart data={data.topActiveUsers} tooltipLabel="عدد الإجراءات" />
                         </CardContent>
                     </Card>
                 )}
@@ -91,7 +91,7 @@ export function ChartsSection({ data, isLoading }: ChartsSectionProps) {
                             <CardDescription>المستخدمون الأكثر استهلاكاً لمساحة التخزين</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <TopUsersChart data={data.topStorageUsers} axisLabel="المساحة (بالبايت)" />
+                            <TopUsersChart data={data.topStorageUsers} tooltipLabel="المساحة (بالبايت)" />
                         </CardContent>
                     </Card>
                 )}
