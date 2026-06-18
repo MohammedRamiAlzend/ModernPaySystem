@@ -84,4 +84,12 @@ public class ArchiveReportController(
         var result = await reportService.GetChartsDataAsync(fromDate, toDate);
         return result.ToActionResult();
     }
+
+    [HttpGet("daily-work")]
+    public async Task<IActionResult> GetDailyWorkReport([FromQuery] DateTime? date)
+    {
+        logger.LogInformation("Getting daily work report");
+        var result = await reportService.GetDailyWorkReportAsync(date);
+        return result.ToActionResult();
+    }
 }

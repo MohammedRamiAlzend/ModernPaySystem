@@ -104,6 +104,10 @@ export const queryKeys = {
         config: {
             all: ['archiving', 'config'] as const,
         },
+        dailyWork: {
+            all: ['archiving', 'dailyWork'] as const,
+            detail: (date?: string | null) => [...queryKeys.archiving.dailyWork.all, date] as const,
+        },
         reports: {
             all: ['archiving', 'reports'] as const,
             myDepartments: () => [...queryKeys.archiving.reports.all, 'myDepartments'] as const,

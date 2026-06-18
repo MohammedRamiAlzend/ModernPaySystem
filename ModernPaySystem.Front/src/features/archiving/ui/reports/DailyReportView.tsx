@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2 } from 'lucide-react';
@@ -15,85 +16,87 @@ function formatDate(dateStr: string): string {
     });
 }
 
-export function DailyReportView({ data, isLoading }: DailyReportViewProps) {
-    if (isLoading) {
+export const DailyReportView = forwardRef<HTMLDivElement, DailyReportViewProps>(
+    function DailyReportView({ data, isLoading }, ref) {
+        if (isLoading) {
+            return (
+                <div className="flex h-64 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            );
+        }
+
+        if (!data) {
+            return (
+                <Card>
+                    <CardContent className="pt-8 text-center text-muted-foreground">
+                        اختر تاريخاً لعرض التقرير اليومي
+                    </CardContent>
+                </Card>
+            );
+        }
+
         return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="space-y-6" dir="rtl">
+                <Card className="border border-border/40 shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="text-lg font-semibold">
+                            التقرير اليومي - {formatDate(data.date)}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+                            <StatBadge label="سجلات منشأة" value={data.recordsCreated} color="emerald" />
+                            <StatBadge label="سجلات محذوفة" value={data.recordsDeleted} color="red" />
+                            <StatBadge label="ملفات مضافة" value={data.filesAdded} color="blue" />
+                            <StatBadge label="تنزيلات" value={data.filesDownloaded} color="indigo" />
+                            <StatBadge label="طباعات" value={data.printActions} color="purple" />
+                            <StatBadge label="مشاهدات" value={data.views} color="amber" />
+                            <StatBadge label="مستخدمون نشطون" value={data.activeUsers} color="teal" />
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {data.hourlyBreakdown.length > 0 && (
+                    <Card ref={ref} className="border border-border/40 shadow-sm">
+                        <CardHeader>
+                            <CardTitle className="text-sm font-semibold">التوزيع الساعي</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <DailyChart hourlyBreakdown={data.hourlyBreakdown} />
+                        </CardContent>
+                    </Card>
+                )}
+
+                <Card className="border border-border/40 shadow-sm">
+                    <CardHeader>
+                        <CardTitle className="text-sm font-semibold">تفاصيل التوزيع الساعي</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="text-right">الساعة</TableHead>
+                                    <TableHead className="text-right">سجلات منشأة</TableHead>
+                                    <TableHead className="text-right">إجراءات</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {data.hourlyBreakdown.map((h) => (
+                                    <TableRow key={h.hour}>
+                                        <TableCell className="font-medium">{h.hour}:00</TableCell>
+                                        <TableCell>{h.recordsCreated}</TableCell>
+                                        <TableCell>{h.actions}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
             </div>
         );
     }
-
-    if (!data) {
-        return (
-            <Card>
-                <CardContent className="pt-8 text-center text-muted-foreground">
-                    اختر تاريخاً لعرض التقرير اليومي
-                </CardContent>
-            </Card>
-        );
-    }
-
-    return (
-        <div className="space-y-6" dir="rtl">
-            <Card className="border border-border/40 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-lg font-semibold">
-                        التقرير اليومي - {formatDate(data.date)}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-                        <StatBadge label="سجلات منشأة" value={data.recordsCreated} color="emerald" />
-                        <StatBadge label="سجلات محذوفة" value={data.recordsDeleted} color="red" />
-                        <StatBadge label="ملفات مضافة" value={data.filesAdded} color="blue" />
-                        <StatBadge label="تنزيلات" value={data.filesDownloaded} color="indigo" />
-                        <StatBadge label="طباعات" value={data.printActions} color="purple" />
-                        <StatBadge label="مشاهدات" value={data.views} color="amber" />
-                        <StatBadge label="مستخدمون نشطون" value={data.activeUsers} color="teal" />
-                    </div>
-                </CardContent>
-            </Card>
-
-            {data.hourlyBreakdown.length > 0 && (
-                <Card className="border border-border/40 shadow-sm">
-                    <CardHeader>
-                        <CardTitle className="text-sm font-semibold">التوزيع الساعي</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <DailyChart hourlyBreakdown={data.hourlyBreakdown} />
-                    </CardContent>
-                </Card>
-            )}
-
-            <Card className="border border-border/40 shadow-sm">
-                <CardHeader>
-                    <CardTitle className="text-sm font-semibold">تفاصيل التوزيع الساعي</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="text-right">الساعة</TableHead>
-                                <TableHead className="text-right">سجلات منشأة</TableHead>
-                                <TableHead className="text-right">إجراءات</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {data.hourlyBreakdown.map((h) => (
-                                <TableRow key={h.hour}>
-                                    <TableCell className="font-medium">{h.hour}:00</TableCell>
-                                    <TableCell>{h.recordsCreated}</TableCell>
-                                    <TableCell>{h.actions}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
-    );
-}
+);
 
 function StatBadge({ label, value, color }: { label: string; value: number; color: string }) {
     const colorMap: Record<string, string> = {

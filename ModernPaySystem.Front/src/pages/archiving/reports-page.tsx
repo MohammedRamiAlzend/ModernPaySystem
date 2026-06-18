@@ -1,4 +1,5 @@
-import { useState, Suspense } from 'react';
+import { useState, useRef, Suspense } from 'react';
+import { toPng } from 'html-to-image';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { archivingService } from '@/features/archiving/api/archivingService';
@@ -15,6 +16,7 @@ import {
     useActiveUsersReport,
     useStorageReport,
     useChartsData,
+    useDailyWorkReport,
 } from '@/features/archiving/model/queries';
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { ExportButton } from '@/features/archiving/ui/reports/ExportButton';
@@ -25,6 +27,8 @@ import {
     exportUserActivityToExcel,
     exportActiveUsersToExcel,
     exportStorageReportToExcel,
+    exportDailyWorkReportToExcel,
+    exportChartsToExcel,
 } from '@/shared/lib/excel-export';
 import { Calendar, RefreshCw, Loader2 } from 'lucide-react';
 
@@ -49,6 +53,9 @@ const StorageReportView = lazyWithPreload(() =>
 const ChartsSection = lazyWithPreload(() =>
     import('@/features/archiving/ui/reports/ChartsSection').then(m => ({ default: m.ChartsSection }))
 );
+const DailyWorkReportView = lazyWithPreload(() =>
+    import('@/features/archiving/ui/reports/DailyWorkReportView').then(m => ({ default: m.DailyWorkReportView }))
+);
 
 const fallback = (
     <div className="flex h-64 items-center justify-center">
@@ -56,7 +63,7 @@ const fallback = (
     </div>
 );
 
-type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts';
+type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts' | 'daily-work';
 
 export default function ReportsPage() {
     const queryClient = useQueryClient();
@@ -64,6 +71,9 @@ export default function ReportsPage() {
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [selectedDate, setSelectedDate] = useState('');
+    const [workDate, setWorkDate] = useState('');
+    const dailyChartRef = useRef<HTMLDivElement>(null);
+    const chartsSectionRef = useRef<HTMLDivElement>(null);
     const [weekStart, setWeekStart] = useState('');
     const [reportYear, setReportYear] = useState<number>(new Date().getFullYear());
     const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth() + 1);
@@ -76,6 +86,7 @@ export default function ReportsPage() {
     const { data: activeUsers, isLoading: isLoadingActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
     const { data: storageReport, isLoading: isLoadingStorage } = useStorageReport(activeTab === 'storage');
     const { data: chartsData, isLoading: isLoadingCharts } = useChartsData(fromDate || null, toDate || null, activeTab === 'charts');
+    const { data: dailyWorkReport, isLoading: isLoadingDailyWork } = useDailyWorkReport(workDate || null, activeTab === 'daily-work');
 
     const handlePrefetch = (tab: ReportTab) => {
         switch (tab) {
@@ -135,6 +146,13 @@ export default function ReportsPage() {
                 });
                 ChartsSection.preload();
                 break;
+            case 'daily-work':
+                queryClient.prefetchQuery({
+                    queryKey: queryKeys.archiving.dailyWork.detail(workDate || null),
+                    queryFn: () => archivingService.getDailyWorkReport(workDate || null),
+                });
+                DailyWorkReportView.preload();
+                break;
         }
     };
 
@@ -152,6 +170,7 @@ export default function ReportsPage() {
             'active-users': 'المستخدمون النشطون',
             storage: 'التخزين',
             charts: 'الرسوم البيانية',
+            'daily-work': 'تقرير يومي مفصل',
         };
         return labels[tab];
     };
@@ -174,7 +193,7 @@ export default function ReportsPage() {
             <Tabs defaultValue="dashboard" value={activeTab} onValueChange={(v) => setActiveTab(v as ReportTab)}>
                 <div className="overflow-x-auto pb-2">
                     <TabsList className="w-full justify-start gap-1 bg-muted/50 p-1 rounded-lg">
-                        {(['dashboard', 'daily', 'weekly', 'monthly', 'user-activity', 'active-users', 'storage', 'charts'] as ReportTab[]).map((tab) => (
+                        {(['dashboard', 'daily', 'daily-work', 'weekly', 'monthly', 'user-activity', 'active-users', 'storage', 'charts'] as ReportTab[]).map((tab) => (
                             <TabsTrigger 
                                 key={tab} 
                                 value={tab} 
@@ -234,13 +253,21 @@ export default function ReportsPage() {
                         </Card>
                         {dailyReport && (
                             <ExportButton
-                                onExport={() => exportDailyReportToExcel(dailyReport)}
+                                onExport={async () => {
+                                    let chartImageUrl: string | undefined;
+                                    if (dailyChartRef.current) {
+                                        try {
+                                            chartImageUrl = await toPng(dailyChartRef.current, { quality: 0.95, pixelRatio: 2 });
+                                        } catch { /* chart capture failed silently */ }
+                                    }
+                                    await exportDailyReportToExcel(dailyReport, chartImageUrl);
+                                }}
                                 label="تصدير التقرير"
                             />
                         )}
                     </div>
                     <Suspense fallback={fallback}>
-                        <DailyReportView data={dailyReport} isLoading={isLoadingDaily} />
+                        <DailyReportView ref={dailyChartRef} data={dailyReport} isLoading={isLoadingDaily} />
                     </Suspense>
                 </TabsContent>
 
@@ -430,9 +457,62 @@ export default function ReportsPage() {
                     </Suspense>
                 </TabsContent>
 
-                <TabsContent value="charts">
+                <TabsContent value="daily-work">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                        <Card className="border border-border/40 shadow-sm flex-1">
+                            <CardContent className="pt-6">
+                                <div className="flex items-center gap-3 max-w-xs">
+                                    <label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">اختر التاريخ</label>
+                                    <div className="relative flex-1">
+                                        <Input
+                                            type="date"
+                                            className="w-full pl-9 text-right"
+                                            value={workDate}
+                                            onChange={(e) => setWorkDate(e.target.value)}
+                                        />
+                                        <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        {dailyWorkReport && (
+                            <ExportButton
+                                onExport={() => exportDailyWorkReportToExcel(dailyWorkReport)}
+                                label="تصدير Excel متعدد الأوراق"
+                            />
+                        )}
+                    </div>
                     <Suspense fallback={fallback}>
-                        <ChartsSection data={chartsData} isLoading={isLoadingCharts} />
+                        <DailyWorkReportView data={dailyWorkReport} isLoading={isLoadingDailyWork} />
+                    </Suspense>
+                </TabsContent>
+
+                <TabsContent value="charts">
+                    <div className="flex justify-end mb-4">
+                        {chartsData && (
+                            <ExportButton
+                                onExport={async () => {
+                                    const chartNames = ['dailyActivity', 'actionTypeBreakdown', 'hourlyDistribution', 'topActiveUsers', 'topStorageUsers', 'trend7Days'] as const;
+                                    const images: Record<string, string> = {};
+                                    const container = chartsSectionRef.current;
+                                    if (container) {
+                                        for (const name of chartNames) {
+                                            const el = container.querySelector<HTMLElement>(`[data-chart-name="${name}"]`);
+                                            if (el) {
+                                                try {
+                                                    images[name] = await toPng(el, { quality: 0.95, pixelRatio: 2 });
+                                                } catch { /* chart capture failed silently */ }
+                                            }
+                                        }
+                                    }
+                                    await exportChartsToExcel(chartsData, images);
+                                }}
+                                label="تصدير الرسوم البيانية"
+                            />
+                        )}
+                    </div>
+                    <Suspense fallback={fallback}>
+                        <ChartsSection ref={chartsSectionRef} data={chartsData} isLoading={isLoadingCharts} />
                     </Suspense>
                 </TabsContent>
             </Tabs>

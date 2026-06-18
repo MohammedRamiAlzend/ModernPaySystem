@@ -94,6 +94,14 @@ export const useArchiveAuditLogs = (params: {
     });
 };
 
+export const useDailyWorkReport = (date?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.dailyWork.detail(date),
+        queryFn: () => archivingService.getDailyWorkReport(date),
+        enabled,
+    });
+};
+
 export const useArchiveConfig = () => {
     return useQuery({
         queryKey: queryKeys.archiving.config.all,

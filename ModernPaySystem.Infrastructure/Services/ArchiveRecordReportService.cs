@@ -645,6 +645,147 @@ public class ArchiveRecordReportService(
         }
     }
 
+    public async Task<Result<DailyWorkReportDto>> GetDailyWorkReportAsync(DateTime? date)
+    {
+        try
+        {
+            var deptIdsResult = await ResolveUserDepartmentIdsAsync();
+            if (deptIdsResult.IsError)
+                return deptIdsResult.Errors;
+
+            var departmentIds = deptIdsResult.Value!;
+            var dayStart = date.HasValue ? DateTime.SpecifyKind(date.Value, DateTimeKind.Utc).Date : DateTime.UtcNow.Date;
+            var dayEnd = dayStart.AddDays(1);
+
+            var firstDept = await unitOfWork.Context.Departments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.Id == departmentIds[0]);
+
+            // ---- Audit Logs ----
+            var auditLogs = await unitOfWork.Context.ArchiveAuditLogs
+                .AsNoTracking()
+                .Include(al => al.ArchiveRecord)
+                .Where(al => al.ArchiveRecord.DepartmentId != null
+                    && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
+                    && al.Timestamp >= dayStart && al.Timestamp < dayEnd)
+                .OrderByDescending(al => al.Timestamp)
+                .ToListAsync();
+
+            var auditUserIds = auditLogs
+                .Select(al => Guid.TryParse(al.UserId, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            var auditUsers = await unitOfWork.Context.Users
+                .AsNoTracking()
+                .Where(u => auditUserIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.UserName })
+                .ToListAsync();
+
+            var auditUserMap = auditUsers.ToDictionary(u => u.Id, u => u.UserName);
+
+            var auditLogDtos = auditLogs.Select(al =>
+            {
+                var uid = Guid.TryParse(al.UserId, out var id) ? id : Guid.Empty;
+                return new DailyWorkAuditLogItemDto
+                {
+                    Id = al.Id,
+                    ArchiveRecordId = al.ArchiveRecordId,
+                    ArchivalNumber = al.ArchiveRecord.ArchivalNumber,
+                    UserName = uid != Guid.Empty && auditUserMap.TryGetValue(uid, out var name) ? name : al.UserId,
+                    Action = al.Action.ToString(),
+                    Details = al.Details,
+                    Timestamp = al.Timestamp
+                };
+            }).ToList();
+
+            // ---- Archive Records ----
+            var records = await unitOfWork.Context.ArchiveRecords
+                .AsNoTracking()
+                .Include(r => r.Folder)
+                .Include(r => r.ArchiveRecordTemplateValuesId)
+                    .ThenInclude(tv => tv!.ArchiveRecordFormInputValues)
+                .Include(r => r.Form)
+                .Where(r => r.DepartmentId != null && departmentIds.Contains(r.DepartmentId.Value)
+                    && r.CreatedAt >= dayStart && r.CreatedAt < dayEnd
+                    && !r.IsDeleted)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            // Load all folders in these departments for building paths
+            var allFolders = await unitOfWork.Context.Folders
+                .AsNoTracking()
+                .Where(f => departmentIds.Contains(f.Id))
+                .ToListAsync();
+
+            var folderDict = allFolders.ToDictionary(f => f.Id, f => f);
+
+            var recordUserIds = records
+                .Select(r => Guid.TryParse(r.CreatedByUserId, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            var recordUsers = await unitOfWork.Context.Users
+                .AsNoTracking()
+                .Where(u => recordUserIds.Contains(u.Id))
+                .Select(u => new { u.Id, u.UserName })
+                .ToListAsync();
+
+            var recordUserMap = recordUsers.ToDictionary(u => u.Id, u => u.UserName);
+
+            var recordDtos = records.Select(r =>
+            {
+                var uid = Guid.TryParse(r.CreatedByUserId, out var id) ? id : Guid.Empty;
+
+                // Build folder path by walking parent chain
+                var pathParts = new List<string>();
+                var current = r.Folder;
+                while (current != null)
+                {
+                    pathParts.Add(current.Name);
+                    current = current.ParentId.HasValue && folderDict.TryGetValue(current.ParentId.Value, out var parent)
+                        ? parent
+                        : null;
+                }
+                pathParts.Reverse();
+                var folderPath = string.Join(" / ", pathParts);
+
+                return new DailyWorkArchiveRecordItemDto
+                {
+                    Id = r.Id,
+                    ArchivalNumber = r.ArchivalNumber,
+                    FolderPath = folderPath,
+                    FormName = r.Form?.FormName,
+                    DepartmentName = firstDept?.Name,
+                    CreatedByUserName = uid != Guid.Empty && recordUserMap.TryGetValue(uid, out var name) ? name : r.CreatedByUserId,
+                    CreatedAt = r.CreatedAt ?? dayStart,
+                    UpdatedAt = r.UpdatedAt,
+                    FormValues = r.ArchiveRecordTemplateValuesId?.ArchiveRecordFormInputValues
+                        .Select(fv => new DailyWorkFormValueItemDto
+                        {
+                            Key = fv.Key,
+                            Value = fv.Value
+                        }).ToList() ?? []
+                };
+            }).ToList();
+
+            return new DailyWorkReportDto
+            {
+                Date = dayStart,
+                DepartmentName = firstDept?.Name ?? "Unknown",
+                AuditLogs = auditLogDtos,
+                ArchiveRecords = recordDtos
+            };
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting daily work report");
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
     private async Task<Result<ArchivePeriodReportDto>> BuildPeriodReportAsync(
         List<Guid> departmentIds, DateTime periodStart, DateTime periodEnd, string periodLabel)
     {

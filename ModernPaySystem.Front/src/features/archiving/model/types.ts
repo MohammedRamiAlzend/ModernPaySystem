@@ -301,6 +301,43 @@ export interface ReportFiltersState {
 export type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts';
 
 // ---------------------------------------------------------
+// Daily Work Report Types
+// ---------------------------------------------------------
+export interface DailyWorkReportDto {
+    date: string;
+    departmentName: string;
+    auditLogs: DailyWorkAuditLogItemDto[];
+    archiveRecords: DailyWorkArchiveRecordItemDto[];
+}
+
+export interface DailyWorkAuditLogItemDto {
+    id: string;
+    archiveRecordId: string;
+    archivalNumber: string;
+    userName: string;
+    action: string;
+    details: string | null;
+    timestamp: string;
+}
+
+export interface DailyWorkArchiveRecordItemDto {
+    id: string;
+    archivalNumber: string;
+    folderPath: string;
+    formName: string | null;
+    departmentName: string | null;
+    createdByUserName: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+    formValues: DailyWorkFormValueItemDto[];
+}
+
+export interface DailyWorkFormValueItemDto {
+    key: string;
+    value: string | null;
+}
+
+// ---------------------------------------------------------
 // Archive Config Types
 // ---------------------------------------------------------
 export interface ArchiveConfigDto {

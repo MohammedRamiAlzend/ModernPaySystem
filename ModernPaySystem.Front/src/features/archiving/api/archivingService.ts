@@ -7,7 +7,8 @@ import {
     DepartmentArchiveDashboard, ArchiveDailyReport, ArchivePeriodReport,
     UserActivityReportItem, ActiveUserReportItem,
     StorageConsumptionReport, DepartmentChartsData,
-    ArchiveConfigDto, UpdateArchiveConfigDto
+    ArchiveConfigDto, UpdateArchiveConfigDto,
+    DailyWorkReportDto
 } from '../model/types';
 import { Department } from '@/entities/department/model/types';
 import { attachmentCache } from '../utils/attachmentCache';
@@ -538,6 +539,16 @@ export const archivingService = {
                 fromDate: fromDate || undefined,
                 toDate: toDate || undefined,
             }
+        });
+        return response.data.data;
+    },
+
+    // ---------------------------------------------
+    // Daily Work Report API
+    // ---------------------------------------------
+    getDailyWorkReport: async (date?: string | null): Promise<DailyWorkReportDto> => {
+        const response = await api.get<any>('/archive-report/daily-work', {
+            params: { date: date || undefined }
         });
         return response.data.data;
     },

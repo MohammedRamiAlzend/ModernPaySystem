@@ -24,4 +24,6 @@ public interface IArchiveRecordReportService
 
     Task<Result<DepartmentChartsDataDto>> GetChartsDataAsync(
         DateTime? fromDate = null, DateTime? toDate = null);
+
+    Task<Result<DailyWorkReportDto>> GetDailyWorkReportAsync(DateTime? date);
 }

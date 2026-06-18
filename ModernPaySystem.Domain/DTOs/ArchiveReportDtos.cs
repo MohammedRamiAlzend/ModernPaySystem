@@ -146,3 +146,44 @@ public class ChartDataPointDto
     public double Value { get; set; }
     public string? Color { get; set; }
 }
+
+// ---------------------------------------------------------
+// Daily Work Report (Detailed)
+// ---------------------------------------------------------
+public class DailyWorkReportDto
+{
+    public DateTime Date { get; set; }
+    public string DepartmentName { get; set; } = string.Empty;
+    public List<DailyWorkAuditLogItemDto> AuditLogs { get; set; } = [];
+    public List<DailyWorkArchiveRecordItemDto> ArchiveRecords { get; set; } = [];
+}
+
+public class DailyWorkAuditLogItemDto
+{
+    public Guid Id { get; set; }
+    public Guid ArchiveRecordId { get; set; }
+    public string ArchivalNumber { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public string? Details { get; set; }
+    public DateTime Timestamp { get; set; }
+}
+
+public class DailyWorkArchiveRecordItemDto
+{
+    public Guid Id { get; set; }
+    public string ArchivalNumber { get; set; } = string.Empty;
+    public string FolderPath { get; set; } = string.Empty;
+    public string? FormName { get; set; }
+    public string? DepartmentName { get; set; }
+    public string? CreatedByUserName { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+    public List<DailyWorkFormValueItemDto> FormValues { get; set; } = [];
+}
+
+public class DailyWorkFormValueItemDto
+{
+    public string Key { get; set; } = string.Empty;
+    public string? Value { get; set; }
+}
