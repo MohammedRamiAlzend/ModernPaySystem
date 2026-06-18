@@ -1,7 +1,7 @@
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { AppearanceSettings } from '../ui/AppearanceSettings';
 import { ToolsSettings } from '../ui/ToolsSettings';
-import { ArchiveConfigSettings } from '../ui/ArchiveConfigSettings';
+// import { ArchiveConfigSettings } from '../ui/ArchiveConfigSettings';
 import { ReactNode } from 'react';
 import {
     Database,
@@ -23,7 +23,7 @@ const TemplatesList = lazyWithPreload(() => import('@/features/form-builder/ui/T
 const DepartmentDashboardWidget = lazyWithPreload(() => import('@/widgets/department-dashboard').then(m => ({ default: m.DepartmentDashboardWidget })));
 const ArchivingTemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ScannerSettingsPage = lazyWithPreload(() => import('../ui/ScannerSettingsPage').then(m => ({ default: m.ScannerSettingsPage })));
-
+const ArchiveConfigSettings = lazyWithPreload(() => import('../ui/ArchiveConfigSettings').then(m => ({ default: m.ArchiveConfigSettings })));
 export interface SettingsTab {
     id: string;
     label: string;
@@ -92,6 +92,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         description: 'إعدادات التخزين والمسار الافتراضي لنظام الأرشفة',
         icon: Settings2,
         component: <ArchiveConfigSettings />,
+        preload: () => ArchiveConfigSettings.preload(),
         showDescription: true,
         category: 'archiving'
     },

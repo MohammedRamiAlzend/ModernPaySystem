@@ -1,5 +1,6 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
+import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 import { archivingService } from '../api/archivingService';
 
 // ---------------------------------------------------------
@@ -106,6 +107,7 @@ export const useArchiveConfig = () => {
     return useQuery({
         queryKey: queryKeys.archiving.config.all,
         queryFn: () => archivingService.getArchiveConfig(),
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
     });
 };
 
@@ -113,6 +115,24 @@ export const useLedDepartments = () => {
     return useQuery({
         queryKey: queryKeys.archiving.ledDepartments.all,
         queryFn: () => archivingService.getLedDepartments(),
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
+    });
+};
+
+export const useSystemDrives = () => {
+    return useQuery({
+        queryKey: [...queryKeys.archiving.config.all, 'drives'] as const,
+        queryFn: () => archivingService.getSystemDrives(),
+        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
+    });
+};
+
+export const useSubdirectories = (path: string) => {
+    return useQuery({
+        queryKey: [...queryKeys.archiving.config.all, 'subdirs', path] as const,
+        queryFn: () => archivingService.getSubdirectories(path),
+        enabled: path !== undefined,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 

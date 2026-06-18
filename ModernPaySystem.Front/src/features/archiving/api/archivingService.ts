@@ -564,5 +564,17 @@ export const archivingService = {
     updateArchiveConfig: async (dto: UpdateArchiveConfigDto): Promise<ArchiveConfigDto> => {
         const response = await api.put<any>('/archive-system/config', dto);
         return response.data.data;
+    },
+
+    getSystemDrives: async (): Promise<string[]> => {
+        const response = await api.get<any>('/archive-system/config/drives');
+        return response.data.data;
+    },
+
+    getSubdirectories: async (path: string): Promise<string[]> => {
+        const response = await api.get<any>('/archive-system/config/subdirs', {
+            params: { path }
+        });
+        return response.data.data;
     }
 };
