@@ -6,7 +6,7 @@ import { useUpdateArchiveConfig } from '@/features/archiving/model/mutations';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
-import { Switch } from '@/shared/ui/switch';
+// import { Switch } from '@/shared/ui/switch';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
@@ -119,7 +119,7 @@ export const ArchiveConfigSettings = () => {
                             )}
                         />
 
-                        <FormField
+                        {/* <FormField
                             control={form.control}
                             name="isActive"
                             render={({ field }) => (
@@ -142,7 +142,7 @@ export const ArchiveConfigSettings = () => {
                                     <FormMessage />
                                 </FormItem>
                             )}
-                        />
+                        /> */}
 
                         {isArchiveLeader && (
                             <Button type="submit" disabled={updateMutation.isPending}>
