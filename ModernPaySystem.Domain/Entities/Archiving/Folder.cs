@@ -14,6 +14,9 @@ public class Folder : Entity<Guid>, IAuditableEntity
     public Guid? ParentId { get; set; }
     public Folder? Parent { get; set; }
 
+    public Guid? IconId { get; set; }
+    public FolderIcon? Icon { get; set; }
+
     public ICollection<Folder> SubFolders { get; set; } = [];
     public ICollection<ArchiveRecord> ArchiveRecords { get; set; } = [];
     public ICollection<FolderPermission> Permissions { get; set; } = [];
@@ -38,6 +41,7 @@ public class Folder : Entity<Guid>, IAuditableEntity
             Level = Level,
             DepartmentId = DepartmentId,
             ParentId = ParentId,
+            IconId = IconId,
             FolderDtos = SubFolders is not null && SubFolders.Count != 0 ? [.. SubFolders.Where(x => x.Level == Level + 1).Select(f => f.ToDto())] : [],
             IsDeleted = IsDeleted,
             DeletedAt = DeletedAt,
@@ -59,6 +63,7 @@ public class FolderDto
     public int Level { get; set; }
     public Guid? DepartmentId { get; set; }
     public Guid? ParentId { get; set; }
+    public Guid? IconId { get; set; }
 
     public required List<FolderDto> FolderDtos { get; set; } = [];
     public bool IsDeleted { get; set; }

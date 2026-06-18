@@ -26,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ArchiveRecordFormInputValue> ArchiveRecordFormInputValues { get; set; }
     public DbSet<PhysicalFile> PhysicalFiles { get; set; }
     public DbSet<FolderPermission> FolderPermissions { get; set; }
+    public DbSet<FolderIcon> FolderIcons { get; set; }
     public DbSet<Document> Documents { get; set; }
     public DbSet<DocumentChunk> DocumentChunks { get; set; }
     public DbSet<ArchiveAuditLog> ArchiveAuditLogs { get; set; }
@@ -266,6 +267,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(f => f!.SubFolders)
             .HasForeignKey(f => f.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Folder>()
+            .HasOne(f => f.Icon)
+            .WithMany(i => i.Folders)
+            .HasForeignKey(f => f.IconId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<FolderIcon>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.SvgContent).HasColumnType("text").IsRequired();
+        });
 
         modelBuilder.Entity<Folder>()
             .HasOne(f => f.Department)

@@ -11,6 +11,7 @@ import { ExplorerView } from '@/features/archiving/ui/ExplorerView';
 import { ListView } from '@/features/archiving/ui/ListView';
 import { DocumentGalleryModal } from '@/features/archiving/ui/DocumentGalleryModal';
 import { FolderPermissionsModal } from '@/features/archiving/ui/FolderPermissionsModal';
+import { CustomizeIconModal } from '@/features/archiving/ui/CustomizeIconModal';
 import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
@@ -38,9 +39,17 @@ export default function ExplorerPage() {
     const [showFolderPermissionsModal, setShowFolderPermissionsModal] = useState(false);
     const [permissionsModalFolder, setPermissionsModalFolder] = useState<Folder | null>(null);
 
+    const [showIconCustomizationModal, setShowIconCustomizationModal] = useState(false);
+    const [iconCustomizationFolder, setIconCustomizationFolder] = useState<Folder | null>(null);
+
     const handleOpenFolderPermissions = (folder: Folder) => {
         setPermissionsModalFolder(folder);
         setShowFolderPermissionsModal(true);
+    };
+
+    const handleOpenFolderCustomize = (folder: Folder) => {
+        setIconCustomizationFolder(folder);
+        setShowIconCustomizationModal(true);
     };
 
     const handleOpenRequestEdit = (record: ArchiveRecord) => {
@@ -239,14 +248,15 @@ export default function ExplorerPage() {
                         <span className="text-sm font-medium">جاري تحميل مستندات الأرشيف...</span>
                     </div>
                 ) : viewMode === 'explorer' ? (
-                    <ExplorerView
-                        folders={filteredFolders}
-                        records={filteredRecords}
-                        onFolderDoubleClick={handleNavigate}
-                        onRecordClick={handleRecordClick}
-                        onFolderEdit={handleOpenEditFolder}
-                        onFolderPermissions={handleOpenFolderPermissions}
-                        onFolderDelete={handleDeleteFolder}
+                        <ExplorerView
+                            folders={filteredFolders}
+                            records={filteredRecords}
+                            onFolderDoubleClick={handleNavigate}
+                            onRecordClick={handleRecordClick}
+                            onFolderEdit={handleOpenEditFolder}
+                            onFolderPermissions={handleOpenFolderPermissions}
+                            onFolderCustomize={handleOpenFolderCustomize}
+                            onFolderDelete={handleDeleteFolder}
                         onRecordEdit={handleOpenEditRecord}
                         onRecordDelete={handleDeleteRecord}
                         onRecordDownloadZip={handleDownloadRecordZip}
@@ -361,7 +371,17 @@ export default function ExplorerPage() {
                     </div>
                 </div>
             )}
-            {/* 5. Modal: Folder Permissions */}
+            {/* 5. Modal: Folder Icon Customization */}
+            <CustomizeIconModal
+                isOpen={showIconCustomizationModal}
+                folder={iconCustomizationFolder}
+                onClose={() => {
+                    setShowIconCustomizationModal(false);
+                    setIconCustomizationFolder(null);
+                }}
+            />
+
+            {/* 6. Modal: Folder Permissions */}
             <FolderPermissionsModal
                 isOpen={showFolderPermissionsModal}
                 folder={permissionsModalFolder}

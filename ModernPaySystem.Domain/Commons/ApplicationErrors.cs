@@ -134,6 +134,10 @@ public static class ApplicationErrors
     public static readonly Error ArchiveConfigNotFound = new("10046", "Archive configuration not found.", ErrorKind.NotFound, "لم يتم العثور على إعدادات الأرشفة.");
     public static readonly Error ArchiveConfigUpdateNotAuthorized = new("10047", "Only archive leaders can update the archive configuration.", ErrorKind.Forbidden, "فقط قادة الأرشيف يمكنهم تحديث إعدادات الأرشفة.");
 
+    // Folder Icon Errors (11000-11099)
+    public static readonly Error FolderIconNotFound = new("11000", "The specified folder icon was not found.", ErrorKind.NotFound, "لم يتم العثور على أيقونة المجلد المحددة.");
+    public static readonly Error CannotDeleteDefaultFolderIcon = new("11001", "Cannot delete the default folder icon.", ErrorKind.Forbidden, "لا يمكن حذف أيقونة المجلد الافتراضية.");
+
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");
     public static readonly Error DocumentNotFound = new("1100", "The specified document was not found.", ErrorKind.NotFound, "لم يتم العثور على المستند المحدد.");

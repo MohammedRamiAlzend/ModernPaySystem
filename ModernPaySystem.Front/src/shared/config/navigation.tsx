@@ -1,5 +1,5 @@
 
-import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3, Search, Brain, History } from "lucide-react";
+import { LayoutDashboard, Settings, Reply, Archive, FileCheck, Forward, Send, Clock, BarChart3, Search, Brain, History, Image } from "lucide-react";
 
 export interface NavigationItem {
     title: string;
@@ -98,6 +98,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 title: "التقارير والإحصائيات",
                 path: "/archiving/reports",
                 icon: <BarChart3 className="h-4 w-4" />,
+            },
+            {
+                title: "أيقونات المجلدات",
+                path: "/archiving/folder-icons",
+                icon: <Image className="h-4 w-4" />,
             }
         ]
     }

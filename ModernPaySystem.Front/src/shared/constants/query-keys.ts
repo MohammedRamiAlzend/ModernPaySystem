@@ -108,6 +108,13 @@ export const queryKeys = {
             all: ['archiving', 'dailyWork'] as const,
             detail: (date?: string | null) => [...queryKeys.archiving.dailyWork.all, date] as const,
         },
+        folderIcons: {
+            all: ['archiving', 'folderIcons'] as const,
+            lists: () => [...queryKeys.archiving.folderIcons.all, 'list'] as const,
+            list: (filters?: any) => [...queryKeys.archiving.folderIcons.lists(), filters] as const,
+            details: () => [...queryKeys.archiving.folderIcons.all, 'detail'] as const,
+            detail: (id: string | null) => [...queryKeys.archiving.folderIcons.details(), id] as const,
+        },
         reports: {
             all: ['archiving', 'reports'] as const,
             myDepartments: () => [...queryKeys.archiving.reports.all, 'myDepartments'] as const,

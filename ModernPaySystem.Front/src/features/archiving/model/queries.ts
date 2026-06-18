@@ -111,6 +111,24 @@ export const useArchiveConfig = () => {
     });
 };
 
+// ---------------------------------------------------------
+// Folder Icons Queries
+// ---------------------------------------------------------
+export const useFolderIcons = () => {
+    return useQuery({
+        queryKey: queryKeys.archiving.folderIcons.lists(),
+        queryFn: () => archivingService.getAllFolderIcons(),
+    });
+};
+
+export const useFolderIcon = (id: string | null) => {
+    return useQuery({
+        queryKey: queryKeys.archiving.folderIcons.detail(id),
+        queryFn: () => archivingService.getFolderIconById(id!),
+        enabled: !!id,
+    });
+};
+
 export const useLedDepartments = () => {
     return useQuery({
         queryKey: queryKeys.archiving.ledDepartments.all,

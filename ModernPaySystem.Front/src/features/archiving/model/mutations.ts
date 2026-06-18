@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { archivingService } from '../api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
-import { CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, UpdateArchiveConfigDto } from './types';
+import { CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, UpdateArchiveConfigDto, CreateFolderIconDto, AssignFolderIconDto } from './types';
 
 // ---------------------------------------------------------
 // Folders Mutations
@@ -280,6 +280,109 @@ export const useDeleteDynamicForm = () => {
                 type: 'error',
                 title: 'خطأ في الحذف',
                 message: error?.response?.data?.message || 'فشل حذف النموذج الأرشيفي، قد يكون مرتبطاً ببيانات قائمة.'
+            });
+        }
+    });
+};
+
+// ---------------------------------------------------------
+// Folder Icons Mutations
+// ---------------------------------------------------------
+export const useCreateFolderIcon = () => {
+    const queryClient = useQueryClient();
+    const { showStatus } = useUIStore();
+
+    return useMutation({
+        mutationFn: (dto: CreateFolderIconDto) => archivingService.createFolderIcon(dto),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.folderIcons.all });
+            showStatus({
+                type: 'success',
+                title: 'تم إنشاء الأيقونة',
+                message: `تم إنشاء أيقونة "${data.name}" بنجاح.`
+            });
+        },
+        onError: (error: any) => {
+            console.error('Failed to create folder icon', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ في إنشاء الأيقونة',
+                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة إنشاء الأيقونة.'
+            });
+        }
+    });
+};
+
+export const useUpdateFolderIcon = () => {
+    const queryClient = useQueryClient();
+    const { showStatus } = useUIStore();
+
+    return useMutation({
+        mutationFn: ({ id, dto }: { id: string; dto: Partial<CreateFolderIconDto> }) => archivingService.updateFolderIcon(id, dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.folderIcons.all });
+            showStatus({
+                type: 'success',
+                title: 'تم تحديث الأيقونة',
+                message: 'تم تحديث الأيقونة بنجاح.'
+            });
+        },
+        onError: (error: any) => {
+            console.error('Failed to update folder icon', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ في تحديث الأيقونة',
+                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث الأيقونة.'
+            });
+        }
+    });
+};
+
+export const useDeleteFolderIcon = () => {
+    const queryClient = useQueryClient();
+    const { showStatus } = useUIStore();
+
+    return useMutation({
+        mutationFn: (id: string) => archivingService.deleteFolderIcon(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.folderIcons.all });
+            showStatus({
+                type: 'success',
+                title: 'تم حذف الأيقونة',
+                message: 'تم حذف الأيقونة بنجاح.'
+            });
+        },
+        onError: (error: any) => {
+            console.error('Failed to delete folder icon', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ في حذف الأيقونة',
+                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة حذف الأيقونة.'
+            });
+        }
+    });
+};
+
+export const useAssignIconToFolder = () => {
+    const queryClient = useQueryClient();
+    const { showStatus } = useUIStore();
+
+    return useMutation({
+        mutationFn: (dto: AssignFolderIconDto) => archivingService.assignIconToFolder(dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.folders.all });
+            showStatus({
+                type: 'success',
+                title: 'تم تعيين الأيقونة',
+                message: 'تم تعيين الأيقونة للمجلد بنجاح.'
+            });
+        },
+        onError: (error: any) => {
+            console.error('Failed to assign icon to folder', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ في تعيين الأيقونة',
+                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تعيين الأيقونة للمجلد.'
             });
         }
     });

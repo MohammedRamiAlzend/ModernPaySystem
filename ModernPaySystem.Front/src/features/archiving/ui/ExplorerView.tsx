@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Folder, ArchiveRecord } from '../model/types';
+import { useFolderIcons } from '../model/queries';
 import { 
     Folder as FolderIcon, 
     FileText, 
@@ -10,7 +11,8 @@ import {
     Eye,
     Plus,
     FolderPlus,
-    Shield
+    Shield,
+    Image
 } from 'lucide-react';
 
 interface ExplorerViewProps {
@@ -21,6 +23,7 @@ interface ExplorerViewProps {
     onFolderEdit?: (folder: Folder) => void;
     onFolderPermissions?: (folder: Folder) => void;
     onFolderDelete?: (folder: Folder) => void;
+    onFolderCustomize?: (folder: Folder) => void;
     onRecordEdit?: (record: ArchiveRecord) => void;
     onRecordDelete?: (record: ArchiveRecord) => void;
     onRecordDownloadZip?: (record: ArchiveRecord) => void;
@@ -38,6 +41,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onFolderEdit,
     onFolderPermissions,
     onFolderDelete,
+    onFolderCustomize,
     // onRecordEdit,
     onRecordDelete,
     onRecordDownloadZip,
@@ -86,6 +90,9 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
         });
     };
 
+    const { data: icons = [] } = useFolderIcons();
+    const iconMap = new Map(icons.map(i => [i.id, i.svgContent]));
+
     const targetFolder = folders.find(f => f.id === contextMenu?.targetId);
     const targetRecord = records.find(r => r.id === contextMenu?.targetId);
 
@@ -130,6 +137,15 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                     <Edit3 className="h-3.5 w-3.5" />
                                                 </button>
                                             )}
+                                            {onFolderCustomize && (
+                                                <button
+                                                    onClick={() => handleAction(() => onFolderCustomize(folder))}
+                                                    className="w-full px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-end gap-2"
+                                                >
+                                                    <span>تخصيص</span>
+                                                    <Image className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
                                             {onFolderPermissions && folder.canManagePermissions && (
                                                 <button
                                                     onClick={() => handleAction(() => onFolderPermissions(folder))}
@@ -153,7 +169,11 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                 </div>
 
                                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                    <FolderIcon className="h-6 w-6 fill-amber-500/20" />
+                                    {folder.iconId && iconMap.has(folder.iconId) ? (
+                                        <div className="w-8 h-8 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: iconMap.get(folder.iconId)! }} />
+                                    ) : (
+                                        <FolderIcon className="h-6 w-6 fill-amber-500/20" />
+                                    )}
                                 </div>
                                 <span className="text-xs font-bold text-foreground line-clamp-2 break-all w-full px-1">
                                     {folder.name}
@@ -312,6 +332,18 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                 >
                                     <span>تعديل الاسم</span>
                                     <Edit3 className="h-4 w-4 text-amber-500" />
+                                </button>
+                            )}
+                            {onFolderCustomize && (
+                                <button
+                                    onClick={() => {
+                                        onFolderCustomize(targetFolder);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>تخصيص</span>
+                                    <Image className="h-4 w-4 text-amber-500" />
                                 </button>
                             )}
                             {onFolderPermissions && targetFolder?.canManagePermissions && (

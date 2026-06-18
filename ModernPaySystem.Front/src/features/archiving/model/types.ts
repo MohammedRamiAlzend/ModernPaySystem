@@ -1,9 +1,30 @@
+export interface FolderIcon {
+    id: string;
+    name: string;
+    svgContent: string;
+    isDefault: boolean;
+    createdByUserId?: string | null;
+    createdAt?: string | null;
+}
+
+export interface CreateFolderIconDto {
+    name: string;
+    svgContent: string;
+    isDefault: boolean;
+}
+
+export interface AssignFolderIconDto {
+    folderId: string;
+    iconId: string | null;
+}
+
 export interface Folder {
     id: string;
     name: string;
     level: number;
     defaultStoragePath?: string | null;
     parentId: string | null;
+    iconId?: string | null;
     folderDtos: Folder[];
     createdByUserId?: string | null;
     createdAt?: string | null;

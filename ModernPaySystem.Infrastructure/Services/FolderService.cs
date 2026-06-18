@@ -53,6 +53,7 @@ public class FolderService(
                 Name = x.Name,
                 Level = x.Level,
                 ParentId = x.ParentId,
+                IconId = x.IconId,
                 FolderDtos = [], // Frontend will handle flat structure
                 DepartmentId = x.DepartmentId,
                 CreatedByUserId = x.CreatedByUserId,

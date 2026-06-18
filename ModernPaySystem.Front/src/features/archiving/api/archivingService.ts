@@ -8,7 +8,7 @@ import {
     UserActivityReportItem, ActiveUserReportItem,
     StorageConsumptionReport, DepartmentChartsData,
     ArchiveConfigDto, UpdateArchiveConfigDto,
-    DailyWorkReportDto
+    DailyWorkReportDto, FolderIcon, CreateFolderIconDto, AssignFolderIconDto
 } from '../model/types';
 import { Department } from '@/entities/department/model/types';
 import { attachmentCache } from '../utils/attachmentCache';
@@ -569,6 +569,49 @@ export const archivingService = {
         const response = await api.get<any>('/archive-system/config/subdirs', {
             params: { path }
         });
+        return response.data.data;
+    },
+
+    // ---------------------------------------------
+    // Folder Icons API
+    // ---------------------------------------------
+    getAllFolderIcons: async (): Promise<FolderIcon[]> => {
+        const response = await api.get<any>('/ArchiveSystem/FolderIcons');
+        return response.data.data;
+    },
+
+    getFolderIconById: async (id: string): Promise<FolderIcon> => {
+        const response = await api.get<any>(`/ArchiveSystem/FolderIcons/${id}`);
+        return response.data.data;
+    },
+
+    getFolderIconUrl: (id: string): string => {
+        const baseURL = api.defaults.baseURL || '';
+        const token = sessionStorage.getItem('token');
+        return `${baseURL}/ArchiveSystem/FolderIcons/${id}/file?access_token=${token || ''}`;
+    },
+
+    getFolderIconSvgUrl: (id: string): string => {
+        const baseURL = api.defaults.baseURL || '';
+        return `${baseURL}/ArchiveSystem/FolderIcons/${id}/svg`;
+    },
+
+    createFolderIcon: async (dto: CreateFolderIconDto): Promise<FolderIcon> => {
+        const response = await api.post<any>('/ArchiveSystem/FolderIcons', dto);
+        return response.data.data;
+    },
+
+    updateFolderIcon: async (id: string, dto: Partial<CreateFolderIconDto>): Promise<FolderIcon> => {
+        const response = await api.put<any>(`/ArchiveSystem/FolderIcons/${id}`, dto);
+        return response.data.data;
+    },
+
+    deleteFolderIcon: async (id: string): Promise<void> => {
+        await api.delete(`/ArchiveSystem/FolderIcons/${id}`);
+    },
+
+    assignIconToFolder: async (dto: AssignFolderIconDto): Promise<Folder> => {
+        const response = await api.post<any>('/ArchiveSystem/FolderIcons/assign', dto);
         return response.data.data;
     }
 };

@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 import { useLedDepartments } from '@/features/archiving/model/queries';
 
 const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-page'));
+const FolderIconsPage = lazyWithPreload(() => import('@/pages/archiving/folder-icons-page'));
 // const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
 const ArchiveSearchPage = lazyWithPreload(() => import('@/pages/archiving/search-page'));
@@ -78,6 +79,18 @@ export const archivingRoutes: RouteObject = {
       handle: {
         crumb: () => 'البحث الدلالي',
         preload: () => SemanticSearchPage.preload(),
+      }
+    },
+    {
+      path: 'folder-icons',
+      element: (
+        <Suspense fallback={<LoadingSpinner />}>
+          <FolderIconsPage />
+        </Suspense>
+      ),
+      handle: {
+        crumb: () => 'أيقونات المجلدات',
+        preload: () => FolderIconsPage.preload(),
       }
     },
     {

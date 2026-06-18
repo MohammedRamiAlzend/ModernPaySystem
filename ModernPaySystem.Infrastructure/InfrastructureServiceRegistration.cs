@@ -70,6 +70,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IArchiveRecordReportService, ArchiveRecordReportService>();
         services.AddScoped<IArchiveConfigService, ArchiveConfigService>();
+        services.AddScoped<IFolderIconService, FolderIconService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 
         // Register Lookup Field Services
