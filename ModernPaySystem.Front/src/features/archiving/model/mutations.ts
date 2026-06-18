@@ -121,18 +121,17 @@ export const useCreateArchiveRecord = () => {
                 id?: string;
                 folderId: string;
                 formId: string | null;
-                archivalNumber: string;
                 files: File[];
                 content: { key: string; value: string | null }[];
             };
             onUploadProgress?: (progressEvent: any) => void;
         }) => archivingService.createArchiveRecord(data, onUploadProgress),
-        onSuccess: (data) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.archiving.records.all });
             showStatus({
                 type: 'success',
                 title: 'تمت الأرشفة',
-                message: `تم أرشفة المستند برقم "${data.archivalNumber}" بنجاح.`
+                message: 'تم أرشفة المستند بنجاح.'
             });
         },
         onError: (error: any) => {
@@ -156,7 +155,6 @@ export const useUpdateArchiveRecord = () => {
             data: {
                 folderId: string;
                 formId: string;
-                archivalNumber: string;
                 files?: File[];
                 content: { key: string; value: string | null }[];
                 fileIdsToRemove?: string[];
@@ -164,12 +162,12 @@ export const useUpdateArchiveRecord = () => {
             };
             onUploadProgress?: (progressEvent: any) => void;
         }) => archivingService.updateArchiveRecord(id, data, onUploadProgress),
-        onSuccess: (data) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.archiving.records.all });
             showStatus({
                 type: 'success',
                 title: 'تم تحديث السجل',
-                message: `تم تحديث مستند الأرشيف رقم "${data.archivalNumber}" بنجاح.`
+                message: 'تم تحديث مستند الأرشيف بنجاح.'
             });
         },
         onError: (error: any) => {

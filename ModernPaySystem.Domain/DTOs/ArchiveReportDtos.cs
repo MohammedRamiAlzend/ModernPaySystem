@@ -162,7 +162,6 @@ public class DailyWorkAuditLogItemDto
 {
     public Guid Id { get; set; }
     public Guid ArchiveRecordId { get; set; }
-    public string ArchivalNumber { get; set; } = string.Empty;
     public string UserName { get; set; } = string.Empty;
     public string Action { get; set; } = string.Empty;
     public string? Details { get; set; }
@@ -172,7 +171,6 @@ public class DailyWorkAuditLogItemDto
 public class DailyWorkArchiveRecordItemDto
 {
     public Guid Id { get; set; }
-    public string ArchivalNumber { get; set; } = string.Empty;
     public string FolderPath { get; set; } = string.Empty;
     public string? FormName { get; set; }
     public string? DepartmentName { get; set; }

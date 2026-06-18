@@ -271,15 +271,10 @@ public class ArchiveRecordService(
             ];
             if (filterDto != null)
             {
-                if (!string.IsNullOrWhiteSpace(filterDto.ArchivalNumber))
-                    filters.Add(r => r.ArchivalNumber.Contains(filterDto.ArchivalNumber));
-
                 if (!string.IsNullOrWhiteSpace(filterDto.SearchText))
                 {
                     if (Guid.TryParse(filterDto.SearchText, out var searchId))
-                        filters.Add(r => r.ArchivalNumber.Contains(filterDto.SearchText) || r.Id == searchId);
-                    else
-                        filters.Add(r => r.ArchivalNumber.Contains(filterDto.SearchText));
+                        filters.Add(r => r.Id == searchId);
                 }
 
                 if (!string.IsNullOrWhiteSpace(filterDto.RecordId) && Guid.TryParse(filterDto.RecordId, out var recordId))
@@ -363,14 +358,6 @@ public class ArchiveRecordService(
                 return ApplicationErrors.ArchiveRecordDepartmentNotConfigured;
             }
 
-            var archivalNumberUniqueResult = await IsArchivalNumberUniqueAsync(dto.ArchivalNumber.Trim(), dto.FolderId);
-            if (archivalNumberUniqueResult.IsError) return archivalNumberUniqueResult.Errors;
-
-            if (!archivalNumberUniqueResult.Value)
-            {
-                return ApplicationErrors.ArchiveRecordArchivalNumberAlreadyInUse;
-            }
-
             var formResolutionResult = await ResolveFormAsync(dto.FormId);
             if (formResolutionResult is not null && formResolutionResult.IsError)
                 return formResolutionResult.Errors;
@@ -380,8 +367,7 @@ public class ArchiveRecordService(
                 Id = dto.Id ?? Guid.NewGuid(),
                 FolderId = dto.FolderId,
                 DepartmentId = folderDepartmentResult.Value,
-                FormId = formResolutionResult?.Value?.Id,
-                ArchivalNumber = dto.ArchivalNumber.Trim()
+                FormId = formResolutionResult?.Value?.Id
             };
 
             if (dto.FormId is not null)
@@ -484,33 +470,6 @@ public class ArchiveRecordService(
 
         return folderResult.Value;
     }
-    private async Task<Result<bool>> IsArchivalNumberUniqueAsync(string archivalNumber, Guid folderId, Guid? excludeRecordId = null)
-    {
-        if (string.IsNullOrWhiteSpace(archivalNumber) || folderId == Guid.Empty)
-        {
-            return ApplicationErrors.InvalidInput;
-        }
-
-        var folderExists = await unitOfWork.Folders.AnyAsync(x => x.Id == folderId);
-        if (!folderExists)
-        {
-            return ApplicationErrors.FolderNotFound;
-        }
-
-        var folderIds = await GetFolderTreeIdsAsync(folderId);
-        if (folderIds.IsError)
-        {
-            return folderIds.Errors;
-        }
-
-        var existsResult = await unitOfWork.ArchiveRecords.AnyAsync(
-            x => x.ArchivalNumber == archivalNumber &&
-                 folderIds.Value!.Contains(x.FolderId) &&
-                 (!excludeRecordId.HasValue || x.Id != excludeRecordId.Value));
-
-        return !existsResult;
-    }
-
     private async Task<Result<HashSet<Guid>>> GetFolderTreeIdsAsync(Guid folderId)
     {
         var foldersResult = await unitOfWork.Context.Folders
@@ -591,9 +550,9 @@ public class ArchiveRecordService(
 
         try
         {
-            if (id == Guid.Empty || dto == null || dto.FolderId == Guid.Empty || (dto.FormId.HasValue && dto.FormId.Value == Guid.Empty) || string.IsNullOrWhiteSpace(dto.ArchivalNumber))
+            if (id == Guid.Empty || dto == null || dto.FolderId == Guid.Empty || (dto.FormId.HasValue && dto.FormId.Value == Guid.Empty))
             {
-                logger.LogWarning("Update request validation failed: Invalid id, folder, form, or archival number.");
+                logger.LogWarning("Update request validation failed: Invalid id, folder, or form.");
                 return ApplicationErrors.InvalidInput;
             }
 
@@ -641,17 +600,6 @@ public class ArchiveRecordService(
 
             var storageSubDir = folderResult.Value.DefaultStoragePath ?? await GetDefaultStoragePathAsync();
 
-            var archivalNumberUniqueResult = await IsArchivalNumberUniqueAsync(dto.ArchivalNumber.Trim(), dto.FolderId, id);
-            if (archivalNumberUniqueResult.IsError)
-            {
-                return archivalNumberUniqueResult.Errors;
-            }
-
-            if (!archivalNumberUniqueResult.Value)
-            {
-                return ApplicationErrors.ArchiveRecordArchivalNumberAlreadyInUse;
-            }
-
             var formResolutionResult = await ResolveFormAsync(dto.FormId);
             if (formResolutionResult is not null && formResolutionResult.IsError)
                 return formResolutionResult.Errors;
@@ -672,7 +620,6 @@ public class ArchiveRecordService(
 
                 record.FolderId = dto.FolderId;
                 record.FormId = dto.FormId;
-                record.ArchivalNumber = dto.ArchivalNumber.Trim();
 
                 if (record.ArchiveRecordTemplateValuesId == null)
                 {
@@ -1220,12 +1167,6 @@ public class ArchiveRecordService(
             return ApplicationErrors.InvalidInput;
         }
 
-        if (string.IsNullOrWhiteSpace(dto.ArchivalNumber))
-        {
-            logger.LogWarning("Create request validation failed: ArchivalNumber is null or empty.");
-            return ApplicationErrors.InvalidInput;
-        }
-
         if (dto.FormId.HasValue && dto.FormId.Value == Guid.Empty)
         {
             logger.LogWarning("Create request validation failed: FormId is Guid.Empty.");
@@ -1754,7 +1695,6 @@ public class ArchiveRecordService(
         var metadataPayload = new
         {
             recordId = record.Id,
-            archivalNumber = record.ArchivalNumber,
             folderId = record.FolderId,
             folderName = record.Folder?.Name,
             generatedAtUtc = DateTime.UtcNow,

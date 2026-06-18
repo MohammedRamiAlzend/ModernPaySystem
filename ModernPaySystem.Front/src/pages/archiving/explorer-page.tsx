@@ -92,8 +92,6 @@ export default function ExplorerPage() {
         showRecordModal,
         setShowRecordModal,
         recordModalMode,
-        archivalNumber,
-        setArchivalNumber,
         selectedTemplateId,
         handleTemplateIdChange,
         templateInputs,
@@ -172,7 +170,7 @@ export default function ExplorerPage() {
 
     const filteredRecords = currentFolder
         ? records.filter(r =>
-            searchTerm.trim() === '' || r.archivalNumber.toLowerCase().includes(searchTerm.toLowerCase())
+            searchTerm.trim() === '' || r.id.toLowerCase().includes(searchTerm.toLowerCase())
         )
         : [];
 
@@ -294,8 +292,6 @@ export default function ExplorerPage() {
             <RecordModal
                 isOpen={showRecordModal}
                 mode={recordModalMode}
-                archivalNumber={archivalNumber}
-                onArchivalNumberChange={setArchivalNumber}
                 selectedTemplateId={selectedTemplateId}
                 onSelectedTemplateIdChange={handleTemplateIdChange}
                 dynamicTemplates={dynamicTemplates}
@@ -339,7 +335,6 @@ export default function ExplorerPage() {
                 <QRPreviewTemplate
                     ref={qrCoverRef}
                     guid={qrCoverGuid}
-                    archivalNumber={archivalNumber}
                     formName={dynamicTemplates.find(t => t.id === selectedTemplateId)?.templateFormName}
                     content={Object.keys(templateInputs).map(k => ({ key: k, value: templateInputs[k] }))}
                 />

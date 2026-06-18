@@ -174,7 +174,7 @@ export default function ArchiveEditRequestsPage() {
                                             {myData.items.map((req) => (
                                                 <tr key={req.id} className="hover:bg-muted/10 transition-colors">
                                                     <td className="px-6 py-4 font-bold text-foreground">
-                                                        {req.archiveRecordArchivalNumber || 'بدون رقم'}
+                                                        {req.archiveRecordId.slice(0, 8)}
                                                     </td>
                                                     <td className="px-6 py-4 max-w-xs truncate">
                                                         {req.justification}

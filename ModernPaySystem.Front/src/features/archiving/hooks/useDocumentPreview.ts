@@ -264,7 +264,7 @@ export function useDocumentPreview({
                     backgroundColor: '#ffffff'
                 });
                 if (blob) {
-                    const qrFile = new File([blob], `QR_Cover_${record.archivalNumber}.png`, { type: 'image/png' });
+                    const qrFile = new File([blob], `QR_Cover_${record.id}.png`, { type: 'image/png' });
                     showStatus({
                         type: 'info',
                         title: 'جاري إدراج صفحة الغلاف',

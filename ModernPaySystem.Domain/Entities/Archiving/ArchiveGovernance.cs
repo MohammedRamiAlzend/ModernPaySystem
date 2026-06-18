@@ -294,7 +294,6 @@ public class EditArchiveRequestDto
     public string? OriginalSnapshotJson { get; set; }
     public string? RejectionReason { get; set; }
     public string? ApprovalNotes { get; set; }
-    public string? ArchiveRecordArchivalNumber { get; set; }
     public Guid? ApprovedByUserId { get; set; }
     public DateTime? ApprovedAt { get; set; }
     public Guid? RejectedByUserId { get; set; }
@@ -329,7 +328,6 @@ public class EditArchiveRequestDto
             OriginalSnapshotJson = entity.OriginalSnapshotJson,
             RejectionReason = entity.RejectionReason,
             ApprovalNotes = entity.ApprovalNotes,
-            ArchiveRecordArchivalNumber = entity.ArchiveRecord?.ArchivalNumber,
             ApprovedByUserId = entity.ApprovedByUserId,
             ApprovedAt = entity.ApprovedAt,
             RejectedByUserId = entity.RejectedByUserId,

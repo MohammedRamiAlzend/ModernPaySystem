@@ -120,7 +120,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                 {data.auditLogs.map((log, idx) => (
                                     <TableRow key={log.id}>
                                         <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                                        <TableCell className="font-medium">{log.archivalNumber}</TableCell>
+                                        <TableCell className="font-medium">{log.id.slice(0, 8)}</TableCell>
                                         <TableCell>{log.userName}</TableCell>
                                         <TableCell>
                                             <Badge variant="outline" className={ACTION_BADGE[log.action] || ''}>
@@ -173,7 +173,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                             onClick={() => toggleRecord(rec.id)}
                                         >
                                             <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                                            <TableCell className="font-medium">{rec.archivalNumber}</TableCell>
+                                            <TableCell className="font-medium">{rec.id.slice(0, 8)}</TableCell>
                                             <TableCell className="max-w-xs truncate">{rec.folderPath || '-'}</TableCell>
                                             <TableCell>{rec.formName || '-'}</TableCell>
                                             <TableCell>{rec.createdByUserName || '-'}</TableCell>

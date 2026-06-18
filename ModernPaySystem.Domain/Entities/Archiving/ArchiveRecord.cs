@@ -13,8 +13,6 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
     public Guid? FormId { get; set; }
     public ArchiveFormTemplate? Form { get; set; } 
 
-    public string ArchivalNumber { get; set; } = string.Empty;
-
     public Guid? ArchiveRecordTemplateValues { get; set; }
     public ArchiveRecordTemplateValues? ArchiveRecordTemplateValuesId { get; set; }
 
@@ -39,7 +37,6 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
             FolderId = FolderId,
             DepartmentId = DepartmentId,
             FormId = FormId,
-            ArchivalNumber = ArchivalNumber,
             ArchiveRecordTemplateValues = ArchiveRecordTemplateValuesId?.ToDto(),
             PhysicalFiles = [.. PhysicalFiles.Where(pf => !pf.IsDeleted && pf.EditArchiveRequestId == null).Select(pf => pf.ToDto())],
             IsDeleted = IsDeleted,
@@ -61,7 +58,6 @@ public class ArchiveRecordDto
     public Guid FolderId { get; set; }
     public Guid? DepartmentId { get; set; }
     public Guid? FormId { get; set; }
-    public string ArchivalNumber { get; set; } = string.Empty;
     public ArchiveRecordTemplateValuesDto? ArchiveRecordTemplateValues { get; set; }
     public List<PhysicalFileDto> PhysicalFiles { get; set; } = [];
     public bool IsDeleted { get; set; }
@@ -98,7 +94,6 @@ public class CreateArchiveRecordDto
     public Guid? Id { get; set; }
     public Guid FolderId { get; set; }
     public Guid? FormId { get; set; } = null;
-    public string ArchivalNumber { get; set; } = string.Empty;
     public Guid? DepartmentId { get; set; }
     public IFormFileCollection? Files { get; set; } = default!;
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];
@@ -108,7 +103,6 @@ public class UpdateArchiveRecordDto
 {
     public Guid FolderId { get; set; }
     public Guid? FormId { get; set; }
-    public string ArchivalNumber { get; set; } = string.Empty;
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];
     public IFormFileCollection? Files { get; set; }
     public List<Guid> FileIdsToRemove { get; set; } = [];

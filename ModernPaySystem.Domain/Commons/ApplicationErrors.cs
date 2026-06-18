@@ -106,7 +106,6 @@ public static class ApplicationErrors
     public static readonly Error InvalidJsonDefinition = new("10012", "The provided JSON definition is invalid.", ErrorKind.Validation, "تعريف JSON المقدم غير صحيح.");
     public static readonly Error DynamicFormInUse = new("10013", "The form is currently in use and cannot be deleted.", ErrorKind.Conflict, "النموذج قيد الاستخدام ولا يمكن حذفه.");
     public static readonly Error ArchiveRecordNotFound = new("10020", "The specified archive record was not found.", ErrorKind.NotFound, "لم يتم العثور على سجل الأرشفة المحدد.");
-    public static readonly Error ArchiveRecordArchivalNumberAlreadyInUse = new("10021", "The specified archive record's archival number is already in use.", ErrorKind.Conflict, "رقم الأرشيف المحدد مستخدم بالفعل.");
     public static readonly Error FormIdMustHasValue = new("10022", "The specified archive record's form ID must have a value.", ErrorKind.Validation, "يجب أن يحتوي معرف النموذج المحدد لسجل الأرشفة على قيمة.");
     public static Error ArchivePhysicalFileMissingFromStorage(string storagePath) =>
         new("10023", $"The archive file metadata exists but the physical file is missing from storage: {storagePath}.", ErrorKind.NotFound, "الملف المادي غير موجود في التخزين رغم وجود بياناته الوصفية.", HttpStatusCode.Gone);

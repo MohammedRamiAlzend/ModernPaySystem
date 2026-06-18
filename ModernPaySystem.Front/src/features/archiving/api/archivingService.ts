@@ -90,7 +90,6 @@ export const archivingService = {
             id?: string;
             folderId: string;
             formId: string | null;
-            archivalNumber: string;
             files: File[];
             content: { key: string; value: string | null }[];
         },
@@ -105,7 +104,6 @@ export const archivingService = {
         if (data.formId) {
             formData.append('FormId', data.formId);
         }
-        formData.append('ArchivalNumber', data.archivalNumber);
 
         // إضافة حقول النموذج الديناميكي ككائن Content
         data.content.forEach((item, index) => {
@@ -134,7 +132,6 @@ export const archivingService = {
         data: {
             folderId: string;
             formId: string | null;
-            archivalNumber: string;
             files?: File[];
             content: { key: string; value: string | null }[];
             fileIdsToRemove?: string[];
@@ -147,7 +144,6 @@ export const archivingService = {
         if (data.formId) {
             formData.append('FormId', data.formId);
         }
-        formData.append('ArchivalNumber', data.archivalNumber);
 
         data.content.forEach((item, index) => {
             formData.append(`Content[${index}].Key`, item.key);
@@ -189,7 +185,6 @@ export const archivingService = {
         page?: number;
         pageSize?: number;
         searchText?: string;
-        archivalNumber?: string;
         recordId?: string;
         inputValueFilters?: { key: string; value: string }[];
         logicalOperator?: number;
@@ -198,7 +193,6 @@ export const archivingService = {
             page: filter.page ?? 1,
             pageSize: filter.pageSize ?? 10,
             searchText: filter.searchText || undefined,
-            archivalNumber: filter.archivalNumber || undefined,
             recordId: filter.recordId || undefined,
             logicalOperator: filter.logicalOperator ?? 0,
         };

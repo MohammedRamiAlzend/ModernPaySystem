@@ -56,7 +56,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
     const [showRecordModal, setShowRecordModal] = useState(false);
     const [recordModalMode, setRecordModalMode] = useState<'create' | 'edit'>('create');
     const [selectedRecord, setSelectedRecord] = useState<ArchiveRecord | null>(null);
-    const [archivalNumber, setArchivalNumber] = useState('');
     const [selectedTemplateId, setSelectedTemplateId] = useState('');
     const [templateInputs, setTemplateInputs] = useState<Record<string, string>>({});
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -155,7 +154,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
     const handleOpenCreateRecord = () => {
         setSelectedRecord(null);
-        setArchivalNumber(`ARC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`);
         setSelectedTemplateId('');
         setTemplateInputs({});
         setSelectedFiles([]);
@@ -169,7 +167,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
     const handleOpenEditRecord = (record: ArchiveRecord) => {
         setSelectedRecord(record);
-        setArchivalNumber(record.archivalNumber);
         setSelectedTemplateId(record.formId || '');
         setExistingFiles(record.physicalFiles || []);
         setSelectedFiles([]);
@@ -190,7 +187,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
     const handleSaveRecord = async (e: React.FormEvent, qrCoverRef?: React.RefObject<HTMLDivElement | null>) => {
         e.preventDefault();
-        if (!archivalNumber.trim() || !currentFolderId) return;
+        if (!currentFolderId) return;
         setIsSavingRecord(true);
 
         try {
@@ -218,7 +215,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         });
                         if (blob) {
                             qrCoverBlob = blob;
-                            const qrFile = new File([blob], `QR_Cover_${archivalNumber}.png`, { type: 'image/png' });
+                            const qrFile = new File([blob], `QR_Cover_${recordId}.png`, { type: 'image/png' });
                             filesToUpload.unshift(qrFile);
                         }
                     } catch (err) {
@@ -233,7 +230,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                     id: recordId,
                     folderId: currentFolderId,
                     formId: selectedTemplateId || null,
-                    archivalNumber,
                     files: filesToUpload,
                     content: fieldsArray
                 }, (progressEvent) => {
@@ -243,7 +239,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                 showStatus({
                     type: 'success',
                     title: 'تم الأرشفة بنجاح',
-                    message: `تم حفظ مستند الأرشفة رقم "${archivalNumber}" بنجاح.`
+                    message: 'تم حفظ مستند الأرشفة بنجاح.'
                 });
 
                 // Auto-print the cover page immediately
@@ -254,7 +250,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                 await archivingService.updateArchiveRecord(selectedRecord.id, {
                     folderId: currentFolderId,
                     formId: selectedTemplateId,
-                    archivalNumber,
                     files: selectedFiles,
                     content: fieldsArray,
                     fileIdsToRemove,
@@ -295,7 +290,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
     const handleDeleteRecord = (record: ArchiveRecord) => {
         showConfirm({
             title: 'حذف مستند',
-            message: `هل أنت متأكد من حذف المستند رقم "${record.archivalNumber}" نهائياً؟ لا يمكن التراجع عن هذا الإجراء.`,
+            message: 'هل أنت متأكد من حذف هذا المستند نهائياً؟ لا يمكن التراجع عن هذا الإجراء.',
             variant: 'destructive',
             confirmLabel: 'حذف المستند',
             onConfirm: async () => {
@@ -337,7 +332,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Record_${record.archivalNumber}.zip`;
+            a.download = `Record_${record.id}.zip`;
             document.body.appendChild(a);
             a.click();
             a.remove();
@@ -370,8 +365,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
         setRecordModalMode,
         selectedRecord,
         setSelectedRecord,
-        archivalNumber,
-        setArchivalNumber,
         selectedTemplateId,
         setSelectedTemplateId,
         handleTemplateIdChange,

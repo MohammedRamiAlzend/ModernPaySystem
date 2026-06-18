@@ -118,7 +118,7 @@ export function EditRequestsList({ requests, isLoading, onViewDetails }: EditReq
                             <React.Fragment key={req.id}>
                                 <tr className="hover:bg-muted/10 transition-colors">
                                     <td className="px-6 py-4 font-bold text-foreground">
-                                        {req.archiveRecordArchivalNumber || 'بدون رقم'}
+                                        {req.archiveRecordId.slice(0, 8)}
                                     </td>
                                     <td className="px-6 py-4 flex items-center gap-2 justify-end">
                                         <span>{req.requesterName}</span>

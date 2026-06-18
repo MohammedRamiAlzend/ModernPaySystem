@@ -139,7 +139,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                             تقديم طلب تعديل مستند مؤرشف
                         </h2>
                         <p className="text-xs text-muted-foreground font-medium">
-                            رقم الأرشيف: {record.archivalNumber}
+                            رقم المستند: {record.id.slice(0, 8)}
                         </p>
                     </div>
                 </div>

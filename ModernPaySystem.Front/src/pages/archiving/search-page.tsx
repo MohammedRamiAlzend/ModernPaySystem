@@ -25,7 +25,6 @@ import {
 export function ArchiveSearchPage() {
     // Basic Search Fields
     const [searchText, setSearchText] = useState('');
-    const [archivalNumber, setArchivalNumber] = useState('');
     const [recordId, setRecordId] = useState('');
     const [logicalOperator, setLogicalOperator] = useState<number>(1); // 1 = AND, 2 = OR
     const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
@@ -85,7 +84,6 @@ export function ArchiveSearchPage() {
                 page: targetPage,
                 pageSize,
                 searchText: searchText.trim() || undefined,
-                archivalNumber: archivalNumber.trim() || undefined,
                 recordId: recordId.trim() || undefined,
                 logicalOperator,
                 inputValueFilters: inputValueFilters.length > 0 ? inputValueFilters : undefined
@@ -103,7 +101,6 @@ export function ArchiveSearchPage() {
 
     const handleClearFilters = () => {
         setSearchText('');
-        setArchivalNumber('');
         setRecordId('');
         setLogicalOperator(1);
         setSelectedTemplateId('');
@@ -138,7 +135,7 @@ export function ArchiveSearchPage() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Archive-${record.archivalNumber || record.id}.zip`;
+            a.download = `Archive-${record.id}.zip`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -189,19 +186,6 @@ export function ArchiveSearchPage() {
                     </div>
 
                     {/* Archival Number */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-xs font-bold text-muted-foreground">رقم الأرشفة</label>
-                        <div className="relative">
-                            <Input
-                                value={archivalNumber}
-                                onChange={(e) => setArchivalNumber(e.target.value)}
-                                placeholder="مثال: ARC-12345"
-                                className="pl-10 rounded-xl"
-                            />
-                            <Hash className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        </div>
-                    </div>
-
                     {/* Record ID */}
                     <div className="flex flex-col gap-2">
                         <label className="text-xs font-bold text-muted-foreground">معرف السجل </label>
@@ -320,7 +304,7 @@ export function ArchiveSearchPage() {
                                     searchResults.items.map((record) => (
                                         <tr key={record.id} className="hover:bg-muted/10 transition-colors group">
                                             <td className="px-6 py-4 text-sm font-bold text-foreground">
-                                                {record.archivalNumber}
+                                                {record.id.slice(0, 8)}
                                             </td>
                                             <td className="px-6 py-4 text-xs font-semibold text-muted-foreground">
                                                 {dynamicTemplates.find(t => t.id === record.formId)?.templateFormName || 'مستند عام'}
@@ -409,7 +393,7 @@ export function ArchiveSearchPage() {
                             </button>
                             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                                 <FileText className="h-5 w-5 text-primary" />
-                                <span>تفاصيل المستند ورقم الأرشفة: {previewingRecord.archivalNumber}</span>
+                                <span>تفاصيل المستند: {previewingRecord.id.slice(0, 8)}</span>
                             </h2>
                         </div>
                         <div className="flex-1 overflow-hidden p-6">

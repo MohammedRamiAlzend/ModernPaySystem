@@ -760,7 +760,7 @@ export async function exportDailyWorkReportToExcel(report: import('@/features/ar
     report.auditLogs.forEach((log, idx) => {
         addDataRow(auditSheet, [
             idx + 1,
-            log.archivalNumber,
+            log.id,
             log.userName,
             ACTION_TRANSLATIONS[log.action] || log.action,
             log.details || '-',
@@ -809,7 +809,7 @@ export async function exportDailyWorkReportToExcel(report: import('@/features/ar
 
         addDataRow(recordSheet, [
             idx + 1,
-            rec.archivalNumber,
+            rec.id,
             rec.folderPath || '-',
             rec.formName || '-',
             rec.createdByUserName || '-',

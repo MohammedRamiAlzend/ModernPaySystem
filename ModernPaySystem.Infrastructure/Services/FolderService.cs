@@ -334,12 +334,6 @@ public class FolderService(
                 return ApplicationErrors.InvalidInput;
             }
 
-            if (await AreArchiveNumbersUniqueBetweenFolderTrees(folderId, destinationFolderId) == false)
-            {
-                return ApplicationErrors.ArchiveRecordArchivalNumberAlreadyInUse;
-            }
-
-
             var previousLevel = folder.Level;
             folder.ParentId = destinationFolderId;
             folder.Level = await ResolveFolderLevelAsync(destinationFolderId);
@@ -406,64 +400,6 @@ public class FolderService(
         return false;
     }
 
-
-    private async Task<bool> AreArchiveNumbersUniqueBetweenFolderTrees(Guid sourceFolderId, Guid destinationFolderId)
-    {
-        var sourceArchiveNumbersResult = await GetArchiveNumbersInFolderTreeAsync(sourceFolderId);
-        if (sourceArchiveNumbersResult == null)
-        {
-            return false;
-        }
-
-        var destinationArchiveNumbersResult = await GetArchiveNumbersInFolderTreeAsync(destinationFolderId);
-        if (destinationArchiveNumbersResult == null)
-        {
-            return false;
-        }
-
-        return sourceArchiveNumbersResult.Overlaps(destinationArchiveNumbersResult) == false;
-    }
-
-    private async Task<HashSet<string>?> GetArchiveNumbersInFolderTreeAsync(Guid folderId)
-    {
-        var archiveNumbers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var visitedFolders = new HashSet<Guid>();
-
-        var collected = await CollectArchiveNumbersInFolderTreeAsync(folderId, archiveNumbers, visitedFolders);
-        return collected ? archiveNumbers : null;
-    }
-
-    private async Task<bool> CollectArchiveNumbersInFolderTreeAsync(Guid folderId, ISet<string> archiveNumbers, HashSet<Guid> visitedFolders)
-    {
-        if (!visitedFolders.Add(folderId))
-        {
-            return true;
-        }
-
-        var folderResult = await unitOfWork.Folders.GetAsync(x => x.Id == folderId, query => query.Include(x => x.ArchiveRecords).Include(x => x.SubFolders));
-        if (folderResult.IsError || folderResult.Value == null)
-        {
-            return false;
-        }
-
-        foreach (var archiveRecord in folderResult.Value.ArchiveRecords)
-        {
-            if (!string.IsNullOrWhiteSpace(archiveRecord.ArchivalNumber))
-            {
-                archiveNumbers.Add(archiveRecord.ArchivalNumber.Trim());
-            }
-        }
-
-        foreach (var childFolder in folderResult.Value.SubFolders)
-        {
-            if (!await CollectArchiveNumbersInFolderTreeAsync(childFolder.Id, archiveNumbers, visitedFolders))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     private async Task UpdateDescendantLevelsAsync(Guid parentId, int parentLevel)
     {

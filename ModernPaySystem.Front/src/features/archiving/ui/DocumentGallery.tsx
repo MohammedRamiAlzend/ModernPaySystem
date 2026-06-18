@@ -219,9 +219,7 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                 }
             }
 
-            const docName = record?.archivalNumber
-                ? `document_${record.archivalNumber}_images`
-                : `document_images_${recordId.substring(0, 8)}`;
+            const docName = `document_images_${recordId.substring(0, 8)}`;
 
             pdf.save(`${docName}.pdf`);
 
@@ -396,7 +394,6 @@ export const DocumentGallery: React.FC<DocumentGalleryProps> = ({
                     <QRPreviewTemplate
                         ref={qrCoverRef}
                         guid={recordId}
-                        archivalNumber={record.archivalNumber}
                         formName={formName}
                         content={record.archiveRecordTemplateValues?.archiveRecordFormInputValues || []}
                     />

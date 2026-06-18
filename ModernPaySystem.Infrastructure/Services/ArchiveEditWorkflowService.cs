@@ -87,7 +87,6 @@ public class ArchiveEditWorkflowService(
             // Original Snapshot JSON
             var originalData = new
             {
-                record.ArchivalNumber,
                 FormId = record.FormId,
                 Content = record.ArchiveRecordTemplateValuesId?.ArchiveRecordFormInputValues
                     .Select(x => new { x.Key, x.Value }).ToList() ?? []

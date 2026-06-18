@@ -532,7 +532,7 @@ public class ArchiveDeletionWorkflowService(
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(x => x.Id == recordId)
-            .Select(x => new { x.DepartmentId, x.FolderId, x.ArchivalNumber })
+            .Select(x => new { x.DepartmentId, x.FolderId })
             .SingleOrDefaultAsync();
 
         if (record == null)
@@ -550,7 +550,7 @@ public class ArchiveDeletionWorkflowService(
             }
         }
 
-        return (departmentId, record.FolderId, record.ArchivalNumber);
+        return (departmentId, record.FolderId, string.Empty);
     }
 
     private async Task<ArchiveDeletionTargetSnapshotDto> BuildSnapshotAsync(ArchiveDeletionTargetType targetType, Guid targetId, Guid departmentId)
@@ -602,7 +602,7 @@ public class ArchiveDeletionWorkflowService(
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(x => x.Id == recordId)
-            .Select(x => new { x.Id, x.ArchivalNumber, x.FolderId, x.CreatedAt, x.UpdatedAt, x.CreatedByUserId, x.UpdatedByUserId })
+            .Select(x => new { x.Id, x.FolderId, x.CreatedAt, x.UpdatedAt, x.CreatedByUserId, x.UpdatedByUserId })
             .SingleAsync();
 
         var fileCount = await unitOfWork.Context.PhysicalFiles.CountAsync(x => x.ArchiveRecordId == recordId);
@@ -611,7 +611,7 @@ public class ArchiveDeletionWorkflowService(
             ArchiveDeletionTargetType.Record,
             record.Id,
             departmentId,
-            record.ArchivalNumber,
+            record.FolderId.ToString(),
             record.FolderId.ToString(),
             0,
             0,
@@ -656,12 +656,12 @@ public class ArchiveDeletionWorkflowService(
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(x => x.FolderId == folderId)
-            .Select(x => new { x.Id, x.ArchivalNumber })
+            .Select(x => new { x.Id })
             .ToListAsync();
 
         foreach (var record in records)
         {
-            list.Add(new ArchiveDeletionDependencyDto("archive-record", record.Id, record.ArchivalNumber, "Archive record will be soft-deleted."));
+            list.Add(new ArchiveDeletionDependencyDto("archive-record", record.Id, string.Empty, "Archive record will be soft-deleted."));
         }
 
         var leaders = await unitOfWork.Context.DepartmentArchiveLeaders

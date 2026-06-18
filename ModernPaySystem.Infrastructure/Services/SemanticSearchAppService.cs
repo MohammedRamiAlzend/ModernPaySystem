@@ -154,7 +154,7 @@ public class SemanticSearchAppService(
 
             var archiveRecord = archiveResult.Value!;
 
-            var textParts = new List<string> { archiveRecord.ArchivalNumber };
+            var textParts = new List<string>();
 
             if (archiveRecord.ArchiveRecordTemplateValuesId?.ArchiveRecordFormInputValues is not null)
             {
@@ -185,7 +185,7 @@ public class SemanticSearchAppService(
                 Id = Guid.NewGuid(),
                 SourceType = SearchSourceType.ArchiveRecord,
                 ArchiveRecordId = archiveRecordId,
-                FileName = $"ArchiveRecord_{archiveRecord.ArchivalNumber}",
+                FileName = $"ArchiveRecord_{archiveRecord.Id}",
                 FileType = ".metadata",
                 FileSizeBytes = text.Length,
                 TotalChunks = chunks.Count,
@@ -216,7 +216,7 @@ public class SemanticSearchAppService(
 
             await qdrantVectorStore.UpsertChunksAsync(document.Id, docChunks, embeddings.ToArray(),
                 document.SourceType, document.FileName, null, document.ArchiveRecordId,
-                archiveRecordNumber: archiveRecord.ArchivalNumber, ct);
+                archiveRecordNumber: string.Empty, ct);
 
             logger.LogInformation("Indexed archive record {RecordId} as document {DocId} with {ChunkCount} chunks",
                 archiveRecordId, document.Id, chunks.Count);

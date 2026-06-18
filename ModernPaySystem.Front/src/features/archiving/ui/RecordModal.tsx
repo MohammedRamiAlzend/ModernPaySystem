@@ -11,8 +11,6 @@ import { Upload, ScanLine, Plus, Trash2 } from 'lucide-react';
 interface RecordModalProps {
     isOpen: boolean;
     mode: 'create' | 'edit';
-    archivalNumber: string;
-    onArchivalNumberChange: (val: string) => void;
     selectedTemplateId: string;
     onSelectedTemplateIdChange: (val: string) => void;
     dynamicTemplates: DynamicFormTemplate[];
@@ -36,8 +34,6 @@ interface RecordModalProps {
 export function RecordModal({
     isOpen,
     mode,
-    archivalNumber,
-    onArchivalNumberChange,
     selectedTemplateId,
     onSelectedTemplateIdChange,
     dynamicTemplates,
@@ -110,17 +106,6 @@ export function RecordModal({
                     <form onSubmit={onSubmit} className="flex flex-col gap-5 flex-1 overflow-hidden">
                         <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1.5 pl-0.5">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex flex-col gap-2">
-                                    <Label className="text-xs font-semibold text-muted-foreground">رقم الأرشفة</Label>
-                                    <Input
-                                        value={archivalNumber}
-                                        onChange={(e) => onArchivalNumberChange(e.target.value)}
-                                        placeholder="مثال: ARC-2026-0001"
-                                        className="rounded-2xl h-11 bg-background border-border"
-                                        required
-                                    />
-                                </div>
-
                                 <div className="flex flex-col gap-2">
                                     <Label className="text-xs font-semibold text-muted-foreground">نوع نموذج البيانات</Label>
                                     <select
@@ -275,7 +260,7 @@ export function RecordModal({
                                 <Button
                                     type="submit"
                                     className="rounded-xl px-8 font-bold shadow-lg shadow-primary/20 flex items-center gap-2"
-                                    disabled={isSaving || !archivalNumber.trim()}
+                                    disabled={isSaving}
                                 >
                                     <Upload className="h-4 w-4" />
                                     <span>{isSaving ? 'جاري الحفظ والأرشفة...' : 'حفظ المستند'}</span>

@@ -4,7 +4,6 @@ import { ArchiveRecordFormInputValue } from '../model/types';
 
 interface QRPreviewTemplateProps {
     guid: string;
-    archivalNumber: string;
     formName?: string;
     content: ArchiveRecordFormInputValue[];
     createdAt?: string;
@@ -12,7 +11,6 @@ interface QRPreviewTemplateProps {
 
 export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplateProps>(({
     guid,
-    archivalNumber,
     formName,
     content,
     createdAt = new Date().toLocaleString('ar-SY')
@@ -55,7 +53,7 @@ export const QRPreviewTemplate = forwardRef<HTMLDivElement, QRPreviewTemplatePro
                     <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <div>
                             <span className="text-xs text-slate-400 block">رقم الأرشيف:</span>
-                            <span className="text-sm font-bold text-slate-700">{archivalNumber}</span>
+                            <span className="text-sm font-bold text-slate-700">{guid.slice(0, 8)}</span>
                         </div>
                         <div>
                             <span className="text-xs text-slate-400 block">نوع النموذج:</span>

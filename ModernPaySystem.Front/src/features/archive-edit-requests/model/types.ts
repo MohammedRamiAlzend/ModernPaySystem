@@ -20,7 +20,6 @@ export interface EditArchiveRequest {
     originalSnapshotJson?: string;
     rejectionReason?: string;
     approvalNotes?: string;
-    archiveRecordArchivalNumber?: string;
     approvedByUserId?: string;
     approvedAt?: string;
     rejectedByUserId?: string;

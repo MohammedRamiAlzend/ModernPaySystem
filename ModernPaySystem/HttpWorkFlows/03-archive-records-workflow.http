@@ -76,10 +76,6 @@ Content-Disposition: form-data; name="FormId"
 
 {{formId}}
 ------Boundary
-Content-Disposition: form-data; name="ArchivalNumber"
-
-ARC-2026-001
-------Boundary
 Content-Disposition: form-data; name="DepartmentId"
 
 00000000-0000-0000-0000-000000000000
@@ -105,10 +101,6 @@ Content-Disposition: form-data; name="FolderId"
 Content-Disposition: form-data; name="FormId"
 
 {{formId}}
-------Boundary
-Content-Disposition: form-data; name="ArchivalNumber"
-
-ARC-2026-001-UPDATED
 ------Boundary
 Content-Disposition: form-data; name="ReplaceFiles"
 

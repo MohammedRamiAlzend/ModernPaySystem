@@ -43,7 +43,6 @@ export interface ArchiveRecord {
     id: string;
     folderId: string;
     formId: string | null;
-    archivalNumber: string;
     archiveRecordTemplateValues?: ArchiveRecordTemplateValues | null;
     physicalFiles: PhysicalFile[];
     createdByUserId?: string | null;
@@ -76,7 +75,6 @@ export interface CreateArchiveRecordDto {
     id?: string;
     folderId: string;
     formId: string | null;
-    archivalNumber: string;
     files: File[];
     content: ArchiveRecordFormInputValue[];
 }
@@ -313,7 +311,6 @@ export interface DailyWorkReportDto {
 export interface DailyWorkAuditLogItemDto {
     id: string;
     archiveRecordId: string;
-    archivalNumber: string;
     userName: string;
     action: string;
     details: string | null;
@@ -322,7 +319,6 @@ export interface DailyWorkAuditLogItemDto {
 
 export interface DailyWorkArchiveRecordItemDto {
     id: string;
-    archivalNumber: string;
     folderPath: string;
     formName: string | null;
     departmentName: string | null;

@@ -692,7 +692,6 @@ public class ArchiveRecordReportService(
                 {
                     Id = al.Id,
                     ArchiveRecordId = al.ArchiveRecordId,
-                    ArchivalNumber = al.ArchiveRecord.ArchivalNumber,
                     UserName = uid != Guid.Empty && auditUserMap.TryGetValue(uid, out var name) ? name : al.UserId,
                     Action = al.Action.ToString(),
                     Details = al.Details,
@@ -755,7 +754,6 @@ public class ArchiveRecordReportService(
                 return new DailyWorkArchiveRecordItemDto
                 {
                     Id = r.Id,
-                    ArchivalNumber = r.ArchivalNumber,
                     FolderPath = folderPath,
                     FormName = r.Form?.FormName,
                     DepartmentName = firstDept?.Name,

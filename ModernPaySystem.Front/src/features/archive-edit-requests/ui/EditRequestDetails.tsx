@@ -18,7 +18,6 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
     if (!isOpen || !request) return null;
 
     let originalData: { 
-        ArchivalNumber: string; 
         FormId: string | null; 
         Content: Array<{ key: string; value: string | null }>;
         PhysicalFiles: Array<{ id: string; fileName: string }>;
@@ -35,7 +34,6 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                 : [];
 
             originalData = {
-                ArchivalNumber: parsed.ArchivalNumber || parsed.archivalNumber || '',
                 FormId: parsed.FormId || parsed.formId || null,
                 Content: content,
                 PhysicalFiles: parsed.PhysicalFiles || parsed.physicalFiles || []
@@ -130,7 +128,7 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                             تفاصيل ومقارنة طلب التعديل
                         </h2>
                         <p className="text-xs text-muted-foreground font-medium">
-                            طلب رقم: {request.id.slice(0, 8)} | رقم الأرشيف: {request.archiveRecordArchivalNumber}
+                            طلب رقم: {request.id.slice(0, 8)}
                         </p>
                     </div>
                 </div>
@@ -158,7 +156,7 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                             <span className="text-[10px] font-bold text-muted-foreground">رقم المستند الأرشيفي</span>
                             <div className="flex items-center gap-1.5 text-xs font-bold text-primary">
                                 <FileText className="h-3.5 w-3.5 text-primary" />
-                                <span>{request.archiveRecordArchivalNumber}</span>
+                                <span>{request.archiveRecordId.slice(0, 8)}</span>
                             </div>
                         </div>
                     </div>
