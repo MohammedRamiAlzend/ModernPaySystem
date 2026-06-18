@@ -6,11 +6,25 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InetialCreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ArchiveConfigs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    DefaultPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ArchiveConfigs", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Attachments",
                 columns: table => new
@@ -46,6 +60,24 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DynamicForms", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FolderIcons",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    SvgContent = table.Column<string>(type: "text", nullable: false),
+                    IsDefault = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FolderIcons", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -317,6 +349,28 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ArchiveAuditLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    ArchiveRecordId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<string>(type: "character varying(450)", maxLength: 450, nullable: false),
+                    Action = table.Column<int>(type: "integer", nullable: false),
+                    Details = table.Column<string>(type: "text", nullable: true),
+                    IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    UserAgent = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ArchiveAuditLogs", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "ArchiveRecordFormInputValues",
                 columns: table => new
                 {
@@ -338,7 +392,6 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     FolderId = table.Column<Guid>(type: "uuid", nullable: false),
                     DepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
                     FormId = table.Column<Guid>(type: "uuid", nullable: true),
-                    ArchivalNumber = table.Column<string>(type: "text", nullable: false),
                     ArchiveRecordTemplateValues = table.Column<Guid>(type: "uuid", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -489,9 +542,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    DefaultStoragePath = table.Column<string>(type: "text", nullable: true),
                     Level = table.Column<int>(type: "integer", nullable: false),
                     DepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
                     ParentId = table.Column<Guid>(type: "uuid", nullable: true),
+                    IconId = table.Column<Guid>(type: "uuid", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     DeletedByUserId = table.Column<string>(type: "text", nullable: true),
@@ -510,6 +565,12 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         principalTable: "Departments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Folders_FolderIcons_IconId",
+                        column: x => x.IconId,
+                        principalTable: "FolderIcons",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Folders_Folders_ParentId",
                         column: x => x.ParentId,
@@ -1149,6 +1210,26 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_ArchiveAuditLogs_Action",
+                table: "ArchiveAuditLogs",
+                column: "Action");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ArchiveAuditLogs_ArchiveRecordId_Timestamp",
+                table: "ArchiveAuditLogs",
+                columns: new[] { "ArchiveRecordId", "Timestamp" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ArchiveAuditLogs_UserId",
+                table: "ArchiveAuditLogs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ArchiveConfigs_IsActive",
+                table: "ArchiveConfigs",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_ArchiveRecordFormInputValues_ArchiveRecordTemplateValuesId",
                 table: "ArchiveRecordFormInputValues",
                 column: "ArchiveRecordTemplateValuesId");
@@ -1307,6 +1388,11 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 name: "IX_Folders_DepartmentId",
                 table: "Folders",
                 column: "DepartmentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Folders_IconId",
+                table: "Folders",
+                column: "IconId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Folders_ParentId",
@@ -1519,6 +1605,14 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 column: "VisitedTemplatesId");
 
             migrationBuilder.AddForeignKey(
+                name: "FK_ArchiveAuditLogs_ArchiveRecords_ArchiveRecordId",
+                table: "ArchiveAuditLogs",
+                column: "ArchiveRecordId",
+                principalTable: "ArchiveRecords",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_ArchiveRecordFormInputValues_ArchiveRecordTemplateValues_Ar~",
                 table: "ArchiveRecordFormInputValues",
                 column: "ArchiveRecordTemplateValuesId",
@@ -1671,6 +1765,12 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 table: "RequestTransactions");
 
             migrationBuilder.DropTable(
+                name: "ArchiveAuditLogs");
+
+            migrationBuilder.DropTable(
+                name: "ArchiveConfigs");
+
+            migrationBuilder.DropTable(
                 name: "ArchiveRecordFormInputValues");
 
             migrationBuilder.DropTable(
@@ -1786,6 +1886,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "Folders");
+
+            migrationBuilder.DropTable(
+                name: "FolderIcons");
 
             migrationBuilder.DropTable(
                 name: "Departments");
