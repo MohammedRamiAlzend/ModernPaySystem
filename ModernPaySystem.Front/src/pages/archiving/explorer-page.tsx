@@ -378,6 +378,7 @@ export default function ExplorerPage() {
                 onClose={() => {
                     setShowIconCustomizationModal(false);
                     setIconCustomizationFolder(null);
+                    loadFolders();
                 }}
             />
 

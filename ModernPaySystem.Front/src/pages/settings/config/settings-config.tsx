@@ -13,6 +13,7 @@ import {
     Archive,
     Scan,
     Settings2,
+    Image,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -24,6 +25,7 @@ const DepartmentDashboardWidget = lazyWithPreload(() => import('@/widgets/depart
 const ArchivingTemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ScannerSettingsPage = lazyWithPreload(() => import('../ui/ScannerSettingsPage').then(m => ({ default: m.ScannerSettingsPage })));
 const ArchiveConfigSettings = lazyWithPreload(() => import('../ui/ArchiveConfigSettings').then(m => ({ default: m.ArchiveConfigSettings })));
+const FolderIconsPage = lazyWithPreload(() => import('@/pages/archiving/folder-icons-page'));
 export interface SettingsTab {
     id: string;
     label: string;
@@ -83,6 +85,16 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         icon: Archive,
         component: <ArchivingTemplatesPage />,
         preload: () => ArchivingTemplatesPage.preload(),
+        showDescription: false,
+        category: 'archiving'
+    },
+    {
+        id: 'folder-icons',
+        label: 'أيقونات المجلدات',
+        description: 'إدارة أيقونات SVG المخصصة لمجلدات الأرشيف',
+        icon: Image,
+        component: <FolderIconsPage />,
+        preload: () => FolderIconsPage.preload(),
         showDescription: false,
         category: 'archiving'
     },

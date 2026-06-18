@@ -141,12 +141,10 @@ public class FolderService(
             if (!departmentId.HasValue || departmentId == Guid.Empty)
             {
                 var currentUser = await unitOfWork.Users.GetByIdAsync(httpContextServiceManager.GetCurrentUserId());
-                if (currentUser.IsError || currentUser.Value == null || !currentUser.Value.DepartmentId.HasValue)
+                if (currentUser.IsSuccess && currentUser.Value?.DepartmentId.HasValue == true)
                 {
-                    return ApplicationErrors.FolderDepartmentNotConfigured;
+                    departmentId = currentUser.Value.DepartmentId;
                 }
-
-                departmentId = currentUser.Value.DepartmentId;
             }
 
             var exists = await unitOfWork.Folders.AnyAsync(x => x.Name == dto.Name && x.ParentId == dto.ParentId);

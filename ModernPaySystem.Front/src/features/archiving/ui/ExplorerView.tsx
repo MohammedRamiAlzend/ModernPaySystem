@@ -170,7 +170,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
 
                                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                     {folder.iconId && iconMap.has(folder.iconId) ? (
-                                        <div className="w-8 h-8 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: iconMap.get(folder.iconId)! }} />
+                                        <div className="w-8 h-8 flex items-center justify-center overflow-hidden [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-full [&_svg]:max-h-full" dangerouslySetInnerHTML={{ __html: iconMap.get(folder.iconId)! }} />
                                     ) : (
                                         <FolderIcon className="h-6 w-6 fill-amber-500/20" />
                                     )}

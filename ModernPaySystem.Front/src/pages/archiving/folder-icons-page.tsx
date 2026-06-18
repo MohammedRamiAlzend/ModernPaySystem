@@ -126,7 +126,7 @@ export default function FolderIconsPage() {
                             <div className="flex flex-col gap-2">
                                 <Label>معاينة</Label>
                                 <div className="border border-border rounded-2xl p-6 flex items-center justify-center bg-muted/20 min-h-[100px]">
-                                    <div className="w-16 h-16" dangerouslySetInnerHTML={{ __html: previewSvg }} />
+                                    <div className="w-16 h-16 flex items-center justify-center overflow-hidden [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-full [&_svg]:max-h-full" dangerouslySetInnerHTML={{ __html: previewSvg }} />
                                 </div>
                             </div>
                         )}
@@ -178,7 +178,7 @@ function IconCard({ icon, onDelete }: { icon: { id: string; name: string; isDefa
                 </button>
             </div>
             <div className="w-14 h-14 rounded-xl bg-amber-500/10 flex items-center justify-center mb-2">
-                <div className="w-10 h-10" dangerouslySetInnerHTML={{ __html: icon.svgContent }} />
+                <div className="w-10 h-10 flex items-center justify-center overflow-hidden [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-full [&_svg]:max-h-full" dangerouslySetInnerHTML={{ __html: icon.svgContent }} />
             </div>
             <span className="text-xs font-bold text-foreground line-clamp-2 break-all w-full px-1">
                 {icon.name}

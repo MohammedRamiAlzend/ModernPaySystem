@@ -101,7 +101,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
             },
             {
                 title: "أيقونات المجلدات",
-                path: "/archiving/folder-icons",
+                path: "/settings?tab=folder-icons",
                 icon: <Image className="h-4 w-4" />,
             }
         ]

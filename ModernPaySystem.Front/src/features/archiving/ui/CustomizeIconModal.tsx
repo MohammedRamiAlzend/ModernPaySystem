@@ -83,7 +83,7 @@ export const CustomizeIconModal: React.FC<CustomizeIconModalProps> = ({ isOpen, 
                                         }`}
                                     >
                                         <div className="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                                            <div className="w-8 h-8 flex items-center justify-center" dangerouslySetInnerHTML={{ __html: icon.svgContent }} />
+                                            <div className="w-8 h-8 flex items-center justify-center overflow-hidden [&_svg]:w-full [&_svg]:h-full [&_svg]:max-w-full [&_svg]:max-h-full" dangerouslySetInnerHTML={{ __html: icon.svgContent }} />
                                         </div>
                                         <span className="text-[10px] font-bold text-muted-foreground line-clamp-1">{icon.name}</span>
                                     </button>
