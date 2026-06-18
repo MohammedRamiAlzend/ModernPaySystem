@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 import { useArchiveConfig, useLedDepartments } from '@/features/archiving/model/queries';
 import { useUpdateArchiveConfig } from '@/features/archiving/model/mutations';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/ui/form';
@@ -12,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/sha
 import { LoadingSpinner } from '@/shared/ui/common/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { AlertCircle, Loader2, Save, Settings2 } from 'lucide-react';
+// import { AlertCircle, Loader2, Save, Settings2, FolderOpen } from 'lucide-react';
+import { FolderPickerModal } from '@/features/archiving/ui/FolderPickerModal';
 
 
 const formSchema = z.object({
@@ -28,6 +31,7 @@ export const ArchiveConfigSettings = () => {
     const updateMutation = useUpdateArchiveConfig();
 
     const isArchiveLeader = ledDepartments.length > 0;
+    const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -89,14 +93,35 @@ export const ArchiveConfigSettings = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>المسار الافتراضي للتخزين</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            placeholder="Uploads"
-                                            disabled={!isArchiveLeader}
-                                        />
-                                    </FormControl>
+                                    <div className="flex gap-2">
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                placeholder="Uploads"
+                                                disabled={!isArchiveLeader}
+                                                className="font-mono text-xs"
+                                            // dir="ltr"
+                                            />
+                                        </FormControl>
+                                        {/* {isArchiveLeader && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setIsFolderPickerOpen(true)}
+                                                className="shrink-0 flex items-center gap-1.5 rounded-xl"
+                                            >
+                                                <FolderOpen className="w-4 h-4" />
+                                                <span>استعراض...</span>
+                                            </Button>
+                                        )} */}
+                                    </div>
                                     <FormMessage />
+                                    <FolderPickerModal
+                                        isOpen={isFolderPickerOpen}
+                                        onClose={() => setIsFolderPickerOpen(false)}
+                                        onSelect={(selectedPath) => form.setValue('defaultPath', selectedPath)}
+                                        initialPath={field.value}
+                                    />
                                 </FormItem>
                             )}
                         />
