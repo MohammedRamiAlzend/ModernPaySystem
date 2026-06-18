@@ -879,6 +879,9 @@ public class ArchiveRecordService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await _auditLogService.LogAsync(record.Id, userId.ToString(), AuditAction.AddFiles, $"Added {newPhysicalFiles.Value!.Count} file(s) to archive record", ipAddress, userAgent);
                 if (CanAutoIndex)
                     _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
                 return await GetByIdAsync(record.Id);
@@ -970,6 +973,10 @@ public class ArchiveRecordService(
             {
                 return transactionResult.Errors;
             }
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await _auditLogService.LogAsync(id, userId.ToString(), AuditAction.RemoveFiles, $"Removed file '{file.FileName}' from archive record", ipAddress, userAgent);
 
             var deleteResult = await DeleteStoredFileAsync(file.StoragePath);
             if (deleteResult.IsError)
@@ -1171,6 +1178,10 @@ public class ArchiveRecordService(
             {
                 return transactionResult.Errors;
             }
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await _auditLogService.LogAsync(id, userId.ToString(), AuditAction.Delete, "Deleted archive record", ipAddress, userAgent);
 
             foreach (var physicalFile in storedFiles.Where(x => !x.IsDeleted))
             {

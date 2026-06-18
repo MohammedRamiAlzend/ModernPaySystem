@@ -18,7 +18,8 @@ public class ArchiveEditWorkflowService(
     IArchiveAuthorizationService archiveAuthorizationService,
     IArchiveLeaderService archiveLeaderService,
     IFilesManagerService filesManagerService,
-    ILogger<ArchiveEditWorkflowService> logger) : IArchiveEditWorkflowService
+    ILogger<ArchiveEditWorkflowService> logger,
+    IAuditLogService auditLogService) : IArchiveEditWorkflowService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private const string DefaultUploadsDirectory = "Uploads";
@@ -211,6 +212,10 @@ public class ArchiveEditWorkflowService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(dto.ArchiveRecordId, requesterId.ToString(), AuditAction.SubmitEditRequest, $"Submitted edit request for archive record", ipAddress, userAgent);
 
                 // Return mapping
                 request.Requester = requesterResult.Value;
@@ -413,6 +418,9 @@ public class ArchiveEditWorkflowService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(requestEntity.ArchiveRecordId, approverId.ToString(), AuditAction.ApproveEdit, $"Approved edit request for archive record{(notes != null ? $": {notes}" : "")}", ipAddress, userAgent);
                 requestEntity.Approver = approverResult.Value;
                 return EditArchiveRequestDto.FromEntity(requestEntity);
             }
@@ -493,6 +501,9 @@ public class ArchiveEditWorkflowService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(requestEntity.ArchiveRecordId, approverId.ToString(), AuditAction.RejectEdit, $"Rejected edit request for archive record: {reason}", ipAddress, userAgent);
                 requestEntity.Approver = approverResult.Value;
                 return EditArchiveRequestDto.FromEntity(requestEntity);
             }

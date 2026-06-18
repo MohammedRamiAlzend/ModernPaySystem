@@ -29,5 +29,11 @@ public enum AuditAction
     Create = 5,
     Delete = 6,
     AddFiles = 7,
-    RemoveFiles = 8
+    RemoveFiles = 8,
+    ApproveEdit = 9,
+    RejectEdit = 10,
+    ApproveDelete = 11,
+    RejectDelete = 12,
+    SubmitEditRequest = 13,
+    SubmitDeleteRequest = 14
 }

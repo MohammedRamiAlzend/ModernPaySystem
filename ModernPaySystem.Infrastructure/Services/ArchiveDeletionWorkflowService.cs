@@ -11,7 +11,8 @@ public class ArchiveDeletionWorkflowService(
     IHttpContextServiceManager httpContextServiceManager,
     IArchiveAuthorizationService archiveAuthorizationService,
     IArchiveLeaderService archiveLeaderService,
-    ILogger<ArchiveDeletionWorkflowService> logger) : IArchiveDeletionWorkflowService
+    ILogger<ArchiveDeletionWorkflowService> logger,
+    IAuditLogService auditLogService) : IArchiveDeletionWorkflowService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -126,6 +127,14 @@ public class ArchiveDeletionWorkflowService(
             }
 
             logger.LogInformation("Submitted archive delete request {RequestId} for {TargetType}:{TargetId}", request.Id, dto.TargetType, dto.TargetId);
+
+            if (dto.TargetType == ArchiveDeletionTargetType.Record)
+            {
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(dto.TargetId, requesterId.ToString(), AuditAction.SubmitDeleteRequest, $"Submitted delete request for archive record", ipAddress, userAgent);
+            }
+
             return request.ToDto();
         }
         catch (Exception ex)
@@ -270,6 +279,14 @@ public class ArchiveDeletionWorkflowService(
 
             await unitOfWork.CommitTransactionAsync();
             logger.LogInformation("Approved and executed archive delete request {RequestId}", requestId);
+
+            if (request.TargetType == ArchiveDeletionTargetType.Record)
+            {
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(request.TargetId, currentUserId.ToString(), AuditAction.ApproveDelete, $"Approved delete request for archive record{(notes != null ? $": {notes}" : "")}", ipAddress, userAgent);
+            }
+
             return request.ToDto();
         }
         catch (Exception ex)
@@ -336,6 +353,14 @@ public class ArchiveDeletionWorkflowService(
             }
 
             logger.LogInformation("Rejected archive delete request {RequestId}", requestId);
+
+            if (request.TargetType == ArchiveDeletionTargetType.Record)
+            {
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(request.TargetId, currentUserId.ToString(), AuditAction.RejectDelete, $"Rejected delete request for archive record: {reason}", ipAddress, userAgent);
+            }
+
             return request.ToDto();
         }
         catch (Exception ex)
@@ -445,6 +470,11 @@ public class ArchiveDeletionWorkflowService(
             }
 
             await unitOfWork.CommitTransactionAsync();
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Delete, "Deleted archive record", ipAddress, userAgent);
+
             return true;
         }
         catch (Exception ex)
