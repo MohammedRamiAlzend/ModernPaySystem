@@ -101,6 +101,9 @@ export const queryKeys = {
         ledDepartments: {
             all: ['archiving', 'ledDepartments'] as const,
         },
+        config: {
+            all: ['archiving', 'config'] as const,
+        },
         reports: {
             all: ['archiving', 'reports'] as const,
             myDepartments: () => [...queryKeys.archiving.reports.all, 'myDepartments'] as const,

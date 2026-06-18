@@ -2,6 +2,7 @@ export interface Folder {
     id: string;
     name: string;
     level: number;
+    defaultStoragePath?: string | null;
     parentId: string | null;
     folderDtos: Folder[];
     createdByUserId?: string | null;
@@ -66,6 +67,7 @@ export interface InitialFolderPermissionDto {
 
 export interface CreateFolderDto {
     name: string;
+    defaultStoragePath?: string | null;
     parentId: string | null;
     initialPermissions?: InitialFolderPermissionDto[];
 }
@@ -297,6 +299,22 @@ export interface ReportFiltersState {
 }
 
 export type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts';
+
+// ---------------------------------------------------------
+// Archive Config Types
+// ---------------------------------------------------------
+export interface ArchiveConfigDto {
+    id: string;
+    defaultPath: string;
+    description: string | null;
+    isActive: boolean;
+}
+
+export interface UpdateArchiveConfigDto {
+    defaultPath?: string;
+    description?: string | null;
+    isActive?: boolean;
+}
 
 export interface ArchiveAuditLog {
     id: string;

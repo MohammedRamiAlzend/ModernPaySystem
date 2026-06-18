@@ -1,6 +1,7 @@
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { AppearanceSettings } from '../ui/AppearanceSettings';
 import { ToolsSettings } from '../ui/ToolsSettings';
+import { ArchiveConfigSettings } from '../ui/ArchiveConfigSettings';
 import { ReactNode } from 'react';
 import {
     Database,
@@ -11,6 +12,7 @@ import {
     GitBranch,
     Archive,
     Scan,
+    Settings2,
     type LucideIcon,
 } from 'lucide-react';
 
@@ -82,6 +84,15 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         component: <ArchivingTemplatesPage />,
         preload: () => ArchivingTemplatesPage.preload(),
         showDescription: false,
+        category: 'archiving'
+    },
+    {
+        id: 'archive-config',
+        label: 'إعدادات نظام الأرشفة',
+        description: 'إعدادات التخزين والمسار الافتراضي لنظام الأرشفة',
+        icon: Settings2,
+        component: <ArchiveConfigSettings />,
+        showDescription: true,
         category: 'archiving'
     },
     {

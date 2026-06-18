@@ -157,6 +157,7 @@ public class FolderService(
             var folder = new Folder
             {
                 Name = dto.Name.Trim(),
+                DefaultStoragePath = dto.DefaultStoragePath,
                 ParentId = dto.ParentId,
                 DepartmentId = departmentId,
                 Level = await ResolveFolderLevelAsync(dto.ParentId)

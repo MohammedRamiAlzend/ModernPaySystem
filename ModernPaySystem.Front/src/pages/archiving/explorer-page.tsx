@@ -69,6 +69,8 @@ export default function ExplorerPage() {
         folderModalMode,
         folderName,
         setFolderName,
+        folderStoragePath,
+        setFolderStoragePath,
         isSavingFolder,
         initialPermissionIds,
         setInitialPermissionIds,
@@ -279,6 +281,8 @@ export default function ExplorerPage() {
                 mode={folderModalMode}
                 folderName={folderName}
                 onFolderNameChange={setFolderName}
+                folderStoragePath={folderStoragePath}
+                onFolderStoragePathChange={setFolderStoragePath}
                 onClose={() => setShowFolderModal(false)}
                 onSubmit={handleSaveFolder}
                 isSaving={isSavingFolder}

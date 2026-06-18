@@ -38,7 +38,7 @@ public class ArchiveRecordService(
     IAuditLogService auditLogService) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
-    private const string UploadsDirectory = "Uploads";
+    private const string DefaultUploadsDirectory = "Uploads";
     private const string ZipCachePrefix = "archive-record-zip";
     private static readonly ConcurrentDictionary<string, SemaphoreSlim> QueryLocks = new();
 
@@ -52,6 +52,17 @@ public class ArchiveRecordService(
                                  && HealthService.IsQdrantHealthy;
 
     private readonly IAuditLogService _auditLogService = auditLogService;
+
+    private async Task<string> GetDefaultStoragePathAsync()
+    {
+        var config = await unitOfWork.Context.ArchiveConfigs
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync();
+
+        return config?.DefaultPath ?? DefaultUploadsDirectory;
+    }
 
     public async Task<Result<IEnumerable<ArchiveRecordDto>>> GetAllAsync()
     {
@@ -338,8 +349,11 @@ public class ArchiveRecordService(
             if (!folderAccess.Value)
                 return ApplicationErrors.FolderAccessDenied;
 
-            var folderValidationResult = await EnsureFolderExistsAsync(dto.FolderId);
-            if (folderValidationResult.IsError) return folderValidationResult.Errors;
+            var folderResult = await EnsureFolderExistsAsync(dto.FolderId);
+            if (folderResult.IsError) return folderResult.Errors;
+
+            var folder = folderResult.Value!;
+            var storageSubDir = folder.DefaultStoragePath ?? await GetDefaultStoragePathAsync();
 
             var folderDepartmentResult = await archiveAuthorizationService.ResolveFolderDepartmentIdAsync(dto.FolderId);
             if (folderDepartmentResult.IsError) return folderDepartmentResult.Errors;
@@ -377,7 +391,7 @@ public class ArchiveRecordService(
                 record.ArchiveRecordTemplateValuesId = buildTemplateValuesResult.Value!;
             }
 
-            var physicalFiles = await StoreFilesAsync(record, dto.Files, uploadedPaths);
+            var physicalFiles = await StoreFilesAsync(record, storageSubDir, dto.Files, uploadedPaths);
             if (physicalFiles.IsError)
             {
                 await CleanupStoredFilesAsync(uploadedPaths);
@@ -455,7 +469,7 @@ public class ArchiveRecordService(
     }
 
 
-    private async Task<Result<Success>> EnsureFolderExistsAsync(Guid folderId)
+    private async Task<Result<Folder>> EnsureFolderExistsAsync(Guid folderId)
     {
         var folderResult = await unitOfWork.Folders.GetByIdAsync(folderId);
         if (folderResult.IsError)
@@ -468,7 +482,7 @@ public class ArchiveRecordService(
             return ApplicationErrors.FolderNotFound;
         }
 
-        return Result.Success;
+        return folderResult.Value;
     }
     private async Task<Result<bool>> IsArchivalNumberUniqueAsync(string archivalNumber, Guid folderId, Guid? excludeRecordId = null)
     {
@@ -625,6 +639,8 @@ public class ArchiveRecordService(
                 return ApplicationErrors.FolderNotFound;
             }
 
+            var storageSubDir = folderResult.Value.DefaultStoragePath ?? await GetDefaultStoragePathAsync();
+
             var archivalNumberUniqueResult = await IsArchivalNumberUniqueAsync(dto.ArchivalNumber.Trim(), dto.FolderId, id);
             if (archivalNumberUniqueResult.IsError)
             {
@@ -641,7 +657,7 @@ public class ArchiveRecordService(
                 return formResolutionResult.Errors;
 
             var filesToRemove = ResolveFilesToRemove(record, dto);
-            var newPhysicalFiles = await StoreFilesAsync(record, dto.Files, uploadedPaths);
+            var newPhysicalFiles = await StoreFilesAsync(record, storageSubDir, dto.Files, uploadedPaths);
             if (newPhysicalFiles.IsError)
             {
                 await CleanupStoredFilesAsync(uploadedPaths);
@@ -805,6 +821,14 @@ public class ArchiveRecordService(
                 return ApplicationErrors.ArchiveRecordNotFound;
             }
 
+            var folderResult = await unitOfWork.Folders.GetByIdAsync(record.FolderId);
+            if (folderResult.IsError)
+            {
+                return folderResult.Errors;
+            }
+
+            var storageSubDir = folderResult.Value?.DefaultStoragePath ?? await GetDefaultStoragePathAsync();
+
             var isUploadingQr = files.Any(f => f.FileName.StartsWith("QR_Cover_", StringComparison.OrdinalIgnoreCase) || 
                                                f.FileName.Contains("QR_Cover", StringComparison.OrdinalIgnoreCase));
             if (isUploadingQr)
@@ -816,7 +840,7 @@ public class ArchiveRecordService(
                 }
             }
 
-            var newPhysicalFiles = await StoreFilesAsync(record, files, uploadedPaths);
+            var newPhysicalFiles = await StoreFilesAsync(record, storageSubDir, files, uploadedPaths);
             if (newPhysicalFiles.IsError)
             {
                 await CleanupStoredFilesAsync(uploadedPaths);
@@ -1005,9 +1029,12 @@ public class ArchiveRecordService(
                 ArchiveRecordId = record.Id
             };
 
+            var defaultPath = await GetDefaultStoragePathAsync();
+            var consistencySubDir = record.Folder?.DefaultStoragePath ?? defaultPath;
+
             foreach (var physicalFile in record.PhysicalFiles.Where(x => !x.IsDeleted))
             {
-                var expectedPath = BuildExpectedStoragePath(record, physicalFile.FileName);
+                var expectedPath = BuildExpectedStoragePath(record, consistencySubDir, physicalFile.FileName, defaultPath);
                 if (!NormalizePath(physicalFile.StoragePath).Equals(NormalizePath(expectedPath), StringComparison.OrdinalIgnoreCase))
                 {
                     report.MissingStoragePaths.Add(physicalFile.StoragePath);
@@ -1032,7 +1059,8 @@ public class ArchiveRecordService(
     {
         try
         {
-            var uploadsRoot = GetUploadsRootPath();
+            var defaultPath = await GetDefaultStoragePathAsync();
+            var uploadsRoot = GetUploadsRootPath(defaultPath);
             var listing = await fileManager.ListDirectoryAsync(uploadsRoot, includeSubdirectories: true);
             if (!listing.Success)
             {
@@ -1908,7 +1936,7 @@ public class ArchiveRecordService(
 
     private sealed record CachedZipBundle(string ZipFilePath, string DownloadFileName, long ContentLength);
 
-    private async Task<Result<List<PhysicalFile>>> StoreFilesAsync(ArchiveRecord record, IFormFileCollection? files, List<string> storedPaths)
+    private async Task<Result<List<PhysicalFile>>> StoreFilesAsync(ArchiveRecord record, string subDirectory, IFormFileCollection? files, List<string> storedPaths)
     {
         var physicalFiles = new List<PhysicalFile>();
 
@@ -1917,10 +1945,12 @@ public class ArchiveRecordService(
             return physicalFiles;
         }
 
+        var recordSubDir = Path.Combine(subDirectory, record.Id.ToString());
+
         foreach (var file in files)
         {
             var storageName = BuildStorageFileName(record.Id, file.FileName);
-            var saveResult = await SaveFileWithRetryAsync(file, record.FolderId, storageName);
+            var saveResult = await SaveFileWithRetryAsync(file, recordSubDir, storageName);
             if (saveResult.IsError)
             {
                 return saveResult.Errors;
@@ -1950,14 +1980,14 @@ public class ArchiveRecordService(
         return physicalFiles;
     }
 
-    private async Task<Result<FileMetadata>> SaveFileWithRetryAsync(IFormFile file, Guid folderId, string storageName)
+    private async Task<Result<FileMetadata>> SaveFileWithRetryAsync(IFormFile file, string subDirectory, string storageName)
     {
         Result<FileMetadata>? lastFailure = null;
         var attemptCount = Math.Max(1, UploadSettings.RetryCount);
 
         for (var attempt = 1; attempt <= attemptCount; attempt++)
         {
-            var result = await filesManagerService.SaveFileAsync(file, folderId.ToString(), storageName);
+            var result = await filesManagerService.SaveFileAsync(file, subDirectory, storageName);
             if (!result.IsError)
             {
                 return result;
@@ -2000,18 +2030,17 @@ public class ArchiveRecordService(
 
     private string BuildStorageFileName(Guid recordId, string originalFileName)
     {
-        var safeFileName = filesManagerService.GenerateSafeFileName(Path.GetFileName(originalFileName));
-        return $"{recordId}_{safeFileName}";
+        return filesManagerService.GenerateSafeFileName(Path.GetFileName(originalFileName));
     }
 
-    private string GetUploadsRootPath()
+    private string GetUploadsRootPath(string defaultPath)
     {
-        return Path.Combine(fileManager.RootDirectory, UploadRootDirectory, UploadsDirectory);
+        return Path.Combine(fileManager.RootDirectory, UploadRootDirectory, defaultPath);
     }
 
-    private string BuildExpectedStoragePath(ArchiveRecord record, string originalFileName)
+    private string BuildExpectedStoragePath(ArchiveRecord record, string subDirectory, string originalFileName, string defaultPath)
     {
-        return Path.Combine(UploadRootDirectory, UploadsDirectory, record.FolderId.ToString(), BuildStorageFileName(record.Id, originalFileName));
+        return Path.Combine(UploadRootDirectory, defaultPath, subDirectory, record.Id.ToString(), BuildStorageFileName(record.Id, originalFileName));
     }
 
     private string NormalizePath(string path)

@@ -8,6 +8,8 @@ interface FolderModalProps {
     mode: 'create' | 'edit';
     folderName: string;
     onFolderNameChange: (name: string) => void;
+    folderStoragePath?: string;
+    onFolderStoragePathChange?: (path: string) => void;
     onClose: () => void;
     onSubmit: (e: React.FormEvent) => void;
     isSaving: boolean;
@@ -20,6 +22,8 @@ export function FolderModal({
     mode,
     folderName,
     onFolderNameChange,
+    folderStoragePath = '',
+    onFolderStoragePathChange,
     onClose,
     onSubmit,
     isSaving,
@@ -53,6 +57,19 @@ export function FolderModal({
                             autoFocus
                         />
                     </div>
+
+                    {mode === 'create' && onFolderStoragePathChange && (
+                        <div className="flex flex-col gap-2">
+                            <Label className="text-xs font-semibold text-muted-foreground">مسار التخزين (اختياري)</Label>
+                            <Input
+                                value={folderStoragePath}
+                                onChange={(e) => onFolderStoragePathChange(e.target.value)}
+                                placeholder="مثال: ArchivedDocs/2026"
+                                className="rounded-2xl h-11 bg-background border-border"
+                                dir="ltr"
+                            />
+                        </div>
+                    )}
 
                     {mode === 'create' && (
                         <div className="flex flex-col gap-2 border-t border-border pt-4">

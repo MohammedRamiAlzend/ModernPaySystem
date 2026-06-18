@@ -6,7 +6,8 @@ import {
     SemanticSearchRequest, SemanticSearchResultItem, ArchiveAuditLog,
     DepartmentArchiveDashboard, ArchiveDailyReport, ArchivePeriodReport,
     UserActivityReportItem, ActiveUserReportItem,
-    StorageConsumptionReport, DepartmentChartsData
+    StorageConsumptionReport, DepartmentChartsData,
+    ArchiveConfigDto, UpdateArchiveConfigDto
 } from '../model/types';
 import { Department } from '@/entities/department/model/types';
 import { attachmentCache } from '../utils/attachmentCache';
@@ -538,6 +539,19 @@ export const archivingService = {
                 toDate: toDate || undefined,
             }
         });
+        return response.data.data;
+    },
+
+    // ---------------------------------------------
+    // Archive Config API
+    // ---------------------------------------------
+    getArchiveConfig: async (): Promise<ArchiveConfigDto> => {
+        const response = await api.get<any>('/archive-system/config');
+        return response.data.data;
+    },
+
+    updateArchiveConfig: async (dto: UpdateArchiveConfigDto): Promise<ArchiveConfigDto> => {
+        const response = await api.put<any>('/archive-system/config', dto);
         return response.data.data;
     }
 };

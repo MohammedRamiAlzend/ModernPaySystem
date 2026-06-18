@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ModernPaySystem.Application.Interfaces;
+using ModernPaySystem.Domain.Entities.Archiving;
 using ModernPaySystem.Domain.Entities.SharedEntities;
 
 namespace ModernPaySystem.Infrastructure.Persistence.Seeding.Seeders;
@@ -16,13 +17,17 @@ public class DefaultDataSeeder : IEntitySeeder
     {
         // Check if default roles exist
         int roleCount = await context.Roles.CountAsync();
-        return roleCount >= 3; // At least SuperAdmin, Admin, NormalUser
+        bool hasArchiveConfig = await context.ArchiveConfigs.AnyAsync();
+        return roleCount >= 3 && hasArchiveConfig; // At least SuperAdmin, Admin, NormalUser
     }
 
     public async Task SeedAsync(AppDbContext context, SeedingConfiguration configuration)
     {
         // Add default roles if they don't exist
         await SeedDefaultRoles(context);
+
+        // Seed default ArchiveConfig
+        await SeedDefaultArchiveConfig(context);
 
         // User seeding is now handled by UserSeeder
     }
@@ -60,6 +65,26 @@ public class DefaultDataSeeder : IEntitySeeder
         if (rolesToAdd.Any())
         {
             await context.Roles.AddRangeAsync(rolesToAdd);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    /// <summary>
+    /// Seeds default ArchiveConfig.
+    /// </summary>
+    private async Task SeedDefaultArchiveConfig(AppDbContext context)
+    {
+        bool hasArchiveConfig = await context.ArchiveConfigs.AnyAsync();
+        if (!hasArchiveConfig)
+        {
+            var defaultConfig = new ArchiveConfig
+            {
+                Id = Guid.NewGuid(),
+                DefaultPath = "Uploads",
+                Description = "Default storage path for archive records",
+                IsActive = true
+            };
+            await context.ArchiveConfigs.AddAsync(defaultConfig);
             await context.SaveChangesAsync();
         }
     }

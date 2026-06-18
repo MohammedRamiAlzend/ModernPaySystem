@@ -21,6 +21,18 @@ public class ArchiveEditWorkflowService(
     ILogger<ArchiveEditWorkflowService> logger) : IArchiveEditWorkflowService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private const string DefaultUploadsDirectory = "Uploads";
+
+    private async Task<string> GetDefaultStoragePathAsync()
+    {
+        var config = await unitOfWork.Context.ArchiveConfigs
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync();
+
+        return config?.DefaultPath ?? DefaultUploadsDirectory;
+    }
 
     public async Task<Result<EditArchiveRequestDto>> SubmitRequestAsync(CreateEditArchiveRequestDto dto)
     {
@@ -48,6 +60,14 @@ public class ArchiveEditWorkflowService(
             {
                 return ApplicationErrors.ArchiveRecordDepartmentNotConfigured;
             }
+
+            var folderResult = await unitOfWork.Folders.GetByIdAsync(record.FolderId);
+            if (folderResult.IsError || folderResult.Value == null)
+            {
+                return ApplicationErrors.FolderNotFound;
+            }
+
+            var storageSubDir = folderResult.Value.DefaultStoragePath ?? await GetDefaultStoragePathAsync();
 
             var requesterId = httpContextServiceManager.GetCurrentUserId();
             var requesterResult = await unitOfWork.Users.GetByIdAsync(requesterId);
@@ -133,10 +153,10 @@ public class ArchiveEditWorkflowService(
 
                 foreach (var file in validFiles)
                 {
+                    var recordSubDir = Path.Combine(storageSubDir, record.Id.ToString());
                     var safeFileName = filesManagerService.GenerateSafeFileName(Path.GetFileName(file.FileName));
-                    var storageName = $"{record.Id}_{safeFileName}";
 
-                    var saveResult = await filesManagerService.SaveFileAsync(file, record.FolderId.ToString(), storageName);
+                    var saveResult = await filesManagerService.SaveFileAsync(file, recordSubDir, safeFileName);
                     if (saveResult.IsError)
                     {
                         await CleanupStoredFilesAsync(uploadedPaths);

@@ -25,6 +25,7 @@ export function useArchivingFolders() {
     const [showFolderModal, setShowFolderModal] = useState(false);
     const [folderModalMode, setFolderModalMode] = useState<'create' | 'edit'>('create');
     const [folderName, setFolderName] = useState('');
+    const [folderStoragePath, setFolderStoragePath] = useState('');
     const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
     const [isSavingFolder, setIsSavingFolder] = useState(false);
 
@@ -68,6 +69,7 @@ export function useArchivingFolders() {
 
     const handleOpenCreateFolder = () => {
         setFolderName('');
+        setFolderStoragePath('');
         setFolderModalMode('create');
         setInitialPermissionIds([]);
         setShowFolderModal(true);
@@ -88,6 +90,7 @@ export function useArchivingFolders() {
             if (folderModalMode === 'create') {
                 await archivingService.createFolder({
                     name: folderName,
+                    defaultStoragePath: folderStoragePath.trim() || null,
                     parentId: currentFolderId,
                     initialPermissions: initialPermissionIds.length > 0
                         ? initialPermissionIds.map(id => ({ userId: id, accessLevel: 1 }))
@@ -170,6 +173,8 @@ export function useArchivingFolders() {
         setFolderModalMode,
         folderName,
         setFolderName,
+        folderStoragePath,
+        setFolderStoragePath,
         selectedFolder,
         setSelectedFolder,
         isSavingFolder,

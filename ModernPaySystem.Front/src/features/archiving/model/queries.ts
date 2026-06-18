@@ -94,6 +94,13 @@ export const useArchiveAuditLogs = (params: {
     });
 };
 
+export const useArchiveConfig = () => {
+    return useQuery({
+        queryKey: queryKeys.archiving.config.all,
+        queryFn: () => archivingService.getArchiveConfig(),
+    });
+};
+
 export const useLedDepartments = () => {
     return useQuery({
         queryKey: queryKeys.archiving.ledDepartments.all,

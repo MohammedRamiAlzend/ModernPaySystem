@@ -69,6 +69,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IArchiveResourceAuthorizationService, ArchiveResourceAuthorizationService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IArchiveRecordReportService, ArchiveRecordReportService>();
+        services.AddScoped<IArchiveConfigService, ArchiveConfigService>();
         services.AddTransient<IHttpContextServiceManager, HttpContextServiceManager>();
 
         // Register Lookup Field Services

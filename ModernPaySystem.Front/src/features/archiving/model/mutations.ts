@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { archivingService } from '../api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
-import { CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto } from './types';
+import { CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, UpdateArchiveConfigDto } from './types';
 
 // ---------------------------------------------------------
 // Folders Mutations
@@ -282,6 +282,34 @@ export const useDeleteDynamicForm = () => {
                 type: 'error',
                 title: 'خطأ في الحذف',
                 message: error?.response?.data?.message || 'فشل حذف النموذج الأرشيفي، قد يكون مرتبطاً ببيانات قائمة.'
+            });
+        }
+    });
+};
+
+// ---------------------------------------------------------
+// Archive Config Mutations
+// ---------------------------------------------------------
+export const useUpdateArchiveConfig = () => {
+    const queryClient = useQueryClient();
+    const { showStatus } = useUIStore();
+
+    return useMutation({
+        mutationFn: (dto: UpdateArchiveConfigDto) => archivingService.updateArchiveConfig(dto),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.config.all });
+            showStatus({
+                type: 'success',
+                title: 'تم حفظ الإعدادات',
+                message: 'تم تحديث إعدادات نظام الأرشفة بنجاح.'
+            });
+        },
+        onError: (error: any) => {
+            console.error('Failed to update archive config', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ في حفظ الإعدادات',
+                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث إعدادات الأرشفة.'
             });
         }
     });

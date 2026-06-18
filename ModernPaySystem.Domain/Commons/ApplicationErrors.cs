@@ -132,6 +132,8 @@ public static class ApplicationErrors
     public static readonly Error FolderPermissionAlreadyExists = new("10043", "This user already has a permission for this folder.", ErrorKind.Conflict, "هذا المستخدم لديه صلاحية لهذا المجلد بالفعل.");
     public static readonly Error FolderPermissionNotFound = new("10044", "The specified folder permission was not found.", ErrorKind.NotFound, "لم يتم العثور على الصلاحية المحددة للمجلد.");
     public static readonly Error CannotRemoveOwnFolderPermission = new("10045", "You cannot remove your own permission. Transfer ownership instead.", ErrorKind.Forbidden, "لا يمكنك إزالة صلاحيتك الخاصة. قم بنقل الملكية بدلاً من ذلك.");
+    public static readonly Error ArchiveConfigNotFound = new("10046", "Archive configuration not found.", ErrorKind.NotFound, "لم يتم العثور على إعدادات الأرشفة.");
+    public static readonly Error ArchiveConfigUpdateNotAuthorized = new("10047", "Only archive leaders can update the archive configuration.", ErrorKind.Forbidden, "فقط قادة الأرشيف يمكنهم تحديث إعدادات الأرشفة.");
 
     // File Operation Errors (1000-1099)
     public static Error FileNotFound(string path, string? message = null) => new("1000", $"The specified file was not found at path : {path}.", ErrorKind.NotFound, "لم يتم العثور على الملف المحدد.");

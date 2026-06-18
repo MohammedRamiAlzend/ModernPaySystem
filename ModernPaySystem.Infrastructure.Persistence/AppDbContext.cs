@@ -29,6 +29,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Document> Documents { get; set; }
     public DbSet<DocumentChunk> DocumentChunks { get; set; }
     public DbSet<ArchiveAuditLog> ArchiveAuditLogs { get; set; }
+    public DbSet<ArchiveConfig> ArchiveConfigs { get; set; }
 
     public DbSet<Template> Templates { get; set; }
     public DbSet<Request> Requests { get; set; }
@@ -372,6 +373,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.Details).HasColumnType("text");
             entity.Property(e => e.IpAddress).HasMaxLength(45);
             entity.Property(e => e.UserAgent).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<ArchiveConfig>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.DefaultPath).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.HasIndex(e => e.IsActive);
         });
 
         modelBuilder.Entity<Folder>()

@@ -6,6 +6,7 @@ namespace ModernPaySystem.Domain.Entities.Archiving;
 public class Folder : Entity<Guid>, IAuditableEntity
 {
     public string Name { get; set; } = string.Empty;
+    public string? DefaultStoragePath { get; set; }
     public int Level { get; set; }
     public Guid? DepartmentId { get; set; }
     public Department? Department { get; set; }
@@ -33,6 +34,7 @@ public class Folder : Entity<Guid>, IAuditableEntity
         {
             Id = Id,
             Name = Name,
+            DefaultStoragePath = DefaultStoragePath,
             Level = Level,
             DepartmentId = DepartmentId,
             ParentId = ParentId,
@@ -53,6 +55,7 @@ public class FolderDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? DefaultStoragePath { get; set; }
     public int Level { get; set; }
     public Guid? DepartmentId { get; set; }
     public Guid? ParentId { get; set; }
@@ -74,6 +77,7 @@ public class FolderDto
 public class CreateFolderDto
 {
     public string Name { get; set; } = string.Empty;
+    public string? DefaultStoragePath { get; set; }
     public Guid? ParentId { get; set; }
     public Guid? DepartmentId { get; set; }
     public List<InitialFolderPermissionDto> InitialPermissions { get; set; } = [];
