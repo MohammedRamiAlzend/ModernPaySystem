@@ -27,6 +27,7 @@ const getDB = (): Promise<IDBDatabase> => {
         };
 
         request.onerror = () => {
+            dbPromise = null;
             reject(request.error);
         };
     });
@@ -49,15 +50,19 @@ export const storeFile = async (fileItemId: string, file: File): Promise<void> =
 
 /** استرجاع ملف حسب معرفه */
 export const getFile = async (fileItemId: string): Promise<File | undefined> => {
-    const db = await getDB();
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(fileItemId);
+    try {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(fileItemId);
 
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    } catch (error) {
+        throw error;
+    }
 };
 
 /** حذف ملف من المخزن */

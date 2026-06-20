@@ -1,12 +1,13 @@
 import { Progress } from '@/shared/ui/progress';
 import { Button } from '@/shared/ui/button';
-import { CheckCircle2, XCircle, Loader2, RotateCcw, Clock } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, RotateCcw, Clock, Trash2 } from 'lucide-react';
 import type { FileUploadItem } from '../model/types';
 import { cn } from '@/shared/lib/utils';
 
 interface FileUploadRowProps {
     file: FileUploadItem;
     onRetry: () => void;
+    onDelete?: () => void;
 }
 
 const statusConfig = {
@@ -41,7 +42,7 @@ const formatFileSize = (bytes: number): string => {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 };
 
-export function FileUploadRow({ file, onRetry }: FileUploadRowProps) {
+export function FileUploadRow({ file, onRetry, onDelete }: FileUploadRowProps) {
     const config = statusConfig[file.status];
     const StatusIcon = config.icon;
 
@@ -67,15 +68,30 @@ export function FileUploadRow({ file, onRetry }: FileUploadRowProps) {
                     </span>
                 )}
                 {file.status === 'failed' && (
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 shrink-0 text-primary hover:text-primary hover:bg-primary/10"
-                        onClick={onRetry}
-                        title="إعادة الرفع"
-                    >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10"
+                            onClick={onRetry}
+                            title="إعادة الرفع"
+                        >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                        </Button>
+                        {onDelete && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                onClick={onDelete}
+                                title="إزالة من القائمة"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                        )}
+                    </div>
                 )}
             </div>
             {file.status === 'uploading' && (

@@ -21,6 +21,8 @@ interface UploadManagerState {
     updateFileStatus: (sessionId: string, fileId: string, status: FileUploadStatus, errorMessage?: string) => void;
     retryFile: (sessionId: string, fileId: string) => void;
     retryAllFailed: (sessionId: string) => void;
+    requeueFile: (sessionId: string, fileId: string) => void;
+    removeFileFromSession: (sessionId: string, fileId: string) => void;
 
     // ─── إجراءات واجهة المستخدم ───
     togglePanel: () => void;
@@ -155,6 +157,62 @@ export const useUploadStore = create<UploadManagerState>()(
                             ? { ...f, status: 'pending' as FileUploadStatus, progress: 0, errorMessage: undefined, retryCount: f.retryCount + 1 }
                             : f
                     );
+                    return {
+                        sessions: {
+                            ...state.sessions,
+                            [sessionId]: {
+                                ...session,
+                                files: updatedFiles,
+                                status: computeSessionStatus(updatedFiles),
+                            },
+                        },
+                    };
+                }),
+
+            requeueFile: (sessionId, fileId) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (!session) return state;
+
+                    const targetFile = session.files.find((f) => f.id === fileId);
+                    if (!targetFile) return state;
+
+                    // Remove file from current position and reset progress
+                    const remainingFiles = session.files.filter((f) => f.id !== fileId);
+                    const resetFile: FileUploadItem = {
+                        ...targetFile,
+                        status: 'pending',
+                        progress: 0,
+                        errorMessage: undefined,
+                    };
+
+                    const updatedFiles = [...remainingFiles, resetFile];
+
+                    return {
+                        sessions: {
+                            ...state.sessions,
+                            [sessionId]: {
+                                ...session,
+                                files: updatedFiles,
+                                status: computeSessionStatus(updatedFiles),
+                            },
+                        },
+                    };
+                }),
+
+            removeFileFromSession: (sessionId, fileId) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (!session) return state;
+
+                    const updatedFiles = session.files.filter((f) => f.id !== fileId);
+                    removeSessionFiles([fileId]);
+
+                    if (updatedFiles.length === 0) {
+                        const { [sessionId]: _, ...rest } = state.sessions;
+                        return { sessions: rest };
+                    }
+
                     return {
                         sessions: {
                             ...state.sessions,

@@ -48,10 +48,10 @@ export function useUploadEngine() {
                 updateFileStatus(session.id, fileId, 'success');
                 await removeFile(fileId);
             } catch (error: any) {
-
-                const message = error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription ||
-                    error?.response?.data?.errors && error.response.data.errors[0]?.description
-                error?.response?.data?.message ||
+                const message =
+                    error?.response?.data?.errors?.[0]?.arabicDescription ||
+                    error?.response?.data?.errors?.[0]?.description ||
+                    error?.response?.data?.message ||
                     error?.message ||
                     'فشل رفع الملف';
                 updateFileStatus(session.id, fileId, 'failed', message);
@@ -63,25 +63,29 @@ export function useUploadEngine() {
     /** معالجة جلسة واحدة — يرفع ملفاتها واحداً تلو الآخر */
     const processSession = useCallback(
         async (session: UploadSession) => {
-            if (activeSessionIds.current.has(session.id)) return;
+            if (activeSessionIds.current.has(session.id)) {
+                return;
+            }
             activeSessionIds.current.add(session.id);
 
             try {
-                // جمع الملفات المعلقة (pending) بالترتيب
                 const pendingFiles = session.files.filter(
                     (f) => f.status === 'pending'
                 );
 
                 for (const fileItem of pendingFiles) {
-                    // إعادة قراءة الحالة من الـ store لأنها قد تتغير (مثل retry)
                     const freshSession =
                         useUploadStore.getState().sessions[session.id];
-                    if (!freshSession) break; // الجلسة حُذفت
+                    if (!freshSession) {
+                        break;
+                    }
 
                     const freshFile = freshSession.files.find(
                         (f) => f.id === fileItem.id
                     );
-                    if (!freshFile || freshFile.status !== 'pending') continue;
+                    if (!freshFile || freshFile.status !== 'pending') {
+                        continue;
+                    }
 
                     await uploadSingleFile(freshSession, fileItem.id);
                 }
@@ -92,22 +96,66 @@ export function useUploadEngine() {
         [uploadSingleFile]
     );
 
+    // عند تحميل التطبيق، التحقق من الملفات التي علقت في حالة 'uploading'
+    const hasCleanedUp = useRef(false);
+    useEffect(() => {
+        if (hasCleanedUp.current) return;
+
+        const sessionsArray = Object.values(sessions);
+        if (sessionsArray.length === 0) {
+            return;
+        }
+
+        const runCleanup = async () => {
+            const store = useUploadStore.getState();
+            
+            for (const session of sessionsArray) {
+                const uploadingFiles = session.files.filter(f => f.status === 'uploading');
+                if (uploadingFiles.length === 0) continue;
+
+                try {
+                    const record = await archivingService.getArchiveRecordById(session.recordId);
+                    
+                    for (const file of uploadingFiles) {
+                        const fileExistsOnServer = record.physicalFiles?.some(
+                            (pf) => pf.fileName === file.fileName
+                        );
+
+                        if (fileExistsOnServer) {
+                            store.updateFileStatus(session.id, file.id, 'success');
+                            await removeFile(file.id);
+                        } else {
+                            store.requeueFile(session.id, file.id);
+                        }
+                    }
+                } catch (error) {
+                    uploadingFiles.forEach(file => {
+                        store.requeueFile(session.id, file.id);
+                    });
+                }
+            }
+        };
+
+        runCleanup();
+        hasCleanedUp.current = true;
+    }, [sessions]);
+
     /** المراقب الرئيسي — يفحص الجلسات ويبدأ الرفع */
     useEffect(() => {
         const sessionsArray = Object.values(sessions);
 
-        // الجلسات التي تحتوي على ملفات pending وليست نشطة حالياً
         const sessionsToProcess = sessionsArray.filter(
             (s) =>
                 s.files.some((f) => f.status === 'pending') &&
                 !activeSessionIds.current.has(s.id)
         );
 
-        // تحديد عدد الجلسات التي يمكن تشغيلها بالتوازي
         const availableSlots =
             MAX_CONCURRENT_SESSIONS - activeSessionIds.current.size;
 
-        if (availableSlots <= 0 || sessionsToProcess.length === 0) return;
+        if (availableSlots <= 0 || sessionsToProcess.length === 0) {
+            return;
+        }
 
         const toStart = sessionsToProcess.slice(0, availableSlots);
         toStart.forEach((session) => {
@@ -115,3 +163,4 @@ export function useUploadEngine() {
         });
     }, [sessions, processSession]);
 }
+

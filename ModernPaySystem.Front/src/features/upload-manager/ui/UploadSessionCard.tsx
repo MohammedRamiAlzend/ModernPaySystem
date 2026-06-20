@@ -19,7 +19,7 @@ const statusBadge = {
 
 export function UploadSessionCard({ session }: UploadSessionCardProps) {
     const [isExpanded, setIsExpanded] = useState(true);
-    const { retryFile, retryAllFailed, removeSession } = useUploadStore();
+    const { retryFile, retryAllFailed, removeSession, removeFileFromSession } = useUploadStore();
 
     const successCount = session.files.filter((f) => f.status === 'success').length;
     const failedCount = session.files.filter((f) => f.status === 'failed').length;
@@ -64,6 +64,7 @@ export function UploadSessionCard({ session }: UploadSessionCardProps) {
                                 key={file.id}
                                 file={file}
                                 onRetry={() => retryFile(session.id, file.id)}
+                                onDelete={() => removeFileFromSession(session.id, file.id)}
                             />
                         ))}
                     </div>
