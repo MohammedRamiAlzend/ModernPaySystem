@@ -5,7 +5,7 @@ import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
 import { v4 } from '@/shared/utils/uuid';
 import * as htmlToImage from 'html-to-image';
-import { useUploadStore, storeFile } from '@/features/upload-manager';
+import { useUploadStore, storeFiles } from '@/features/upload-manager';
 
 const printQrCover = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -260,9 +260,9 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                     const sessionId = v4();
                     const uploadItems = selectedFiles.map(file => {
                         const itemId = v4();
-                        storeFile(itemId, file);
                         return {
                             id: itemId,
+                            file,
                             fileName: file.name,
                             fileSize: file.size,
                             status: 'pending' as const,
@@ -270,6 +270,9 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                             retryCount: 0
                         };
                     });
+
+                    // Store all actual File objects in IndexedDB
+                    await storeFiles(uploadItems.map(item => ({ id: item.id, file: item.file })));
 
                     const createSession = useUploadStore.getState().createSession;
                     const firstInputVal = Object.values(templateInputs)[0];
@@ -280,12 +283,15 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         ? `${templateName} (${firstInputVal})`
                         : `مستند أرشيفي (${recordId.substring(0, 8)})`;
 
+                    // Remove file objects from metadata items saved in Zustand/localStorage
+                    const metaItems = uploadItems.map(({ file, ...meta }) => meta);
+
                     createSession({
                         id: sessionId,
                         recordId: recordId,
                         recordTitle,
                         folderId: currentFolderId,
-                        files: uploadItems,
+                        files: metaItems,
                         createdAt: new Date().toISOString(),
                         status: 'uploading'
                     });
@@ -315,9 +321,9 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                     const sessionId = v4();
                     const uploadItems = selectedFiles.map(file => {
                         const itemId = v4();
-                        storeFile(itemId, file);
                         return {
                             id: itemId,
+                            file,
                             fileName: file.name,
                             fileSize: file.size,
                             status: 'pending' as const,
@@ -325,6 +331,9 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                             retryCount: 0
                         };
                     });
+
+                    // Store all actual File objects in IndexedDB
+                    await storeFiles(uploadItems.map(item => ({ id: item.id, file: item.file })));
 
                     const createSession = useUploadStore.getState().createSession;
                     const firstInputVal = Object.values(templateInputs)[0];
@@ -335,12 +344,15 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         ? `${templateName} (${firstInputVal}) [تعديل]`
                         : `تحديث مستند (${selectedRecord.id.substring(0, 8)})`;
 
+                    // Remove file objects from metadata items saved in Zustand/localStorage
+                    const metaItems = uploadItems.map(({ file, ...meta }) => meta);
+
                     createSession({
                         id: sessionId,
                         recordId: selectedRecord.id,
                         recordTitle,
                         folderId: currentFolderId,
-                        files: uploadItems,
+                        files: metaItems,
                         createdAt: new Date().toISOString(),
                         status: 'uploading'
                     });

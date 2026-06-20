@@ -23,7 +23,7 @@ export function useUploadEngine() {
     /** رفع ملف واحد لجلسة معينة */
     const uploadSingleFile = useCallback(
         async (session: UploadSession, fileId: string) => {
-            const file = getFile(fileId);
+            const file = await getFile(fileId);
             if (!file) {
                 updateFileStatus(session.id, fileId, 'failed', 'الملف غير موجود في المخزن المؤقت');
                 return;
@@ -46,10 +46,12 @@ export function useUploadEngine() {
                 );
 
                 updateFileStatus(session.id, fileId, 'success');
-                removeFile(fileId);
+                await removeFile(fileId);
             } catch (error: any) {
-                const message =
-                    error?.response?.data?.message ||
+
+                const message = error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription ||
+                    error?.response?.data?.errors && error.response.data.errors[0]?.description
+                error?.response?.data?.message ||
                     error?.message ||
                     'فشل رفع الملف';
                 updateFileStatus(session.id, fileId, 'failed', message);

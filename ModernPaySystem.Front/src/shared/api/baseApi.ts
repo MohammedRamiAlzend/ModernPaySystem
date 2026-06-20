@@ -28,7 +28,7 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
-        const message = error.response?.data?.message || error.message || 'حدث خطأ في الاتصال بالخادم';
+        const message = error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription || error.response?.data?.message || error.message || 'حدث خطأ في الاتصال بالخادم';
 
         // التعامل مع أخطاء 401 (غير مصرح به) - يعني التوكن انتهى أو غير صالح
         if (status === 401) {

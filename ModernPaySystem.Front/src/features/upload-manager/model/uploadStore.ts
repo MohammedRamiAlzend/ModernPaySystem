@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { UploadSession, FileUploadStatus, SessionStatus, FileUploadItem } from './types';
 import { removeSessionFiles } from './fileStore';
 
@@ -57,114 +58,121 @@ const updateFileInSession = (
     };
 };
 
-export const useUploadStore = create<UploadManagerState>((set) => ({
-    sessions: {},
-    isPanelOpen: false,
-    isPanelMinimized: false,
-
-    createSession: (session) =>
-        set((state) => ({
-            sessions: { ...state.sessions, [session.id]: session },
-            isPanelOpen: true,
+export const useUploadStore = create<UploadManagerState>()(
+    persist(
+        (set) => ({
+            sessions: {},
+            isPanelOpen: false,
             isPanelMinimized: false,
-        })),
 
-    removeSession: (sessionId) =>
-        set((state) => {
-            const session = state.sessions[sessionId];
-            if (session) {
-                removeSessionFiles(session.files.map((f) => f.id));
-            }
-            const { [sessionId]: _, ...rest } = state.sessions;
-            return { sessions: rest };
+            createSession: (session) =>
+                set((state) => ({
+                    sessions: { ...state.sessions, [session.id]: session },
+                    isPanelOpen: true,
+                    isPanelMinimized: false,
+                })),
+
+            removeSession: (sessionId) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (session) {
+                        removeSessionFiles(session.files.map((f) => f.id));
+                    }
+                    const { [sessionId]: _, ...rest } = state.sessions;
+                    return { sessions: rest };
+                }),
+
+            clearCompletedSessions: () =>
+                set((state) => {
+                    const remaining: Record<string, UploadSession> = {};
+                    Object.entries(state.sessions).forEach(([id, session]) => {
+                        if (session.status !== 'completed') {
+                            remaining[id] = session;
+                        } else {
+                            removeSessionFiles(session.files.map((f) => f.id));
+                        }
+                    });
+                    return { sessions: remaining };
+                }),
+
+            updateFileProgress: (sessionId, fileId, progress) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (!session) return state;
+                    return {
+                        sessions: {
+                            ...state.sessions,
+                            [sessionId]: updateFileInSession(session, fileId, (f) => ({
+                                ...f,
+                                progress,
+                                status: 'uploading',
+                            })),
+                        },
+                    };
+                }),
+
+            updateFileStatus: (sessionId, fileId, status, errorMessage) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (!session) return state;
+                    return {
+                        sessions: {
+                            ...state.sessions,
+                            [sessionId]: updateFileInSession(session, fileId, (f) => ({
+                                ...f,
+                                status,
+                                progress: status === 'success' ? 100 : f.progress,
+                                errorMessage: status === 'failed' ? errorMessage : undefined,
+                            })),
+                        },
+                    };
+                }),
+
+            retryFile: (sessionId, fileId) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (!session) return state;
+                    return {
+                        sessions: {
+                            ...state.sessions,
+                            [sessionId]: updateFileInSession(session, fileId, (f) => ({
+                                ...f,
+                                status: 'pending',
+                                progress: 0,
+                                errorMessage: undefined,
+                                retryCount: f.retryCount + 1,
+                            })),
+                        },
+                    };
+                }),
+
+            retryAllFailed: (sessionId) =>
+                set((state) => {
+                    const session = state.sessions[sessionId];
+                    if (!session) return state;
+                    const updatedFiles = session.files.map((f) =>
+                        f.status === 'failed'
+                            ? { ...f, status: 'pending' as FileUploadStatus, progress: 0, errorMessage: undefined, retryCount: f.retryCount + 1 }
+                            : f
+                    );
+                    return {
+                        sessions: {
+                            ...state.sessions,
+                            [sessionId]: {
+                                ...session,
+                                files: updatedFiles,
+                                status: computeSessionStatus(updatedFiles),
+                            },
+                        },
+                    };
+                }),
+
+            togglePanel: () => set((state) => ({ isPanelOpen: !state.isPanelOpen })),
+            toggleMinimize: () => set((state) => ({ isPanelMinimized: !state.isPanelMinimized })),
+            openPanel: () => set({ isPanelOpen: true, isPanelMinimized: false }),
         }),
-
-    clearCompletedSessions: () =>
-        set((state) => {
-            const remaining: Record<string, UploadSession> = {};
-            Object.entries(state.sessions).forEach(([id, session]) => {
-                if (session.status !== 'completed') {
-                    remaining[id] = session;
-                } else {
-                    removeSessionFiles(session.files.map((f) => f.id));
-                }
-            });
-            return { sessions: remaining };
-        }),
-
-    updateFileProgress: (sessionId, fileId, progress) =>
-        set((state) => {
-            const session = state.sessions[sessionId];
-            if (!session) return state;
-            return {
-                sessions: {
-                    ...state.sessions,
-                    [sessionId]: updateFileInSession(session, fileId, (f) => ({
-                        ...f,
-                        progress,
-                        status: 'uploading',
-                    })),
-                },
-            };
-        }),
-
-    updateFileStatus: (sessionId, fileId, status, errorMessage) =>
-        set((state) => {
-            const session = state.sessions[sessionId];
-            if (!session) return state;
-            return {
-                sessions: {
-                    ...state.sessions,
-                    [sessionId]: updateFileInSession(session, fileId, (f) => ({
-                        ...f,
-                        status,
-                        progress: status === 'success' ? 100 : f.progress,
-                        errorMessage: status === 'failed' ? errorMessage : undefined,
-                    })),
-                },
-            };
-        }),
-
-    retryFile: (sessionId, fileId) =>
-        set((state) => {
-            const session = state.sessions[sessionId];
-            if (!session) return state;
-            return {
-                sessions: {
-                    ...state.sessions,
-                    [sessionId]: updateFileInSession(session, fileId, (f) => ({
-                        ...f,
-                        status: 'pending',
-                        progress: 0,
-                        errorMessage: undefined,
-                        retryCount: f.retryCount + 1,
-                    })),
-                },
-            };
-        }),
-
-    retryAllFailed: (sessionId) =>
-        set((state) => {
-            const session = state.sessions[sessionId];
-            if (!session) return state;
-            const updatedFiles = session.files.map((f) =>
-                f.status === 'failed'
-                    ? { ...f, status: 'pending' as FileUploadStatus, progress: 0, errorMessage: undefined, retryCount: f.retryCount + 1 }
-                    : f
-            );
-            return {
-                sessions: {
-                    ...state.sessions,
-                    [sessionId]: {
-                        ...session,
-                        files: updatedFiles,
-                        status: computeSessionStatus(updatedFiles),
-                    },
-                },
-            };
-        }),
-
-    togglePanel: () => set((state) => ({ isPanelOpen: !state.isPanelOpen })),
-    toggleMinimize: () => set((state) => ({ isPanelMinimized: !state.isPanelMinimized })),
-    openPanel: () => set({ isPanelOpen: true, isPanelMinimized: false }),
-}));
+        {
+            name: 'upload-manager-store',
+        }
+    )
+);
