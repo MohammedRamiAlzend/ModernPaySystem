@@ -5,6 +5,7 @@ import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
 import { v4 } from '@/shared/utils/uuid';
 import * as htmlToImage from 'html-to-image';
+import { useUploadStore, storeFile } from '@/features/upload-manager';
 
 const printQrCover = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -196,8 +197,8 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                 value: templateInputs[key]
             }));
 
-            const filesToUpload = [...selectedFiles];
             let qrCoverBlob: Blob | null = null;
+            let qrFile: File | null = null;
 
             // Generate QR Cover if required
             if (recordModalMode === 'create' && generateQrCover) {
@@ -215,8 +216,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         });
                         if (blob) {
                             qrCoverBlob = blob;
-                            const qrFile = new File([blob], `QR_Cover_${recordId}.png`, { type: 'image/png' });
-                            filesToUpload.unshift(qrFile);
+                            qrFile = new File([blob], `QR_Cover_${recordId}.png`, { type: 'image/png' });
                         }
                     } catch (err) {
                         console.error('Failed to generate QR cover using html-to-image', err);
@@ -226,31 +226,76 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
             if (recordModalMode === 'create') {
                 const recordId = qrCoverGuid || v4();
+                
+                // Only send the cover file (qrFile) initially
+                const initialFiles: File[] = [];
+                if (qrFile) {
+                    initialFiles.push(qrFile);
+                }
+
                 await archivingService.createArchiveRecord({
                     id: recordId,
                     folderId: currentFolderId,
                     formId: selectedTemplateId || null,
-                    files: filesToUpload,
+                    files: initialFiles,
                     content: fieldsArray
                 }, (progressEvent) => {
                     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                     setUploadProgress(percentCompleted);
                 });
+
                 showStatus({
                     type: 'success',
-                    title: 'تم الأرشفة بنجاح',
-                    message: 'تم حفظ مستند الأرشفة بنجاح.'
+                    title: 'تم إنشاء المستند',
+                    message: 'تم حفظ بيانات المستند بنجاح. جاري رفع المرفقات في الخلفية.'
                 });
 
                 // Auto-print the cover page immediately
                 if (qrCoverBlob) {
                     printQrCover(qrCoverBlob);
                 }
+
+                // If there are other selected files, create an upload session
+                if (selectedFiles.length > 0) {
+                    const sessionId = v4();
+                    const uploadItems = selectedFiles.map(file => {
+                        const itemId = v4();
+                        storeFile(itemId, file);
+                        return {
+                            id: itemId,
+                            fileName: file.name,
+                            fileSize: file.size,
+                            status: 'pending' as const,
+                            progress: 0,
+                            retryCount: 0
+                        };
+                    });
+
+                    const createSession = useUploadStore.getState().createSession;
+                    const firstInputVal = Object.values(templateInputs)[0];
+                    const templateName = selectedTemplateId 
+                        ? (dynamicTemplates.find(t => t.id === selectedTemplateId)?.templateFormName || 'مستند') 
+                        : 'مستند';
+                    const recordTitle = firstInputVal 
+                        ? `${templateName} (${firstInputVal})`
+                        : `مستند أرشيفي (${recordId.substring(0, 8)})`;
+
+                    createSession({
+                        id: sessionId,
+                        recordId: recordId,
+                        recordTitle,
+                        folderId: currentFolderId,
+                        files: uploadItems,
+                        createdAt: new Date().toISOString(),
+                        status: 'uploading'
+                    });
+                }
             } else if (recordModalMode === 'edit' && selectedRecord) {
+                // Update metadata and remove files, but don't upload new files in the same call
                 await archivingService.updateArchiveRecord(selectedRecord.id, {
                     folderId: currentFolderId,
                     formId: selectedTemplateId,
-                    files: selectedFiles,
+                    files: [], // Do not upload new files in the PUT request
                     content: fieldsArray,
                     fileIdsToRemove,
                     replaceFiles: false
@@ -258,11 +303,48 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                     const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
                     setUploadProgress(percentCompleted);
                 });
+
                 showStatus({
                     type: 'success',
                     title: 'تم تحديث البيانات',
-                    message: 'تم تعديل بيانات المستند وحفظ التغييرات.'
+                    message: 'تم تعديل بيانات المستند. جاري رفع المرفقات الجديدة في الخلفية.'
                 });
+
+                // If there are new files selected, create an upload session
+                if (selectedFiles.length > 0) {
+                    const sessionId = v4();
+                    const uploadItems = selectedFiles.map(file => {
+                        const itemId = v4();
+                        storeFile(itemId, file);
+                        return {
+                            id: itemId,
+                            fileName: file.name,
+                            fileSize: file.size,
+                            status: 'pending' as const,
+                            progress: 0,
+                            retryCount: 0
+                        };
+                    });
+
+                    const createSession = useUploadStore.getState().createSession;
+                    const firstInputVal = Object.values(templateInputs)[0];
+                    const templateName = selectedTemplateId 
+                        ? (dynamicTemplates.find(t => t.id === selectedTemplateId)?.templateFormName || 'مستند') 
+                        : 'مستند';
+                    const recordTitle = firstInputVal 
+                        ? `${templateName} (${firstInputVal}) [تعديل]`
+                        : `تحديث مستند (${selectedRecord.id.substring(0, 8)})`;
+
+                    createSession({
+                        id: sessionId,
+                        recordId: selectedRecord.id,
+                        recordTitle,
+                        folderId: currentFolderId,
+                        files: uploadItems,
+                        createdAt: new Date().toISOString(),
+                        status: 'uploading'
+                    });
+                }
             }
 
             setShowRecordModal(false);

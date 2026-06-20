@@ -241,7 +241,7 @@ export function RecordModal({
                             {isSaving && (
                                 <div className="flex flex-col gap-1.5 px-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
                                     <div className="flex justify-between text-[10px] font-bold text-primary">
-                                        <span>جاري رفع البيانات والملفات...</span>
+                                        <span>جاري حفظ المستند...</span>
                                         <span>{uploadProgress}%</span>
                                     </div>
                                     <Progress value={uploadProgress} className="h-1.5" />

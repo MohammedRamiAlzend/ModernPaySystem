@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet"
 import { useState } from "react"
 // import { PrefetchNavLink } from "@/shared/navigation/prefetch-nav-link"
 import { useAuthStore } from '@/app/store/authStore';
+import { UploadManagerPanel, useUploadEngine } from '@/features/upload-manager';
 
 interface MainLayoutProps {
     children?: React.ReactNode
@@ -21,6 +22,9 @@ export function MainLayout({ children }: MainLayoutProps) {
     const currentUser = useAuthStore((state) => state.user);
     const navigate = useNavigate();
     // const location = useLocation();
+
+    // تشغيل محرك الرفع في الخلفية
+    useUploadEngine();
 
     return (
         <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -149,6 +153,9 @@ export function MainLayout({ children }: MainLayoutProps) {
                     })()}
                 </nav> */}
             </div>
+
+            {/* لوحة رفع الملفات العائمة */}
+            <UploadManagerPanel />
         </div>
     )
 }
