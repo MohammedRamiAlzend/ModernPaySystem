@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export type ScannerAppType = 'new' | 'old';
 export type ColorMode = 'Color' | 'Grayscale' | 'BlackAndWhite';
@@ -34,13 +34,13 @@ export const useScannerSettings = () => {
         return DEFAULT_SETTINGS;
     });
 
-    const setSettings = (newSettings: Partial<ScannerSettings>) => {
+    const setSettings = useCallback((newSettings: Partial<ScannerSettings>) => {
         setSettingsState(prev => {
             const next = { ...prev, ...newSettings };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
             return next;
         });
-    };
+    }, []);
 
     return { settings, setSettings };
 };

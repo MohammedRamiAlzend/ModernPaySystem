@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/shared/ui/button';
 import { ImageMeta } from '../model/types';
-import { FileText, Trash2, Upload, Scan } from 'lucide-react';
+import { FileText, Trash2, Upload, Scan, Settings } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { useScannerSettings, ScannerAppType, ColorMode } from '../model/use-scanner-settings';
+import { useScannerDevices } from '../model/use-scanner-devices';
+import { Switch } from '@/shared/ui/switch';
+import { Label } from '@/shared/ui/label';
 
 interface ImageGalleryProps {
     imageFiles: ImageMeta[];
@@ -27,8 +31,18 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
     acceptAllFiles = false,
     error,
 }) => {
+    const { settings, setSettings } = useScannerSettings();
+    const { data: devices = [], isLoading: isLoadingDevices } = useScannerDevices(settings.appType === 'new');
+    const [showSettings, setShowSettings] = useState(false);
+
+    React.useEffect(() => {
+        if (settings.appType === 'new' && devices.length > 0 && !settings.deviceId) {
+            setSettings({ deviceId: devices[0].id });
+        }
+    }, [settings.appType, settings.deviceId, devices, setSettings]);
+
     return (
-        <div className='md:col-span-1 flex flex-col gap-4 border-l pl-0 md:pl-4'>
+        <div className='md:col-span-1 flex flex-col gap-4 border-l pl-0 md:pl-4' dir="rtl">
             {/* Upload Controls */}
             <div className="space-y-3">
                 <label className="text-sm font-bold flex items-center gap-2 px-1">
@@ -56,7 +70,104 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                         <Scan className={cn("h-4 w-4", isScanning && "animate-spin")} />
                         {isScanning ? 'جارٍ...' : 'سكان'}
                     </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setShowSettings(!showSettings)}
+                        className={cn("rounded-xl border-2 shrink-0 transition-colors", showSettings && "bg-muted border-primary")}
+                        title="إعدادات الماسح الضوئي"
+                    >
+                        <Settings className="h-4 w-4" />
+                    </Button>
                 </div>
+
+                {showSettings && (
+                    <div className="p-4 bg-muted/40 border rounded-2xl space-y-4 animate-in fade-in-50 duration-200">
+                        <div className="flex items-center justify-between border-b pb-2">
+                            <span className="font-bold text-xs text-primary">إعدادات الماسح الضوئي</span>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                <Label className="text-[11px] font-bold">نوع النظام الأساسي</Label>
+                                <select 
+                                    value={settings.appType} 
+                                    onChange={(e) => setSettings({ appType: e.target.value as ScannerAppType })}
+                                    className="w-full h-8 text-xs bg-background border rounded-xl px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                                >
+                                    <option value="new">النظام الحديث (محلي)</option>
+                                    <option value="old">النظام القديم (Asprise)</option>
+                                </select>
+                            </div>
+
+                            {settings.appType === 'new' && (
+                                <div className="space-y-3 pt-2 border-t border-muted-foreground/10">
+                                    <div className="space-y-1">
+                                        <Label className="text-[11px] font-bold">الجهاز الافتراضي</Label>
+                                        <select 
+                                            value={settings.deviceId} 
+                                            onChange={(e) => setSettings({ deviceId: e.target.value })}
+                                            disabled={isLoadingDevices || devices.length === 0}
+                                            className="w-full h-8 text-xs bg-background border rounded-xl px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer disabled:opacity-50"
+                                        >
+                                            {isLoadingDevices ? (
+                                                <option>جاري التحميل...</option>
+                                            ) : devices.length === 0 ? (
+                                                <option>لا يوجد أجهزة متصلة</option>
+                                            ) : (
+                                                <>
+                                                    <option value="" disabled>اختر الجهاز</option>
+                                                    {devices.map(d => (
+                                                        <option key={d.id} value={d.id}>{d.name}</option>
+                                                    ))}
+                                                </>
+                                            )}
+                                        </select>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-1">
+                                            <Label className="text-[11px] font-bold">الدقة (DPI)</Label>
+                                            <select 
+                                                value={settings.dpi.toString()} 
+                                                onChange={(e) => setSettings({ dpi: parseInt(e.target.value) })}
+                                                className="w-full h-8 text-xs bg-background border rounded-xl px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                                            >
+                                                <option value="150">150 DPI</option>
+                                                <option value="300">300 DPI</option>
+                                                <option value="600">600 DPI</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label className="text-[11px] font-bold">نظام الألوان</Label>
+                                            <select 
+                                                value={settings.colorMode} 
+                                                onChange={(e) => setSettings({ colorMode: e.target.value as ColorMode })}
+                                                className="w-full h-8 text-xs bg-background border rounded-xl px-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                                            >
+                                                <option value="Color">ملون</option>
+                                                <option value="Grayscale">تدرج رمادي</option>
+                                                <option value="BlackAndWhite">أبيض وأسود</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-1">
+                                        <Label className="cursor-pointer text-[11px] font-bold" htmlFor="modal-duplex-mode">
+                                            مسح على الوجهين (Duplex)
+                                        </Label>
+                                        <Switch 
+                                            id="modal-duplex-mode"
+                                            checked={settings.duplex} 
+                                            onCheckedChange={(v) => setSettings({ duplex: v })} 
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
                 {error && (
                     <div className='text-destructive text-[11px] p-2 bg-destructive/5 border border-destructive/10 rounded-lg'>
                         {error}

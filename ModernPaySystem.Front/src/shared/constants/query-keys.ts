@@ -127,5 +127,10 @@ export const queryKeys = {
             storage: () => [...queryKeys.archiving.reports.all, 'storage'] as const,
             charts: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.archiving.reports.all, 'charts', fromDate, toDate] as const,
         }
+    },
+    scanner: {
+        all: ['scanner'] as const,
+        devices: () => [...queryKeys.scanner.all, 'devices'] as const,
     }
 };
+

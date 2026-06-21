@@ -1,29 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Switch } from '@/shared/ui/switch';
 import { useScannerSettings, ScannerAppType, ColorMode } from '@/features/document-scanner/model/use-scanner-settings';
-import { localScannerService, DeviceDto } from '@/features/document-scanner/api/localScannerService';
+import { useScannerDevices, useTestScannerConnection } from '@/features/document-scanner/model/use-scanner-devices';
 import { Label } from '@/shared/ui/label';
+import { Button } from '@/shared/ui/button';
+import { useUIStore } from '@/app/store/uiStore';
 
 export const ScannerSettingsPage: React.FC = () => {
     const { settings, setSettings } = useScannerSettings();
-    const [devices, setDevices] = useState<DeviceDto[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const { data: devices = [], isLoading } = useScannerDevices(settings.appType === 'new');
+    const { testConnection, isTesting } = useTestScannerConnection();
+    const showStatus = useUIStore(state => state.showStatus);
 
     useEffect(() => {
-        if (settings.appType === 'new') {
-            Promise.resolve().then(() => setIsLoading(true));
-            localScannerService.getDevices()
-                .then(data => {
-                    setDevices(data);
-                    if (data.length > 0 && !settings.deviceId) {
-                        setSettings({ deviceId: data[0].id });
-                    }
-                })
-                .catch(err => console.error('Failed to load devices', err))
-                .finally(() => setIsLoading(false));
+        if (settings.appType === 'new' && devices.length > 0 && !settings.deviceId) {
+            setSettings({ deviceId: devices[0].id });
         }
-    }, [settings.appType, settings.deviceId, setSettings]);
+    }, [settings.appType, settings.deviceId, devices, setSettings]);
+
+    const handleTestConnection = async () => {
+        const result = await testConnection(settings.deviceId);
+        showStatus({
+            type: result.success ? 'success' : 'error',
+            title: result.success ? 'حالة الاتصال' : 'فشل الاتصال',
+            message: result.message
+        });
+    };
 
     return (
         <div className="max-w-2xl bg-card border rounded-3xl p-6 md:p-8 space-y-8 shadow-sm">
@@ -59,19 +62,30 @@ export const ScannerSettingsPage: React.FC = () => {
                             
                             <div className="space-y-2">
                                 <Label>الجهاز الافتراضي</Label>
-                                <Select 
-                                    value={settings.deviceId} 
-                                    onValueChange={(v) => setSettings({ deviceId: v })}
-                                >
-                                    <SelectTrigger disabled={isLoading || devices.length === 0} className="bg-background">
-                                        <SelectValue placeholder={isLoading ? 'جاري التحميل...' : (devices.length === 0 ? 'لا يوجد أجهزة متصلة' : 'اختر الجهاز')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {devices.map(d => (
-                                            <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <div className="flex gap-2">
+                                    <div className="flex-1">
+                                        <Select 
+                                            value={settings.deviceId} 
+                                            onValueChange={(v) => setSettings({ deviceId: v })}
+                                        >
+                                            <SelectTrigger disabled={isLoading || devices.length === 0} className="bg-background">
+                                                <SelectValue placeholder={isLoading ? 'جاري التحميل...' : (devices.length === 0 ? 'لا يوجد أجهزة متصلة' : 'اختر الجهاز')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {devices.map(d => (
+                                                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <Button 
+                                        variant="outline" 
+                                        disabled={isTesting || isLoading || !settings.deviceId}
+                                        onClick={handleTestConnection}
+                                    >
+                                        {isTesting ? 'جاري الفحص...' : 'اختبار الاتصال'}
+                                    </Button>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
