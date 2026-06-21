@@ -50,7 +50,7 @@ export const localScannerService = {
         });
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
-            throw new Error(err.message || err.detail || 'فشل عملية المسح الضوئي');
+            throw new Error(err.messageAr || err.messageEn || err.message || 'فشل عملية المسح الضوئي');
         }
         return response.json();
     },
