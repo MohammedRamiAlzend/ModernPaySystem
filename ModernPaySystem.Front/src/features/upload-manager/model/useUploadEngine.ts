@@ -134,7 +134,7 @@ export function useUploadEngine() {
                             store.requeueFile(session.id, file.id);
                         }
                     }
-                } catch (error) {
+                } catch {
                     uploadingFiles.forEach(file => {
                         store.requeueFile(session.id, file.id);
                     });

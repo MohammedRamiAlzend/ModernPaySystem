@@ -286,7 +286,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         : `مستند أرشيفي (${recordId.substring(0, 8)})`;
 
                     // Remove file objects from metadata items saved in Zustand/localStorage
-                    const metaItems = uploadItems.map(({ file, ...meta }) => meta);
+                    const metaItems = uploadItems.map(({ file: _file, ...meta }) => meta);
 
                     createSession({
                         id: sessionId,
@@ -348,7 +348,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         : `تحديث مستند (${selectedRecord.id.substring(0, 8)})`;
 
                     // Remove file objects from metadata items saved in Zustand/localStorage
-                    const metaItems = uploadItems.map(({ file, ...meta }) => meta);
+                    const metaItems = uploadItems.map(({ file: _file, ...meta }) => meta);
 
                     createSession({
                         id: sessionId,

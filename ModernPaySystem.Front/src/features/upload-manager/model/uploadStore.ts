@@ -80,7 +80,7 @@ export const useUploadStore = create<UploadManagerState>()(
                     if (session) {
                         removeSessionFiles(session.files.map((f) => f.id));
                     }
-                    const { [sessionId]: _, ...rest } = state.sessions;
+                    const { [sessionId]: _removed, ...rest } = state.sessions;
                     return { sessions: rest };
                 }),
 
@@ -209,7 +209,7 @@ export const useUploadStore = create<UploadManagerState>()(
                     removeSessionFiles([fileId]);
 
                     if (updatedFiles.length === 0) {
-                        const { [sessionId]: _, ...rest } = state.sessions;
+                        const { [sessionId]: _removed, ...rest } = state.sessions;
                         return { sessions: rest };
                     }
 
