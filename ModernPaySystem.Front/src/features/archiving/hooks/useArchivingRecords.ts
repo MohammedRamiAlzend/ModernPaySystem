@@ -286,6 +286,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         : `مستند أرشيفي (${recordId.substring(0, 8)})`;
 
                     // Remove file objects from metadata items saved in Zustand/localStorage
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const metaItems = uploadItems.map(({ file: _file, ...meta }) => meta);
 
                     createSession({
@@ -348,6 +349,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                         : `تحديث مستند (${selectedRecord.id.substring(0, 8)})`;
 
                     // Remove file objects from metadata items saved in Zustand/localStorage
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const metaItems = uploadItems.map(({ file: _file, ...meta }) => meta);
 
                     createSession({

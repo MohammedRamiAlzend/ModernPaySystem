@@ -80,6 +80,7 @@ export const useUploadStore = create<UploadManagerState>()(
                     if (session) {
                         removeSessionFiles(session.files.map((f) => f.id));
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const { [sessionId]: _removed, ...rest } = state.sessions;
                     return { sessions: rest };
                 }),
@@ -209,6 +210,7 @@ export const useUploadStore = create<UploadManagerState>()(
                     removeSessionFiles([fileId]);
 
                     if (updatedFiles.length === 0) {
+                        // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         const { [sessionId]: _removed, ...rest } = state.sessions;
                         return { sessions: rest };
                     }
