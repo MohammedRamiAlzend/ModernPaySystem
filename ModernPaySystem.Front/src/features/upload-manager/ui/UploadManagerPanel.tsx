@@ -1,6 +1,7 @@
 import { Button } from '@/shared/ui/button';
 import { Upload, X, Minus, Maximize2, Trash2 } from 'lucide-react';
 import { useUploadStore } from '../model/uploadStore';
+import { useAuthStore } from '@/app/store/authStore';
 import { UploadSessionCard } from './UploadSessionCard';
 import { cn } from '@/shared/lib/utils';
 
@@ -17,8 +18,12 @@ export function UploadManagerPanel() {
         toggleMinimize,
         clearCompletedSessions,
     } = useUploadStore();
+    const currentUserId = useAuthStore((s) => s.user?.id);
 
-    const sessionsArray = Object.values(sessions);
+    // عرض جلسات المستخدم الحالي فقط
+    const sessionsArray = Object.values(sessions).filter(
+        (s) => s.userId === currentUserId
+    );
 
     // لا تظهر شيئاً إذا لم تكن هناك جلسات
     if (sessionsArray.length === 0) return null;

@@ -6,6 +6,7 @@ import { useUIStore } from '@/app/store/uiStore';
 import { v4 } from '@/shared/utils/uuid';
 import * as htmlToImage from 'html-to-image';
 import { useUploadStore, storeFiles } from '@/features/upload-manager';
+import { useAuthStore } from '@/app/store/authStore';
 
 const printQrCover = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -46,6 +47,7 @@ const printQrCover = (blob: Blob) => {
 
 export function useArchivingRecords(currentFolderId: string | null | undefined) {
     const { showStatus, showConfirm } = useUIStore();
+    const currentUserId = useAuthStore((s) => s.user?.id);
 
     const [records, setRecords] = useState<ArchiveRecord[]>([]);
     const [dynamicTemplates, setDynamicTemplates] = useState<DynamicFormTemplate[]>([]);
@@ -288,6 +290,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
                     createSession({
                         id: sessionId,
+                        userId: currentUserId || '',
                         recordId: recordId,
                         recordTitle,
                         folderId: currentFolderId,
@@ -349,6 +352,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
                     createSession({
                         id: sessionId,
+                        userId: currentUserId || '',
                         recordId: selectedRecord.id,
                         recordTitle,
                         folderId: currentFolderId,

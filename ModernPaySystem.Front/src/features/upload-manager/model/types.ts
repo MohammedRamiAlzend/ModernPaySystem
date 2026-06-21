@@ -24,6 +24,8 @@ export type SessionStatus = 'uploading' | 'completed' | 'partial' | 'paused';
 export interface UploadSession {
     /** معرف الجلسة (UUID) */
     id: string;
+    /** معرف المستخدم الذي أنشأ الجلسة */
+    userId: string;
     /** معرف المستند الأرشيفي */
     recordId: string;
     /** عنوان/رقم المستند (للعرض في اللوحة) */
