@@ -99,6 +99,11 @@ public class CreateArchiveRecordDto
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];
 }
 
+public class MoveArchiveRecordDto
+{
+    public Guid DestinationFolderId { get; set; }
+}
+
 public class UpdateArchiveRecordDto
 {
     public Guid FolderId { get; set; }

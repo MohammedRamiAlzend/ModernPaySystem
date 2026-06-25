@@ -100,6 +100,10 @@ export interface CreateArchiveRecordDto {
     content: ArchiveRecordFormInputValue[];
 }
 
+export interface MoveArchiveRecordDto {
+    destinationFolderId: string;
+}
+
 export interface CreateDynamicFormTemplateDto {
     templateFormName: string;
     contentAsJson: string;
@@ -163,6 +167,13 @@ export enum AuditAction {
     Delete = 6,
     AddFiles = 7,
     RemoveFiles = 8,
+    ApproveEdit = 9,
+    RejectEdit = 10,
+    ApproveDelete = 11,
+    RejectDelete = 12,
+    SubmitEditRequest = 13,
+    SubmitDeleteRequest = 14,
+    Move = 15,
 }
 
 export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
@@ -174,6 +185,13 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
     [AuditAction.Delete]: 'حذف',
     [AuditAction.AddFiles]: 'إضافة ملفات',
     [AuditAction.RemoveFiles]: 'حذف ملفات',
+    [AuditAction.ApproveEdit]: 'الموافقة على تعديل',
+    [AuditAction.RejectEdit]: 'رفض تعديل',
+    [AuditAction.ApproveDelete]: 'الموافقة على حذف',
+    [AuditAction.RejectDelete]: 'رفض حذف',
+    [AuditAction.SubmitEditRequest]: 'طلب تعديل',
+    [AuditAction.SubmitDeleteRequest]: 'طلب حذف',
+    [AuditAction.Move]: 'نقل',
 };
 
 // ---------------------------------------------------------

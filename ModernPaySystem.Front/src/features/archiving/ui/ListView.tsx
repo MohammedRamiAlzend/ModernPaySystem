@@ -7,7 +7,8 @@ import {
     Edit3,
     Trash2,
     Eye,
-    Folder as FolderIcon
+    Folder as FolderIcon,
+    Move
 } from 'lucide-react';
 
 interface ListViewProps {
@@ -21,6 +22,7 @@ interface ListViewProps {
     onDelete: (record: ArchiveRecord) => void;
     onDownloadZip: (record: ArchiveRecord) => void;
     onRecordRequestEdit?: (record: ArchiveRecord) => void;
+    onRecordMove?: (record: ArchiveRecord) => void;
     isLoading?: boolean;
     hasMore?: boolean;
     onLoadMore?: () => void;
@@ -37,6 +39,7 @@ export const ListView: React.FC<ListViewProps> = ({
     onDelete,
     onDownloadZip,
     onRecordRequestEdit,
+    onRecordMove,
     isLoading = false,
     hasMore = false,
     onLoadMore
@@ -158,6 +161,17 @@ export const ListView: React.FC<ListViewProps> = ({
                                                         title="طلب تعديل السجل"
                                                     >
                                                         <Edit3 className="h-4 w-4 text-amber-500" />
+                                                    </Button>
+                                                )}
+                                                {onRecordMove && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/20 transition-all duration-200"
+                                                        onClick={() => onRecordMove(record)}
+                                                        title="نقل المستند"
+                                                    >
+                                                        <Move className="h-4 w-4" />
                                                     </Button>
                                                 )}
                                                 <Button

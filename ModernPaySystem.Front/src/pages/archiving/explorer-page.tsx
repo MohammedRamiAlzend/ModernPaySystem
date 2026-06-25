@@ -12,9 +12,11 @@ import { ListView } from '@/features/archiving/ui/ListView';
 import { DocumentGalleryModal } from '@/features/archiving/ui/DocumentGalleryModal';
 import { FolderPermissionsModal } from '@/features/archiving/ui/FolderPermissionsModal';
 import { CustomizeIconModal } from '@/features/archiving/ui/CustomizeIconModal';
+import { MoveRecordModal } from '@/features/archiving/ui/MoveRecordModal';
 import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
+import { useMoveArchiveRecord } from '@/features/archiving/model/mutations';
 import {
     Plus,
     FolderPlus,
@@ -41,6 +43,26 @@ export default function ExplorerPage() {
 
     const [showIconCustomizationModal, setShowIconCustomizationModal] = useState(false);
     const [iconCustomizationFolder, setIconCustomizationFolder] = useState<Folder | null>(null);
+
+    const [showMoveRecordModal, setShowMoveRecordModal] = useState(false);
+    const [moveRecordTarget, setMoveRecordTarget] = useState<ArchiveRecord | null>(null);
+
+    const moveRecordMutation = useMoveArchiveRecord();
+
+    const handleOpenMoveRecord = (record: ArchiveRecord) => {
+        setMoveRecordTarget(record);
+        setShowMoveRecordModal(true);
+    };
+
+    const handleConfirmMoveRecord = async (recordId: string, destinationFolderId: string) => {
+        await moveRecordMutation.mutateAsync({ id: recordId, destinationFolderId });
+        setShowMoveRecordModal(false);
+        setMoveRecordTarget(null);
+        if (currentFolder) {
+            await loadRecords(currentFolder.id, 1);
+        }
+        loadFolders();
+    };
 
     const handleOpenFolderPermissions = (folder: Folder) => {
         setPermissionsModalFolder(folder);
@@ -261,6 +283,7 @@ export default function ExplorerPage() {
                         onRecordDelete={handleDeleteRecord}
                         onRecordDownloadZip={handleDownloadRecordZip}
                         onRecordRequestEdit={handleOpenRequestEdit}
+                        onRecordMove={handleOpenMoveRecord}
                         onCreateFolder={handleOpenCreateFolder}
                         onCreateRecord={currentFolder ? handleOpenCreateRecord : undefined}
                     />
@@ -276,6 +299,7 @@ export default function ExplorerPage() {
                         onDelete={handleDeleteRecord}
                         onDownloadZip={handleDownloadRecordZip}
                         onRecordRequestEdit={handleOpenRequestEdit}
+                        onRecordMove={handleOpenMoveRecord}
                         isLoading={loadingRecords}
                         hasMore={hasMoreRecords}
                         onLoadMore={loadMoreRecords}
@@ -390,6 +414,19 @@ export default function ExplorerPage() {
                     setShowFolderPermissionsModal(false);
                     setPermissionsModalFolder(null);
                 }}
+            />
+            {/* 7. Modal: Move Record */}
+            <MoveRecordModal
+                isOpen={showMoveRecordModal}
+                record={moveRecordTarget}
+                folders={folders}
+                currentFolderId={currentFolder?.id}
+                onClose={() => {
+                    setShowMoveRecordModal(false);
+                    setMoveRecordTarget(null);
+                }}
+                onConfirm={handleConfirmMoveRecord}
+                isLoading={moveRecordMutation.isPending}
             />
             {/* 4. Modal: Submit Archive Edit Request */}
             <SubmitEditRequestModal

@@ -214,6 +214,15 @@ public class ArchiveRecordsController(
         return await StreamArchiveFileAsync(fileId, download, includeDeleted: includeDeleted);
     }
 
+    [HttpPut("{id}/move")]
+    [EndpointPermission("archiving.records.move", SubSystem.Archiving, PermissionType.Update)]
+    public async Task<IActionResult> MoveRecord(Guid id, [FromBody] MoveArchiveRecordDto dto)
+    {
+        logger.LogInformation("Moving archive record {RecordId} to destination folder {DestinationFolderId}", id, dto.DestinationFolderId);
+        var result = await archiveRecordService.MoveRecordAsync(id, dto);
+        return result.ToActionResult();
+    }
+
     [HttpDelete("{id}")]
     [EndpointPermission("archiving.records.delete", SubSystem.Archiving, PermissionType.Delete)]
     public async Task<IActionResult> Delete(Guid id)

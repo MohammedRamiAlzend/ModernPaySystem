@@ -177,6 +177,11 @@ export const archivingService = {
         return response.data.data;
     },
 
+    moveArchiveRecord: async (id: string, destinationFolderId: string): Promise<ArchiveRecord> => {
+        const response = await api.put<any>(`/archive-records/${id}/move`, { destinationFolderId });
+        return response.data.data;
+    },
+
     deleteArchiveRecord: async (id: string): Promise<void> => {
         await api.delete(`/archive-records/${id}`);
     },

@@ -12,7 +12,8 @@ import {
     Plus,
     FolderPlus,
     Shield,
-    Image
+    Image,
+    Move
 } from 'lucide-react';
 
 interface ExplorerViewProps {
@@ -28,6 +29,7 @@ interface ExplorerViewProps {
     onRecordDelete?: (record: ArchiveRecord) => void;
     onRecordDownloadZip?: (record: ArchiveRecord) => void;
     onRecordRequestEdit?: (record: ArchiveRecord) => void;
+    onRecordMove?: (record: ArchiveRecord) => void;
     onCreateFolder?: () => void;
     onCreateRecord?: () => void;
 }
@@ -46,6 +48,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onRecordDelete,
     onRecordDownloadZip,
     onRecordRequestEdit,
+    onRecordMove,
     onCreateFolder,
     onCreateRecord,
 }) => {
@@ -232,6 +235,15 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                     <Edit3 className="h-3.5 w-3.5" />
                                                 </button>
                                             )}
+                                            {onRecordMove && (
+                                                <button
+                                                    onClick={() => handleAction(() => onRecordMove(record))}
+                                                    className="w-full px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-end gap-2"
+                                                >
+                                                    <span>نقل</span>
+                                                    <Move className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
                                             {onRecordDownloadZip && (
                                                 <button
                                                     onClick={() => handleAction(() => onRecordDownloadZip(record))}
@@ -395,6 +407,18 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                 >
                                     <span>طلب تعديل</span>
                                     <Edit3 className="h-4 w-4" />
+                                </button>
+                            )}
+                            {onRecordMove && (
+                                <button
+                                    onClick={() => {
+                                        onRecordMove(targetRecord);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>نقل المستند</span>
+                                    <Move className="h-4 w-4 text-primary" />
                                 </button>
                             )}
                             {onRecordDownloadZip && (

@@ -181,6 +181,33 @@ export const useUpdateArchiveRecord = () => {
     });
 };
 
+export const useMoveArchiveRecord = () => {
+    const queryClient = useQueryClient();
+    const { showStatus } = useUIStore();
+
+    return useMutation({
+        mutationFn: ({ id, destinationFolderId }: { id: string; destinationFolderId: string }) =>
+            archivingService.moveArchiveRecord(id, destinationFolderId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.records.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.archiving.folders.all });
+            showStatus({
+                type: 'success',
+                title: 'تم نقل المستند',
+                message: 'تم نقل المستند إلى المجلد الجديد بنجاح.'
+            });
+        },
+        onError: (error: any) => {
+            console.error('Failed to move archive record', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ في النقل',
+                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة نقل المستند.'
+            });
+        }
+    });
+};
+
 export const useDeleteArchiveRecord = () => {
     const queryClient = useQueryClient();
     const { showStatus } = useUIStore();

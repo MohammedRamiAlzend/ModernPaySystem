@@ -35,5 +35,6 @@ public enum AuditAction
     ApproveDelete = 11,
     RejectDelete = 12,
     SubmitEditRequest = 13,
-    SubmitDeleteRequest = 14
+    SubmitDeleteRequest = 14,
+    Move = 15
 }

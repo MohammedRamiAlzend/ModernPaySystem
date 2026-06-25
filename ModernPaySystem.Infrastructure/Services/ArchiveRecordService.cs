@@ -728,6 +728,133 @@ public class ArchiveRecordService(
         }
     }
 
+    public async Task<Result<ArchiveRecordDto>> MoveRecordAsync(Guid id, MoveArchiveRecordDto dto)
+    {
+        try
+        {
+            if (id == Guid.Empty || dto == null || dto.DestinationFolderId == Guid.Empty)
+            {
+                logger.LogWarning("Move record request validation failed: Invalid id or destination folder.");
+                return ApplicationErrors.InvalidInput;
+            }
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+
+            var sourceAccess = await resourceAuth.CanAccessArchiveRecordAsync(userId, id, AccessLevel.FullControl);
+            if (sourceAccess.IsError)
+                return sourceAccess.Errors;
+            if (!sourceAccess.Value)
+                return ApplicationErrors.ArchiveRecordAccessDenied;
+
+            var destAccess = await resourceAuth.CanAccessFolderAsync(userId, dto.DestinationFolderId, AccessLevel.Write);
+            if (destAccess.IsError)
+                return destAccess.Errors;
+            if (!destAccess.Value)
+                return ApplicationErrors.FolderAccessDenied;
+
+            var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
+                x => x.Id == id,
+                query => query.Include(x => x.PhysicalFiles)
+                              .Include(x => x.Folder));
+            if (recordResult.IsError)
+                return recordResult.Errors;
+            var record = recordResult.Value;
+            if (record == null)
+                return ApplicationErrors.ArchiveRecordNotFound;
+
+            var destFolderResult = await unitOfWork.Folders.GetByIdAsync(dto.DestinationFolderId);
+            if (destFolderResult.IsError)
+                return destFolderResult.Errors;
+            var destFolder = destFolderResult.Value;
+            if (destFolder == null)
+                return ApplicationErrors.FolderNotFound;
+
+            if (record.FolderId == dto.DestinationFolderId)
+                return ApplicationErrors.InvalidInput;
+
+            if (record.DepartmentId.HasValue && destFolder.DepartmentId.HasValue && record.DepartmentId != destFolder.DepartmentId)
+                return ApplicationErrors.InvalidInput;
+
+            var oldFolder = record.Folder;
+            var defaultPath = await GetDefaultStoragePathAsync();
+            var oldSubDir = oldFolder.DefaultStoragePath ?? defaultPath;
+            var newSubDir = destFolder.DefaultStoragePath ?? defaultPath;
+            var oldRelativeRecordDir = Path.Combine(UploadRootDirectory, "Uploads", oldSubDir, record.Id.ToString());
+            var newRelativeRecordDir = Path.Combine(UploadRootDirectory, "Uploads", newSubDir, record.Id.ToString());
+
+            var dbContext = unitOfWork.Context;
+            var executionStrategy = dbContext.Database.CreateExecutionStrategy();
+
+            return await executionStrategy.ExecuteAsync(async () =>
+            {
+                await unitOfWork.BeginTransactionAsync();
+
+                try
+                {
+                    record.FolderId = dto.DestinationFolderId;
+                    record.Folder = destFolder;
+
+                    foreach (var physicalFile in record.PhysicalFiles.Where(pf => !pf.IsDeleted))
+                    {
+                        var fileName = Path.GetFileName(physicalFile.StoragePath);
+                        physicalFile.StoragePath = Path.Combine(newRelativeRecordDir, fileName);
+                    }
+
+                    var updateResult = await unitOfWork.ArchiveRecords.UpdateAsync(record);
+                    if (updateResult.IsError)
+                    {
+                        await unitOfWork.RollbackTransactionAsync();
+                        return updateResult.Errors;
+                    }
+
+                    var saveResult = await unitOfWork.SaveChangesAsync();
+                    if (saveResult <= 0)
+                    {
+                        await unitOfWork.RollbackTransactionAsync();
+                        return ApplicationErrors.DatabaseError;
+                    }
+
+                    await unitOfWork.CommitTransactionAsync();
+                }
+                catch
+                {
+                    await unitOfWork.RollbackTransactionAsync();
+                    throw;
+                }
+
+                var absoluteOldDir = NormalizePath(oldRelativeRecordDir);
+                var absoluteNewDir = NormalizePath(newRelativeRecordDir);
+
+                if (fileManager.DirectoryExists(absoluteOldDir))
+                {
+                    var moveResult = await fileManager.MoveDirectoryAsync(absoluteOldDir, absoluteNewDir);
+                    if (!moveResult.Success)
+                    {
+                        logger.LogWarning("OS directory move failed for record {RecordId} from {OldDir} to {NewDir}: {Error}",
+                            id, absoluteOldDir, absoluteNewDir, moveResult.ErrorMessage);
+                    }
+                }
+
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await _auditLogService.LogAsync(id, userId.ToString(), AuditAction.Move,
+                    $"Moved from folder '{oldFolder.Name}' to folder '{destFolder.Name}'", ipAddress, userAgent);
+
+                return await GetByIdAsync(record.Id);
+            });
+        }
+        catch (Exception ex)
+        {
+            if (unitOfWork.HasActiveTransaction)
+            {
+                await unitOfWork.RollbackTransactionAsync();
+            }
+
+            logger.LogError(ex, "Error moving archive record {RecordId}", id);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
     public async Task<Result<ArchiveRecordDto>> AddFilesAsync(Guid id, IFormFileCollection files)
     {
         var uploadedPaths = new List<string>();
