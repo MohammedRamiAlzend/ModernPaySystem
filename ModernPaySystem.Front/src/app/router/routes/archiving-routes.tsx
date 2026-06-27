@@ -11,6 +11,7 @@ const ExplorerPage = lazyWithPreload(() => import('@/pages/archiving/explorer-pa
 // const FolderIconsPage = lazyWithPreload(() => import('@/pages/archiving/folder-icons-page'));
 // const TemplatesPage = lazyWithPreload(() => import('@/pages/archiving/templates-page'));
 const ArchiveEditRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-edit-requests-page'));
+const ArchiveDeletionRequestsPage = lazyWithPreload(() => import('@/pages/archiving/archive-deletion-requests-page'));
 const ArchiveSearchPage = lazyWithPreload(() => import('@/pages/archiving/search-page'));
 const SemanticSearchPage = lazyWithPreload(() => import('@/pages/archiving/semantic-search-page'));
 const AuditLogsPage = lazyWithPreload(() => import('@/pages/archiving/audit-logs-page'));
@@ -89,18 +90,30 @@ export const archivingRoutes: RouteObject = {
       path: 'templates',
       element: <Navigate to="/settings?tab=archiving-templates" replace />,
     },
-    {
-      path: 'edit-requests',
-      element: (
-        <Suspense fallback={<LoadingSpinner />}>
-          <ArchiveEditRequestsPage />
-        </Suspense>
-      ),
-      handle: {
-        crumb: () => 'طلبات تعديل الأرشيف',
-        preload: () => ArchiveEditRequestsPage.preload(),
-      }
-    },
+      {
+        path: 'edit-requests',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ArchiveEditRequestsPage />
+          </Suspense>
+        ),
+        handle: {
+          crumb: () => 'طلبات تعديل الأرشيف',
+          preload: () => ArchiveEditRequestsPage.preload(),
+        }
+      },
+      {
+        path: 'deletion-requests',
+        element: (
+          <Suspense fallback={<LoadingSpinner />}>
+            <ArchiveDeletionRequestsPage />
+          </Suspense>
+        ),
+        handle: {
+          crumb: () => 'طلبات حذف الأرشيف',
+          preload: () => ArchiveDeletionRequestsPage.preload(),
+        }
+      },
     {
       path: 'audit-logs',
       element: (

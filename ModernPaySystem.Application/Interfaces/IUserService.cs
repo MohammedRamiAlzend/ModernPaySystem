@@ -50,4 +50,6 @@ public interface IUserService
     Task<Result<IEnumerable<TemplateDto>>> GetVisitedTemplatesAsync(Guid userId);
 
     Task<Result<List<SubSystemDto>>> GetSubSystemsAsync();
+
+    Task<Result<IEnumerable<UserDto>>> GetCurrentDepartmentUsersAsync(Guid currentUserId);
 }

@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
-import { useUsers, useSubSystems } from '../api/usersApi';
+import { useUsers, useSubSystems, fetchUsersByCurrentDepartment } from '../api/usersApi';
+import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/shared/ui/label';
 import { SearchableSelect } from '@/shared/ui/searchable-select';
 import type { SearchableSelectOption } from '@/shared/ui/searchable-select';
@@ -52,6 +53,7 @@ interface UserPickerSharedProps {
     defaultSubSystemId?: string;
     showCurrentUser?: boolean;
     className?: string;
+    departmentOnly?: boolean;
 }
 
 export type UserPickerProps = UserPickerSharedProps & (UserPickerSingleProps | UserPickerMultiProps);
@@ -66,6 +68,7 @@ export const UserPicker = (props: UserPickerProps) => {
         defaultSubSystemId = APP_CONFIG.DEFAULT_SUB_SYSTEM_ID,
         showCurrentUser = false,
         className,
+        departmentOnly = false,
     } = props;
 
     const isMulti = props.multiple === true;
@@ -74,13 +77,25 @@ export const UserPicker = (props: UserPickerProps) => {
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(defaultSubSystemId);
 
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
-    const { data: rawUsers = [], isLoading: isLoadingUsers } = useUsers(selectedSubSystem);
+
+    const { data: departmentUsers = [], isLoading: isLoadingDepartmentUsers } = useQuery({
+        queryKey: ['users', 'current-department'],
+        queryFn: fetchUsersByCurrentDepartment,
+        enabled: departmentOnly,
+    });
+
+    const { data: rawUsers = [], isLoading: isLoadingUsers } = useUsers(
+        departmentOnly ? undefined : selectedSubSystem
+    );
+
+    const sourceUsers = departmentOnly ? departmentUsers : rawUsers;
+    const isLoading = departmentOnly ? isLoadingDepartmentUsers : isLoadingUsers;
 
     // Filter out current user if needed
     const users = useMemo(() => {
-        if (showCurrentUser || !currentUserData) return rawUsers;
-        return rawUsers.filter(u => u.id !== currentUserData.id);
-    }, [rawUsers, showCurrentUser, currentUserData]);
+        if (showCurrentUser || !currentUserData) return sourceUsers;
+        return sourceUsers.filter(u => u.id !== currentUserData.id);
+    }, [sourceUsers, showCurrentUser, currentUserData]);
 
     // Convert users to SearchableSelect options
     const userOptions: SearchableSelectOption[] = useMemo(() => {
@@ -105,7 +120,7 @@ export const UserPicker = (props: UserPickerProps) => {
     return (
         <div className={cn('grid grid-cols-1 md:grid-cols-2 gap-4', className)}>
             {/* SubSystem selector */}
-            {APP_CONFIG.SHOW_SUB_SYSTEM && (
+            {!departmentOnly && APP_CONFIG.SHOW_SUB_SYSTEM && (
                 <div className="space-y-2">
                     <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
                         <Shield className="w-3 h-3" />
@@ -140,7 +155,7 @@ export const UserPicker = (props: UserPickerProps) => {
                         placeholder={placeholder}
                         searchPlaceholder="ابحث بالاسم أو الترتيب..."
                         emptyMessage="لا يوجد مستخدمين لهذا النظام"
-                        isLoading={isLoadingUsers}
+                        isLoading={isLoading}
                     />
                 ) : (
                     <SearchableSelect
@@ -150,7 +165,7 @@ export const UserPicker = (props: UserPickerProps) => {
                         placeholder={placeholder}
                         searchPlaceholder="ابحث بالاسم أو الترتيب..."
                         emptyMessage="لا يوجد مستخدمين لهذا النظام"
-                        isLoading={isLoadingUsers}
+                        isLoading={isLoading}
                     />
                 )}
             </div>

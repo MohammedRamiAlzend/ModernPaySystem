@@ -311,6 +311,44 @@ public class UserService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher,
         }
     }
 
+    public async Task<Result<IEnumerable<UserDto>>> GetCurrentDepartmentUsersAsync(Guid currentUserId)
+    {
+        try
+        {
+            logger.LogInformation("Fetching users in same department as user {UserId}", currentUserId);
+
+            var currentUser = await unitOfWork.Users.GetAsync(
+                filter: x => x.Id == currentUserId,
+                transform: query => query.Include(x => x.Department)
+            );
+
+            if (currentUser.IsError || currentUser.Value == null)
+                return ApplicationErrors.UserNotFound;
+
+            if (!currentUser.Value.DepartmentId.HasValue)
+                return ApplicationErrors.DepartmentNotFound;
+
+            var departmentId = currentUser.Value.DepartmentId.Value;
+
+            var users = await unitOfWork.Users.GetAllAsync(
+                filter: x => x.DepartmentId == departmentId,
+                transform: query => query.Include(x => x.SubSystemUser).Include(x => x.Department)
+            );
+
+            if (users.IsError)
+                return users.Errors;
+
+            var userDtos = users.Value!.ConvertAll(u => u.ToDto());
+            logger.LogInformation("Found {Count} users in department {DepartmentId}", userDtos.Count, departmentId);
+            return userDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching users in department for user {UserId}", currentUserId);
+            return ApplicationErrors.InternalServerError;
+        }
+    }
+
     public async Task<Result<List<SubSystemDto>>> GetSubSystemsAsync()
     {
         try

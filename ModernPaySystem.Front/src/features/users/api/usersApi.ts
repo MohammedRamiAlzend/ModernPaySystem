@@ -69,6 +69,11 @@ export const fetchUsersBySubSystem = async (subSystemId: string): Promise<User[]
     return response.data.data;
 };
 
+export const fetchUsersByCurrentDepartment = async (): Promise<User[]> => {
+    const response = await api.get<ApiResponse<User[]>>('/Users/by-current-department');
+    return response.data.data;
+};
+
 // React Query hooks
 export const useUser = (userId: string | null | undefined) => {
     return useQuery({

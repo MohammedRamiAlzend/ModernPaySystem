@@ -9,6 +9,7 @@ interface MultiUserPickerProps {
     label?: string;
     placeholder?: string;
     className?: string;
+    departmentOnly?: boolean;
 }
 
 export const MultiUserPicker = ({
@@ -16,7 +17,8 @@ export const MultiUserPicker = ({
     selectedUserIds = [],
     label = "للاطلاع فقط (ReadOnly)",
     placeholder = "اضف مستخدم للاطلاع...",
-    className
+    className,
+    departmentOnly
 }: MultiUserPickerProps) => {
     const handleAddUser = (userId: string) => {
         if (!userId || selectedUserIds.includes(userId)) return;
@@ -38,6 +40,7 @@ export const MultiUserPicker = ({
                 placeholder={placeholder}
                 className="!grid-cols-1"
                 showCurrentUser={false}
+                departmentOnly={departmentOnly}
             />
             
             {selectedUserIds.length > 0 && (

@@ -6,6 +6,8 @@ import { useArchivingRecords } from '@/features/archiving/hooks/useArchivingReco
 import { FolderModal } from '@/features/archiving/ui/FolderModal';
 import { RecordModal } from '@/features/archiving/ui/RecordModal';
 import { SubmitEditRequestModal } from '@/features/archive-edit-requests/ui/SubmitEditRequestModal';
+import { SubmitDeletionRequestModal } from '@/features/archive-deletion-requests/ui/SubmitDeletionRequestModal';
+import { ArchiveDeletionTargetType } from '@/features/archive-deletion-requests/model/types';
 import { ExplorerToolbar } from '@/features/archiving/ui/ExplorerToolbar';
 import { ExplorerView } from '@/features/archiving/ui/ExplorerView';
 import { ListView } from '@/features/archiving/ui/ListView';
@@ -17,6 +19,7 @@ import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
 import { useMoveArchiveRecord } from '@/features/archiving/model/mutations';
+import { useLedDepartments } from '@/features/archiving/model/queries';
 import {
     Plus,
     FolderPlus,
@@ -37,6 +40,12 @@ export default function ExplorerPage() {
 
     const [showSubmitEditModal, setShowSubmitEditModal] = useState(false);
     const [editRequestRecord, setEditRequestRecord] = useState<ArchiveRecord | null>(null);
+
+    const [showDeletionRequestModal, setShowDeletionRequestModal] = useState(false);
+    const [deletionRequestRecord, setDeletionRequestRecord] = useState<ArchiveRecord | null>(null);
+
+    const { data: ledDepartments = [] } = useLedDepartments();
+    const isArchiveLeader = ledDepartments.length > 0;
 
     const [showFolderPermissionsModal, setShowFolderPermissionsModal] = useState(false);
     const [permissionsModalFolder, setPermissionsModalFolder] = useState<Folder | null>(null);
@@ -77,6 +86,11 @@ export default function ExplorerPage() {
     const handleOpenRequestEdit = (record: ArchiveRecord) => {
         setEditRequestRecord(record);
         setShowSubmitEditModal(true);
+    };
+
+    const handleOpenDeleteRequest = (record: ArchiveRecord) => {
+        setDeletionRequestRecord(record);
+        setShowDeletionRequestModal(true);
     };
 
     const handleRecordClick = async (record: ArchiveRecord) => {
@@ -280,7 +294,8 @@ export default function ExplorerPage() {
                             onFolderCustomize={handleOpenFolderCustomize}
                             onFolderDelete={handleDeleteFolder}
                         onRecordEdit={handleOpenEditRecord}
-                        onRecordDelete={handleDeleteRecord}
+                        onRecordDelete={isArchiveLeader ? handleDeleteRecord : undefined}
+                        onRecordDeleteRequest={!isArchiveLeader ? handleOpenDeleteRequest : undefined}
                         onRecordDownloadZip={handleDownloadRecordZip}
                         onRecordRequestEdit={handleOpenRequestEdit}
                         onRecordMove={handleOpenMoveRecord}
@@ -296,7 +311,8 @@ export default function ExplorerPage() {
                         onFolderDelete={handleDeleteFolder}
                         onView={handleRecordClick}
                         onEdit={handleOpenEditRecord}
-                        onDelete={handleDeleteRecord}
+                        onDelete={isArchiveLeader ? handleDeleteRecord : undefined}
+                        onRecordDeleteRequest={!isArchiveLeader ? handleOpenDeleteRequest : undefined}
                         onDownloadZip={handleDownloadRecordZip}
                         onRecordRequestEdit={handleOpenRequestEdit}
                         onRecordMove={handleOpenMoveRecord}
@@ -428,7 +444,18 @@ export default function ExplorerPage() {
                 onConfirm={handleConfirmMoveRecord}
                 isLoading={moveRecordMutation.isPending}
             />
-            {/* 4. Modal: Submit Archive Edit Request */}
+            {/* 4. Modal: Submit Archive Deletion Request */}
+            <SubmitDeletionRequestModal
+                isOpen={showDeletionRequestModal}
+                targetType={ArchiveDeletionTargetType.Record}
+                targetId={deletionRequestRecord?.id || ''}
+                targetDisplayName={deletionRequestRecord?.id.slice(0, 8)}
+                onClose={() => {
+                    setShowDeletionRequestModal(false);
+                    setDeletionRequestRecord(null);
+                }}
+            />
+            {/* 5. Modal: Submit Archive Edit Request */}
             <SubmitEditRequestModal
                 isOpen={showSubmitEditModal}
                 record={editRequestRecord}

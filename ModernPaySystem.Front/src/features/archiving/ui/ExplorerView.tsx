@@ -13,7 +13,8 @@ import {
     FolderPlus,
     Shield,
     Image,
-    Move
+    Move,
+    FileX2
 } from 'lucide-react';
 
 interface ExplorerViewProps {
@@ -27,6 +28,7 @@ interface ExplorerViewProps {
     onFolderCustomize?: (folder: Folder) => void;
     onRecordEdit?: (record: ArchiveRecord) => void;
     onRecordDelete?: (record: ArchiveRecord) => void;
+    onRecordDeleteRequest?: (record: ArchiveRecord) => void;
     onRecordDownloadZip?: (record: ArchiveRecord) => void;
     onRecordRequestEdit?: (record: ArchiveRecord) => void;
     onRecordMove?: (record: ArchiveRecord) => void;
@@ -46,6 +48,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
     onFolderCustomize,
     // onRecordEdit,
     onRecordDelete,
+    onRecordDeleteRequest,
     onRecordDownloadZip,
     onRecordRequestEdit,
     onRecordMove,
@@ -253,7 +256,16 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                                     <Download className="h-3.5 w-3.5" />
                                                 </button>
                                             )}
-                                            {onRecordDelete && (
+                                            {onRecordDeleteRequest && (
+                                                <button
+                                                    onClick={() => handleAction(() => onRecordDeleteRequest(record))}
+                                                    className="w-full px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 flex items-center justify-end gap-2"
+                                                >
+                                                    <span>تقديم طلب حذف</span>
+                                                    <FileX2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            )}
+                                            {onRecordDelete && !onRecordDeleteRequest && (
                                                 <button
                                                     onClick={() => handleAction(() => onRecordDelete(record))}
                                                     className="w-full px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 flex items-center justify-end gap-2"
@@ -433,7 +445,19 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                     <Download className="h-4 w-4 text-emerald-500" />
                                 </button>
                             )}
-                            {onRecordDelete && (
+                            {onRecordDeleteRequest && (
+                                <button
+                                    onClick={() => {
+                                        onRecordDeleteRequest(targetRecord);
+                                        setContextMenu(null);
+                                    }}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-destructive hover:bg-destructive/10 flex items-center justify-end gap-2 group transition-colors text-right"
+                                >
+                                    <span>تقديم طلب حذف</span>
+                                    <FileX2 className="h-4 w-4" />
+                                </button>
+                            )}
+                            {onRecordDelete && !onRecordDeleteRequest && (
                                 <button
                                     onClick={() => {
                                         onRecordDelete(targetRecord);

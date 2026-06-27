@@ -128,6 +128,7 @@ export const FolderPermissionsModal = ({
                             onUsersChange={setNewUserIds}
                             label="مستخدمين جدد"
                             placeholder="ابحث عن مستخدم..."
+                            departmentOnly={true}
                         />
                         {newUserIds.length > 0 && (
                             <Button

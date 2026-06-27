@@ -91,6 +91,16 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
+    [HttpGet("by-current-department")]
+    [EndpointPermission("users.get-by-current-department", SubSystem.TransactionSystem, PermissionType.Read)]
+    public async Task<IActionResult> GetByCurrentDepartment()
+    {
+        _logger.LogInformation("Getting users in same department as current user");
+        var currentUserId = _httpContextServiceManager.GetCurrentUserId();
+        var result = await _userService.GetCurrentDepartmentUsersAsync(currentUserId);
+        return result.ToActionResult();
+    }
+
     [HttpGet("by-subsystem/{subSystemId:int}")]
     [EndpointPermission("users.get-by-subsystem", SubSystem.TransactionSystem, PermissionType.Read)]
     public async Task<IActionResult> GetBySubSystem([FromRoute] int subSystemId)

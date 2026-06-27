@@ -93,6 +93,14 @@ export const queryKeys = {
             details: () => [...queryKeys.archiving.editRequests.all, 'detail'] as const,
             detail: (id: string | null) => [...queryKeys.archiving.editRequests.details(), id] as const,
         },
+        deletionRequests: {
+            all: ['archiving', 'deletionRequests'] as const,
+            lists: () => [...queryKeys.archiving.deletionRequests.all, 'list'] as const,
+            listPending: (departmentId: string, page: number, pageSize: number) => [...queryKeys.archiving.deletionRequests.lists(), 'pending', { departmentId, page, pageSize }] as const,
+            listMy: (page: number, pageSize: number) => [...queryKeys.archiving.deletionRequests.lists(), 'my', { page, pageSize }] as const,
+            details: () => [...queryKeys.archiving.deletionRequests.all, 'detail'] as const,
+            detail: (id: string | null) => [...queryKeys.archiving.deletionRequests.details(), id] as const,
+        },
         auditLogs: {
             all: ['archiving', 'auditLogs'] as const,
             lists: () => [...queryKeys.archiving.auditLogs.all, 'list'] as const,

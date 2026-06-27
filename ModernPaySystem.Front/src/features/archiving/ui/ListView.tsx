@@ -8,7 +8,8 @@ import {
     Trash2,
     Eye,
     Folder as FolderIcon,
-    Move
+    Move,
+    FileX2
 } from 'lucide-react';
 
 interface ListViewProps {
@@ -19,7 +20,8 @@ interface ListViewProps {
     onFolderDelete?: (folder: Folder) => void;
     onView: (record: ArchiveRecord) => void;
     onEdit: (record: ArchiveRecord) => void;
-    onDelete: (record: ArchiveRecord) => void;
+    onDelete?: (record: ArchiveRecord) => void;
+    onRecordDeleteRequest?: (record: ArchiveRecord) => void;
     onDownloadZip: (record: ArchiveRecord) => void;
     onRecordRequestEdit?: (record: ArchiveRecord) => void;
     onRecordMove?: (record: ArchiveRecord) => void;
@@ -37,6 +39,7 @@ export const ListView: React.FC<ListViewProps> = ({
     onView,
     // onEdit,
     onDelete,
+    onRecordDeleteRequest,
     onDownloadZip,
     onRecordRequestEdit,
     onRecordMove,
@@ -183,15 +186,28 @@ export const ListView: React.FC<ListViewProps> = ({
                                                 >
                                                     <Download className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20 transition-all duration-200"
-                                                    onClick={() => onDelete(record)}
-                                                    title="حذف الأرشيف"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                {onRecordDeleteRequest && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20 transition-all duration-200"
+                                                        onClick={() => onRecordDeleteRequest(record)}
+                                                        title="تقديم طلب حذف"
+                                                    >
+                                                        <FileX2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                                {onDelete && !onRecordDeleteRequest && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/20 transition-all duration-200"
+                                                        onClick={() => onDelete(record)}
+                                                        title="حذف الأرشيف"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>

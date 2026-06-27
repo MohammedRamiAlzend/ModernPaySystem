@@ -378,3 +378,6 @@ ROADMAP.md
 ScannerApp
 ScannerApp/
 ScannerApp/*
+
+# Server-side diagnostic logs
+helaths/
