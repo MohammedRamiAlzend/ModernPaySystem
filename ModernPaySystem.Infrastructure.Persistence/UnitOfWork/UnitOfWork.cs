@@ -63,6 +63,7 @@ public class UnitOfWork(
     private IRepositoryBase<ArchiveAuditLog, Guid>? _archiveAuditLogs;
     private IRepositoryBase<ArchiveConfig, Guid>? _archiveConfigs;
     private IRepositoryBase<FolderIcon, Guid>? _folderIcons;
+    private IRepositoryBase<RequestAuditLog, Guid>? _requestAuditLogs;
 
     public IRepositoryBase<User, Guid> Users =>
         _users ??= new RepositoryBase<User, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<User, Guid>>(), _httpContextServiceManager);
@@ -165,6 +166,9 @@ public class UnitOfWork(
 
     public IRepositoryBase<FolderIcon, Guid> FolderIcons =>
         _folderIcons ??= new RepositoryBase<FolderIcon, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<FolderIcon, Guid>>(), _httpContextServiceManager);
+
+    public IRepositoryBase<RequestAuditLog, Guid> RequestAuditLogs =>
+        _requestAuditLogs ??= new RepositoryBase<RequestAuditLog, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<RequestAuditLog, Guid>>(), _httpContextServiceManager);
 
     public bool HasActiveTransaction => _transaction != null;
 

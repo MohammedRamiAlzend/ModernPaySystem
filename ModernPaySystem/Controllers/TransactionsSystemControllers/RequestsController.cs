@@ -1,3 +1,4 @@
+using ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Infrastructure.Services;
@@ -8,7 +9,7 @@ namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class RequestsController(IRequestService requestService, ILogger<RequestsController> logger) : ControllerBase
+public class RequestsController(IRequestService requestService, IRequestAuditService requestAuditService, ILogger<RequestsController> logger) : ControllerBase
 {
     [HttpGet("{id}")]
     [EndpointPermission("requests.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
@@ -70,6 +71,10 @@ public class RequestsController(IRequestService requestService, ILogger<Requests
     public async Task<IActionResult> Create([FromForm] CreateRequestDto request)
     {
         var result = await requestService.CreateAsync(request, request.Files!);
+        if (!result.IsError && result.Value is not null)
+        {
+            await requestAuditService.LogAsync(result.Value.Id, RequestAuditAction.Created);
+        }
         return result.ToActionResult();
     }
 

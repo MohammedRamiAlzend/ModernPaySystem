@@ -68,6 +68,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IArchiveAuthorizationService, ArchiveAuthorizationService>();
         services.AddScoped<IArchiveResourceAuthorizationService, ArchiveResourceAuthorizationService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<IRequestAuditService, RequestAuditService>();
         services.AddScoped<IArchiveRecordReportService, ArchiveRecordReportService>();
         services.AddScoped<IArchiveConfigService, ArchiveConfigService>();
         services.AddScoped<IFolderIconService, FolderIconService>();

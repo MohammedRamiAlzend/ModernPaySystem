@@ -42,6 +42,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserTemplateOwnership> UserTemplateOwnerships { get; set; }
     public DbSet<RequestTransaction> RequestTransactions { get; set; }
     public DbSet<RequestTransactionAttachment> RequestTransactionAttachments { get; set; }
+    public DbSet<RequestAuditLog> RequestAuditLogs { get; set; }
 
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
@@ -261,6 +262,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(rta => rta.AttachmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RequestAuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.RequestId, e.Timestamp })
+                .HasDatabaseName("IX_RequestAuditLogs_RequestId_Timestamp");
+            entity.HasIndex(e => e.UserId)
+                .HasDatabaseName("IX_RequestAuditLogs_UserId");
+            entity.HasIndex(e => e.Action)
+                .HasDatabaseName("IX_RequestAuditLogs_Action");
+            entity.Property(e => e.Details).HasColumnType("text");
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+
+            entity.HasOne(e => e.Request)
+                .WithMany()
+                .HasForeignKey(e => e.RequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<Folder>()
             .HasOne(f => f.Parent)

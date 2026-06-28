@@ -1,3 +1,4 @@
+using ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -6,7 +7,7 @@ namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class ResponsesController(IResponseService responseService, ILogger<ResponsesController> logger) : ControllerBase
+public class ResponsesController(IResponseService responseService, IRequestAuditService requestAuditService, ILogger<ResponsesController> logger) : ControllerBase
 {
 
     [HttpGet("{id}")]
@@ -55,6 +56,10 @@ public class ResponsesController(IResponseService responseService, ILogger<Respo
         logger.LogInformation("Creating new response for request: {RequestId}", response?.RequestId);
         ArgumentNullException.ThrowIfNull(response);
         var result = await responseService.CreateAsync(response);
+        if (!result.IsError)
+        {
+            await requestAuditService.LogAsync(response.RequestId, RequestAuditAction.Responded);
+        }
         return result.ToActionResult();
     }
 

@@ -8,6 +8,7 @@ public class Attachment : Entity<Guid>, IAuditableEntity
     public required string SafeName { get; set; }
     public required string Extension { get; set; }
     public required string Path { get; set; }
+    public long Size { get; set; }
 
     // Navigation properties
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = new List<RequestAttachment>();
@@ -42,6 +43,7 @@ public class AttachmentDto
     public required string SafeName { get; set; }
     public required string Extension { get; set; }
     public required string Path { get; set; }
+    public long Size { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }
@@ -54,6 +56,7 @@ public class CreateAttachmentDto
     public required string SafeName { get; set; }
     public required string Extension { get; set; }
     public required string Path { get; set; }
+    public long Size { get; set; }
 }
 
 public class UpdateAttachmentDto

@@ -59,6 +59,7 @@ public interface IUnitOfWork
     IRepositoryBase<ArchiveAuditLog, Guid> ArchiveAuditLogs { get; }
     IRepositoryBase<ArchiveConfig, Guid> ArchiveConfigs { get; }
     IRepositoryBase<FolderIcon, Guid> FolderIcons { get; }
+    IRepositoryBase<RequestAuditLog, Guid> RequestAuditLogs { get; }
 
     Task<int> SaveChangesAsync();
     //Task<int> GetNextRequestNumberAsync(Guid departmentId);

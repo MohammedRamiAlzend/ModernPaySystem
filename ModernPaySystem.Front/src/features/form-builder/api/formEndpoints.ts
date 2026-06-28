@@ -301,6 +301,70 @@ export const formEndpoints = {
         return response.data;
     },
 
+    getTransactionDashboard: async (): Promise<{ data: any }> => {
+        const response = await api.get('/Reports/dashboard');
+        return response.data;
+    },
+
+    getTransactionDailyReport: async (date?: string | null): Promise<{ data: any }> => {
+        const params = date ? `?date=${date}` : '';
+        const response = await api.get(`/Reports/daily${params}`);
+        return response.data;
+    },
+
+    getTransactionWeeklyReport: async (weekStart?: string | null): Promise<{ data: any }> => {
+        const params = weekStart ? `?weekStart=${weekStart}` : '';
+        const response = await api.get(`/Reports/weekly${params}`);
+        return response.data;
+    },
+
+    getTransactionMonthlyReport: async (year?: number | null, month?: number | null): Promise<{ data: any }> => {
+        const params = new URLSearchParams();
+        if (year) params.append('year', String(year));
+        if (month) params.append('month', String(month));
+        const query = params.toString();
+        const response = await api.get(`/Reports/monthly${query ? `?${query}` : ''}`);
+        return response.data;
+    },
+
+    getTransactionUserActivity: async (fromDate?: string | null, toDate?: string | null): Promise<{ data: any }> => {
+        const params = new URLSearchParams();
+        if (fromDate) params.append('fromDate', fromDate);
+        if (toDate) params.append('toDate', toDate);
+        const query = params.toString();
+        const response = await api.get(`/Reports/user-activity${query ? `?${query}` : ''}`);
+        return response.data;
+    },
+
+    getTransactionActiveUsers: async (fromDate?: string | null, toDate?: string | null): Promise<{ data: any }> => {
+        const params = new URLSearchParams();
+        if (fromDate) params.append('fromDate', fromDate);
+        if (toDate) params.append('toDate', toDate);
+        const query = params.toString();
+        const response = await api.get(`/Reports/active-users${query ? `?${query}` : ''}`);
+        return response.data;
+    },
+
+    getTransactionStorageReport: async (): Promise<{ data: any }> => {
+        const response = await api.get('/Reports/storage');
+        return response.data;
+    },
+
+    getTransactionChartsData: async (fromDate?: string | null, toDate?: string | null): Promise<{ data: any }> => {
+        const params = new URLSearchParams();
+        if (fromDate) params.append('fromDate', fromDate);
+        if (toDate) params.append('toDate', toDate);
+        const query = params.toString();
+        const response = await api.get(`/Reports/charts${query ? `?${query}` : ''}`);
+        return response.data;
+    },
+
+    getTransactionDailyWork: async (date?: string | null): Promise<{ data: any }> => {
+        const params = date ? `?date=${date}` : '';
+        const response = await api.get(`/Reports/daily-work${params}`);
+        return response.data;
+    },
+
     getRequestsPaged: async (filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<TemplateRequest> }> => {
         const response = await api.post('/Requests/paged', filterDto);
         return response.data;
@@ -591,8 +655,7 @@ export const useRequestsReport = (pageNumber: number, pageSize: number, startDat
         queryKey: queryKeys.form.list({ type: 'report-requests', page: pageNumber, pageSize, startDate, endDate, forCurrentDepartment }),
         queryFn: async () => {
             const res = await formEndpoints.getRequestsReport(pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
-            const payload = (res as any).data || res;
-            return payload?.value || payload;
+            return (res as any).data ?? null;
         },
         enabled: enabled && pageNumber > 0,
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
@@ -604,10 +667,110 @@ export const useResponsesReport = (pageNumber: number, pageSize: number, startDa
         queryKey: queryKeys.form.list({ type: 'report-responses', page: pageNumber, pageSize, startDate, endDate, forCurrentDepartment }),
         queryFn: async () => {
             const res = await formEndpoints.getResponsesReport(pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
-            const payload = (res as any).data || res;
-            return payload?.value || payload;
+            return (res as any).data ?? null;
         },
         enabled: enabled && pageNumber > 0,
         ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
+    });
+};
+
+// Transaction Report Hooks
+export const useTransactionDashboard = (enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.dashboard,
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionDashboard();
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionDailyReport = (date?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.daily(date),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionDailyReport(date ?? undefined);
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionWeeklyReport = (weekStart?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.weekly(weekStart),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionWeeklyReport(weekStart ?? undefined);
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionMonthlyReport = (year?: number | null, month?: number | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.monthly(year, month),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionMonthlyReport(year ?? undefined, month ?? undefined);
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionUserActivityReport = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.userActivity(fromDate, toDate),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionUserActivity(fromDate ?? undefined, toDate ?? undefined);
+            console.log('[UserActivity] res:', res, 'type:', typeof res, 'isArray:', Array.isArray(res), 'data:', (res as any).data);
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionActiveUsersReport = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.activeUsers(fromDate, toDate),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionActiveUsers(fromDate ?? undefined, toDate ?? undefined);
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionStorageReport = (enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.storage,
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionStorageReport();
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionChartsData = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.charts(fromDate, toDate),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionChartsData(fromDate ?? undefined, toDate ?? undefined);
+            return (res as any).data ?? null;
+        },
+        enabled,
+    });
+};
+
+export const useTransactionDailyWorkReport = (date?: string | null, enabled = true) => {
+    return useQuery({
+        queryKey: queryKeys.transactionReports.dailyWork(date),
+        queryFn: async () => {
+            const res = await formEndpoints.getTransactionDailyWork(date ?? undefined);
+            return (res as any).data ?? null;
+        },
+        enabled,
     });
 };

@@ -43,7 +43,8 @@ public class WebAttachmentService(
             FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
-            Path = fileMetadata.FilePath
+            Path = fileMetadata.FilePath,
+            Size = fileMetadata.FileSize
         };
 
         // Save the attachment to the database
@@ -111,7 +112,8 @@ public class WebAttachmentService(
             FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
-            Path = fileMetadata.FilePath
+            Path = fileMetadata.FilePath,
+            Size = fileMetadata.FileSize
         };
 
         // Save the attachment to the database
@@ -179,7 +181,8 @@ public class WebAttachmentService(
             FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
-            Path = fileMetadata.FilePath
+            Path = fileMetadata.FilePath,
+            Size = fileMetadata.FileSize
         };
 
         // Save the attachment to the database
