@@ -172,7 +172,7 @@ export function useArchivingFolders() {
                     }
                     await loadFolders();
                 } catch (error: any) {
-                    console.error('Failed to delete folder', error);
+                    // console.error('Failed to delete folder', error);
                     const errMsg = error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription || error.response?.data?.message || error.message || 'تعذر إتمام عملية الحذف. يرجى التحقق من محتويات المجلد.';
                     showStatus({
                         type: 'error',
