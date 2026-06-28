@@ -124,10 +124,39 @@ export function useArchivingFolders() {
         }
     };
 
-    const handleDeleteFolder = (folder: Folder) => {
+    const handleDeleteFolder = async (folder: Folder) => {
+        if (folder.folderDtos && folder.folderDtos.length > 0) {
+            showStatus({
+                type: 'error',
+                title: 'لا يمكن حذف المجلد',
+                message: 'لا يمكن حذف المجلد لأنه يحتوي على مجلدات فرعية.'
+            });
+            return;
+        }
+
+        try {
+            const recordsResult = await archivingService.getArchiveRecordsByFolder(folder.id, 1, 1);
+            if (recordsResult.totalItems > 0) {
+                showStatus({
+                    type: 'error',
+                    title: 'لا يمكن حذف المجلد',
+                    message: 'لا يمكن حذف المجلد لأنه يحتوي على مستندات مؤرشفة.'
+                });
+                return;
+            }
+        } catch (error) {
+            console.error('Failed to check folder contents', error);
+            showStatus({
+                type: 'error',
+                title: 'خطأ',
+                message: 'فشل التحقق من محتويات المجلد قبل الحذف.'
+            });
+            return;
+        }
+
         showConfirm({
             title: 'حذف المجلد',
-            message: `هل أنت متأكد من حذف المجلد "${folder.name}" وجميع محتوياته؟ لا يمكن التراجع عن هذا الإجراء.`,
+            message: `هل أنت متأكد من حذف المجلد "${folder.name}"؟ لا يمكن التراجع عن هذا الإجراء.`,
             variant: 'destructive',
             confirmLabel: 'حذف المجلد',
             onConfirm: async () => {
@@ -136,7 +165,7 @@ export function useArchivingFolders() {
                     showStatus({
                         type: 'success',
                         title: 'تم حذف المجلد',
-                        message: 'تم حذف المجلد وكل محتوياته بنجاح.'
+                        message: 'تم حذف المجلد بنجاح.'
                     });
                     if (currentFolderId && (currentFolderId === folder.id || breadcrumbs.some(c => c.id === folder.id))) {
                         setCurrentFolderId(null);

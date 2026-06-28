@@ -43,6 +43,20 @@ public class ArchiveDeletionWorkflowService(
                 return target.Errors;
             }
 
+            if (dto.TargetType == ArchiveDeletionTargetType.Folder)
+            {
+                var hasSubFolders = await unitOfWork.Context.Folders
+                    .AnyAsync(f => f.ParentId == dto.TargetId && !f.IsDeleted);
+
+                var hasRecords = await unitOfWork.Context.ArchiveRecords
+                    .AnyAsync(r => r.FolderId == dto.TargetId && !r.IsDeleted);
+
+                if (hasSubFolders || hasRecords)
+                {
+                    return ApplicationErrors.FolderHasChildren;
+                }
+            }
+
             if (target.Value.departmentId is null)
             {
                 return dto.TargetType == ArchiveDeletionTargetType.Folder
@@ -377,6 +391,17 @@ public class ArchiveDeletionWorkflowService(
             if (folderId == Guid.Empty)
             {
                 return ApplicationErrors.InvalidInput;
+            }
+
+            var hasSubFolders = await unitOfWork.Context.Folders
+                .AnyAsync(f => f.ParentId == folderId && !f.IsDeleted);
+
+            var hasRecords = await unitOfWork.Context.ArchiveRecords
+                .AnyAsync(r => r.FolderId == folderId && !r.IsDeleted);
+
+            if (hasSubFolders || hasRecords)
+            {
+                return ApplicationErrors.FolderHasChildren;
             }
 
             var departmentResult = await archiveAuthorizationService.ResolveFolderDepartmentIdAsync(folderId);
