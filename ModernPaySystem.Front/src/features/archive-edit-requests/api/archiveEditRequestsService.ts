@@ -12,6 +12,9 @@ export const archiveEditRequestsService = {
         const formData = new FormData();
         formData.append('ArchiveRecordId', dto.archiveRecordId);
         formData.append('Justification', dto.justification);
+        if (dto.requestedRecordName) {
+            formData.append('RequestedRecordName', dto.requestedRecordName);
+        }
 
         dto.requestedChanges.forEach((item, index) => {
             formData.append(`RequestedChanges[${index}].Key`, item.key);

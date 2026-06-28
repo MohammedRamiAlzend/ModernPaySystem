@@ -229,6 +229,14 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
             if (recordModalMode === 'create') {
                 const recordId = qrCoverGuid || v4();
                 
+                const firstInputVal = Object.values(templateInputs)[0];
+                const templateName = selectedTemplateId 
+                    ? (dynamicTemplates.find(t => t.id === selectedTemplateId)?.templateFormName || 'مستند') 
+                    : 'مستند';
+                const recordTitle = firstInputVal 
+                    ? `${templateName} (${firstInputVal})`
+                    : `مستند أرشيفي (${recordId.substring(0, 8)})`;
+
                 // Only send the cover file (qrFile) initially
                 const initialFiles: File[] = [];
                 if (qrFile) {
@@ -237,6 +245,7 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
 
                 await archivingService.createArchiveRecord({
                     id: recordId,
+                    name: recordTitle,
                     folderId: currentFolderId,
                     formId: selectedTemplateId || null,
                     files: initialFiles,
@@ -277,13 +286,6 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
                     await storeFiles(uploadItems.map(item => ({ id: item.id, file: item.file })));
 
                     const createSession = useUploadStore.getState().createSession;
-                    const firstInputVal = Object.values(templateInputs)[0];
-                    const templateName = selectedTemplateId 
-                        ? (dynamicTemplates.find(t => t.id === selectedTemplateId)?.templateFormName || 'مستند') 
-                        : 'مستند';
-                    const recordTitle = firstInputVal 
-                        ? `${templateName} (${firstInputVal})`
-                        : `مستند أرشيفي (${recordId.substring(0, 8)})`;
 
                     // Remove file objects from metadata items saved in Zustand/localStorage
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -236,6 +236,8 @@ public class EditArchiveRequest : Entity<Guid>, IAuditableEntity
 
     public string RequestedChangesJson { get; set; } = string.Empty;
 
+    public string? RequestedRecordName { get; set; }
+
     public string? RequestedFileDeletionIdsJson { get; set; }
 
     public string OriginalSnapshotJson { get; set; } = string.Empty;
@@ -262,6 +264,7 @@ public class CreateEditArchiveRequestDto
 {
     public Guid ArchiveRecordId { get; set; }
     public string Justification { get; set; } = string.Empty;
+    public string? RequestedRecordName { get; set; }
     public List<ArchiveRecordFormInputValueDto> RequestedChanges { get; set; } = [];
     public IFormFileCollection? Files { get; set; }
     public List<Guid>? FileIdsToDelete { get; set; }
@@ -291,6 +294,7 @@ public class EditArchiveRequestDto
     public string? ApproverName { get; set; }
     public string Justification { get; set; } = string.Empty;
     public List<ArchiveRecordFormInputValueDto> RequestedChanges { get; set; } = [];
+    public string? RequestedRecordName { get; set; }
     public string? OriginalSnapshotJson { get; set; }
     public string? RejectionReason { get; set; }
     public string? ApprovalNotes { get; set; }
@@ -325,6 +329,7 @@ public class EditArchiveRequestDto
             ApproverName = entity.Approver?.UserName,
             Justification = entity.Justification,
             RequestedChanges = changes,
+            RequestedRecordName = entity.RequestedRecordName,
             OriginalSnapshotJson = entity.OriginalSnapshotJson,
             RejectionReason = entity.RejectionReason,
             ApprovalNotes = entity.ApprovalNotes,

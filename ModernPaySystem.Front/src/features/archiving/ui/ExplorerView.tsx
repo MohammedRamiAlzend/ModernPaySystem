@@ -282,7 +282,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                     <FileText className="h-6 w-6 fill-sky-500/20" />
                                 </div>
                                 <span className="text-xs font-bold text-foreground line-clamp-1 w-full truncate">
-                                    {record.id.slice(0, 8)}
+                                    {record.name || record.id.slice(0, 8)}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground mt-1 block">
                                     {record.physicalFiles?.length || 0} ملف

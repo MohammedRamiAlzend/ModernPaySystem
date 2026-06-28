@@ -62,6 +62,7 @@ export interface ArchiveRecordTemplateValues {
 
 export interface ArchiveRecord {
     id: string;
+    name?: string | null;
     folderId: string;
     formId: string | null;
     archiveRecordTemplateValues?: ArchiveRecordTemplateValues | null;
@@ -94,6 +95,7 @@ export interface CreateFolderDto {
 
 export interface CreateArchiveRecordDto {
     id?: string;
+    name?: string;
     folderId: string;
     formId: string | null;
     files: File[];

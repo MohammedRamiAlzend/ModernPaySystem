@@ -124,7 +124,7 @@ export const ListView: React.FC<ListViewProps> = ({
                                                 <div className="p-2 rounded-xl bg-sky-500/10 text-sky-500">
                                                     <FileText className="h-4 w-4 fill-sky-500/10" />
                                                 </div>
-                                                <span className="font-bold text-foreground">{record.id.slice(0, 8)}</span>
+                                                <span className="font-bold text-foreground">{record.name || record.id.slice(0, 8)}</span>
                                             </div>
                                         </td>
                                         <td className="p-4 text-muted-foreground font-semibold text-xs">

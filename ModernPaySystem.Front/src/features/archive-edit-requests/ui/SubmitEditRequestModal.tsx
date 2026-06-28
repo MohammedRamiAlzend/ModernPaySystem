@@ -19,6 +19,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
     const submitMutation = useSubmitEditRequest();
 
     const [justification, setJustification] = useState('');
+    const [requestedRecordName, setRequestedRecordName] = useState('');
     const [fields, setFields] = useState<Record<string, string>>({});
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [fileIdsToRemove, setFileIdsToRemove] = useState<string[]>([]);
@@ -31,6 +32,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
         setPrevIsOpen(isOpen);
         setPrevRecordId(record ? record.id : null);
         setJustification('');
+        setRequestedRecordName(record?.name || '');
         setSelectedFiles([]);
         setFileIdsToRemove([]);
 
@@ -103,6 +105,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
             {
                 archiveRecordId: record.id,
                 justification: justification.trim(),
+                requestedRecordName: requestedRecordName || undefined,
                 requestedChanges,
                 files: selectedFiles,
                 fileIdsToDelete: fileIdsToRemove
@@ -140,13 +143,24 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                             تقديم طلب تعديل مستند مؤرشف
                         </h2>
                         <p className="text-xs text-muted-foreground font-medium">
-                            رقم المستند: {record.id.slice(0, 8)}
+                            {record.name || `رقم المستند: ${record.id.slice(0, 8)}`}
                         </p>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5 flex-1 overflow-hidden">
                     <div className="flex-1 overflow-y-auto flex flex-col gap-5 pr-1.5 pl-0.5">
+
+                        {/* Document Name */}
+                        <div className="flex flex-col gap-2">
+                            <Label className="text-xs font-semibold text-muted-foreground">اسم المستند</Label>
+                            <Input
+                                value={requestedRecordName}
+                                onChange={(e) => setRequestedRecordName(e.target.value)}
+                                placeholder="أدخل اسم المستند..."
+                                className="rounded-lg h-9 bg-background"
+                            />
+                        </div>
 
                         {/* Cause of edit */}
                         <div className="flex flex-col gap-2">

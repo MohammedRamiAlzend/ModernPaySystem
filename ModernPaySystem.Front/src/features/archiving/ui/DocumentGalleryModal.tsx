@@ -40,7 +40,7 @@ export function DocumentGalleryModal({ record, dynamicTemplates, onClose, onFile
                     </button>
                     <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary" />
-                        <span>تفاصيل المستند: {record.id.slice(0, 8)}</span>
+                        <span>تفاصيل المستند: {record.name || record.id.slice(0, 8)}</span>
                     </h2>
                 </div>
                 <div className="flex-1 overflow-hidden p-6">

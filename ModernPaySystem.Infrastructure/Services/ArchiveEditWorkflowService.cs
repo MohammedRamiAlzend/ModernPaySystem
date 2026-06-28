@@ -87,6 +87,7 @@ public class ArchiveEditWorkflowService(
             // Original Snapshot JSON
             var originalData = new
             {
+                Name = record.Name,
                 FormId = record.FormId,
                 Content = record.ArchiveRecordTemplateValuesId?.ArchiveRecordFormInputValues
                     .Select(x => new { x.Key, x.Value }).ToList() ?? []
@@ -124,6 +125,7 @@ public class ArchiveEditWorkflowService(
                 Status = EditArchiveRequestStatus.Pending,
                 Justification = dto.Justification,
                 RequestedChangesJson = requestedChangesJson,
+                RequestedRecordName = dto.RequestedRecordName,
                 RequestedFileDeletionIdsJson = fileDeletionIdsJson,
                 OriginalSnapshotJson = originalSnapshotJson,
                 RowVersion = Guid.NewGuid().ToByteArray()
@@ -385,6 +387,11 @@ public class ArchiveEditWorkflowService(
                         }
                     }
 
+                }
+
+                if (record != null && !string.IsNullOrWhiteSpace(requestEntity.RequestedRecordName))
+                {
+                    record.Name = requestEntity.RequestedRecordName;
                 }
 
                 var attachedFiles = await unitOfWork.PhysicalFiles.GetAllAsync(x => x.EditArchiveRequestId == requestId);

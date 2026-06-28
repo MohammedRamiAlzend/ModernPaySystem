@@ -5,6 +5,7 @@ namespace ModernPaySystem.Domain.Entities.Archiving;
 
 public class ArchiveRecord : Entity<Guid>, IAuditableEntity
 {
+    public string? Name { get; set; }
     public Guid FolderId { get; set; }
     public Folder Folder { get; set; } = default!;
     public Guid? DepartmentId { get; set; }
@@ -34,6 +35,7 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
         return new ArchiveRecordDto
         {
             Id = Id,
+            Name = Name,
             FolderId = FolderId,
             DepartmentId = DepartmentId,
             FormId = FormId,
@@ -55,6 +57,7 @@ public class ArchiveRecord : Entity<Guid>, IAuditableEntity
 public class ArchiveRecordDto
 {
     public Guid Id { get; set; }
+    public string? Name { get; set; }
     public Guid FolderId { get; set; }
     public Guid? DepartmentId { get; set; }
     public Guid? FormId { get; set; }
@@ -92,6 +95,7 @@ public class ArchiveRecordFormInputValueDto
 public class CreateArchiveRecordDto
 {
     public Guid? Id { get; set; }
+    public string? Name { get; set; }
     public Guid FolderId { get; set; }
     public Guid? FormId { get; set; } = null;
     public Guid? DepartmentId { get; set; }
@@ -106,6 +110,7 @@ public class MoveArchiveRecordDto
 
 public class UpdateArchiveRecordDto
 {
+    public string? Name { get; set; }
     public Guid FolderId { get; set; }
     public Guid? FormId { get; set; }
     public List<ArchiveRecordFormInputValueDto> Content { get; set; } = [];

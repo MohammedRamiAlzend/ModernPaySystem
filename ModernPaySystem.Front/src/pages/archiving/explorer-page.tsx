@@ -222,9 +222,11 @@ export default function ExplorerPage() {
     );
 
     const filteredRecords = currentFolder
-        ? records.filter(r =>
-            searchTerm.trim() === '' || r.id.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        ? records.filter(r => {
+            if (searchTerm.trim() === '') return true;
+            const term = searchTerm.toLowerCase();
+            return r.id.toLowerCase().includes(term) || (r.name?.toLowerCase().includes(term) ?? false);
+        })
         : [];
 
     return (

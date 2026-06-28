@@ -106,7 +106,7 @@ export const MoveRecordModal: React.FC<MoveRecordModalProps> = ({
                         <FileText className="w-5 h-5 text-sky-500 shrink-0" />
                         <div className="flex flex-col text-right">
                             <span className="text-sm font-bold text-foreground">
-                                {record.id.slice(0, 8)}
+                                {record.name || record.id.slice(0, 8)}
                             </span>
                             <span className="text-[10px] text-muted-foreground">
                                 {record.physicalFiles?.length || 0} ملف

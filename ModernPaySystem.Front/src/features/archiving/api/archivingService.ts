@@ -88,6 +88,7 @@ export const archivingService = {
     createArchiveRecord: async (
         data: {
             id?: string;
+            name?: string;
             folderId: string;
             formId: string | null;
             files: File[];
@@ -99,6 +100,9 @@ export const archivingService = {
         
         if (data.id) {
             formData.append('Id', data.id);
+        }
+        if (data.name) {
+            formData.append('Name', data.name);
         }
         formData.append('FolderId', data.folderId);
         if (data.formId) {

@@ -18,6 +18,7 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
     if (!isOpen || !request) return null;
 
     let originalData: { 
+        Name?: string | null;
         FormId: string | null; 
         Content: Array<{ key: string; value: string | null }>;
         PhysicalFiles: Array<{ id: string; fileName: string }>;
@@ -34,6 +35,7 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                 : [];
 
             originalData = {
+                Name: parsed.Name || parsed.name || null,
                 FormId: parsed.FormId || parsed.formId || null,
                 Content: content,
                 PhysicalFiles: parsed.PhysicalFiles || parsed.physicalFiles || []
@@ -168,6 +170,41 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                             {request.justification}
                         </p>
                     </div>
+
+                    {/* Name Comparison */}
+                    {request.requestedRecordName && originalData?.Name !== undefined && (
+                        <div className="flex flex-col gap-2 border-t border-border pt-4">
+                            <span className="text-xs font-bold text-foreground">تعديل اسم المستند:</span>
+                            <div className="border border-border rounded-2xl overflow-hidden bg-background">
+                                <table className="w-full text-xs text-right">
+                                    <thead className="bg-muted/30 text-muted-foreground font-bold border-b border-border">
+                                        <tr>
+                                            <th className="px-4 py-3">الحقل</th>
+                                            <th className="px-4 py-3 text-center">القيمة الحالية</th>
+                                            <th className="px-4 py-3 text-center">القيمة المقترحة</th>
+                                            <th className="px-4 py-3 text-center">حالة التغيير</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border font-medium">
+                                        <tr className="hover:bg-muted/10 transition-colors bg-success/5">
+                                            <td className="px-4 py-3 font-bold text-foreground">اسم المستند</td>
+                                            <td className="px-4 py-3 text-center text-muted-foreground line-through bg-destructive/5 font-semibold">
+                                                {originalData.Name || '(فارغ)'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center text-success-foreground bg-success/10 font-bold">
+                                                {request.requestedRecordName || '(فارغ)'}
+                                            </td>
+                                            <td className="px-4 py-3 text-center font-bold">
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-success/20 text-success-foreground text-[10px]">
+                                                    تم التعديل
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Diff Comparison Table */}
                     <div className="flex flex-col gap-2">

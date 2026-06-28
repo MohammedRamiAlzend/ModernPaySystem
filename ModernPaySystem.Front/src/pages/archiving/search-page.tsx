@@ -304,7 +304,7 @@ export function ArchiveSearchPage() {
                                     searchResults.items.map((record) => (
                                         <tr key={record.id} className="hover:bg-muted/10 transition-colors group">
                                             <td className="px-6 py-4 text-sm font-bold text-foreground">
-                                                {record.id.slice(0, 8)}
+                                                {record.name || record.id.slice(0, 8)}
                                             </td>
                                             <td className="px-6 py-4 text-xs font-semibold text-muted-foreground">
                                                 {dynamicTemplates.find(t => t.id === record.formId)?.templateFormName || 'مستند عام'}

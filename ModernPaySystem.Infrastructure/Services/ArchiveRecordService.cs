@@ -371,6 +371,22 @@ public class ArchiveRecordService(
                 FormId = formResolutionResult?.Value?.Id
             };
 
+            record.Name = dto.Name;
+            if (string.IsNullOrWhiteSpace(record.Name))
+            {
+                if (formResolutionResult?.Value != null && dto.Content.Count > 0)
+                {
+                    var firstVal = dto.Content.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.Value))?.Value;
+                    record.Name = firstVal != null
+                        ? $"{formResolutionResult.Value.FormName} ({firstVal})"
+                        : formResolutionResult.Value.FormName;
+                }
+                else
+                {
+                    record.Name = $"مستند أرشيفي ({record.Id.ToString()[..8]})";
+                }
+            }
+
             if (dto.FormId is not null)
             {
                 var buildTemplateValuesResult = BuildTemplateValues(record, dto);
@@ -622,6 +638,8 @@ public class ArchiveRecordService(
 
                 record.FolderId = dto.FolderId;
                 record.FormId = dto.FormId;
+                if (!string.IsNullOrWhiteSpace(dto.Name))
+                    record.Name = dto.Name;
 
                 if (record.ArchiveRecordTemplateValuesId == null)
                 {

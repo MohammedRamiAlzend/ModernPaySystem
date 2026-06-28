@@ -17,6 +17,7 @@ export interface EditArchiveRequest {
     approverName?: string;
     justification: string;
     requestedChanges: ArchiveRecordFormInputValue[];
+    requestedRecordName?: string;
     originalSnapshotJson?: string;
     rejectionReason?: string;
     approvalNotes?: string;
@@ -33,6 +34,7 @@ export interface EditArchiveRequest {
 export interface CreateEditArchiveRequestDto {
     archiveRecordId: string;
     justification: string;
+    requestedRecordName?: string;
     requestedChanges: ArchiveRecordFormInputValue[];
     files: File[];
     fileIdsToDelete?: string[];
