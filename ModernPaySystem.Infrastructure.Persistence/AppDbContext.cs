@@ -393,6 +393,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasKey(e => e.Id);
             entity.Property(e => e.DefaultPath).HasMaxLength(500).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.AllowedFileExtensions).HasMaxLength(2000);
             entity.HasIndex(e => e.IsActive);
         });
 

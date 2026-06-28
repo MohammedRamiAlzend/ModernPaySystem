@@ -82,7 +82,8 @@ public class DefaultDataSeeder : IEntitySeeder
                 Id = Guid.NewGuid(),
                 DefaultPath = "Uploads",
                 Description = "Default storage path for archive records",
-                IsActive = true
+                IsActive = true,
+                AllowedFileExtensions = ".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.tif,.zip,.rar,.7z"
             };
             await context.ArchiveConfigs.AddAsync(defaultConfig);
             await context.SaveChangesAsync();

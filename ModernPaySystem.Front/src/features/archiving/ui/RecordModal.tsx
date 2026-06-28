@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useUIStore } from '@/app/store/uiStore';
 import { DynamicFormTemplate, PhysicalFile } from '@/features/archiving/model/types';
 import { ImageMeta, ScannerModal } from '@/features/document-scanner';
 import { Button } from '@/shared/ui/button';
@@ -29,6 +30,7 @@ interface RecordModalProps {
     uploadProgress: number;
     onSubmit: (e: React.FormEvent) => void;
     onClose: () => void;
+    allowedExtensions?: string[];
 }
 
 export function RecordModal({
@@ -51,16 +53,41 @@ export function RecordModal({
     isSaving,
     uploadProgress,
     onSubmit,
-    onClose
+    onClose,
+    allowedExtensions
 }: RecordModalProps) {
+    const { showStatus } = useUIStore();
     const [showScannerModal, setShowScannerModal] = useState(false);
     const [scannerFiles, setScannerFiles] = useState<ImageMeta[]>([]);
+
+    const filterAllowedFiles = useCallback((files: File[]): File[] => {
+        if (!allowedExtensions || allowedExtensions.length === 0) return files;
+        const allowed: File[] = [];
+        const rejected: string[] = [];
+        for (const file of files) {
+            const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+            if (allowedExtensions.some(ae => ae.toLowerCase() === ext)) {
+                allowed.push(file);
+            } else {
+                rejected.push(file.name);
+            }
+        }
+        if (rejected.length > 0) {
+            showStatus({
+                type: 'error',
+                title: 'ملفات مرفوضة',
+                message: `الملفات التالية غير مسموح بها: ${rejected.join(', ')}`
+            });
+        }
+        return allowed;
+    }, [allowedExtensions, showStatus]);
 
     if (!isOpen) return null;
 
     const handleApplyScanner = (ocrText: string, files: ImageMeta[]) => {
         const fileObjects = files.map(f => f.file);
-        onAddSelectedFiles(fileObjects);
+        const filteredFiles = filterAllowedFiles(fileObjects);
+        onAddSelectedFiles(filteredFiles);
 
         // Fills the first matching textarea/text field in the form with OCR text
         const template = dynamicTemplates.find(t => t.id === selectedTemplateId);
@@ -207,14 +234,20 @@ export function RecordModal({
                                         type="file"
                                         multiple
                                         className="absolute inset-0 opacity-0 cursor-pointer"
+                                        accept={allowedExtensions?.join(',')}
                                         onChange={(e) => {
                                             const files = Array.from(e.target.files || []);
-                                            onAddSelectedFiles(files);
+                                            const filtered = filterAllowedFiles(files);
+                                            onAddSelectedFiles(filtered);
                                         }}
                                     />
                                     <Upload className="h-8 w-8 text-muted-foreground" />
                                     <span className="text-xs font-bold text-foreground">اسحب وأفلت الملفات هنا أو انقر للتصفح</span>
-                                    <span className="text-[10px] text-muted-foreground">صيغ الملفات المدعومة: PDF, JPG, PNG, DOCX, XLSX ...</span>
+                                    <span className="text-[10px] text-muted-foreground">
+                                        {allowedExtensions && allowedExtensions.length > 0
+                                            ? `الصيغ المدعومة: ${allowedExtensions.map(e => e.replace('.', '').toUpperCase()).join(', ')}`
+                                            : 'صيغ الملفات المدعومة: PDF, JPG, PNG, DOCX, XLSX ...'}
+                                    </span>
                                 </div>
 
                                 {selectedFiles.length > 0 && (

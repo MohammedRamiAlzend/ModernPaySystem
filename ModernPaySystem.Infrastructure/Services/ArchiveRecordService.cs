@@ -334,7 +334,8 @@ public class ArchiveRecordService(
             var requestValidationResult = ValidateCreateRequest(dto);
             if (requestValidationResult.IsError) return requestValidationResult.Errors;
 
-            var validationResult = ValidateFiles(dto.Files);
+            var allowedExtensions = await GetAllowedExtensionsAsync();
+            var validationResult = ValidateFiles(dto.Files, allowedExtensions);
             if (validationResult.IsError) return validationResult.Errors;
 
             var userId = httpContextServiceManager.GetCurrentUserId();
@@ -565,7 +566,8 @@ public class ArchiveRecordService(
 
             dto.Files ??= default!;
 
-            var validationResult = ValidateFiles(dto.Files);
+            var allowedExtensions = await GetAllowedExtensionsAsync();
+            var validationResult = ValidateFiles(dto.Files, allowedExtensions);
             if (validationResult.IsError)
             {
                 return validationResult.Errors;
@@ -873,7 +875,8 @@ public class ArchiveRecordService(
             if (!access.Value)
                 return ApplicationErrors.ArchiveRecordAccessDenied;
 
-            var validationResult = ValidateFiles(files);
+            var allowedExtensions = await GetAllowedExtensionsAsync();
+            var validationResult = ValidateFiles(files, allowedExtensions);
             if (validationResult.IsError)
             {
                 return validationResult.Errors;
@@ -1303,7 +1306,7 @@ public class ArchiveRecordService(
         return Result.Success;
     }
 
-    private Result<Success> ValidateFiles(IFormFileCollection? files)
+    private Result<Success> ValidateFiles(IFormFileCollection? files, string[] allowedExtensions)
     {
         if (files == null)
         {
@@ -1327,7 +1330,7 @@ public class ArchiveRecordService(
             //}
 
             var extension = Path.GetExtension(file.FileName);
-            if (!filesManagerService.IsValidFileExtension(extension, UploadSettings.AllowedExtensions))
+            if (!filesManagerService.IsValidFileExtension(extension, allowedExtensions))
             {
                 logger.LogWarning("File validation failed: File extension is not allowed. Name: {FileName}, Extension: {Extension}", file.FileName, extension);
                 rejectedFileNames.Add(file.FileName);
@@ -1340,6 +1343,24 @@ public class ArchiveRecordService(
         }
 
         return Result.Success;
+    }
+
+    private async Task<string[]> GetAllowedExtensionsAsync()
+    {
+        var config = await unitOfWork.Context.ArchiveConfigs
+            .AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderBy(x => x.Id)
+            .FirstOrDefaultAsync();
+
+        if (config != null)
+        {
+            var extensions = config.GetAllowedExtensionsArray();
+            if (extensions.Length > 0)
+                return extensions;
+        }
+
+        return UploadSettings.AllowedExtensions;
     }
 
     private Result<ArchiveRecordTemplateValues> BuildTemplateValues(ArchiveRecord record, CreateArchiveRecordDto dto)

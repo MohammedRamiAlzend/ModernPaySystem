@@ -380,12 +380,14 @@ export interface ArchiveConfigDto {
     defaultPath: string;
     description: string | null;
     isActive: boolean;
+    allowedFileExtensions?: string | null;
 }
 
 export interface UpdateArchiveConfigDto {
     defaultPath?: string;
     description?: string | null;
     isActive?: boolean;
+    allowedFileExtensions?: string | null;
 }
 
 export interface ArchiveAuditLog {

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useArchiveConfig, useLedDepartments } from '@/features/archiving/model/queries';
 import { useUpdateArchiveConfig } from '@/features/archiving/model/mutations';
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/shared/ui/form';
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from '@/shared/ui/form';
 import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 // import { Switch } from '@/shared/ui/switch';
@@ -15,12 +15,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/shared/ui/alert';
 import { AlertCircle, Loader2, Save, Settings2 } from 'lucide-react';
 // import { AlertCircle, Loader2, Save, Settings2, FolderOpen } from 'lucide-react';
 import { FolderPickerModal } from '@/features/archiving/ui/FolderPickerModal';
+import { TagInput } from '@/shared/ui/tag-input';
 
 
 const formSchema = z.object({
     defaultPath: z.string().min(1, 'حقل المسار الافتراضي مطلوب'),
     description: z.string().optional(),
     isActive: z.boolean(),
+    allowedFileExtensions: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -39,6 +41,9 @@ export const ArchiveConfigSettings = () => {
             defaultPath: config?.defaultPath ?? '',
             description: config?.description ?? '',
             isActive: config?.isActive ?? true,
+            allowedFileExtensions: config?.allowedFileExtensions
+                ? config.allowedFileExtensions.split(',').map(s => s.trim()).filter(Boolean)
+                : [],
         },
     });
 
@@ -47,6 +52,7 @@ export const ArchiveConfigSettings = () => {
             defaultPath: values.defaultPath,
             description: values.description || null,
             isActive: values.isActive,
+            allowedFileExtensions: values.allowedFileExtensions?.join(',') || null,
         });
     };
 
@@ -139,6 +145,28 @@ export const ArchiveConfigSettings = () => {
                                             disabled={!isArchiveLeader}
                                         />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="allowedFileExtensions"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>اللواحق المسموح بها للملفات</FormLabel>
+                                    <FormControl>
+                                        <TagInput
+                                            value={field.value ?? []}
+                                            onChange={field.onChange}
+                                            disabled={!isArchiveLeader}
+                                            placeholder="مثال: pdf, docx, jpg"
+                                        />
+                                    </FormControl>
+                                    <FormDescription className="text-xs">
+                                        حدد أنواع الملفات المسموح برفعها (مثال: .pdf, .docx, .jpg)
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}

@@ -57,7 +57,8 @@ public class ArchiveConfigService(
                     Id = Guid.NewGuid(),
                     DefaultPath = dto.DefaultPath,
                     Description = dto.Description,
-                    IsActive = dto.IsActive
+                    IsActive = dto.IsActive,
+                    AllowedFileExtensions = dto.AllowedFileExtensions
                 };
                 var addResult = await unitOfWork.ArchiveConfigs.AddAsync(config);
                 if (addResult.IsError)
@@ -68,6 +69,7 @@ public class ArchiveConfigService(
                 config.DefaultPath = dto.DefaultPath;
                 config.Description = dto.Description;
                 config.IsActive = dto.IsActive;
+                config.AllowedFileExtensions = dto.AllowedFileExtensions;
 
                 var updateResult = await unitOfWork.ArchiveConfigs.UpdateAsync(config);
                 if (updateResult.IsError)

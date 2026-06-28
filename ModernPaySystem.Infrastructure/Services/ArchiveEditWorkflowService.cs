@@ -135,12 +135,21 @@ public class ArchiveEditWorkflowService(
             {
                 var validFiles = dto.Files.Where(f => f != null && f.Length > 0).ToList();
 
+                // Get allowed extensions from config
+                var archiveConfig = await unitOfWork.Context.ArchiveConfigs
+                    .AsNoTracking()
+                    .Where(x => x.IsActive)
+                    .OrderBy(x => x.Id)
+                    .FirstOrDefaultAsync();
+                var configExtensions = archiveConfig?.GetAllowedExtensionsArray();
+                string[]? allowedExtensions = configExtensions is { Length: > 0 } ? configExtensions : null;
+
                 // Validate all file extensions first and collect rejected names
                 var rejectedFileNames = new List<string>();
                 foreach (var file in validFiles)
                 {
                     var extension = Path.GetExtension(file.FileName);
-                    if (!filesManagerService.IsValidFileExtension(extension, null))
+                    if (!filesManagerService.IsValidFileExtension(extension, allowedExtensions))
                     {
                         rejectedFileNames.Add(file.FileName);
                     }

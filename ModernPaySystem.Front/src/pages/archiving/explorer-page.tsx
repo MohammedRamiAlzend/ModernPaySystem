@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Folder, ArchiveRecord } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useArchivingFolders } from '@/features/archiving/hooks/useArchivingFolders';
@@ -19,7 +19,7 @@ import { QRPreviewTemplate } from '@/features/archiving/ui/QRPreviewTemplate';
 import { Button } from '@/shared/ui/button';
 import { Progress } from '@/shared/ui/progress';
 import { useMoveArchiveRecord } from '@/features/archiving/model/mutations';
-import { useLedDepartments } from '@/features/archiving/model/queries';
+import { useLedDepartments, useArchiveConfig } from '@/features/archiving/model/queries';
 import {
     Plus,
     FolderPlus,
@@ -28,6 +28,14 @@ import {
 } from 'lucide-react';
 
 export default function ExplorerPage() {
+    const { data: archiveConfig } = useArchiveConfig();
+
+    const allowedExtensions = useMemo(() =>
+        archiveConfig?.allowedFileExtensions
+            ? archiveConfig.allowedFileExtensions.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+            : undefined,
+        [archiveConfig?.allowedFileExtensions]
+    );
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'explorer' | 'list'>('explorer');
     const [previewingRecord, setPreviewingRecord] = useState<ArchiveRecord | null>(null);
@@ -366,6 +374,7 @@ export default function ExplorerPage() {
                 onRemoveSelectedFile={(index) => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
                 isSaving={isSavingRecord}
                 uploadProgress={uploadProgress}
+                allowedExtensions={allowedExtensions}
             />
 
             {/* 3. Modal: Document Gallery Preview */}

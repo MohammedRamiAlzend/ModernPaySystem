@@ -65,8 +65,8 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
     };
 
     const handleToggleExistingFile = (id: string) => {
-        setFileIdsToRemove(prev => prev.includes(id) 
-            ? prev.filter(x => x !== id) 
+        setFileIdsToRemove(prev => prev.includes(id)
+            ? prev.filter(x => x !== id)
             : [...prev, id]
         );
     };
@@ -117,10 +117,11 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                     onClose();
                 },
                 onError: (err: any) => {
+                    const errMesg = err?.response?.data?.errors && err.response.data.errors[0]?.arabicDescription || err?.response?.data?.errors && err.response.data.errors[0]?.description || "فشل إرسال طلب التعديل. يرجى المحاولة لاحقاً.";
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
-                        message: err?.response?.data?.message || 'فشل إرسال طلب التعديل. يرجى المحاولة لاحقاً.'
+                        message: errMesg
                     });
                 }
             }
