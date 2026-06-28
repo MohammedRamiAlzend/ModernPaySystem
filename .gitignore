@@ -381,3 +381,4 @@ ScannerApp/*
 
 # Server-side diagnostic logs
 helaths/
+files/
