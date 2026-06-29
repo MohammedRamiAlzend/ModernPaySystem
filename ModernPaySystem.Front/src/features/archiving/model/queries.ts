@@ -100,6 +100,7 @@ export const useDailyWorkReport = (date?: string | null, enabled = true) => {
         queryKey: queryKeys.archiving.dailyWork.detail(date),
         queryFn: () => archivingService.getDailyWorkReport(date),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -169,6 +170,7 @@ export const useDepartmentDashboard = (enabled = true) => {
         queryKey: queryKeys.archiving.reports.dashboard(),
         queryFn: () => archivingService.getDepartmentDashboard(),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -177,6 +179,7 @@ export const useDailyReport = (date?: string | null, enabled = true) => {
         queryKey: queryKeys.archiving.reports.daily(date),
         queryFn: () => archivingService.getDailyReport(date),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -185,6 +188,7 @@ export const useWeeklyReport = (weekStart?: string | null, enabled = true) => {
         queryKey: queryKeys.archiving.reports.weekly(weekStart),
         queryFn: () => archivingService.getWeeklyReport(weekStart),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -193,6 +197,7 @@ export const useMonthlyReport = (year?: number | null, month?: number | null, en
         queryKey: queryKeys.archiving.reports.monthly(year, month),
         queryFn: () => archivingService.getMonthlyReport(year, month),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -201,6 +206,7 @@ export const useUserActivityReport = (fromDate?: string | null, toDate?: string 
         queryKey: queryKeys.archiving.reports.userActivity(fromDate, toDate),
         queryFn: () => archivingService.getUserActivityReport(fromDate, toDate),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -209,6 +215,7 @@ export const useActiveUsersReport = (fromDate?: string | null, toDate?: string |
         queryKey: queryKeys.archiving.reports.activeUsers(fromDate, toDate),
         queryFn: () => archivingService.getActiveUsers(fromDate, toDate),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -217,6 +224,7 @@ export const useStorageReport = (enabled = true) => {
         queryKey: queryKeys.archiving.reports.storage(),
         queryFn: () => archivingService.getStorageReport(),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -225,5 +233,6 @@ export const useChartsData = (fromDate?: string | null, toDate?: string | null, 
         queryKey: queryKeys.archiving.reports.charts(fromDate, toDate),
         queryFn: () => archivingService.getChartsData(fromDate, toDate),
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };

@@ -81,14 +81,14 @@ export default function ReportsPage() {
     const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth() + 1);
 
     const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useTransactionDashboard(activeTab === 'dashboard');
-    const { data: dailyReport, isLoading: isLoadingDaily } = useTransactionDailyReport(selectedDate || null, activeTab === 'daily');
-    const { data: weeklyReport, isLoading: isLoadingWeekly } = useTransactionWeeklyReport(weekStart || null, activeTab === 'weekly');
-    const { data: monthlyReport, isLoading: isLoadingMonthly } = useTransactionMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
-    const { data: userActivity, isLoading: isLoadingUserActivity } = useTransactionUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
-    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useTransactionActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
-    const { data: storageReport, isLoading: isLoadingStorage } = useTransactionStorageReport(activeTab === 'storage');
-    const { data: chartsData, isLoading: isLoadingCharts } = useTransactionChartsData(fromDate || null, toDate || null, activeTab === 'charts');
-    const { data: dailyWorkReport, isLoading: isLoadingDailyWork } = useTransactionDailyWorkReport(workDate || null, activeTab === 'daily-work');
+    const { data: dailyReport, isLoading: isLoadingDaily, refetch: refetchDaily } = useTransactionDailyReport(selectedDate || null, activeTab === 'daily');
+    const { data: weeklyReport, isLoading: isLoadingWeekly, refetch: refetchWeekly } = useTransactionWeeklyReport(weekStart || null, activeTab === 'weekly');
+    const { data: monthlyReport, isLoading: isLoadingMonthly, refetch: refetchMonthly } = useTransactionMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
+    const { data: userActivity, isLoading: isLoadingUserActivity, refetch: refetchUserActivity } = useTransactionUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
+    const { data: activeUsers, isLoading: isLoadingActiveUsers, refetch: refetchActiveUsers } = useTransactionActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
+    const { data: storageReport, isLoading: isLoadingStorage, refetch: refetchStorage } = useTransactionStorageReport(activeTab === 'storage');
+    const { data: chartsData, isLoading: isLoadingCharts, refetch: refetchCharts } = useTransactionChartsData(fromDate || null, toDate || null, activeTab === 'charts');
+    const { data: dailyWorkReport, isLoading: isLoadingDailyWork, refetch: refetchDailyWork } = useTransactionDailyWorkReport(workDate || null, activeTab === 'daily-work');
 
     if (!currentUser?.isDepartmentHead) {
         return (
@@ -189,6 +189,20 @@ export default function ReportsPage() {
         return labels[tab];
     };
 
+    const allRefetch = () => {
+        switch (activeTab) {
+            case 'dashboard': refetchDashboard(); break;
+            case 'daily': refetchDaily(); break;
+            case 'weekly': refetchWeekly(); break;
+            case 'monthly': refetchMonthly(); break;
+            case 'user-activity': refetchUserActivity(); break;
+            case 'active-users': refetchActiveUsers(); break;
+            case 'storage': refetchStorage(); break;
+            case 'charts': refetchCharts(); break;
+            case 'daily-work': refetchDailyWork(); break;
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-7xl mx-auto px-4 py-6" dir="rtl">
             <div className="flex justify-between items-center">
@@ -198,7 +212,7 @@ export default function ReportsPage() {
                         تقارير وإحصائيات شاملة لنظام المعاملات
                     </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => refetchDashboard()}>
+                <Button variant="outline" size="sm" onClick={allRefetch}>
                     <RefreshCw className="w-4 h-4 ml-2" />
                     <span>تحديث</span>
                 </Button>

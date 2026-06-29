@@ -79,14 +79,14 @@ export default function ReportsPage() {
     const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth() + 1);
 
     const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useDepartmentDashboard(activeTab === 'dashboard');
-    const { data: dailyReport, isLoading: isLoadingDaily } = useDailyReport(selectedDate || null, activeTab === 'daily');
-    const { data: weeklyReport, isLoading: isLoadingWeekly } = useWeeklyReport(weekStart || null, activeTab === 'weekly');
-    const { data: monthlyReport, isLoading: isLoadingMonthly } = useMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
-    const { data: userActivity, isLoading: isLoadingUserActivity } = useUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
-    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
-    const { data: storageReport, isLoading: isLoadingStorage } = useStorageReport(activeTab === 'storage');
-    const { data: chartsData, isLoading: isLoadingCharts } = useChartsData(fromDate || null, toDate || null, activeTab === 'charts');
-    const { data: dailyWorkReport, isLoading: isLoadingDailyWork } = useDailyWorkReport(workDate || null, activeTab === 'daily-work');
+    const { data: dailyReport, isLoading: isLoadingDaily, refetch: refetchDaily } = useDailyReport(selectedDate || null, activeTab === 'daily');
+    const { data: weeklyReport, isLoading: isLoadingWeekly, refetch: refetchWeekly } = useWeeklyReport(weekStart || null, activeTab === 'weekly');
+    const { data: monthlyReport, isLoading: isLoadingMonthly, refetch: refetchMonthly } = useMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
+    const { data: userActivity, isLoading: isLoadingUserActivity, refetch: refetchUserActivity } = useUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
+    const { data: activeUsers, isLoading: isLoadingActiveUsers, refetch: refetchActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
+    const { data: storageReport, isLoading: isLoadingStorage, refetch: refetchStorage } = useStorageReport(activeTab === 'storage');
+    const { data: chartsData, isLoading: isLoadingCharts, refetch: refetchCharts } = useChartsData(fromDate || null, toDate || null, activeTab === 'charts');
+    const { data: dailyWorkReport, isLoading: isLoadingDailyWork, refetch: refetchDailyWork } = useDailyWorkReport(workDate || null, activeTab === 'daily-work');
 
     const handlePrefetch = (tab: ReportTab) => {
         switch (tab) {
@@ -157,7 +157,17 @@ export default function ReportsPage() {
     };
 
     const allRefetch = () => {
-        refetchDashboard();
+        switch (activeTab) {
+            case 'dashboard': refetchDashboard(); break;
+            case 'daily': refetchDaily(); break;
+            case 'weekly': refetchWeekly(); break;
+            case 'monthly': refetchMonthly(); break;
+            case 'user-activity': refetchUserActivity(); break;
+            case 'active-users': refetchActiveUsers(); break;
+            case 'storage': refetchStorage(); break;
+            case 'charts': refetchCharts(); break;
+            case 'daily-work': refetchDailyWork(); break;
+        }
     };
 
     const getTabLabel = (tab: ReportTab): string => {
