@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Badge } from '@/shared/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2 } from 'lucide-react';
-import type { ActiveUserReportItem } from '../../model/types';
+import type { TransactionActiveUserItem } from '../../model/transaction-report-types';
 
 interface ActiveUsersViewProps {
-    data: ActiveUserReportItem[] | undefined;
+    data: TransactionActiveUserItem[] | undefined;
     isLoading: boolean;
 }
 
@@ -16,6 +16,15 @@ function formatDate(dateStr: string | null): string {
     });
 }
 
+const ACTION_TRANSLATIONS: Record<string, string> = {
+    'Created': 'إنشاء',
+    'Responded': 'رد',
+    'Transferred': 'تحويل',
+    'Viewed': 'عرض',
+    'Updated': 'تحديث',
+    'Deleted': 'حذف',
+};
+
 export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
     if (isLoading) {
         return (
@@ -25,7 +34,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
         );
     }
 
-    const list: ActiveUserReportItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+    const list: TransactionActiveUserItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
 
     if (list.length === 0) {
         return (
@@ -40,7 +49,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
     return (
         <Card className="border border-border/40 shadow-sm" dir="rtl">
             <CardHeader>
-                <CardTitle className="text-sm font-semibold">المستخدمون النشطون</CardTitle>
+                <CardTitle className="text-sm font-semibold">المستخدمون النشطون في المعاملات</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
                 <Table>
@@ -72,7 +81,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
                                     <div className="flex flex-wrap gap-1">
                                         {Array.isArray(u.actionsPerformed) && u.actionsPerformed.map((action, i) => (
                                             <Badge key={i} variant="secondary" className="text-xs">
-                                                {action}
+                                                {ACTION_TRANSLATIONS[action] || action}
                                             </Badge>
                                         ))}
                                     </div>

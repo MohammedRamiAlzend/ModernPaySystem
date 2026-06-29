@@ -1,5 +1,6 @@
 global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 using ModernPaySystem.Domain.Commons;
+using ModernPaySystem.Domain.DTOs;
 
 namespace ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 
@@ -18,4 +19,22 @@ public interface IReportService
         DateTime? startDate,
         DateTime? endDate,
         bool forCurrentDepartment = false);
+
+    Task<Result<TransactionDashboardDto>> GetDashboardAsync();
+
+    Task<Result<TransactionDailyReportDto>> GetDailyReportAsync(DateTime? date);
+
+    Task<Result<TransactionPeriodReportDto>> GetWeeklyReportAsync(DateTime? weekStart);
+
+    Task<Result<TransactionPeriodReportDto>> GetMonthlyReportAsync(int? year, int? month);
+
+    Task<Result<List<TransactionUserActivityItemDto>>> GetUserActivityReportAsync(DateTime? fromDate, DateTime? toDate);
+
+    Task<Result<List<TransactionActiveUserItemDto>>> GetActiveUsersAsync(DateTime? fromDate, DateTime? toDate);
+
+    Task<Result<TransactionStorageReportDto>> GetStorageReportAsync();
+
+    Task<Result<TransactionChartsDataDto>> GetChartsDataAsync(DateTime? fromDate, DateTime? toDate);
+
+    Task<Result<TransactionDailyWorkDto>> GetDailyWorkReportAsync(DateTime? date);
 }

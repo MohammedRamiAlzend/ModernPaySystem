@@ -1,3 +1,4 @@
+using ModernPaySystem.Application.Interfaces.TransactionSystemInterfaces;
 using ModernPaySystem.Domain.DTOs;
 using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
 
@@ -6,7 +7,7 @@ namespace ModernPaySystem.Controllers.TransactionsSystemControllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class RequestTransactionsController(IRequestTransactionService requestTransactionService, ILogger<RequestTransactionsController> logger) : ControllerBase
+public class RequestTransactionsController(IRequestTransactionService requestTransactionService, IRequestAuditService requestAuditService, ILogger<RequestTransactionsController> logger) : ControllerBase
 {
     [HttpGet("{id}")]
     [EndpointPermission("request-transactions.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
@@ -61,6 +62,10 @@ public class RequestTransactionsController(IRequestTransactionService requestTra
         logger.LogInformation("Creating new request transaction for request: {RequestId}", dto?.RequestId);
         ArgumentNullException.ThrowIfNull(dto);
         var result = await requestTransactionService.AddInitialRequestTransaction(dto);
+        if (!result.IsError)
+        {
+            await requestAuditService.LogAsync(dto.RequestId, RequestAuditAction.Transferred, "Initial transaction created");
+        }
         return result.ToActionResult();
     }
 
@@ -72,6 +77,10 @@ public class RequestTransactionsController(IRequestTransactionService requestTra
         logger.LogInformation("Adding child transaction to parent: {ParentTransactionId}", dto.ParentTransactionId);
         ArgumentNullException.ThrowIfNull(dto);
         var result = await requestTransactionService.AddChildTransactionAsync(dto);
+        if (!result.IsError)
+        {
+            await requestAuditService.LogAsync(dto.RequestId, RequestAuditAction.Transferred, "Child transaction added");
+        }
         return result.ToActionResult();
     }
 

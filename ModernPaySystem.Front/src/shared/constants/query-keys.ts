@@ -139,6 +139,18 @@ export const queryKeys = {
     scanner: {
         all: ['scanner'] as const,
         devices: () => [...queryKeys.scanner.all, 'devices'] as const,
+    },
+    transactionReports: {
+        all: ['transaction', 'reports'] as const,
+        dashboard: [...['transaction', 'reports', 'dashboard']] as const,
+        daily: (date?: string | null) => [...queryKeys.transactionReports.all, 'daily', date] as const,
+        weekly: (weekStart?: string | null) => [...queryKeys.transactionReports.all, 'weekly', weekStart] as const,
+        monthly: (year?: number | null, month?: number | null) => [...queryKeys.transactionReports.all, 'monthly', year, month] as const,
+        userActivity: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.transactionReports.all, 'userActivity', fromDate, toDate] as const,
+        activeUsers: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.transactionReports.all, 'activeUsers', fromDate, toDate] as const,
+        storage: [...['transaction', 'reports', 'storage']] as const,
+        charts: (fromDate?: string | null, toDate?: string | null) => [...queryKeys.transactionReports.all, 'charts', fromDate, toDate] as const,
+        dailyWork: (date?: string | null) => [...queryKeys.transactionReports.all, 'dailyWork', date] as const,
     }
 };
 

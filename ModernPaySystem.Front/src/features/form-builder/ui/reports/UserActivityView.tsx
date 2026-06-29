@@ -1,11 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { Badge } from '@/shared/ui/badge';
 import { Loader2 } from 'lucide-react';
-import type { ActiveUserReportItem } from '../../model/types';
+import type { TransactionUserActivityItem } from '../../model/transaction-report-types';
 
-interface ActiveUsersViewProps {
-    data: ActiveUserReportItem[] | undefined;
+interface UserActivityViewProps {
+    data: TransactionUserActivityItem[] | undefined;
     isLoading: boolean;
 }
 
@@ -13,10 +12,11 @@ function formatDate(dateStr: string | null): string {
     if (!dateStr) return '-';
     return new Date(dateStr).toLocaleDateString('ar-SY', {
         year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit',
     });
 }
 
-export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
+export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -25,13 +25,13 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
         );
     }
 
-    const list: ActiveUserReportItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+    const list: TransactionUserActivityItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
 
     if (list.length === 0) {
         return (
             <Card>
                 <CardContent className="pt-8 text-center text-muted-foreground">
-                    لا يوجد مستخدمون نشطون في الفترة المحددة
+                    لا توجد بيانات نشاط للمستخدمين في الفترة المحددة
                 </CardContent>
             </Card>
         );
@@ -40,7 +40,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
     return (
         <Card className="border border-border/40 shadow-sm" dir="rtl">
             <CardHeader>
-                <CardTitle className="text-sm font-semibold">المستخدمون النشطون</CardTitle>
+                <CardTitle className="text-sm font-semibold">نشاط المستخدمين في المعاملات</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
                 <Table>
@@ -48,10 +48,11 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
                         <TableRow>
                             <TableHead className="text-right">المستخدم</TableHead>
                             <TableHead className="text-right">القسم</TableHead>
+                            <TableHead className="text-right">طلبات منشأة</TableHead>
+                            <TableHead className="text-right">ردود</TableHead>
+                            <TableHead className="text-right">مرفقات</TableHead>
                             <TableHead className="text-right">إجمالي الإجراءات</TableHead>
-                            <TableHead className="text-right">أول نشاط</TableHead>
                             <TableHead className="text-right">آخر نشاط</TableHead>
-                            <TableHead className="text-right">الإجراءات</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -59,23 +60,14 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
                             <TableRow key={u.userId}>
                                 <TableCell className="font-medium">{u.userName}</TableCell>
                                 <TableCell className="text-muted-foreground">{u.departmentName || '-'}</TableCell>
+                                <TableCell>{u.requestsCreated}</TableCell>
+                                <TableCell>{u.responsesMade}</TableCell>
+                                <TableCell>{u.attachmentsAdded}</TableCell>
                                 <TableCell>
                                     <span className="font-bold">{u.totalActions}</span>
                                 </TableCell>
                                 <TableCell className="text-xs text-muted-foreground">
-                                    {formatDate(u.firstActionDate)}
-                                </TableCell>
-                                <TableCell className="text-xs text-muted-foreground">
-                                    {formatDate(u.lastActionDate)}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-wrap gap-1">
-                                        {Array.isArray(u.actionsPerformed) && u.actionsPerformed.map((action, i) => (
-                                            <Badge key={i} variant="secondary" className="text-xs">
-                                                {action}
-                                            </Badge>
-                                        ))}
-                                    </div>
+                                    {formatDate(u.lastActivityDate)}
                                 </TableCell>
                             </TableRow>
                         ))}

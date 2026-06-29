@@ -27,7 +27,9 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
         );
     }
 
-    if (!data) {
+    const reportData = (data as any)?.data ? (data as any).data : data;
+
+    if (!reportData) {
         return (
             <Card>
                 <CardContent className="pt-8 text-center text-muted-foreground">
@@ -37,6 +39,11 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
         );
     }
 
+    const totalStorageBytes = reportData.totalStorageBytes ?? reportData.TotalStorageBytes ?? 0;
+    const totalFiles = reportData.totalFiles ?? reportData.TotalFiles ?? 0;
+    const perUser: any[] = Array.isArray(reportData.perUser) ? reportData.perUser : (Array.isArray(reportData.PerUser) ? reportData.PerUser : []);
+    const fileTypeBreakdown: any[] = Array.isArray(reportData.fileTypeBreakdown) ? reportData.fileTypeBreakdown : (Array.isArray(reportData.FileTypeBreakdown) ? reportData.FileTypeBreakdown : []);
+
     return (
         <div className="space-y-6" dir="rtl">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -45,7 +52,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-xs text-muted-foreground font-medium">إجمالي مساحة التخزين</p>
-                                <p className="text-2xl font-bold tracking-tight">{formatBytes(data.totalStorageBytes)}</p>
+                                <p className="text-2xl font-bold tracking-tight">{formatBytes(totalStorageBytes)}</p>
                             </div>
                             <div className="p-3 rounded-xl bg-primary/10 text-primary">
                                 <HardDrive className="w-5 h-5" />
@@ -58,7 +65,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-xs text-muted-foreground font-medium">إجمالي الملفات</p>
-                                <p className="text-2xl font-bold tracking-tight">{data.totalFiles.toLocaleString()}</p>
+                                <p className="text-2xl font-bold tracking-tight">{totalFiles.toLocaleString()}</p>
                             </div>
                             <div className="p-3 rounded-xl bg-primary/10 text-primary">
                                 <FileText className="w-5 h-5" />
@@ -68,14 +75,14 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                 </Card>
             </div>
 
-            {data.fileTypeBreakdown.length > 0 && (
+            {fileTypeBreakdown.length > 0 && (
                 <Card className="border border-border/40 shadow-sm">
                     <CardHeader>
                         <CardTitle className="text-sm font-semibold">توزيع الملفات حسب النوع</CardTitle>
                         <CardDescription>النسبة المئوية لكل نوع من الملفات المخزنة في النظام</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <StorageChart fileTypeBreakdown={data.fileTypeBreakdown} />
+                        <StorageChart fileTypeBreakdown={fileTypeBreakdown} />
                     </CardContent>
                 </Card>
             )}
@@ -97,7 +104,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.perUser.map((u) => (
+                            {perUser.map((u) => (
                                 <TableRow key={u.userId}>
                                     <TableCell className="font-medium">{u.userName}</TableCell>
                                     <TableCell>{u.totalFiles}</TableCell>
@@ -136,7 +143,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.fileTypeBreakdown.map((t) => (
+                            {fileTypeBreakdown.map((t) => (
                                 <TableRow key={t.extension}>
                                     <TableCell className="font-medium">.{t.extension}</TableCell>
                                     <TableCell>{t.count}</TableCell>

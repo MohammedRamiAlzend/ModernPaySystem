@@ -39,7 +39,8 @@ public class AttachmentService(
             FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
-            Path = fileMetadata.FilePath
+            Path = fileMetadata.FilePath,
+            Size = fileMetadata.FileSize
         };
 
         // Save the attachment to the database
@@ -106,7 +107,8 @@ public class AttachmentService(
             FileName = fileMetadata!.OriginalFileName,
             SafeName = fileMetadata.StoredFileName,
             Extension = fileMetadata.FileExtension,
-            Path = fileMetadata.FilePath
+            Path = fileMetadata.FilePath,
+            Size = fileMetadata.FileSize
         };
 
         // Save the attachment to the database
@@ -564,7 +566,8 @@ public class AttachmentService(
             FileName = attachment.FileName,
             SafeName = attachment.SafeName,
             Extension = attachment.Extension,
-            Path = attachment.Path
+            Path = attachment.Path,
+            Size = attachment.Size
         };
 
         var result = await unitOfWork.Attachments.AddAsync(attachmentEntity);
