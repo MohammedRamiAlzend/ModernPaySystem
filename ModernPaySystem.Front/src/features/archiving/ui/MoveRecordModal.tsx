@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Folder, ArchiveRecord } from '../model/types';
 import {
     Dialog,
@@ -39,12 +39,15 @@ export const MoveRecordModal: React.FC<MoveRecordModalProps> = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
 
-    useEffect(() => {
+    const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+    if (isOpen !== prevIsOpen) {
+        setPrevIsOpen(isOpen);
         if (isOpen) {
             setSearchQuery('');
             setSelectedFolderId(null);
         }
-    }, [isOpen]);
+    }
 
     const folderMap = new Map(folders.map(f => [f.id, f]));
     const getFolderPath = (folderId: string): string => {

@@ -80,6 +80,16 @@ export default function ReportsPage() {
     const [reportYear, setReportYear] = useState<number>(new Date().getFullYear());
     const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth() + 1);
 
+    const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useTransactionDashboard(activeTab === 'dashboard');
+    const { data: dailyReport, isLoading: isLoadingDaily } = useTransactionDailyReport(selectedDate || null, activeTab === 'daily');
+    const { data: weeklyReport, isLoading: isLoadingWeekly } = useTransactionWeeklyReport(weekStart || null, activeTab === 'weekly');
+    const { data: monthlyReport, isLoading: isLoadingMonthly } = useTransactionMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
+    const { data: userActivity, isLoading: isLoadingUserActivity } = useTransactionUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
+    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useTransactionActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
+    const { data: storageReport, isLoading: isLoadingStorage } = useTransactionStorageReport(activeTab === 'storage');
+    const { data: chartsData, isLoading: isLoadingCharts } = useTransactionChartsData(fromDate || null, toDate || null, activeTab === 'charts');
+    const { data: dailyWorkReport, isLoading: isLoadingDailyWork } = useTransactionDailyWorkReport(workDate || null, activeTab === 'daily-work');
+
     if (!currentUser?.isDepartmentHead) {
         return (
             <div className="flex h-[60vh] items-center justify-center" dir="rtl">
@@ -95,16 +105,6 @@ export default function ReportsPage() {
             </div>
         );
     }
-
-    const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useTransactionDashboard(activeTab === 'dashboard');
-    const { data: dailyReport, isLoading: isLoadingDaily } = useTransactionDailyReport(selectedDate || null, activeTab === 'daily');
-    const { data: weeklyReport, isLoading: isLoadingWeekly } = useTransactionWeeklyReport(weekStart || null, activeTab === 'weekly');
-    const { data: monthlyReport, isLoading: isLoadingMonthly } = useTransactionMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
-    const { data: userActivity, isLoading: isLoadingUserActivity } = useTransactionUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
-    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useTransactionActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
-    const { data: storageReport, isLoading: isLoadingStorage } = useTransactionStorageReport(activeTab === 'storage');
-    const { data: chartsData, isLoading: isLoadingCharts } = useTransactionChartsData(fromDate || null, toDate || null, activeTab === 'charts');
-    const { data: dailyWorkReport, isLoading: isLoadingDailyWork } = useTransactionDailyWorkReport(workDate || null, activeTab === 'daily-work');
 
     const handlePrefetch = (tab: ReportTab) => {
         switch (tab) {

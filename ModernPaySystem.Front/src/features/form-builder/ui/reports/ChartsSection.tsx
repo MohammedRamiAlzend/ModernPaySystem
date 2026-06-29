@@ -23,7 +23,9 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
             );
         }
 
-        if (!data) {
+        const reportData = (data as any)?.data ? (data as any).data : data;
+
+        if (!reportData) {
             return (
                 <Card>
                     <CardContent className="pt-8 text-center text-muted-foreground">
@@ -33,9 +35,16 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
             );
         }
 
+        const dailyActivity = Array.isArray(reportData.dailyActivity) ? reportData.dailyActivity : (Array.isArray(reportData.DailyActivity) ? reportData.DailyActivity : []);
+        const actionTypeBreakdown = Array.isArray(reportData.actionTypeBreakdown) ? reportData.actionTypeBreakdown : (Array.isArray(reportData.ActionTypeBreakdown) ? reportData.ActionTypeBreakdown : []);
+        const hourlyDistribution = Array.isArray(reportData.hourlyDistribution) ? reportData.hourlyDistribution : (Array.isArray(reportData.HourlyDistribution) ? reportData.HourlyDistribution : []);
+        const topActiveUsers = Array.isArray(reportData.topActiveUsers) ? reportData.topActiveUsers : (Array.isArray(reportData.TopActiveUsers) ? reportData.TopActiveUsers : []);
+        const topStorageUsers = Array.isArray(reportData.topStorageUsers) ? reportData.topStorageUsers : (Array.isArray(reportData.TopStorageUsers) ? reportData.TopStorageUsers : []);
+        const trend7Days = Array.isArray(reportData.trend7Days) ? reportData.trend7Days : (Array.isArray(reportData.Trend7Days) ? reportData.Trend7Days : []);
+
         return (
             <div ref={ref} className="space-y-6" dir="rtl">
-                {data.dailyActivity.length > 0 && (
+                {dailyActivity.length > 0 && (
                     <div data-chart-name="dailyActivity">
                         <Card className="border border-border/40 shadow-sm">
                             <CardHeader>
@@ -43,14 +52,14 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                                 <CardDescription>عدد الطلبات والردود المنشأة يومياً</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <DailyActivityChart data={data.dailyActivity} />
+                                <DailyActivityChart data={dailyActivity} />
                             </CardContent>
                         </Card>
                     </div>
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {data.actionTypeBreakdown.length > 0 && (
+                    {actionTypeBreakdown.length > 0 && (
                         <div data-chart-name="actionTypeBreakdown">
                             <Card className="border border-border/40 shadow-sm">
                                 <CardHeader>
@@ -58,13 +67,13 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                                     <CardDescription>نسبة الإجراءات حسب نوع النشاط</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <ActionBreakdownChart data={data.actionTypeBreakdown} />
+                                    <ActionBreakdownChart data={actionTypeBreakdown} />
                                 </CardContent>
                             </Card>
                         </div>
                     )}
 
-                    {data.hourlyDistribution.length > 0 && (
+                    {hourlyDistribution.length > 0 && (
                         <div data-chart-name="hourlyDistribution">
                             <Card className="border border-border/40 shadow-sm">
                                 <CardHeader>
@@ -72,7 +81,7 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                                     <CardDescription>توزيع النشاط على مدار ساعات اليوم</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <HourlyDistributionChart data={data.hourlyDistribution} />
+                                    <HourlyDistributionChart data={hourlyDistribution} />
                                 </CardContent>
                             </Card>
                         </div>
@@ -80,7 +89,7 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {data.topActiveUsers.length > 0 && (
+                    {topActiveUsers.length > 0 && (
                         <div data-chart-name="topActiveUsers">
                             <Card className="border border-border/40 shadow-sm">
                                 <CardHeader>
@@ -88,13 +97,13 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                                     <CardDescription>المستخدمون الأكثر نشاطاً في المعاملات</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <TopUsersChart data={data.topActiveUsers} tooltipLabel="عدد الإجراءات" />
+                                    <TopUsersChart data={topActiveUsers} tooltipLabel="عدد الإجراءات" />
                                 </CardContent>
                             </Card>
                         </div>
                     )}
 
-                    {data.topStorageUsers.length > 0 && (
+                    {topStorageUsers.length > 0 && (
                         <div data-chart-name="topStorageUsers">
                             <Card className="border border-border/40 shadow-sm">
                                 <CardHeader>
@@ -102,14 +111,14 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                                     <CardDescription>المستخدمون الأكثر استهلاكاً لمساحة التخزين</CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <TopUsersChart data={data.topStorageUsers} tooltipLabel="المساحة (بالبايت)" />
+                                    <TopUsersChart data={topStorageUsers} tooltipLabel="المساحة (بالبايت)" />
                                 </CardContent>
                             </Card>
                         </div>
                     )}
                 </div>
 
-                {data.trend7Days.length > 0 && (
+                {trend7Days.length > 0 && (
                     <div data-chart-name="trend7Days">
                         <Card className="border border-border/40 shadow-sm">
                             <CardHeader>
@@ -117,7 +126,7 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
                                 <CardDescription>معدل النشاط اليومي خلال الأيام السبعة الماضية</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <TrendChart data={data.trend7Days} />
+                                <TrendChart data={trend7Days} />
                             </CardContent>
                         </Card>
                     </div>

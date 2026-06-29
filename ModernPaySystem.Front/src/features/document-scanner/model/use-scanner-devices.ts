@@ -38,7 +38,7 @@ export const useTestScannerConnection = () => {
                     message: 'لم يتم العثور على الجهاز المحدد في قائمة الأجهزة المتصلة. يرجى التأكد من تشغيله وتوصيله بالكمبيوتر.'
                 };
             }
-        } catch (error) {
+        } catch {
             return {
                 success: false,
                 message: 'فشل الاتصال بالخدمة المحلية للماسح الضوئي. يرجى التأكد من تشغيل تطبيق الخدمة المحلية (Scanner Service).'

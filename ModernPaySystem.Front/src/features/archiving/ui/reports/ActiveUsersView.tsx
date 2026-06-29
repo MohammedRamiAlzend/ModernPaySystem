@@ -25,7 +25,9 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
         );
     }
 
-    if (!data || data.length === 0) {
+    const list: ActiveUserReportItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+
+    if (list.length === 0) {
         return (
             <Card>
                 <CardContent className="pt-8 text-center text-muted-foreground">
@@ -53,7 +55,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((u) => (
+                        {list.map((u) => (
                             <TableRow key={u.userId}>
                                 <TableCell className="font-medium">{u.userName}</TableCell>
                                 <TableCell className="text-muted-foreground">{u.departmentName || '-'}</TableCell>
@@ -68,7 +70,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap gap-1">
-                                        {u.actionsPerformed.map((action, i) => (
+                                        {Array.isArray(u.actionsPerformed) && u.actionsPerformed.map((action, i) => (
                                             <Badge key={i} variant="secondary" className="text-xs">
                                                 {action}
                                             </Badge>

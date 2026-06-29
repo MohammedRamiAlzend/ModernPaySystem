@@ -25,7 +25,9 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
         );
     }
 
-    if (!data || data.length === 0) {
+    const list: UserActivityReportItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+
+    if (list.length === 0) {
         return (
             <Card>
                 <CardContent className="pt-8 text-center text-muted-foreground">
@@ -54,7 +56,7 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {data.map((u) => (
+                        {list.map((u) => (
                             <TableRow key={u.userId}>
                                 <TableCell className="font-medium">{u.userName}</TableCell>
                                 <TableCell>{u.recordsCreated}</TableCell>

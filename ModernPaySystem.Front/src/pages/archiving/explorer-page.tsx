@@ -34,7 +34,7 @@ export default function ExplorerPage() {
         archiveConfig?.allowedFileExtensions
             ? archiveConfig.allowedFileExtensions.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
             : undefined,
-        [archiveConfig?.allowedFileExtensions]
+        [archiveConfig]
     );
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState<'explorer' | 'list'>('explorer');
