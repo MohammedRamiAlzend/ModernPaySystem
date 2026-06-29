@@ -17,7 +17,6 @@ import {
     useTransactionMonthlyReport,
     useTransactionUserActivityReport,
     useTransactionActiveUsersReport,
-    useTransactionStorageReport,
     useTransactionChartsData,
     useTransactionDailyWorkReport,
 } from '@/features/form-builder/api/formEndpoints';
@@ -27,7 +26,6 @@ import {
     exportTransactionPeriodReportToExcel,
     exportTransactionUserActivityToExcel,
     exportTransactionActiveUsersToExcel,
-    exportTransactionStorageReportToExcel,
     exportTransactionDailyWorkReportToExcel,
     exportTransactionChartsToExcel,
 } from '@/features/form-builder/model/transaction-excel-export';
@@ -48,9 +46,6 @@ const UserActivityView = lazyWithPreload(() =>
 const ActiveUsersView = lazyWithPreload(() =>
     import('@/features/form-builder/ui/reports/ActiveUsersView').then(m => ({ default: m.ActiveUsersView }))
 );
-const StorageReportView = lazyWithPreload(() =>
-    import('@/features/form-builder/ui/reports/StorageReportView').then(m => ({ default: m.StorageReportView }))
-);
 const ChartsSection = lazyWithPreload(() =>
     import('@/features/form-builder/ui/reports/ChartsSection').then(m => ({ default: m.ChartsSection }))
 );
@@ -64,7 +59,7 @@ const fallback = (
     </div>
 );
 
-type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts' | 'daily-work';
+type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'charts' | 'daily-work';
 
 export default function ReportsPage() {
     const currentUser = useAuthStore((state) => state.user);
@@ -86,7 +81,6 @@ export default function ReportsPage() {
     const { data: monthlyReport, isLoading: isLoadingMonthly, refetch: refetchMonthly } = useTransactionMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
     const { data: userActivity, isLoading: isLoadingUserActivity, refetch: refetchUserActivity } = useTransactionUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
     const { data: activeUsers, isLoading: isLoadingActiveUsers, refetch: refetchActiveUsers } = useTransactionActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
-    const { data: storageReport, isLoading: isLoadingStorage, refetch: refetchStorage } = useTransactionStorageReport(activeTab === 'storage');
     const { data: chartsData, isLoading: isLoadingCharts, refetch: refetchCharts } = useTransactionChartsData(fromDate || null, toDate || null, activeTab === 'charts');
     const { data: dailyWorkReport, isLoading: isLoadingDailyWork, refetch: refetchDailyWork } = useTransactionDailyWorkReport(workDate || null, activeTab === 'daily-work');
 
@@ -150,13 +144,6 @@ export default function ReportsPage() {
                 });
                 ActiveUsersView.preload();
                 break;
-            case 'storage':
-                queryClient.prefetchQuery({
-                    queryKey: queryKeys.transactionReports.storage,
-                    queryFn: () => formEndpoints.getTransactionStorageReport(),
-                });
-                StorageReportView.preload();
-                break;
             case 'charts':
                 queryClient.prefetchQuery({
                     queryKey: queryKeys.transactionReports.charts(fromDate || null, toDate || null),
@@ -182,7 +169,6 @@ export default function ReportsPage() {
             monthly: 'تقرير شهري',
             'user-activity': 'نشاط المستخدمين',
             'active-users': 'المستخدمون النشطون',
-            storage: 'التخزين',
             charts: 'الرسوم البيانية',
             'daily-work': 'تقرير يومي مفصل',
         };
@@ -197,7 +183,6 @@ export default function ReportsPage() {
             case 'monthly': refetchMonthly(); break;
             case 'user-activity': refetchUserActivity(); break;
             case 'active-users': refetchActiveUsers(); break;
-            case 'storage': refetchStorage(); break;
             case 'charts': refetchCharts(); break;
             case 'daily-work': refetchDailyWork(); break;
         }
@@ -221,7 +206,7 @@ export default function ReportsPage() {
             <Tabs defaultValue="dashboard" value={activeTab} onValueChange={(v) => setActiveTab(v as ReportTab)}>
                 <div className="overflow-x-auto pb-2">
                     <TabsList className="w-full justify-start gap-1 bg-muted/50 p-1 rounded-lg">
-                        {(['dashboard', 'daily', 'daily-work', 'weekly', 'monthly', 'user-activity', 'active-users', 'storage', 'charts'] as ReportTab[]).map((tab) => (
+                        {(['dashboard', 'daily', 'daily-work', 'weekly', 'monthly', 'user-activity', 'active-users', 'charts'] as ReportTab[]).map((tab) => (
                             <TabsTrigger
                                 key={tab}
                                 value={tab}
@@ -471,19 +456,7 @@ export default function ReportsPage() {
                     </Suspense>
                 </TabsContent>
 
-                <TabsContent value="storage">
-                    <div className="flex justify-end mb-4">
-                        {storageReport && (
-                            <ExportButton
-                                onExport={() => exportTransactionStorageReportToExcel(storageReport)}
-                                label="تصدير التقرير"
-                            />
-                        )}
-                    </div>
-                    <Suspense fallback={fallback}>
-                        <StorageReportView data={storageReport} isLoading={isLoadingStorage} />
-                    </Suspense>
-                </TabsContent>
+
 
                 <TabsContent value="daily-work">
                     <div className="flex items-center justify-between gap-4 mb-4">
