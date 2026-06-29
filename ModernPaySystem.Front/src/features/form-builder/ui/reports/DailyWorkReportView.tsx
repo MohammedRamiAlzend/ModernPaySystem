@@ -109,7 +109,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                     <TableHead className="text-right">رقم الطلب</TableHead>
                                     <TableHead className="text-right">المستخدم</TableHead>
                                     <TableHead className="text-right">الإجراء</TableHead>
-                                    <TableHead className="text-right">التفاصيل</TableHead>
+                                    {/* <TableHead className="text-right">التفاصيل</TableHead> */}
                                     <TableHead className="text-right">الوقت</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -126,7 +126,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                                 {ACTION_LABEL[log.action] || log.action}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="max-w-xs truncate">{log.details || '-'}</TableCell>
+                                        {/* <TableCell className="max-w-xs truncate">{log.details || '-'}</TableCell> */}
                                         <TableCell>{formatDateTime(log.timestamp)}</TableCell>
                                     </TableRow>
                                 ))}
@@ -195,7 +195,6 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                                                 {rec.formValues.map((fv, i) => (
                                                                     <div key={i} className="flex gap-2 text-sm bg-background rounded-lg p-2 border">
-                                                                        <span className="font-semibold text-primary whitespace-nowrap">{fv.key}:</span>
                                                                         <span className="text-muted-foreground">{fv.value || '-'}</span>
                                                                     </div>
                                                                 ))}
