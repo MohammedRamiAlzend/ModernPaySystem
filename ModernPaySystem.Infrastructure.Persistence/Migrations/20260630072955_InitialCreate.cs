@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,8 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     DefaultPath = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    AllowedFileExtensions = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -34,6 +35,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     SafeName = table.Column<string>(type: "text", nullable: false),
                     Extension = table.Column<string>(type: "text", nullable: false),
                     Path = table.Column<string>(type: "text", nullable: false),
+                    Size = table.Column<long>(type: "bigint", nullable: false),
                     CreatedByUserId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
@@ -389,6 +391,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: true),
                     FolderId = table.Column<Guid>(type: "uuid", nullable: false),
                     DepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
                     FormId = table.Column<Guid>(type: "uuid", nullable: true),
@@ -738,6 +741,7 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     Justification = table.Column<string>(type: "text", nullable: false),
                     RequestedChangesJson = table.Column<string>(type: "jsonb", nullable: false),
+                    RequestedRecordName = table.Column<string>(type: "text", nullable: true),
                     RequestedFileDeletionIdsJson = table.Column<string>(type: "text", nullable: true),
                     OriginalSnapshotJson = table.Column<string>(type: "jsonb", nullable: false),
                     RejectionReason = table.Column<string>(type: "text", nullable: true),
@@ -1021,6 +1025,34 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         principalTable: "Attachments",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RequestAuditLogs",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    RequestId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Action = table.Column<int>(type: "integer", nullable: false),
+                    Details = table.Column<string>(type: "text", nullable: true),
+                    IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
+                    UserAgent = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    Timestamp = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RequestAuditLogs", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RequestAuditLogs_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -1461,6 +1493,21 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 column: "AttachmentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RequestAuditLogs_Action",
+                table: "RequestAuditLogs",
+                column: "Action");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestAuditLogs_RequestId_Timestamp",
+                table: "RequestAuditLogs",
+                columns: new[] { "RequestId", "Timestamp" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RequestAuditLogs_UserId",
+                table: "RequestAuditLogs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_RequestRelations_SourceRequestId_TargetRequestId_RelationTy~",
                 table: "RequestRelations",
                 columns: new[] { "SourceRequestId", "TargetRequestId", "RelationType" },
@@ -1701,6 +1748,14 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_RequestAuditLogs_Requests_RequestId",
+                table: "RequestAuditLogs",
+                column: "RequestId",
+                principalTable: "Requests",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_RequestRelations_Requests_SourceRequestId",
                 table: "RequestRelations",
                 column: "SourceRequestId",
@@ -1799,6 +1854,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "RequestAttachments");
+
+            migrationBuilder.DropTable(
+                name: "RequestAuditLogs");
 
             migrationBuilder.DropTable(
                 name: "RequestRelations");

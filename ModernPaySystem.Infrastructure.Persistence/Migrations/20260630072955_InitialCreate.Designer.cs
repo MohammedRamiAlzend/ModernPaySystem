@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ModernPaySystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260628212633_addNameToArchive")]
-    partial class addNameToArchive
+    [Migration("20260630072955_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1030,6 +1030,9 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -1390,6 +1393,61 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("AttachmentId");
 
                     b.ToTable("RequestAttachments");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestAuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<Guid>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedByUserId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Action")
+                        .HasDatabaseName("IX_RequestAuditLogs_Action");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_RequestAuditLogs_UserId");
+
+                    b.HasIndex("RequestId", "Timestamp")
+                        .HasDatabaseName("IX_RequestAuditLogs_RequestId_Timestamp");
+
+                    b.ToTable("RequestAuditLogs");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestRelation", b =>
@@ -2194,6 +2252,25 @@ namespace ModernPaySystem.Infrastructure.Persistence.Migrations
                     b.Navigation("Attachment");
 
                     b.Navigation("Request");
+                });
+
+            modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestAuditLog", b =>
+                {
+                    b.HasOne("ModernPaySystem.Domain.Entities.TransactionSystemEntities.Request", "Request")
+                        .WithMany()
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ModernPaySystem.Domain.Entities.SharedEntities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Domain.Entities.TransactionSystemEntities.RequestRelation", b =>
