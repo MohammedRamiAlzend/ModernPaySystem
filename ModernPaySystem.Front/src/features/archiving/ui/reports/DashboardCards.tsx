@@ -39,14 +39,23 @@ function StatCard({ icon, label, value, sublabel }: { icon: React.ReactNode; lab
 }
 
 const ACTION_TRANSLATIONS: Record<string, string> = {
-    'View': 'عرض',
-    'Print': 'طباعة',
-    'Download': 'تحميل',
-    'Create': 'إنشاء',
-    'Update': 'تحديث',
-    'Delete': 'حذف',
-    'Export': 'تصدير',
-    'Upload': 'رفع'
+    'View': 'عرض مجلد/سجل',
+    'Update': 'تحديث بيانات',
+    'Download': 'تنزيل ملف',
+    'Print': 'طباعة ملف',
+    'Create': 'إنشاء مجلد/سجل',
+    'Delete': 'حذف سجل',
+    'Export': 'تصدير بيانات',
+    'Upload': 'رفع ملفات',
+    'AddFiles': 'إضافة ملفات للسجل',
+    'RemoveFiles': 'حذف ملفات من السجل',
+    'ApproveEdit': 'موافقة على طلب تعديل',
+    'RejectEdit': 'رفض طلب تعديل',
+    'ApproveDelete': 'موافقة على طلب حذف',
+    'RejectDelete': 'رفض طلب حذف',
+    'SubmitEditRequest': 'طلب تعديل سجل',
+    'SubmitDeleteRequest': 'طلب حذف سجل',
+    'Move': 'نقل مجلد/سجل'
 };
 
 function ActionBreakdownCard({ breakdown }: { breakdown: Record<string, number> }) {

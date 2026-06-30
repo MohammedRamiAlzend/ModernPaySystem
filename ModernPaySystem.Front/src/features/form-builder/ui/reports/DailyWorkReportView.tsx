@@ -31,15 +31,21 @@ const ACTION_BADGE: Record<string, string> = {
     Viewed: 'bg-slate-500/10 text-slate-600 border-slate-200 dark:border-slate-800',
     Updated: 'bg-indigo-500/10 text-indigo-600 border-indigo-200 dark:border-indigo-800',
     Deleted: 'bg-red-500/10 text-red-600 border-red-200 dark:border-red-800',
+    AttachmentAdded: 'bg-teal-500/10 text-teal-600 border-teal-200 dark:border-teal-800',
+    AttachmentDownloaded: 'bg-indigo-500/10 text-indigo-600 border-indigo-200 dark:border-indigo-800',
+    StatusChanged: 'bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-800',
 };
 
 const ACTION_LABEL: Record<string, string> = {
-    Created: 'إنشاء',
-    Responded: 'رد',
-    Transferred: 'تحويل',
-    Viewed: 'عرض',
-    Updated: 'تحديث',
-    Deleted: 'حذف',
+    Created: 'إنشاء المعاملة',
+    Responded: 'الرد على المعاملة',
+    Transferred: 'تحويل المعاملة',
+    Viewed: 'عرض المعاملة',
+    Updated: 'تحديث المعاملة',
+    Deleted: 'حذف المعاملة',
+    AttachmentAdded: 'إضافة مرفق',
+    AttachmentDownloaded: 'تحميل مرفق',
+    StatusChanged: 'تغيير حالة المعاملة',
 };
 
 export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProps) {
