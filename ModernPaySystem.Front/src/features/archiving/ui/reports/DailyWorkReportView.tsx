@@ -43,21 +43,21 @@ const ACTION_BADGE: Record<string, string> = {
 };
 
 const ACTION_LABEL: Record<string, string> = {
-    View: 'عرض مجلد/سجل',
-    Create: 'إنشاء مجلد/سجل',
+    View: 'عرض مجلد',
+    Create: 'إنشاء مجلد',
     Update: 'تحديث بيانات',
-    Delete: 'حذف سجل',
+    Delete: 'حذف',
     Download: 'تنزيل ملف',
     Print: 'طباعة ملف',
-    AddFiles: 'إضافة ملفات لل سجل',
-    RemoveFiles: 'حذف ملفات من السجل',
+    AddFiles: 'إضافة ملفات لل',
+    RemoveFiles: 'حذف ملفات من ا',
     ApproveEdit: 'الموافقة على طلب تعديل',
     RejectEdit: 'رفض طلب تعديل',
     ApproveDelete: 'الموافقة على طلب حذف',
     RejectDelete: 'رفض طلب حذف',
-    SubmitEditRequest: 'طلب تعديل سجل',
-    SubmitDeleteRequest: 'طلب حذف سجل',
-    Move: 'نقل مجلد/سجل',
+    SubmitEditRequest: 'طلب تعديل',
+    SubmitDeleteRequest: 'طلب حذف',
+    Move: 'نقل مجلد',
 };
 
 export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProps) {
