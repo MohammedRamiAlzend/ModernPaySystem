@@ -33,17 +33,31 @@ const ACTION_BADGE: Record<string, string> = {
     Print: 'bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-800',
     AddFiles: 'bg-teal-500/10 text-teal-600 border-teal-200 dark:border-teal-800',
     RemoveFiles: 'bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-800',
+    ApproveEdit: 'bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800',
+    RejectEdit: 'bg-red-500/10 text-red-600 border-red-200 dark:border-red-800',
+    ApproveDelete: 'bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800',
+    RejectDelete: 'bg-red-500/10 text-red-600 border-red-200 dark:border-red-800',
+    SubmitEditRequest: 'bg-sky-500/10 text-sky-600 border-sky-200 dark:border-sky-800',
+    SubmitDeleteRequest: 'bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-800',
+    Move: 'bg-violet-500/10 text-violet-600 border-violet-200 dark:border-violet-800',
 };
 
 const ACTION_LABEL: Record<string, string> = {
-    View: 'عرض',
-    Create: 'إنشاء',
-    Update: 'تحديث',
+    View: 'عرض مجلد',
+    Create: 'إنشاء مجلد',
+    Update: 'تحديث بيانات',
     Delete: 'حذف',
-    Download: 'تحميل',
-    Print: 'طباعة',
-    AddFiles: 'إضافة ملفات',
-    RemoveFiles: 'حذف ملفات',
+    Download: 'تنزيل ملف',
+    Print: 'طباعة ملف',
+    AddFiles: 'إضافة ملفات لل',
+    RemoveFiles: 'حذف ملفات من ا',
+    ApproveEdit: 'الموافقة على طلب تعديل',
+    RejectEdit: 'رفض طلب تعديل',
+    ApproveDelete: 'الموافقة على طلب حذف',
+    RejectDelete: 'رفض طلب حذف',
+    SubmitEditRequest: 'طلب تعديل',
+    SubmitDeleteRequest: 'طلب حذف',
+    Move: 'نقل مجلد',
 };
 
 export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProps) {

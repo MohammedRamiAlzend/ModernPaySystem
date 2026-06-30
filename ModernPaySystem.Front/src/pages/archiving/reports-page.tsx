@@ -14,7 +14,6 @@ import {
     useMonthlyReport,
     useUserActivityReport,
     useActiveUsersReport,
-    useStorageReport,
     useChartsData,
     useDailyWorkReport,
 } from '@/features/archiving/model/queries';
@@ -26,7 +25,6 @@ import {
     exportPeriodReportToExcel,
     exportUserActivityToExcel,
     exportActiveUsersToExcel,
-    exportStorageReportToExcel,
     exportDailyWorkReportToExcel,
     exportChartsToExcel,
 } from '@/shared/lib/excel-export';
@@ -47,9 +45,6 @@ const UserActivityView = lazyWithPreload(() =>
 const ActiveUsersView = lazyWithPreload(() =>
     import('@/features/archiving/ui/reports/ActiveUsersView').then(m => ({ default: m.ActiveUsersView }))
 );
-const StorageReportView = lazyWithPreload(() =>
-    import('@/features/archiving/ui/reports/StorageReportView').then(m => ({ default: m.StorageReportView }))
-);
 const ChartsSection = lazyWithPreload(() =>
     import('@/features/archiving/ui/reports/ChartsSection').then(m => ({ default: m.ChartsSection }))
 );
@@ -63,7 +58,7 @@ const fallback = (
     </div>
 );
 
-type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'storage' | 'charts' | 'daily-work';
+type ReportTab = 'dashboard' | 'daily' | 'weekly' | 'monthly' | 'user-activity' | 'active-users' | 'charts' | 'daily-work';
 
 export default function ReportsPage() {
     const queryClient = useQueryClient();
@@ -79,14 +74,13 @@ export default function ReportsPage() {
     const [reportMonth, setReportMonth] = useState<number>(new Date().getMonth() + 1);
 
     const { data: dashboard, isLoading: isLoadingDashboard, refetch: refetchDashboard } = useDepartmentDashboard(activeTab === 'dashboard');
-    const { data: dailyReport, isLoading: isLoadingDaily } = useDailyReport(selectedDate || null, activeTab === 'daily');
-    const { data: weeklyReport, isLoading: isLoadingWeekly } = useWeeklyReport(weekStart || null, activeTab === 'weekly');
-    const { data: monthlyReport, isLoading: isLoadingMonthly } = useMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
-    const { data: userActivity, isLoading: isLoadingUserActivity } = useUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
-    const { data: activeUsers, isLoading: isLoadingActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
-    const { data: storageReport, isLoading: isLoadingStorage } = useStorageReport(activeTab === 'storage');
-    const { data: chartsData, isLoading: isLoadingCharts } = useChartsData(fromDate || null, toDate || null, activeTab === 'charts');
-    const { data: dailyWorkReport, isLoading: isLoadingDailyWork } = useDailyWorkReport(workDate || null, activeTab === 'daily-work');
+    const { data: dailyReport, isLoading: isLoadingDaily, refetch: refetchDaily } = useDailyReport(selectedDate || null, activeTab === 'daily');
+    const { data: weeklyReport, isLoading: isLoadingWeekly, refetch: refetchWeekly } = useWeeklyReport(weekStart || null, activeTab === 'weekly');
+    const { data: monthlyReport, isLoading: isLoadingMonthly, refetch: refetchMonthly } = useMonthlyReport(reportYear, reportMonth, activeTab === 'monthly');
+    const { data: userActivity, isLoading: isLoadingUserActivity, refetch: refetchUserActivity } = useUserActivityReport(fromDate || null, toDate || null, activeTab === 'user-activity');
+    const { data: activeUsers, isLoading: isLoadingActiveUsers, refetch: refetchActiveUsers } = useActiveUsersReport(fromDate || null, toDate || null, activeTab === 'active-users');
+    const { data: chartsData, isLoading: isLoadingCharts, refetch: refetchCharts } = useChartsData(fromDate || null, toDate || null, activeTab === 'charts');
+    const { data: dailyWorkReport, isLoading: isLoadingDailyWork, refetch: refetchDailyWork } = useDailyWorkReport(workDate || null, activeTab === 'daily-work');
 
     const handlePrefetch = (tab: ReportTab) => {
         switch (tab) {
@@ -132,13 +126,13 @@ export default function ReportsPage() {
                 });
                 ActiveUsersView.preload();
                 break;
-            case 'storage':
-                queryClient.prefetchQuery({
-                    queryKey: queryKeys.archiving.reports.storage(),
-                    queryFn: () => archivingService.getStorageReport(),
-                });
-                StorageReportView.preload();
-                break;
+            // case 'storage':
+            //     queryClient.prefetchQuery({
+            //         queryKey: queryKeys.archiving.reports.storage(),
+            //         queryFn: () => archivingService.getStorageReport(),
+            //     });
+            //     StorageReportView.preload();
+            //     break;
             case 'charts':
                 queryClient.prefetchQuery({
                     queryKey: queryKeys.archiving.reports.charts(fromDate || null, toDate || null),
@@ -157,7 +151,16 @@ export default function ReportsPage() {
     };
 
     const allRefetch = () => {
-        refetchDashboard();
+        switch (activeTab) {
+            case 'dashboard': refetchDashboard(); break;
+            case 'daily': refetchDaily(); break;
+            case 'weekly': refetchWeekly(); break;
+            case 'monthly': refetchMonthly(); break;
+            case 'user-activity': refetchUserActivity(); break;
+            case 'active-users': refetchActiveUsers(); break;
+            case 'charts': refetchCharts(); break;
+            case 'daily-work': refetchDailyWork(); break;
+        }
     };
 
     const getTabLabel = (tab: ReportTab): string => {
@@ -168,7 +171,7 @@ export default function ReportsPage() {
             monthly: 'تقرير شهري',
             'user-activity': 'نشاط المستخدمين',
             'active-users': 'المستخدمون النشطون',
-            storage: 'التخزين',
+            // storage: 'التخزين',
             charts: 'الرسوم البيانية',
             'daily-work': 'تقرير يومي مفصل',
         };
@@ -193,10 +196,10 @@ export default function ReportsPage() {
             <Tabs defaultValue="dashboard" value={activeTab} onValueChange={(v) => setActiveTab(v as ReportTab)}>
                 <div className="overflow-x-auto pb-2">
                     <TabsList className="w-full justify-start gap-1 bg-muted/50 p-1 rounded-lg">
-                        {(['dashboard', 'daily', 'daily-work', 'weekly', 'monthly', 'user-activity', 'active-users', 'storage', 'charts'] as ReportTab[]).map((tab) => (
-                            <TabsTrigger 
-                                key={tab} 
-                                value={tab} 
+                        {(['dashboard', 'daily', 'daily-work', 'weekly', 'monthly', 'user-activity', 'active-users', 'charts'] as ReportTab[]).map((tab) => (
+                            <TabsTrigger
+                                key={tab}
+                                value={tab}
                                 className="px-4 py-2 text-sm whitespace-nowrap"
                                 onMouseEnter={() => handlePrefetch(tab)}
                                 onFocus={() => handlePrefetch(tab)}
@@ -440,20 +443,6 @@ export default function ReportsPage() {
                     </div>
                     <Suspense fallback={fallback}>
                         <ActiveUsersView data={activeUsers} isLoading={isLoadingActiveUsers} />
-                    </Suspense>
-                </TabsContent>
-
-                <TabsContent value="storage">
-                    <div className="flex justify-end mb-4">
-                        {storageReport && (
-                            <ExportButton
-                                onExport={() => exportStorageReportToExcel(storageReport)}
-                                label="تصدير التقرير"
-                            />
-                        )}
-                    </div>
-                    <Suspense fallback={fallback}>
-                        <StorageReportView data={storageReport} isLoading={isLoadingStorage} />
                     </Suspense>
                 </TabsContent>
 

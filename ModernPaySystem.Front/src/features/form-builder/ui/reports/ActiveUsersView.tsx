@@ -17,12 +17,15 @@ function formatDate(dateStr: string | null): string {
 }
 
 const ACTION_TRANSLATIONS: Record<string, string> = {
-    'Created': 'إنشاء',
-    'Responded': 'رد',
-    'Transferred': 'تحويل',
-    'Viewed': 'عرض',
-    'Updated': 'تحديث',
-    'Deleted': 'حذف',
+    'Created': 'إنشاء المعاملة',
+    'Responded': 'الرد على المعاملة',
+    'Transferred': 'تحويل المعاملة',
+    'Viewed': 'عرض المعاملة',
+    'Updated': 'تحديث المعاملة',
+    'Deleted': 'حذف المعاملة',
+    'AttachmentAdded': 'إضافة مرفق',
+    'AttachmentDownloaded': 'تحميل مرفق',
+    'StatusChanged': 'تغيير حالة المعاملة',
 };
 
 export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {

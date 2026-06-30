@@ -31,15 +31,21 @@ const ACTION_BADGE: Record<string, string> = {
     Viewed: 'bg-slate-500/10 text-slate-600 border-slate-200 dark:border-slate-800',
     Updated: 'bg-indigo-500/10 text-indigo-600 border-indigo-200 dark:border-indigo-800',
     Deleted: 'bg-red-500/10 text-red-600 border-red-200 dark:border-red-800',
+    AttachmentAdded: 'bg-teal-500/10 text-teal-600 border-teal-200 dark:border-teal-800',
+    AttachmentDownloaded: 'bg-indigo-500/10 text-indigo-600 border-indigo-200 dark:border-indigo-800',
+    StatusChanged: 'bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-800',
 };
 
 const ACTION_LABEL: Record<string, string> = {
-    Created: 'إنشاء',
-    Responded: 'رد',
-    Transferred: 'تحويل',
-    Viewed: 'عرض',
-    Updated: 'تحديث',
-    Deleted: 'حذف',
+    Created: 'إنشاء المعاملة',
+    Responded: 'الرد على المعاملة',
+    Transferred: 'تحويل المعاملة',
+    Viewed: 'عرض المعاملة',
+    Updated: 'تحديث المعاملة',
+    Deleted: 'حذف المعاملة',
+    AttachmentAdded: 'إضافة مرفق',
+    AttachmentDownloaded: 'تحميل مرفق',
+    StatusChanged: 'تغيير حالة المعاملة',
 };
 
 export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProps) {
@@ -109,7 +115,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                     <TableHead className="text-right">رقم الطلب</TableHead>
                                     <TableHead className="text-right">المستخدم</TableHead>
                                     <TableHead className="text-right">الإجراء</TableHead>
-                                    <TableHead className="text-right">التفاصيل</TableHead>
+                                    {/* <TableHead className="text-right">التفاصيل</TableHead> */}
                                     <TableHead className="text-right">الوقت</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -126,7 +132,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                                 {ACTION_LABEL[log.action] || log.action}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="max-w-xs truncate">{log.details || '-'}</TableCell>
+                                        {/* <TableCell className="max-w-xs truncate">{log.details || '-'}</TableCell> */}
                                         <TableCell>{formatDateTime(log.timestamp)}</TableCell>
                                     </TableRow>
                                 ))}
@@ -195,7 +201,6 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                                                 {rec.formValues.map((fv, i) => (
                                                                     <div key={i} className="flex gap-2 text-sm bg-background rounded-lg p-2 border">
-                                                                        <span className="font-semibold text-primary whitespace-nowrap">{fv.key}:</span>
                                                                         <span className="text-muted-foreground">{fv.value || '-'}</span>
                                                                     </div>
                                                                 ))}

@@ -683,6 +683,7 @@ export const useTransactionDashboard = (enabled = true) => {
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -694,6 +695,7 @@ export const useTransactionDailyReport = (date?: string | null, enabled = true) 
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -705,6 +707,7 @@ export const useTransactionWeeklyReport = (weekStart?: string | null, enabled = 
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -716,6 +719,7 @@ export const useTransactionMonthlyReport = (year?: number | null, month?: number
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -728,6 +732,7 @@ export const useTransactionUserActivityReport = (fromDate?: string | null, toDat
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -739,6 +744,7 @@ export const useTransactionActiveUsersReport = (fromDate?: string | null, toDate
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -750,6 +756,7 @@ export const useTransactionStorageReport = (enabled = true) => {
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -761,6 +768,7 @@ export const useTransactionChartsData = (fromDate?: string | null, toDate?: stri
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
 
@@ -772,5 +780,6 @@ export const useTransactionDailyWorkReport = (date?: string | null, enabled = tr
             return (res as any).data ?? null;
         },
         enabled,
+        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };

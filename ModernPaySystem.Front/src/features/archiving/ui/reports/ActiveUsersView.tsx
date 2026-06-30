@@ -16,6 +16,26 @@ function formatDate(dateStr: string | null): string {
     });
 }
 
+const ACTION_TRANSLATIONS: Record<string, string> = {
+    'View': 'عرض مجلد ',
+    'Update': 'تحديث بيانات',
+    'Download': 'تنزيل ملف',
+    'Print': 'طباعة ملف',
+    'Create': 'إنشاء مجلد',
+    'Delete': 'حذف ',
+    'Export': 'تصدير بيانات',
+    'Upload': 'رفع ملفات',
+    'AddFiles': 'إضافة ملفات',
+    'RemoveFiles': 'حذف ملفات',
+    'ApproveEdit': 'موافقة على طلب تعديل',
+    'RejectEdit': 'رفض طلب تعديل',
+    'ApproveDelete': 'موافقة على طلب حذف',
+    'RejectDelete': 'رفض طلب حذف',
+    'SubmitEditRequest': 'طلب تعديل ',
+    'SubmitDeleteRequest': 'طلب حذف ',
+    'Move': 'نقل مجلد '
+};
+
 export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
     if (isLoading) {
         return (
@@ -72,7 +92,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
                                     <div className="flex flex-wrap gap-1">
                                         {Array.isArray(u.actionsPerformed) && u.actionsPerformed.map((action, i) => (
                                             <Badge key={i} variant="secondary" className="text-xs">
-                                                {action}
+                                                {ACTION_TRANSLATIONS[action] || action}
                                             </Badge>
                                         ))}
                                     </div>
