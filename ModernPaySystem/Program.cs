@@ -25,7 +25,7 @@ try
 
 
 #if DEBUG == false
-    builder.WebHost.UseUrls("http://0.0.0.0:7010/");
+    builder.WebHost.UseUrls("http://0.0.0.0:7011/");
 #endif
     builder.Services.AddPersistenceServices(builder.Configuration);
 
