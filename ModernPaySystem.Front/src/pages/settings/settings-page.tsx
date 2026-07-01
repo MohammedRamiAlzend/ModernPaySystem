@@ -5,6 +5,7 @@ import { Loader2, LockKeyhole } from 'lucide-react';
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export const SettingsPage = () => {
   const [searchParams] = useSearchParams();
@@ -80,7 +81,7 @@ export const SettingsPage = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6" style={{ direction: 'rtl' }}>
+    <AnimatedContainer className="container mx-auto py-8 space-y-6" style={{ direction: 'rtl' }}>
       {/* Section Header */}
       {(activeConfig.showDescription !== false) && (
         <div className="flex flex-col gap-1">
@@ -101,7 +102,7 @@ export const SettingsPage = () => {
       }>
         {activeConfig.component}
       </Suspense>
-    </div>
+    </AnimatedContainer>
   );
 };
 

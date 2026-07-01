@@ -26,6 +26,7 @@ import {
     Loader2,
     ChevronLeft
 } from 'lucide-react';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export default function ExplorerPage() {
     const { data: archiveConfig } = useArchiveConfig();
@@ -230,7 +231,7 @@ export default function ExplorerPage() {
         : [];
 
     return (
-        <div className="flex flex-col gap-6 p-6 w-full max-w-full overflow-x-hidden min-w-0" dir="rtl">
+        <AnimatedContainer className="flex flex-col gap-6 p-6 w-full max-w-full overflow-x-hidden min-w-0" dir="rtl">
             {/* Top Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1 text-right">
@@ -475,7 +476,7 @@ export default function ExplorerPage() {
                     setEditRequestRecord(null);
                 }}
             />
-        </div>
+        </AnimatedContainer>
     );
 }
 

@@ -10,6 +10,7 @@ import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { Clock, CheckCircle, XCircle, User, FileClock, ShieldAlert } from 'lucide-react';
 import { departmentApi } from '@/entities/department/api/departmentApi';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export default function ArchiveEditRequestsPage() {
     const user = useAuthStore((state) => state.user);
@@ -86,7 +87,7 @@ export default function ArchiveEditRequestsPage() {
     };
 
     return (
-        <div className="p-6 md:p-8 flex flex-col gap-6 text-right" dir="rtl">
+        <AnimatedContainer className="p-6 md:p-8 flex flex-col gap-6 text-right" dir="rtl">
 
             {/* Page Header */}
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 border-b border-border pb-6">
@@ -225,6 +226,6 @@ export default function ArchiveEditRequestsPage() {
                 }}
             />
 
-        </div>
+        </AnimatedContainer>
     );
 }

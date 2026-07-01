@@ -15,6 +15,7 @@ import {
     Settings
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export default function TemplatesPage() {
     const navigate = useNavigate();
@@ -68,11 +69,11 @@ export default function TemplatesPage() {
         setShowEditor(true);
     };
 
-    const handleSaveTemplate = async (dto: CreateDynamicFormTemplateDto) => {
+    const handleSaveTemplate = async (templateDto: CreateDynamicFormTemplateDto) => {
         if (selectedTemplate) {
             // Update
             await updateMutation.mutateAsync(
-                { id: selectedTemplate.id, dto },
+                { id: selectedTemplate.id, dto: templateDto },
                 {
                     onSuccess: () => {
                         setShowEditor(false);
@@ -83,7 +84,7 @@ export default function TemplatesPage() {
         } else {
             // Create
             await createMutation.mutateAsync(
-                dto,
+                templateDto,
                 {
                     onSuccess: () => {
                         setShowEditor(false);
@@ -120,7 +121,7 @@ export default function TemplatesPage() {
     }, [templates, searchTerm]);
 
     return (
-        <div className="p-4 sm:p-6 flex flex-col gap-6" dir="rtl">
+        <AnimatedContainer className="p-4 sm:p-6 flex flex-col gap-6" dir="rtl">
             {/* Breadcrumb / Back button */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <button 
@@ -192,6 +193,6 @@ export default function TemplatesPage() {
                 template={selectedTemplate}
                 isSaving={isSaving}
             />
-        </div>
+        </AnimatedContainer>
     );
 }

@@ -254,15 +254,17 @@ public class AttachmentService(
             return attachments.Errors;
 
         using var zipStream = new MemoryStream();
-        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
-        foreach (var ra in attachments.Value!)
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
         {
-            if (ra.Attachment == null) continue;
-            var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
-            if (fileBytes.IsError) continue;
-            var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
-            using var entryStream = entry.Open();
-            await entryStream.WriteAsync(fileBytes.Value!);
+            foreach (var ra in attachments.Value!)
+            {
+                if (ra.Attachment == null) continue;
+                var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
+                if (fileBytes.IsError) continue;
+                var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
+                using var entryStream = entry.Open();
+                await entryStream.WriteAsync(fileBytes.Value!);
+            }
         }
         return zipStream.ToArray();
     }
@@ -280,15 +282,17 @@ public class AttachmentService(
             return attachments.Errors;
 
         using var zipStream = new MemoryStream();
-        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
-        foreach (var ra in attachments.Value!)
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
         {
-            if (ra.Attachment == null) continue;
-            var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
-            if (fileBytes.IsError) continue;
-            var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
-            using var entryStream = entry.Open();
-            await entryStream.WriteAsync(fileBytes.Value!);
+            foreach (var ra in attachments.Value!)
+            {
+                if (ra.Attachment == null) continue;
+                var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
+                if (fileBytes.IsError) continue;
+                var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
+                using var entryStream = entry.Open();
+                await entryStream.WriteAsync(fileBytes.Value!);
+            }
         }
         return zipStream.ToArray();
     }
@@ -306,15 +310,17 @@ public class AttachmentService(
             return attachments.Errors;
 
         using var zipStream = new MemoryStream();
-        using var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true);
-        foreach (var ra in attachments.Value!)
+        using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
         {
-            if (ra.Attachment == null) continue;
-            var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
-            if (fileBytes.IsError) continue;
-            var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
-            using var entryStream = entry.Open();
-            await entryStream.WriteAsync(fileBytes.Value!);
+            foreach (var ra in attachments.Value!)
+            {
+                if (ra.Attachment == null) continue;
+                var fileBytes = await fileManager.GetFileBytesAsync(ra.Attachment.Path);
+                if (fileBytes.IsError) continue;
+                var entry = archive.CreateEntry(ra.Attachment.FileName ?? ra.Attachment.SafeName);
+                using var entryStream = entry.Open();
+                await entryStream.WriteAsync(fileBytes.Value!);
+            }
         }
         return zipStream.ToArray();
     }
