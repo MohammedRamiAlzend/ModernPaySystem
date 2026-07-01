@@ -65,12 +65,13 @@ export const SidebarMainContent: React.FC<SidebarContentProps> = ({
             if (!user?.isDepartmentHead) {
                 children = children.filter(child =>
                     child.title !== "الرد على الطلبات" &&
-                    child.title !== "الردود الصادرة"
+                    child.title !== "الردود الصادرة" &&
+                    child.title !== "التقارير والإحصائيات"
                 );
             }
 
             if (item.title === "نظام الأرشفة" && !isArchiveLeader) {
-                children = children.filter(child => 
+                children = children.filter(child =>
                     child.title !== "سجلات النشاط (Audit Logs)" &&
                     child.title !== "التقارير والإحصائيات"
                 );
