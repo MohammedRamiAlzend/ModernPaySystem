@@ -20,15 +20,6 @@ import {
 } from '@/features/archiving/model/queries';
 import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { ExportButton } from '@/features/archiving/ui/reports/ExportButton';
-import {
-    exportDashboardToExcel,
-    exportDailyReportToExcel,
-    exportPeriodReportToExcel,
-    exportUserActivityToExcel,
-    exportActiveUsersToExcel,
-    exportDailyWorkReportToExcel,
-    exportChartsToExcel,
-} from '@/shared/lib/excel-export';
 import { Calendar, RefreshCw, Loader2 } from 'lucide-react';
 
 const DashboardCards = lazyWithPreload(() =>
@@ -215,7 +206,10 @@ export default function ReportsPage() {
                     <div className="flex justify-end mb-4">
                         {dashboard && (
                             <ExportButton
-                                onExport={() => exportDashboardToExcel(dashboard)}
+                                onExport={async () => {
+                                    const { exportDashboardToExcel } = await import('@/shared/lib/excel-export');
+                                    exportDashboardToExcel(dashboard);
+                                }}
                                 label="تصدير لوحة المعلومات"
                             />
                         )}
@@ -264,6 +258,7 @@ export default function ReportsPage() {
                                             chartImageUrl = await toPng(dailyChartRef.current, { quality: 0.95, pixelRatio: 2 });
                                         } catch { /* chart capture failed silently */ }
                                     }
+                                    const { exportDailyReportToExcel } = await import('@/shared/lib/excel-export');
                                     await exportDailyReportToExcel(dailyReport, chartImageUrl);
                                 }}
                                 label="تصدير التقرير"
@@ -295,7 +290,10 @@ export default function ReportsPage() {
                         </Card>
                         {weeklyReport && (
                             <ExportButton
-                                onExport={() => exportPeriodReportToExcel(weeklyReport, 'التقرير الأسبوعي')}
+                                onExport={async () => {
+                                    const { exportPeriodReportToExcel } = await import('@/shared/lib/excel-export');
+                                    exportPeriodReportToExcel(weeklyReport, 'التقرير الأسبوعي');
+                                }}
                                 label="تصدير التقرير"
                             />
                         )}
@@ -345,7 +343,10 @@ export default function ReportsPage() {
                         </Card>
                         {monthlyReport && (
                             <ExportButton
-                                onExport={() => exportPeriodReportToExcel(monthlyReport, 'التقرير الشهري')}
+                                onExport={async () => {
+                                    const { exportPeriodReportToExcel } = await import('@/shared/lib/excel-export');
+                                    exportPeriodReportToExcel(monthlyReport, 'التقرير الشهري');
+                                }}
                                 label="تصدير التقرير"
                             />
                         )}
@@ -393,7 +394,10 @@ export default function ReportsPage() {
                         </Card>
                         {userActivity && userActivity.length > 0 && (
                             <ExportButton
-                                onExport={() => exportUserActivityToExcel(userActivity, fromDate, toDate)}
+                                onExport={async () => {
+                                    const { exportUserActivityToExcel } = await import('@/shared/lib/excel-export');
+                                    exportUserActivityToExcel(userActivity, fromDate, toDate);
+                                }}
                                 label="تصدير النشاط"
                             />
                         )}
@@ -437,7 +441,10 @@ export default function ReportsPage() {
                         </Card>
                         {activeUsers && activeUsers.length > 0 && (
                             <ExportButton
-                                onExport={() => exportActiveUsersToExcel(activeUsers, fromDate, toDate)}
+                                onExport={async () => {
+                                    const { exportActiveUsersToExcel } = await import('@/shared/lib/excel-export');
+                                    exportActiveUsersToExcel(activeUsers, fromDate, toDate);
+                                }}
                                 label="تصدير المستخدمين"
                             />
                         )}
@@ -467,7 +474,10 @@ export default function ReportsPage() {
                         </Card>
                         {dailyWorkReport && (
                             <ExportButton
-                                onExport={() => exportDailyWorkReportToExcel(dailyWorkReport)}
+                                onExport={async () => {
+                                    const { exportDailyWorkReportToExcel } = await import('@/shared/lib/excel-export');
+                                    exportDailyWorkReportToExcel(dailyWorkReport);
+                                }}
                                 label="تصدير Excel متعدد الأوراق"
                             />
                         )}
@@ -495,6 +505,7 @@ export default function ReportsPage() {
                                             }
                                         }
                                     }
+                                    const { exportChartsToExcel } = await import('@/shared/lib/excel-export');
                                     await exportChartsToExcel(chartsData, images);
                                 }}
                                 label="تصدير الرسوم البيانية"

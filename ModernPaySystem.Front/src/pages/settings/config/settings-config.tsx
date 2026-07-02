@@ -2,7 +2,7 @@ import { lazyWithPreload } from '@/shared/utils/lazy-with-preload';
 import { AppearanceSettings } from '../ui/AppearanceSettings';
 import { ToolsSettings } from '../ui/ToolsSettings';
 // import { ArchiveConfigSettings } from '../ui/ArchiveConfigSettings';
-import { ReactNode } from 'react';
+import { ComponentType } from 'react';
 import {
     Database,
     Users,
@@ -31,7 +31,7 @@ export interface SettingsTab {
     label: string;
     description: string;
     icon: LucideIcon;
-    component: ReactNode;
+    component: ComponentType;
     preload?: () => void;
     showDescription?: boolean;
     category: 'services' | 'archiving' | 'system';
@@ -43,7 +43,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'الأقسام والهيكل التنظيمي',
         description: 'إدارة شجرة الأقسام والهيكلية الإدارية للمؤسسة',
         icon: GitBranch,
-        component: <DepartmentDashboardWidget />,
+        component: DepartmentDashboardWidget,
         preload: () => DepartmentDashboardWidget.preload(),
         showDescription: false,
         category: 'services'
@@ -53,7 +53,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'إدارة الحقول العامة',
         description: 'إدارة المسميات الرئيسية للنظام والحقول المساعدة',
         icon: Database,
-        component: <LookUpManagement />,
+        component: LookUpManagement,
         preload: () => LookUpManagement.preload(),
         showDescription: true,
         category: 'services'
@@ -63,7 +63,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'إدارة المستخدمين',
         description: 'إدارة حسابات المستخدمين وصلاحيات الوصول للنظام',
         icon: Users,
-        component: <UserManagement />,
+        component: UserManagement,
         preload: () => UserManagement.preload(),
         showDescription: false,
         category: 'services'
@@ -73,7 +73,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'نماذج الخدمات',
         description: 'إدارة وتخصيص نماذج الطلبات والمعاملات',
         icon: FileStack,
-        component: <TemplatesList />,
+        component: TemplatesList,
         preload: () => TemplatesList.preload(),
         showDescription: false,
         category: 'services'
@@ -83,7 +83,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'النماذج الأرشيفية',
         description: 'إدارة وتخصيص نماذج الأرشفة الديناميكية وحقولها',
         icon: Archive,
-        component: <ArchivingTemplatesPage />,
+        component: ArchivingTemplatesPage,
         preload: () => ArchivingTemplatesPage.preload(),
         showDescription: false,
         category: 'archiving'
@@ -93,7 +93,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'أيقونات المجلدات',
         description: 'إدارة أيقونات SVG المخصصة لمجلدات الأرشيف',
         icon: Image,
-        component: <FolderIconsPage />,
+        component: FolderIconsPage,
         preload: () => FolderIconsPage.preload(),
         showDescription: false,
         category: 'archiving'
@@ -103,7 +103,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'إعدادات نظام الأرشفة',
         description: 'إعدادات التخزين والمسار الافتراضي لنظام الأرشفة',
         icon: Settings2,
-        component: <ArchiveConfigSettings />,
+        component: ArchiveConfigSettings,
         preload: () => ArchiveConfigSettings.preload(),
         showDescription: true,
         category: 'archiving'
@@ -113,7 +113,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'المظهر والتفضيلات',
         description: 'تحكم في كيفية ظهور التطبيق والخيارات الشخصية',
         icon: Palette,
-        component: <AppearanceSettings />,
+        component: AppearanceSettings,
         showDescription: true,
         category: 'services'
     },
@@ -122,7 +122,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'أدوات الدعم و التشغيل',
         description: 'تحميل الأدوات المساعدة وبرامج التشغيل للنظام',
         icon: Wrench,
-        component: <ToolsSettings />,
+        component: ToolsSettings,
         showDescription: false,
         category: 'services'
     },
@@ -131,7 +131,7 @@ export const SETTINGS_CONFIG: SettingsTab[] = [
         label: 'إعدادات الماسح الضوئي',
         description: 'إعدادات وتفضيلات المسح الضوئي المحلي',
         icon: Scan,
-        component: <ScannerSettingsPage />,
+        component: ScannerSettingsPage,
         preload: () => ScannerSettingsPage.preload(),
         showDescription: false,
         category: 'services'

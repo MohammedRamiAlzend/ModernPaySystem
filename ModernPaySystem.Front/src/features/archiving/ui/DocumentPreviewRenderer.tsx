@@ -15,8 +15,6 @@ import {
     AlertCircle,
     FileIcon
 } from 'lucide-react';
-import { renderAsync } from 'docx-preview';
-import * as XLSX from 'xlsx';
 
 const formatBytes = (bytes: number, decimals = 2) => {
     if (!+bytes) return '0 Bytes';
@@ -50,6 +48,7 @@ export const DocxPreview: React.FC<DocxPreviewProps> = ({ blobUrl }) => {
 
                 containerRef.current.innerHTML = '';
 
+                const { renderAsync } = await import('docx-preview');
                 await renderAsync(blob, containerRef.current, undefined, {
                     className: "docx",
                     inWrapper: true,
@@ -118,6 +117,7 @@ export const ExcelPreview: React.FC<ExcelPreviewProps> = ({ blobUrl }) => {
                 const blob = await response.blob();
                 const arrayBuffer = await blob.arrayBuffer();
 
+                const XLSX = await import('xlsx');
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 
                 const sheetsData = workbook.SheetNames.map(name => {

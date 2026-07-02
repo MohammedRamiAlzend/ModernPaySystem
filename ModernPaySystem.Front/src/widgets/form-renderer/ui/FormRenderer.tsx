@@ -71,7 +71,7 @@ export const FormRenderer: React.FC<FormRendererProps> = ({ schema, onSubmit, in
               <>جاري المعالجة...</>
             ) : (
               <>
-                <Save className="w-5 h-5" /> حفظ البيانات
+                <Save className="w-5 h-5" /> إرسال البيانات
               </>
             )}
           </Button>
