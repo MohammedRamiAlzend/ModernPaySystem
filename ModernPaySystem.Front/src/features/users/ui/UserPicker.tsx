@@ -58,6 +58,8 @@ interface UserPickerSharedProps {
     showCurrentUser?: boolean;
     className?: string;
     departmentOnly?: boolean;
+    allowCreateUser?: boolean;
+    isCreatingDepartmentHead?: boolean;
 }
 
 export type UserPickerProps = UserPickerSharedProps & (UserPickerSingleProps | UserPickerMultiProps);
@@ -73,6 +75,8 @@ export const UserPicker = (props: UserPickerProps) => {
         showCurrentUser = false,
         className,
         departmentOnly = false,
+        allowCreateUser = true,
+        isCreatingDepartmentHead = false,
     } = props;
 
     const isMulti = props.multiple === true;
@@ -105,6 +109,7 @@ export const UserPicker = (props: UserPickerProps) => {
                 userName: newUserName.trim(),
                 password: newUserPassword.trim(),
                 subSystem: isNaN(systemId) ? 1 : systemId,
+                isDepartmentHead: isCreatingDepartmentHead,
             });
 
             showStatus({
@@ -204,7 +209,7 @@ export const UserPicker = (props: UserPickerProps) => {
                         <UserIcon className="w-3 h-3" />
                         {label}
                     </Label>
-                    {!isMulti && (
+                    {!isMulti && allowCreateUser && (
                         <button
                             type="button"
                             onClick={() => setIsCreateOpen(true)}

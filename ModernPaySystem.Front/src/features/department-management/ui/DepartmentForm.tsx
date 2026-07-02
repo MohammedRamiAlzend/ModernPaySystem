@@ -142,6 +142,8 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
                                     label="اختر رئيس القسم"
                                     className="!grid-cols-1"
                                     showCurrentUser={true}
+                                    allowCreateUser={mode === 'edit'}
+                                    isCreatingDepartmentHead={mode === 'edit'}
                                 />
                             </FormControl>
                             <FormMessage />

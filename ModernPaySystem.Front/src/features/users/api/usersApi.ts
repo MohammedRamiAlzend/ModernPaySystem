@@ -25,6 +25,7 @@ export interface UserCreateDto {
     subSystem: number;
     departmentId?: string | null;
     isArchiveLeader?: boolean;
+    isDepartmentHead?: boolean;
 }
 
 export interface SubSystem {
