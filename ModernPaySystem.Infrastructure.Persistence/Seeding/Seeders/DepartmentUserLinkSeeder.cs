@@ -13,17 +13,7 @@ public sealed class DepartmentUserLinkSeeder : IEntitySeeder
 
     public async Task<bool> HasDataAsync(AppDbContext context)
     {
-        var departments = await context.Departments.Select(d => d.Id).ToListAsync();
-        if (!departments.Any())
-            return false;
-
-        var departmentIdsWithNormalUsers = await context.Users
-            .Where(u => u.DepartmentId.HasValue && !u.IsDepartmentHead)
-            .Select(u => u.DepartmentId!.Value)
-            .Distinct()
-            .ToListAsync();
-
-        return departments.All(departmentIdsWithNormalUsers.Contains);
+        return await context.Users.AnyAsync(u => u.DepartmentId.HasValue && !u.IsDepartmentHead);
     }
 
     public async Task SeedAsync(AppDbContext context, SeedingConfiguration configuration)
@@ -53,20 +43,17 @@ public sealed class DepartmentUserLinkSeeder : IEntitySeeder
             .ThenBy(u => u.UserName)
             .ToList();
 
-        if (availableNormalUsers.Count < departmentsNeedingNormalUsers.Count)
-            throw new InvalidOperationException("Not enough users exist to assign at least one normal user to each department.");
-
         var assignmentIndex = 0;
-        foreach (var department in departmentsNeedingNormalUsers)
+        foreach (var user in availableNormalUsers)
         {
-            var user = availableNormalUsers[assignmentIndex++];
-            user.DepartmentId = department.Id;
-        }
-
-        var remainingUsers = availableNormalUsers.Skip(assignmentIndex).ToList();
-        for (var i = 0; i < remainingUsers.Count; i++)
-        {
-            remainingUsers[i].DepartmentId = departments[i % departments.Count].Id;
+            if (assignmentIndex < departmentsNeedingNormalUsers.Count)
+            {
+                user.DepartmentId = departmentsNeedingNormalUsers[assignmentIndex++].Id;
+            }
+            else
+            {
+                user.DepartmentId = departments[0].Id;
+            }
         }
 
         await context.SaveChangesAsync();

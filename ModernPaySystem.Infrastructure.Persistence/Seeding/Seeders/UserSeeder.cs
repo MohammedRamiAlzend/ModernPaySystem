@@ -58,7 +58,8 @@ public class UserSeeder : EntitySeederBase<User>
             (Guid.Parse("33333333-3333-3333-3333-333333333306"), "مركز خدمة المواطن قطنا", "123456"),
             (Guid.Parse("33333333-3333-3333-3333-333333333307"), "مركز خدمة المواطن يبرود", "123456"),
             (Guid.Parse("33333333-3333-3333-3333-333333333308"), "مركز خدمة المواطن صحنايا", "123456"),
-            (Guid.Parse("33333333-3333-3333-3333-333333333309"), "مركز خدمة المواطن جرمانا", "123456")
+            (Guid.Parse("33333333-3333-3333-3333-333333333309"), "مركز خدمة المواطن جرمانا", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333310"), "ماجد", "123456")
         };
 
         foreach (var spec in specialUsers)
@@ -68,37 +69,6 @@ public class UserSeeder : EntitySeederBase<User>
                 Id = spec.Id,
                 UserName = spec.UserName,
                 HashedPassword = _passwordHasher.HashPassword(spec.Password),
-                Roles = new List<Role>()
-            });
-        }
-
-        // 2. Generate additional users (all with password "123456")
-        var names = new List<string>
-        {
-            "أحمد", "محمد", "فاطمة", "علي", "سارة", "خالد", "ليلى", "عمر", "رامي", "يوسف",
-            "نور", "مصطفى", "أمل", "حسن", "منى", "زين", "ريم", "طارق", "سلمى", "هاني",
-            "عبير", "ايهم", "دينا", "شريف", "ندى", "عمرو", "رنا", "وائل", "كريم", "هند",
-            "يسرا", "حسين"
-        };
-
-        int nameIndex = 0;
-        string GetNextName()
-        {
-            if (nameIndex < names.Count)
-            {
-                return names[nameIndex++];
-            }
-            return $"مستخدم {++nameIndex}";
-        }
-
-        int remainingCount = Math.Max(0, count - specialUsers.Count);
-        for (int i = 0; i < remainingCount; i++)
-        {
-            users.Add(new User
-            {
-                Id = Guid.NewGuid(),
-                UserName = GetNextName(),
-                HashedPassword = _passwordHasher.HashPassword("123456"),
                 Roles = new List<Role>()
             });
         }
@@ -153,13 +123,14 @@ public class UserSeeder : EntitySeederBase<User>
         {
             "1",
             "محافظة ريف دمشق",
-            "مركز خدمة المواطن كسوة",
+            "مركز خدمة المواطن الكسوة",
             "مركز خدمة المواطن حرستا",
             "مركز خدمة المواطن النبك",
             "مركز خدمة المواطن قطنا",
             "مركز خدمة المواطن يبرود",
             "مركز خدمة المواطن صحنايا",
-            "مركز خدمة المواطن جرمانا"
+            "مركز خدمة المواطن جرمانا",
+            "ماجد"
         };
 
         for (int i = 0; i < users.Count; i++)
