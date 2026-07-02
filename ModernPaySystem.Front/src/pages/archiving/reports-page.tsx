@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/shared/ui/card';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 import {
     useDepartmentDashboard,
     useDailyReport,
@@ -179,7 +180,7 @@ export default function ReportsPage() {
     };
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto px-4 py-6" dir="rtl">
+        <AnimatedContainer className="space-y-6 max-w-7xl mx-auto px-4 py-6" dir="rtl">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">تقارير الأرشيف</h1>
@@ -505,6 +506,6 @@ export default function ReportsPage() {
                     </Suspense>
                 </TabsContent>
             </Tabs>
-        </div>
+        </AnimatedContainer>
     );
 }

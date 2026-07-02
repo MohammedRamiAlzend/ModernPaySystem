@@ -9,6 +9,7 @@ import { DeleteArchiveRequest } from '@/features/archive-deletion-requests/model
 import { Card } from '@/shared/ui/card';
 import { ShieldAlert } from 'lucide-react';
 import { departmentApi } from '@/entities/department/api/departmentApi';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export default function ArchiveDeletionRequestsPage() {
     const user = useAuthStore((state) => state.user);
@@ -51,7 +52,7 @@ export default function ArchiveDeletionRequestsPage() {
     };
 
     return (
-        <div className="p-6 md:p-8 flex flex-col gap-6 text-right" dir="rtl">
+        <AnimatedContainer className="p-6 md:p-8 flex flex-col gap-6 text-right" dir="rtl">
 
             <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 border-b border-border pb-6">
                 <div className="flex flex-col gap-1.5">
@@ -95,6 +96,6 @@ export default function ArchiveDeletionRequestsPage() {
                 }}
             />
 
-        </div>
+        </AnimatedContainer>
     );
 }

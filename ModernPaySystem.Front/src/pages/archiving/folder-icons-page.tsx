@@ -23,6 +23,7 @@ import {
     AlertDialogTitle,
 } from '@/shared/ui/alert-dialog';
 import { Loader2, Plus, Trash2, Image, Check } from 'lucide-react';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export default function FolderIconsPage() {
     const { data: icons = [], isLoading } = useFolderIcons();
@@ -59,7 +60,7 @@ export default function FolderIconsPage() {
     };
 
     return (
-        <div className="flex flex-col gap-6 p-6 w-full max-w-full overflow-x-hidden min-w-0" dir="rtl">
+        <AnimatedContainer className="flex flex-col gap-6 p-6 w-full max-w-full overflow-x-hidden min-w-0" dir="rtl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1 text-right">
                     <h1 className="text-xl font-bold text-primary">إدارة أيقونات المجلدات</h1>
@@ -157,7 +158,7 @@ export default function FolderIconsPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </AnimatedContainer>
     );
 }
 

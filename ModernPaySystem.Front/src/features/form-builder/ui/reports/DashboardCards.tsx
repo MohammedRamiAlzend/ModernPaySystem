@@ -31,6 +31,12 @@ function StatCard({ icon, label, value, sublabel }: { icon: React.ReactNode; lab
 
 function StatusBreakdownCard({ breakdown }: { breakdown: Record<string, number> }) {
     const entries = Object.entries(breakdown);
+    const Status = {
+        Pending: 'قيد الانتظار',
+        InProcess: 'قيد المعالجة',
+        Managed: 'تمت الإدارة',
+        Delivered: 'تم التسليم'
+    } as const;
     const total = entries.reduce((sum, [, v]) => sum + v, 0);
 
     if (entries.length === 0) return null;
@@ -47,7 +53,7 @@ function StatusBreakdownCard({ breakdown }: { breakdown: Record<string, number> 
                 {entries.map(([status, count]) => (
                     <div key={status} className="space-y-1">
                         <div className="flex justify-between text-xs">
-                            <span className="font-medium">{status}</span>
+                            <span className="font-medium">{Status[status as keyof typeof Status]}</span>
                             <span className="text-muted-foreground">{count}</span>
                         </div>
                         <Progress value={total > 0 ? (count / total) * 100 : 0} className="h-1.5" />

@@ -8,22 +8,23 @@ import { useLedDepartments, useArchiveAuditLogs, useArchiveRecord, useAllDynamic
 import { useUsers } from '@/entities/user/api/userEndpoints';
 import { AuditAction, AUDIT_ACTION_LABELS } from '@/features/archiving/model/types';
 import { DocumentGalleryModal } from '@/features/archiving/ui/DocumentGalleryModal';
-import { 
-    Calendar, 
-    ShieldAlert, 
-    Download, 
-    Printer, 
-    Eye, 
-    Trash2, 
-    Plus, 
-    Edit, 
-    FileUp, 
+import {
+    Calendar,
+    ShieldAlert,
+    Download,
+    Printer,
+    Eye,
+    Trash2,
+    Plus,
+    Edit,
+    FileUp,
     FileDown,
     Loader2,
     RefreshCw,
     ChevronLeft,
     ChevronRight
 } from 'lucide-react';
+import { AnimatedContainer } from '@/shared/ui/common/animated-container';
 
 export default function AuditLogsPage() {
     const [departmentId, setDepartmentId] = useState<string>('');
@@ -67,6 +68,53 @@ export default function AuditLogsPage() {
     const getUserName = (userId: string) => {
         const user = users.find(u => u.id === userId || u.userName === userId);
         return user ? user.userName : userId;
+    };
+
+    // Translate English audit log details to Arabic
+    const translateDetails = (details: string | null | undefined): string => {
+        if (!details) return '-';
+
+        const mappings: Record<string, string> = {
+            'Viewed archive record': 'عرض السجل الأرشيفي',
+            'Created archive record': 'إنشاء السجل الأرشيفي',
+            'Updated archive record': 'تحديث السجل الأرشيفي',
+            'Deleted archive record': 'حذف السجل الأرشيفي',
+            'Downloaded archive record as ZIP': 'تحميل السجل الأرشيفي كملف ZIP',
+            'Printed archive record': 'طباعة السجل الأرشيفي',
+        };
+
+        if (mappings[details]) {
+            return mappings[details];
+        }
+
+        let match;
+
+        match = details.match(/Moved from folder '(.*)' to folder '(.*)'/);
+        if (match) {
+            return `نُقل من المجلد "${match[1]}" إلى المجلد "${match[2]}"`;
+        }
+
+        match = details.match(/Added (\d+) file\(s\) to archive record/);
+        if (match) {
+            return `إضافة ${match[1]} ملف(ات) إلى السجل الأرشيفي`;
+        }
+
+        match = details.match(/Removed file '(.*)' from archive record/);
+        if (match) {
+            return `إزالة الملف "${match[1]}" من السجل الأرشيفي`;
+        }
+
+        match = details.match(/Downloaded file: (.*)/);
+        if (match) {
+            return `تحميل الملف: ${match[1]}`;
+        }
+
+        match = details.match(/Viewed file: (.*)/);
+        if (match) {
+            return `عرض الملف: ${match[1]}`;
+        }
+
+        return details;
     };
 
     // Style for action badges
@@ -158,7 +206,7 @@ export default function AuditLogsPage() {
     }
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto px-4 py-6" dir="rtl">
+        <AnimatedContainer className="space-y-6 max-w-7xl mx-auto px-4 py-6" dir="rtl">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight text-foreground">سجلات النشاط (Audit Logs)</h1>
@@ -166,9 +214,9 @@ export default function AuditLogsPage() {
                         تتبع عمليات الوصول والتحميل والطباعة ومختلف التغييرات على سجلات الأرشيف.
                     </p>
                 </div>
-                <Button 
-                    variant="outline" 
-                    size="sm" 
+                <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => refetch()}
                     disabled={isFetching}
                 >
@@ -310,7 +358,7 @@ export default function AuditLogsPage() {
                                             {getUserName(log.userId)}
                                         </TableCell>
                                         <TableCell className="text-sm py-3.5">
-                                            <span className="text-foreground">{log.details || '-'}</span>
+                                            <span className="text-foreground">{translateDetails(log.details)}</span>
                                         </TableCell>
                                         <TableCell className="py-3.5">
                                             {log.archiveRecordId && log.archiveRecordId !== '00000000-0000-0000-0000-000000000000' ? (
@@ -390,6 +438,6 @@ export default function AuditLogsPage() {
                     </div>
                 </div>
             )}
-        </div>
+        </AnimatedContainer>
     );
 }
