@@ -9,7 +9,7 @@ import {
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { Button } from '@/shared/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
-import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Archive } from 'lucide-react';
+import { GitBranch, GitPullRequest, Plus, RefreshCw, Layers, Trash2, Crown, Archive, Pencil } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/constants/query-keys';
@@ -33,6 +33,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
     const [initialParentId, setInitialParentId] = useState<string>('');
     const [isParentFixed, setIsParentFixed] = useState(false);
     const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const [searchParams] = useSearchParams();
     const urlHighlightId = searchParams.get('highlightId');
@@ -40,7 +41,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
     const { showConfirm, showStatus } = useUIStore();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const { createDepartment, deleteDepartment, assignDepartmentHead, isLoading: isActionLoading } = useDepartmentActions();
+    const { createDepartment, updateDepartment, deleteDepartment, assignDepartmentHead, isLoading: isActionLoading } = useDepartmentActions();
 
     // Fetch all departments for selection
     const { data: allDepartments, isLoading: isAllLoading } = useQuery({
@@ -111,6 +112,13 @@ export const DepartmentDashboardWidget: React.FC = () => {
         enabled: !!selectedDeptForUsers
     });
 
+    // Fetch selected department details for editing from toolbar
+    const { data: selectedDepartmentForEdit } = useQuery({
+        queryKey: ['department', selectedRootId],
+        queryFn: () => selectedRootId ? departmentApi.getById(selectedRootId) : null,
+        enabled: !!selectedRootId
+    });
+
     // Fetch department archive leaders
     const { data: archiveLeaders } = useQuery({
         queryKey: ['department-archive-leaders', selectedDeptForUsers],
@@ -174,6 +182,22 @@ export const DepartmentDashboardWidget: React.FC = () => {
         setIsParentFixed(false);
     };
 
+    const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+    const handleUpdate = async (data: any) => {
+        if (!selectedRootId) return;
+        const isValidGuid = (val: string | null | undefined) => val && val !== EMPTY_GUID;
+        const dto = {
+            ...data,
+            parentDepartmentId: isValidGuid(data.parentDepartmentId) ? data.parentDepartmentId : null,
+            headedUserId: isValidGuid(data.headedUserId) ? data.headedUserId : null,
+            code: data.code || null,
+            description: data.description || null,
+        };
+        await updateDepartment({ id: selectedRootId, dto });
+        setIsEditOpen(false);
+        queryClient.invalidateQueries({ queryKey: ['department', selectedRootId] });
+    };
+
     const handleSaveUser = async (values: UserFormValues) => {
         if (!selectedDeptForUsers) return;
 
@@ -235,10 +259,16 @@ export const DepartmentDashboardWidget: React.FC = () => {
                 </div>
                 <div className="flex gap-2">
                     {selectedRootId && (
-                        <Button variant="destructive" size="sm" className="gap-2" onClick={handleDelete}>
-                            <Trash2 className="w-4 h-4" />
-                            حذف المحدد
-                        </Button>
+                        <>
+                            <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsEditOpen(true)}>
+                                <Pencil className="w-4 h-4" />
+                                تعديل المحدد
+                            </Button>
+                            <Button variant="destructive" size="sm" className="gap-2" onClick={handleDelete}>
+                                <Trash2 className="w-4 h-4" />
+                                حذف المحدد
+                            </Button>
+                        </>
                     )}
                     <Dialog open={isCreateOpen} onOpenChange={(open) => {
                         setIsCreateOpen(open);
@@ -382,6 +412,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
                                             <UserPlus className="w-4 h-4" />
                                             إضافة مستخدم
                                         </Button>
+
 
                                         <Button
                                             size="sm"
@@ -601,6 +632,33 @@ export const DepartmentDashboardWidget: React.FC = () => {
                         departmentOptions={departmentOptions}
                         defaultDepartmentId={selectedDeptForUsers || undefined}
                     />
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Department Dialog */}
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>تعديل قسم: {selectedDepartmentForEdit?.name}</DialogTitle>
+                        <DialogDescription>قم بتعديل بيانات القسم واحفظ التغييرات</DialogDescription>
+                    </DialogHeader>
+                    {selectedDepartmentForEdit && (
+                        <DepartmentForm
+                            key={selectedDepartmentForEdit.id}
+                            onSubmit={handleUpdate}
+                            parentOptions={departmentOptions}
+                            isLoading={isActionLoading}
+                            mode="edit"
+                            initialData={{
+                                name: selectedDepartmentForEdit.name,
+                                code: selectedDepartmentForEdit.code || '',
+                                description: selectedDepartmentForEdit.description || '',
+                                parentDepartmentId: selectedDepartmentForEdit.parentDepartmentId || '',
+                                headedUserId: selectedDepartmentForEdit.departmentHeadId || '',
+                                type: selectedDepartmentForEdit.type,
+                            }}
+                        />
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

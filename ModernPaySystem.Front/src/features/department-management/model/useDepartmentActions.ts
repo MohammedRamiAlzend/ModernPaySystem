@@ -58,16 +58,23 @@ export const useDepartmentActions = () => {
         },
         onError: (error: any) => {
             const backendErrors = error.response?.data?.errors;
-            let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء تحديث القسم';
+            let errorMessage = 'حدث خطأ أثناء تحديث القسم';
 
             if (Array.isArray(backendErrors) && backendErrors.length > 0) {
                 const firstError = backendErrors[0];
-                if (firstError.code === 'CIRCULAR_REFERENCE') {
-                    errorMessage = 'لا يمكن إنشاء علاقة دائرية (لا يمكن للقسم أن يكون أب لنفسه أو لأحد أبنائه)';
-                } else {
-                    errorMessage = firstError.description || errorMessage;
-                }
+                // استخدام الوصف العربي أولاً ثم الإنجليزي
+                errorMessage = firstError.arabicDescription || firstError.description || errorMessage;
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = `خطأ في الاتصال: ${error.message}`;
             }
+
+            console.error('Update department error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                errors: backendErrors
+            });
 
             showStatus({
                 type: 'error',

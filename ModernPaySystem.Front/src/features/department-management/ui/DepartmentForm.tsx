@@ -7,12 +7,12 @@ import { Input } from '@/shared/ui/input';
 import { Textarea } from '@/shared/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui/form';
-import { DepartmentType, CreateDepartmentDto } from '@/entities/department/model/types';
+import { DepartmentType } from '@/entities/department/model/types';
 import { SearchableSelect, SearchableSelectOption } from '@/shared/ui/searchable-select';
 import { UserPicker } from '@/features/users/ui/UserPicker';
 
 
-const departmentFormSchema = z.object({
+const createDepartmentFormSchema = z.object({
     name: z.string().min(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' }),
     code: z.string().optional(),
     description: z.string().optional(),
@@ -21,15 +21,32 @@ const departmentFormSchema = z.object({
     type: z.nativeEnum(DepartmentType),
 });
 
+const editDepartmentFormSchema = z.object({
+    name: z.string().min(2, { message: 'الاسم يجب أن يكون حرفين على الأقل' }),
+    code: z.string().optional(),
+    description: z.string().optional(),
+    parentDepartmentId: z.string().min(1, { message: 'يجب اختيار القسم الأب' }),
+    headedUserId: z.string().optional(),
+    type: z.nativeEnum(DepartmentType),
+});
 
-type DepartmentFormValues = z.infer<typeof departmentFormSchema>;
+
+type DepartmentFormValues = {
+    name: string;
+    code?: string;
+    description?: string;
+    parentDepartmentId: string;
+    headedUserId?: string;
+    type: DepartmentType;
+};
 
 interface DepartmentFormProps {
-    onSubmit: (data: CreateDepartmentDto) => void;
+    onSubmit: (data: DepartmentFormValues) => void;
     initialData?: Partial<DepartmentFormValues>;
     parentOptions: SearchableSelectOption[];
     isLoading?: boolean;
     isParentDisabled?: boolean;
+    mode?: 'create' | 'edit';
 }
 
 export const DepartmentForm: React.FC<DepartmentFormProps> = ({
@@ -37,10 +54,12 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
     initialData,
     parentOptions,
     isLoading,
-    isParentDisabled = false
+    isParentDisabled = false,
+    mode = 'create'
 }) => {
+    const formSchema = mode === 'edit' ? editDepartmentFormSchema : createDepartmentFormSchema;
     const form = useForm<DepartmentFormValues>({
-        resolver: zodResolver(departmentFormSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             name: initialData?.name || '',
             code: initialData?.code || '',
@@ -48,7 +67,6 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
             parentDepartmentId: initialData?.parentDepartmentId || '',
             headedUserId: initialData?.headedUserId || '',
             type: initialData?.type || DepartmentType.Office,
-
         },
     });
 
@@ -168,7 +186,7 @@ export const DepartmentForm: React.FC<DepartmentFormProps> = ({
 
                 <div className="flex justify-end gap-3 pt-4">
                     <Button type="submit" disabled={isLoading}>
-                        {isLoading ? 'جاري الحفظ...' : 'حفظ القسم'}
+                        {isLoading ? 'جاري الحفظ...' : mode === 'edit' ? 'تحديث القسم' : 'حفظ القسم'}
                     </Button>
                 </div>
             </form>

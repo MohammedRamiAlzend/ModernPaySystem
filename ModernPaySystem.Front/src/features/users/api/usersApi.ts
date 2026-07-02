@@ -47,8 +47,9 @@ export const fetchUserById = async (userId: string): Promise<User> => {
     return response.data.data;
 };
 
-export const createUser = async (user: UserCreateDto): Promise<void> => {
-    await api.post('/Users', user);
+export const createUser = async (user: UserCreateDto): Promise<User> => {
+    const response = await api.post<{ data: User }>('/Users', user);
+    return response.data.data;
 };
 
 export const updateUser = async ({ id, ...user }: UserCreateDto & { id: string }): Promise<void> => {
