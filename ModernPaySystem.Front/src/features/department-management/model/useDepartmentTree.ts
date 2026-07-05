@@ -60,7 +60,7 @@ export const convertToMermaid = (
         const headInfo = node.departmentHeadName ? `\\n ${node.departmentHeadName}` : '';
 
         const hasChildren = node.children && node.children.length > 0;
-        const isCollapsed = collapsedNodeIds?.has(node.id);
+        const isCollapsed = !!(hasChildren && collapsedNodeIds?.has(node.id));
 
         let displaySuffix = '';
         if (hasChildren) {
