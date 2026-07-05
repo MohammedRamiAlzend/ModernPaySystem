@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mermaid from 'mermaid';
 import { DepartmentTree } from '@/entities/department/model/types';
 import { convertToMermaid } from '../model/useDepartmentTree';
 import { useTheme } from '@/app/providers/theme-context';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/shared/ui/button';
 import { cn } from '@/shared/lib/utils';
 
@@ -24,11 +24,20 @@ interface ControlsProps {
     zoomOut: (step?: number, speed?: number) => void;
     resetTransform: (speed?: number) => void;
     scale: number;
+    isFullscreen: boolean;
+    onToggleFullscreen: () => void;
 }
 
-const Controls: React.FC<ControlsProps> = ({ zoomIn, zoomOut, resetTransform }) => {
+const Controls: React.FC<ControlsProps> = ({ 
+    zoomIn, 
+    zoomOut, 
+    resetTransform, 
+    scale,
+    isFullscreen,
+    onToggleFullscreen
+}) => {
     return (
-        <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-background/90 backdrop-blur-md p-1.5 rounded-xl border border-border shadow-md transition-all duration-200" dir="rtl">
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 bg-background/85 backdrop-blur-md p-1.5 rounded-xl border border-border shadow-lg transition-all duration-200" dir="rtl">
             <Button
                 variant="ghost"
                 size="icon"
@@ -39,9 +48,9 @@ const Controls: React.FC<ControlsProps> = ({ zoomIn, zoomOut, resetTransform }) 
                 <ZoomIn className="w-4 h-4" />
             </Button>
 
-            {/* <span className="text-[10px] font-bold text-muted-foreground px-2 py-1 bg-muted/50 rounded-md min-w-[45px] text-center font-mono select-none">
+            <span className="text-[11px] font-bold text-muted-foreground px-2 py-1 bg-muted/60 rounded-md min-w-[50px] text-center font-mono select-none">
                 {Math.round(scale * 100)}%
-            </span> */}
+            </span>
 
             <Button
                 variant="ghost"
@@ -64,12 +73,28 @@ const Controls: React.FC<ControlsProps> = ({ zoomIn, zoomOut, resetTransform }) 
             >
                 <RotateCcw className="w-4 h-4" />
             </Button>
+
+            <div className="w-[1px] h-5 bg-border mx-0.5" />
+
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
+                onClick={onToggleFullscreen}
+                title={isFullscreen ? "خروج من ملء الشاشة" : "ملء الشاشة"}
+            >
+                {isFullscreen ? (
+                    <Minimize2 className="w-4 h-4" />
+                ) : (
+                    <Maximize2 className="w-4 h-4" />
+                )}
+            </Button>
         </div>
     );
 };
 
 const TreeSkeleton = ({ className }: { className?: string }) => (
-    <div className={cn("w-full h-[500px] bg-background/50 backdrop-blur-sm animate-pulse rounded-xl flex items-center justify-center overflow-hidden z-50", className)}>
+    <div className={cn("w-full bg-background/50 backdrop-blur-sm animate-pulse rounded-xl flex items-center justify-center overflow-hidden z-50", className)}>
         <div className="flex flex-col items-center gap-8 opacity-20">
             <Skeleton className="w-48 h-12 rounded-2xl" />
             <div className="flex gap-12">
@@ -94,24 +119,80 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
     onNodeClick
 }) => {
     const mermaidRef = useRef<HTMLDivElement>(null);
-    const [isRendering, setIsRendering] = React.useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [isRendering, setIsRendering] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(new Set());
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+
+    const onNodeClickRef = useRef(onNodeClick);
+    
+    useEffect(() => {
+        onNodeClickRef.current = onNodeClick;
+    }, [onNodeClick]);
+
+    const handleNodeDoubleClick = useCallback((nodeId: string) => {
+        setCollapsedNodeIds(prev => {
+            const next = new Set(prev);
+            if (next.has(nodeId)) {
+                next.delete(nodeId);
+            } else {
+                next.add(nodeId);
+            }
+            return next;
+        });
+    }, []);
+
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch((err) => {
+                console.error("Error enabling fullscreen:", err);
+            });
+            setIsFullscreen(true);
+        } else {
+            document.exitFullscreen();
+            setIsFullscreen(false);
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
+    const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Setup global callback for Mermaid
     useEffect(() => {
         (window as any).onMermaidNodeClick = (nodeId: string) => {
-            if (onNodeClick) {
-                // Convert nodeId back to GUID (underscore to hyphen)
-                const originalId = nodeId.replace(/_/g, '-');
-                onNodeClick(originalId);
+            const originalId = nodeId.replace(/_/g, '-');
+            
+            if (clickTimeoutRef.current) {
+                // Double click
+                clearTimeout(clickTimeoutRef.current);
+                clickTimeoutRef.current = null;
+                handleNodeDoubleClick(originalId);
+            } else {
+                // Single click
+                clickTimeoutRef.current = setTimeout(() => {
+                    clickTimeoutRef.current = null;
+                    if (onNodeClickRef.current) {
+                        onNodeClickRef.current(originalId);
+                    }
+                }, 250);
             }
         };
 
         return () => {
             delete (window as any).onMermaidNodeClick;
+            if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
         };
-    }, [onNodeClick]);
+    }, [handleNodeDoubleClick]);
 
     useEffect(() => {
         mermaid.initialize({
@@ -131,13 +212,12 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
         const renderChart = async () => {
             if (mermaidRef.current && data && data.length > 0) {
                 setIsRendering(true);
-                const chartConfig = convertToMermaid(data, highlightId, isDark);
+                const chartConfig = convertToMermaid(data, highlightId, isDark, collapsedNodeIds);
 
                 // Use unique ID for rendering to avoid conflicts
                 const id = `mermaid-chart-${Math.random().toString(36).substr(2, 9)}`;
 
                 try {
-                    // mermaid.render returns { svg, bindFunctions } in newer versions
                     const result = await mermaid.render(id, chartConfig);
 
                     if (mermaidRef.current) {
@@ -157,21 +237,38 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
         };
 
         renderChart();
-    }, [data, highlightId, isDark]);
+    }, [data, highlightId, isDark, collapsedNodeIds]);
 
     if (!data || data.length === 0) {
-        if (isLoading) return <TreeSkeleton />;
+        if (isLoading) return <TreeSkeleton className="min-h-[500px]" />;
         return (
-            <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <div className="flex items-center justify-center h-64 text-muted-foreground border border-dashed border-border rounded-xl">
                 لا توجد بيانات لعرض الشجرة
             </div>
         );
     }
 
     return (
-        <div className="w-full relative bg-card rounded-lg border border-border shadow-sm min-h-[500px] overflow-hidden group">
+        <div 
+            ref={containerRef}
+            className={cn(
+                "w-full relative bg-card border border-border shadow-md overflow-hidden group transition-all duration-300",
+                isFullscreen ? "fixed inset-0 z-50 h-screen w-screen bg-background" : "rounded-lg min-h-[500px]"
+            )}
+        >
             {/* Show Skeleton as an absolute overlay to prevent unmounting mermaidRef */}
-            {(isLoading || isRendering) && <TreeSkeleton className="absolute inset-0" />}
+            {(isLoading || isRendering) && (
+                <TreeSkeleton className={cn("absolute inset-0 z-30", isFullscreen ? "h-screen" : "h-[500px]")} />
+            )}
+
+            {collapsedNodeIds.size > 0 && (
+                <button
+                    onClick={() => setCollapsedNodeIds(new Set())}
+                    className="absolute top-4 left-4 z-20 bg-background/80 backdrop-blur-md text-[11px] font-bold text-primary px-3 py-1.5 rounded-lg border border-border shadow-sm hover:bg-primary/10 transition-colors"
+                >
+                    توسيع كافة الفروع ({collapsedNodeIds.size})
+                </button>
+            )}
 
             <TransformWrapper
                 initialScale={1}
@@ -190,11 +287,13 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                             zoomOut={zoomOut}
                             resetTransform={resetTransform}
                             scale={state.scale}
+                            isFullscreen={isFullscreen}
+                            onToggleFullscreen={toggleFullscreen}
                         />
                         <TransformComponent
                             wrapperStyle={{
                                 width: '100%',
-                                height: '500px',
+                                height: isFullscreen ? '100vh' : '500px',
                                 cursor: 'grab'
                             }}
                             contentStyle={{
@@ -217,8 +316,18 @@ export const DepartmentMermaidTree: React.FC<DepartmentMermaidTreeProps> = ({
                 )}
             </TransformWrapper>
 
-            <div className="absolute bottom-4 right-4 text-[10px] text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity">
-                استخدم العجلة للتكبير، واسحب للتحريك
+            <div className="absolute bottom-4 right-4 flex flex-col gap-1 text-[10px] text-muted-foreground opacity-60 group-hover:opacity-100 transition-opacity select-none" dir="rtl">
+                <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span>نقر مفرد: تحديد القسم وعرض تفاصيله</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                    <span>نقر مزدوج: طي / توسيع فرع القسم</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span>استخدم عجلة الفأرة للتكبير والتصغير، واسحب للتحريك داخل اللوحة</span>
+                </div>
             </div>
         </div>
     );
