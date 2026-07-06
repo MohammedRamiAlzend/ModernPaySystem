@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useAuthStore } from '@/app/store/authStore';
-import { useUsers, useSubSystems, fetchUsersByCurrentDepartment } from '../api/usersApi';
+import { useUsers, useSubSystems, fetchUsersByCurrentDepartment, useUserMutations } from '../api/usersApi';
 import { useQuery } from '@tanstack/react-query';
 import { Label } from '@/shared/ui/label';
 import { SearchableSelect } from '@/shared/ui/searchable-select';
@@ -12,9 +12,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/shared/ui/select';
-import { Shield, User as UserIcon } from 'lucide-react';
+import { Shield, User as UserIcon, UserPlus } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { APP_CONFIG } from '@/shared/config/appConfig';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
+import { Button } from '@/shared/ui/button';
+import { useUIStore } from '@/app/store/uiStore';
 
 // ─── Single-select mode props ────────────────────────────────────────────────
 
@@ -54,6 +58,8 @@ interface UserPickerSharedProps {
     showCurrentUser?: boolean;
     className?: string;
     departmentOnly?: boolean;
+    allowCreateUser?: boolean;
+    isCreatingDepartmentHead?: boolean;
 }
 
 export type UserPickerProps = UserPickerSharedProps & (UserPickerSingleProps | UserPickerMultiProps);
@@ -69,12 +75,69 @@ export const UserPicker = (props: UserPickerProps) => {
         showCurrentUser = false,
         className,
         departmentOnly = false,
+        allowCreateUser = true,
+        isCreatingDepartmentHead = false,
     } = props;
 
     const isMulti = props.multiple === true;
 
     const { user: currentUserData } = useAuthStore();
     const [selectedSubSystem, setSelectedSubSystem] = useState<string>(defaultSubSystemId);
+
+    // New state for creating user inline
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [newUserName, setNewUserName] = useState('');
+    const [newUserPassword, setNewUserPassword] = useState('');
+
+    const { createUser } = useUserMutations();
+    const { showStatus } = useUIStore();
+
+    const handleCreateUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newUserName.trim() || !newUserPassword.trim()) {
+            showStatus({
+                type: 'error',
+                title: 'خطأ في المدخلات',
+                message: 'يرجى إدخال اسم المستخدم وكلمة المرور'
+            });
+            return;
+        }
+
+        try {
+            const systemId = parseInt(selectedSubSystem);
+            const newUser = await createUser.mutateAsync({
+                userName: newUserName.trim(),
+                password: newUserPassword.trim(),
+                subSystem: isNaN(systemId) ? 1 : systemId,
+                isDepartmentHead: isCreatingDepartmentHead,
+            });
+
+            showStatus({
+                type: 'success',
+                title: 'تم إنشاء المستخدم',
+                message: `تم إنشاء المستخدم "${newUser.userName}" بنجاح`
+            });
+
+            setIsCreateOpen(false);
+            setNewUserName('');
+            setNewUserPassword('');
+
+            if (!isMulti && props.onUserSelect) {
+                props.onUserSelect(newUser.id);
+            }
+        } catch (error: any) {
+            const backendErrors = error.response?.data?.errors;
+            let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء إنشاء المستخدم';
+            if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+                errorMessage = backendErrors[0].arabicDescription || backendErrors[0].description || errorMessage;
+            }
+            showStatus({
+                type: 'error',
+                title: 'خطأ في إنشاء المستخدم',
+                message: errorMessage
+            });
+        }
+    };
 
     const { data: subSystems = [], isLoading: isLoadingSubSystems } = useSubSystems();
 
@@ -141,10 +204,21 @@ export const UserPicker = (props: UserPickerProps) => {
 
             {/* User selector – single or multi via SearchableSelect */}
             <div className="space-y-2">
-                <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
-                    <UserIcon className="w-3 h-3" />
-                    {label}
-                </Label>
+                <div className="flex justify-between items-center">
+                    <Label className="text-xs font-bold text-muted-foreground flex items-center gap-2">
+                        <UserIcon className="w-3 h-3" />
+                        {label}
+                    </Label>
+                    {!isMulti && allowCreateUser && (
+                        <button
+                            type="button"
+                            onClick={() => setIsCreateOpen(true)}
+                            className="text-xs text-primary hover:underline font-bold transition-all"
+                        >
+                            + إنشاء مستخدم جديد
+                        </button>
+                    )}
+                </div>
 
                 {isMulti ? (
                     <SearchableSelect
@@ -169,6 +243,62 @@ export const UserPicker = (props: UserPickerProps) => {
                     />
                 )}
             </div>
+
+            {/* Inline User Creation Dialog */}
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogContent className="rounded-2xl max-w-sm" style={{ direction: 'rtl' }}>
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-right">
+                            <UserPlus className="w-5 h-5 text-primary" />
+                            إنشاء مستخدم جديد
+                        </DialogTitle>
+                        <DialogDescription className="text-right">
+                            سيتم إنشاء المستخدم تلقائياً وربطه بالنظام الفرعي المختار
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleCreateUser} className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                            <Label className="text-right block">اسم المستخدم</Label>
+                            <Input
+                                placeholder="مثال: mohammed_ali"
+                                value={newUserName}
+                                onChange={(e) => setNewUserName(e.target.value)}
+                                className="text-right rounded-xl"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-right block">كلمة المرور</Label>
+                            <Input
+                                type="password"
+                                placeholder="كلمة المرور..."
+                                value={newUserPassword}
+                                onChange={(e) => setNewUserPassword(e.target.value)}
+                                className="text-right rounded-xl"
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setIsCreateOpen(false)}
+                                className="rounded-xl"
+                            >
+                                إلغاء
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={createUser.isPending}
+                                className="rounded-xl bg-primary hover:bg-primary/90"
+                            >
+                                {createUser.isPending ? 'جاري الإنشاء...' : 'إنشاء وتعيين'}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

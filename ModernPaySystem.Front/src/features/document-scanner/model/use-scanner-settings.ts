@@ -12,7 +12,7 @@ export interface ScannerSettings {
 }
 
 const DEFAULT_SETTINGS: ScannerSettings = {
-    appType: 'new', // New scanner is default
+    appType: 'old', // Asprise is default or 'new' 
     deviceId: '',
     dpi: 300,
     colorMode: 'Color',

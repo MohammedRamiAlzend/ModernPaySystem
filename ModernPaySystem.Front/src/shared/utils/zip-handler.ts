@@ -1,5 +1,3 @@
-import JSZip from 'jszip';
-import { jsPDF } from 'jspdf';
 
 export interface ZipFile {
     name: string;
@@ -25,6 +23,7 @@ const XLSX_EXTENSIONS = ['.xlsx', '.xls'];
  * Parses a ZIP blob and extracts all files as Object URLs
  */
 export const extractImagesFromZip = async (zipBlob: Blob): Promise<ZipContent> => {
+    const JSZip = (await import('jszip')).default;
     const zip = new JSZip();
     const contents = await zip.loadAsync(zipBlob);
     const files: ZipFile[] = [];
@@ -74,6 +73,7 @@ export const extractImagesFromZip = async (zipBlob: Blob): Promise<ZipContent> =
 export const imagesToPdf = async (images: ZipImage[], title: string = 'Attachments'): Promise<void> => {
     if (images.length === 0) return;
 
+    const { jsPDF } = await import('jspdf');
     const pdf = new jsPDF();
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();

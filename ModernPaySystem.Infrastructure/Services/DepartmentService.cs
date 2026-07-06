@@ -115,21 +115,27 @@ public class DepartmentService(
                 return existingResult.Errors;
 
             if (existingResult.Value == null)
-                return new Error("NOT_FOUND", "Department not found", ErrorKind.NotFound);
+                return new Error("NOT_FOUND", "القسم المطلوب غير موجود", ErrorKind.NotFound, "القسم المطلوب غير موجود");
 
             var department = existingResult.Value;
 
             if (dto.ParentDepartmentId.HasValue && dto.ParentDepartmentId != department.ParentDepartmentId)
             {
-                if (await unitOfWork.Departments.WouldCreateCircularReferenceAsync(id, dto.ParentDepartmentId.Value))
-                    return new Error("CIRCULAR_REFERENCE", "Cannot create circular reference", ErrorKind.Validation);
+                if (dto.ParentDepartmentId.Value == id)
+                    return new Error("SELF_PARENT", "لا يمكن تعيين القسم كأب لنفسه", ErrorKind.Validation, "لا يمكن تعيين القسم كأب لنفسه");
 
-                var parentResult = await unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
-                if (parentResult.Value != null)
-                {
-                    department.Level = parentResult.Value.Level + 1;
-                    department.MaterializedPath = $"{parentResult.Value.MaterializedPath}/{GetShortId(department.Id)}";
-                }
+                var parentExists = await unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);
+                if (parentExists.IsError || parentExists.Value == null)
+                    return new Error("PARENT_NOT_FOUND", "القسم الأب المحدد غير موجود", ErrorKind.Validation, "القسم الأب المحدد غير موجود");
+
+                if (await unitOfWork.Departments.WouldCreateCircularReferenceAsync(id, dto.ParentDepartmentId.Value))
+                    return new Error("CIRCULAR_REFERENCE", "لا يمكن نقل القسم تحت أحد أبنائه (مرجعية دائرية)", ErrorKind.Validation, "لا يمكن نقل القسم تحت أحد أبنائه لأن ذلك يُنشئ علاقة دائرية");
+
+                department.Level = parentExists.Value.Level + 1;
+                department.MaterializedPath = $"{parentExists.Value.MaterializedPath}/{GetShortId(department.Id)}";
+                department.ParentDepartmentId = dto.ParentDepartmentId.Value;
+
+                logger.LogInformation("Moving department {DeptId} under new parent {ParentId}", id, dto.ParentDepartmentId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Name))
@@ -137,7 +143,6 @@ public class DepartmentService(
 
             department.Code = dto.Code ?? department.Code;
             department.Description = dto.Description ?? department.Description;
-            department.ParentDepartmentId = dto.ParentDepartmentId;
             department.Type = dto.Type ?? department.Type;
             if (dto.HeadedUserId.HasValue)
                 department.DepartmentHeadId = dto.HeadedUserId.Value;
@@ -146,7 +151,10 @@ public class DepartmentService(
 
             var updateResult = await unitOfWork.Departments.UpdateAsync(department);
             if (updateResult.IsError)
-                return updateResult.Errors;
+            {
+                logger.LogError("Repository UpdateAsync failed for department {DeptId}: {Errors}", id, string.Join(", ", updateResult.Errors.Select(e => e.Description)));
+                return new Error("UPDATE_FAILED", "فشل تحديث القسم في قاعدة البيانات", ErrorKind.Failure, "فشل تحديث بيانات القسم، يرجى التحقق من البيانات المدخلة");
+            }
 
             await unitOfWork.SaveChangesAsync();
 
@@ -154,10 +162,24 @@ public class DepartmentService(
 
             return MapToDto(department);
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+        {
+            logger.LogError(dbEx, "Database error updating department: {DepartmentId}. Inner: {Inner}", id, dbEx.InnerException?.Message);
+            
+            var innerMsg = dbEx.InnerException?.Message ?? "";
+            
+            if (innerMsg.Contains("UNIQUE") || innerMsg.Contains("duplicate"))
+                return new Error("DUPLICATE", "يوجد قسم آخر بنفس الاسم أو الكود", ErrorKind.Validation, "يوجد قسم آخر بنفس الاسم أو الكود، يرجى اختيار اسم مختلف");
+            
+            if (innerMsg.Contains("FOREIGN KEY") || innerMsg.Contains("REFERENCE"))
+                return new Error("FK_VIOLATION", "القسم الأب المحدد غير صالح أو تم حذفه", ErrorKind.Validation, "القسم الأب المحدد غير صالح أو تم حذفه، يرجى تحديث الصفحة والمحاولة مرة أخرى");
+            
+            return new Error("DB_ERROR", $"خطأ في قاعدة البيانات: {innerMsg}", ErrorKind.Failure, $"حدث خطأ في قاعدة البيانات أثناء تحديث القسم: {innerMsg}");
+        }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error updating department: {DepartmentId}", id);
-            return ApplicationErrors.InternalServerError;
+            logger.LogError(ex, "Error updating department: {DepartmentId}. Exception: {Message}. StackTrace: {Stack}", id, ex.Message, ex.StackTrace);
+            return new Error("INTERNAL_ERROR", $"خطأ غير متوقع: {ex.Message}", ErrorKind.Failure, $"حدث خطأ غير متوقع أثناء تحديث القسم: {ex.Message}");
         }
     }
 

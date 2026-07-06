@@ -46,61 +46,29 @@ public class UserSeeder : EntitySeederBase<User>
     private List<User> GenerateUsers(int count, List<Role> roles)
     {
         var users = new List<User>();
-        int transactionUserCount = count / 2;
-        int diwanUserCount = count - transactionUserCount;
 
-        var names = new List<string>
+        // 1. Add special users with fixed GUIDs
+        var specialUsers = new List<(Guid Id, string UserName, string Password)>
         {
-            "أحمد", "محمد", "فاطمة", "علي", "سارة", "خالد", "ليلى", "عمر", "رامي", "يوسف",
-            "نور", "مصطفى", "أمل", "حسن", "منى", "زين", "ريم", "طارق", "سلمى", "هاني",
-            "عبير", "ايهم", "دينا", "شريف", "ندى", "عمرو", "رنا", "وائل", "كريم", "هند",
-            "يسرا", "حسين"
+            (Guid.Parse("11111111-1111-1111-1111-111111111111"), "1", "1"),
+            (Guid.Parse("22222222-2222-2222-2222-222222222222"), "محافظة ريف دمشق", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333303"), "مركز خدمة المواطن الكسوة", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333304"), "مركز خدمة المواطن حرستا", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333305"), "مركز خدمة المواطن النبك", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333306"), "مركز خدمة المواطن قطنا", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333307"), "مركز خدمة المواطن يبرود", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333308"), "مركز خدمة المواطن صحنايا", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333309"), "مركز خدمة المواطن جرمانا", "123456"),
+            (Guid.Parse("33333333-3333-3333-3333-333333333310"), "ماجد", "123456")
         };
 
-        int nameIndex = 0;
-
-        string GetNextName()
-        {
-            if (nameIndex < names.Count)
-            {
-                return names[nameIndex++];
-            }
-            return $"مستخدم {++nameIndex}";
-        }
-
-        // TransactionSystem users: username/password = "123" (except first one which is "1"/"1")
-        for (int i = 1; i <= transactionUserCount; i++)
-        {
-            if (i == 1)
-            {
-                users.Add(new User
-                {
-                    Id = Guid.NewGuid(),
-                    UserName = "1",
-                    HashedPassword = _passwordHasher.HashPassword("1"),
-                    Roles = new List<Role>()
-                });
-            }
-            else
-            {
-                users.Add(new User
-                {
-                    Id = Guid.NewGuid(),
-                    UserName = GetNextName(),
-                    HashedPassword = _passwordHasher.HashPassword("123"),
-                    Roles = new List<Role>()
-                });
-            }
-        }
-
-        // Diwan users: username/password = "123"
-        for (int i = 1; i <= diwanUserCount; i++)
+        foreach (var spec in specialUsers)
         {
             users.Add(new User
             {
-                Id = Guid.NewGuid(),
-                UserName = GetNextName(),
-                HashedPassword = _passwordHasher.HashPassword("123"),
+                Id = spec.Id,
+                UserName = spec.UserName,
+                HashedPassword = _passwordHasher.HashPassword(spec.Password),
                 Roles = new List<Role>()
             });
         }
@@ -147,22 +115,38 @@ public class UserSeeder : EntitySeederBase<User>
 
     /// <summary>
     /// Enroll users in subsystems
-    /// Since there's a one-to-one relationship between User and SubSystemUser,
-    /// each user can only be enrolled in one subsystem.
     /// </summary>
     private async Task EnrollUsersInSubsystems(AppDbContext context, List<User> users)
     {
         var subsystemUsers = new List<SubSystemUser>();
-        int transactionUserCount = users.Count / 2;
+        var transactionUserNames = new HashSet<string>
+        {
+            "1",
+            "محافظة ريف دمشق",
+            "مركز خدمة المواطن الكسوة",
+            "مركز خدمة المواطن حرستا",
+            "مركز خدمة المواطن النبك",
+            "مركز خدمة المواطن قطنا",
+            "مركز خدمة المواطن يبرود",
+            "مركز خدمة المواطن صحنايا",
+            "مركز خدمة المواطن جرمانا",
+            "ماجد"
+        };
 
         for (int i = 0; i < users.Count; i++)
         {
             var user = users[i];
             SubSystem subSystem;
-            if (i < transactionUserCount)
+
+            if (transactionUserNames.Contains(user.UserName))
+            {
                 subSystem = SubSystem.TransactionSystem;
+            }
             else
-                subSystem = SubSystem.Diwan;
+            {
+                // Alternate remaining users between systems
+                subSystem = (i % 2 == 0) ? SubSystem.TransactionSystem : SubSystem.Diwan;
+            }
 
             var subsystemUser = new SubSystemUser
             {

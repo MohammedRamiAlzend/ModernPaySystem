@@ -15,7 +15,7 @@ public class DepartmentSeeder : EntitySeederBase<Department>
         if (await HasDataAsync(context))
             return;
 
-        // المستوى 1: سوريا (Country)
+        // المستوى 1: الجمهورية العربية السورية (Country)
         var syria = new Department
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
@@ -28,7 +28,7 @@ public class DepartmentSeeder : EntitySeederBase<Department>
             CreatedAt = DateTime.UtcNow
         };
 
-        // المستوى 2: ريف دمشق (Governorate)
+        // المستوى 2: محافظة ريف دمشق (Governorate)
         var rifDimashq = new Department
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
@@ -42,79 +42,277 @@ public class DepartmentSeeder : EntitySeederBase<Department>
             CreatedAt = DateTime.UtcNow
         };
 
-        // المستوى 3: الغوطة الشرقية (District)
-        var ghouta = new Department
+        // المستوى 3: البلديات / المناطق (Municipality)
+        var kiswah = new Department
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
-            Name = "منطقة الغوطة الشرقية",
-            Code = "GHO",
-            Description = "منطقة الغوطة الشرقية",
+            Name = "الكسوة",
+            Code = "KIS",
+            Description = "بلدية الكسوة",
             Level = 3,
-            Type = DepartmentType.District,
+            Type = DepartmentType.Municipality,
             ParentDepartmentId = rifDimashq.Id,
             MaterializedPath = "00000001/00000002/00000003",
             CreatedAt = DateTime.UtcNow
         };
 
-        // المستوى 4: بلدية دوما (Municipality)
-        var doumaMunicipality = new Department
+        var harasta = new Department
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000004"),
-            Name = "بلدية دوما",
-            Code = "DOU",
-            Description = "بلدية دوما",
-            Level = 4,
+            Name = "حرستا",
+            Code = "HAR",
+            Description = "بلدية حرستا",
+            Level = 3,
             Type = DepartmentType.Municipality,
-            ParentDepartmentId = ghouta.Id,
-            MaterializedPath = "00000001/00000002/00000003/00000004",
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/00000004",
             CreatedAt = DateTime.UtcNow
         };
 
-        // المستوى 5: مكتب فني ديوان (Office)
-        var technicalOffice = new Department
+        var nabek = new Department
         {
             Id = Guid.Parse("00000000-0000-0000-0000-000000000005"),
-            Name = "مكتب فني ديوان",
-            Code = "TECH-DIWAN",
-            Description = "المكتب الفني في الديوان",
-            Level = 5,
+            Name = "النبك",
+            Code = "NAB",
+            Description = "بلدية النبك",
+            Level = 3,
+            Type = DepartmentType.Municipality,
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/00000005",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var qatana = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000006"),
+            Name = "قطنا",
+            Code = "QAT",
+            Description = "بلدية قطنا",
+            Level = 3,
+            Type = DepartmentType.Municipality,
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/00000006",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var yabroud = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000007"),
+            Name = "يبرود",
+            Code = "YAB",
+            Description = "بلدية يبرود",
+            Level = 3,
+            Type = DepartmentType.Municipality,
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/00000007",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var sahnaya = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000008"),
+            Name = "صحنايا",
+            Code = "SAH",
+            Description = "بلدية صحنايا",
+            Level = 3,
+            Type = DepartmentType.Municipality,
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/00000008",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var jaramana = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000009"),
+            Name = "جرمانا",
+            Code = "JAR",
+            Description = "بلدية جرمانا",
+            Level = 3,
+            Type = DepartmentType.Municipality,
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/00000009",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // المستوى 4: مراكز خدمة المواطن (Office)
+        var kiswahCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000103"),
+            Name = "مركز خدمة المواطن الكسوة",
+            Code = "KIS_CSC",
+            Description = "مركز خدمة المواطن الكسوة",
+            Level = 4,
             Type = DepartmentType.Office,
-            ParentDepartmentId = doumaMunicipality.Id,
-            MaterializedPath = "00000001/00000002/00000003/00000004/00000005",
+            ParentDepartmentId = kiswah.Id,
+            MaterializedPath = "00000001/00000002/00000003/00000103",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var harastaCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000104"),
+            Name = "مركز خدمة المواطن حرستا",
+            Code = "HAR_CSC",
+            Description = "مركز خدمة المواطن حرستا",
+            Level = 4,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = harasta.Id,
+            MaterializedPath = "00000001/00000002/00000004/00000104",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var nabekCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000105"),
+            Name = "مركز خدمة المواطن النبك",
+            Code = "NAB_CSC",
+            Description = "مركز خدمة المواطن النبك",
+            Level = 4,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = nabek.Id,
+            MaterializedPath = "00000001/00000002/00000005/00000105",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var qatanaCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000106"),
+            Name = "مركز خدمة المواطن قطنا",
+            Code = "QAT_CSC",
+            Description = "مركز خدمة المواطن قطنا",
+            Level = 4,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = qatana.Id,
+            MaterializedPath = "00000001/00000002/00000006/00000106",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var yabroudCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000107"),
+            Name = "مركز خدمة المواطن يبرود",
+            Code = "YAB_CSC",
+            Description = "مركز خدمة المواطن يبرود",
+            Level = 4,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = yabroud.Id,
+            MaterializedPath = "00000001/00000002/00000007/00000107",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var sahnayaCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000108"),
+            Name = "مركز خدمة المواطن صحنايا",
+            Code = "SAH_CSC",
+            Description = "مركز خدمة المواطن صحنايا",
+            Level = 4,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = sahnaya.Id,
+            MaterializedPath = "00000001/00000002/00000008/00000108",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var jaramanaCenter = new Department
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000109"),
+            Name = "مركز خدمة المواطن جرمانا",
+            Code = "JAR_CSC",
+            Description = "مركز خدمة المواطن جرمانا",
+            Level = 4,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = jaramana.Id,
+            MaterializedPath = "00000001/00000002/00000009/00000109",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // قسم المصالح العقارية
+        var realEstate = new Department
+        {
+            Id = Guid.Parse("019f2467-2fd0-7eae-aa59-eb2714f9cee7"),
+            Name = "المصالح العقارية",
+            Code = "RE",
+            Description = "مديرية المصالح العقارية",
+            Level = 3,
+            Type = DepartmentType.Office,
+            ParentDepartmentId = rifDimashq.Id,
+            MaterializedPath = "00000001/00000002/019f2467",
             CreatedAt = DateTime.UtcNow
         };
 
         await context.Departments.AddRangeAsync(
             syria,
             rifDimashq,
-            ghouta,
-            doumaMunicipality,
-            technicalOffice
+            kiswah,
+            harasta,
+            nabek,
+            qatana,
+            yabroud,
+            sahnaya,
+            jaramana,
+            realEstate,
+            kiswahCenter,
+            harastaCenter,
+            nabekCenter,
+            qatanaCenter,
+            yabroudCenter,
+            sahnayaCenter,
+            jaramanaCenter
         );
 
-        var departments = new[] { syria, rifDimashq, ghouta, doumaMunicipality, technicalOffice };
-        var transactionUsers = await context.Users
-            .Include(u => u.SubSystemUser)
-            .Where(u => u.SubSystemUser != null && u.SubSystemUser.SubSystem == SubSystem.TransactionSystem)
-            .ToListAsync();
+        var departments = new[] { 
+            syria, 
+            rifDimashq, 
+            kiswah, 
+            harasta, 
+            nabek, 
+            qatana, 
+            yabroud, 
+            sahnaya, 
+            jaramana,
+            realEstate,
+            kiswahCenter,
+            harastaCenter,
+            nabekCenter,
+            qatanaCenter,
+            yabroudCenter,
+            sahnayaCenter,
+            jaramanaCenter
+        };
 
-        var orderedTransactionUsers = transactionUsers
-            .OrderBy(u => int.TryParse(u.UserName, out var numericUserName) ? numericUserName : int.MaxValue)
-            .ThenBy(u => u.UserName)
-            .ToList();
-
-        if (orderedTransactionUsers.Count < departments.Length)
-            throw new InvalidOperationException("Not enough transaction users exist to seed department heads.");
-
-        for (int i = 0; i < departments.Length; i++)
+        var headAssignments = new Dictionary<Guid, Guid>
         {
-            var department = departments[i];
-            var headUser = orderedTransactionUsers[i];
+            { syria.Id, Guid.Parse("11111111-1111-1111-1111-111111111111") },
+            { rifDimashq.Id, Guid.Parse("22222222-2222-2222-2222-222222222222") },
+            { kiswahCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333303") },
+            { harastaCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333304") },
+            { nabekCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333305") },
+            { qatanaCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333306") },
+            { yabroudCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333307") },
+            { sahnayaCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333308") },
+            { jaramanaCenter.Id, Guid.Parse("33333333-3333-3333-3333-333333333309") }
+        };
 
-            department.DepartmentHeadId = headUser.Id;
-            headUser.IsDepartmentHead = true;
-            headUser.HeadedDepartmentId = department.Id;
-            headUser.DepartmentId = department.Id;
+        foreach (var dept in departments)
+        {
+            if (headAssignments.TryGetValue(dept.Id, out var headUserId))
+            {
+                var user = await context.Users.FindAsync(headUserId);
+                if (user != null)
+                {
+                    dept.DepartmentHeadId = user.Id;
+                    user.IsDepartmentHead = true;
+                    user.HeadedDepartmentId = dept.Id;
+                    user.DepartmentId = dept.Id;
+                }
+            }
+        }
+
+        // إلحاق المستخدم "ماجد" بقسم المصالح العقارية
+        var majedUser = await context.Users.FirstOrDefaultAsync(u => u.UserName == "ماجد");
+        if (majedUser != null)
+        {
+            majedUser.DepartmentId = realEstate.Id;
         }
 
         await context.SaveChangesAsync();

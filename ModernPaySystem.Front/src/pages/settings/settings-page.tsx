@@ -80,6 +80,8 @@ export const SettingsPage = () => {
     );
   }
 
+  const ActiveComponent = activeConfig.component;
+
   return (
     <AnimatedContainer className="container mx-auto py-8 space-y-6" style={{ direction: 'rtl' }}>
       {/* Section Header */}
@@ -100,7 +102,7 @@ export const SettingsPage = () => {
           <Loader2 className="w-8 h-8 animate-spin text-primary opacity-50" />
         </div>
       }>
-        {activeConfig.component}
+        <ActiveComponent />
       </Suspense>
     </AnimatedContainer>
   );

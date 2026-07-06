@@ -21,15 +21,6 @@ import {
     useTransactionChartsData,
     useTransactionDailyWorkReport,
 } from '@/features/form-builder/api/formEndpoints';
-import {
-    exportTransactionDashboardToExcel,
-    exportTransactionDailyReportToExcel,
-    exportTransactionPeriodReportToExcel,
-    exportTransactionUserActivityToExcel,
-    exportTransactionActiveUsersToExcel,
-    exportTransactionDailyWorkReportToExcel,
-    exportTransactionChartsToExcel,
-} from '@/features/form-builder/model/transaction-excel-export';
 import { Calendar, RefreshCw, Loader2, Ban } from 'lucide-react';
 
 const DashboardCards = lazyWithPreload(() =>
@@ -225,7 +216,10 @@ export default function ReportsPage() {
                     <div className="flex justify-end mb-4">
                         {dashboard && (
                             <ExportButton
-                                onExport={() => exportTransactionDashboardToExcel(dashboard)}
+                                onExport={async () => {
+                                    const { exportTransactionDashboardToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
+                                    exportTransactionDashboardToExcel(dashboard);
+                                }}
                                 label="تصدير لوحة المعلومات"
                             />
                         )}
@@ -274,6 +268,7 @@ export default function ReportsPage() {
                                             chartImageUrl = await toPng(dailyChartRef.current, { quality: 0.95, pixelRatio: 2 });
                                         } catch { /* chart capture failed */ }
                                     }
+                                    const { exportTransactionDailyReportToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
                                     await exportTransactionDailyReportToExcel(dailyReport, chartImageUrl);
                                 }}
                                 label="تصدير التقرير"
@@ -305,7 +300,10 @@ export default function ReportsPage() {
                         </Card>
                         {weeklyReport && (
                             <ExportButton
-                                onExport={() => exportTransactionPeriodReportToExcel(weeklyReport, 'التقرير الأسبوعي')}
+                                onExport={async () => {
+                                    const { exportTransactionPeriodReportToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
+                                    exportTransactionPeriodReportToExcel(weeklyReport, 'التقرير الأسبوعي');
+                                }}
                                 label="تصدير التقرير"
                             />
                         )}
@@ -355,7 +353,10 @@ export default function ReportsPage() {
                         </Card>
                         {monthlyReport && (
                             <ExportButton
-                                onExport={() => exportTransactionPeriodReportToExcel(monthlyReport, 'التقرير الشهري')}
+                                onExport={async () => {
+                                    const { exportTransactionPeriodReportToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
+                                    exportTransactionPeriodReportToExcel(monthlyReport, 'التقرير الشهري');
+                                }}
                                 label="تصدير التقرير"
                             />
                         )}
@@ -403,7 +404,10 @@ export default function ReportsPage() {
                         </Card>
                         {userActivity && userActivity.length > 0 && (
                             <ExportButton
-                                onExport={() => exportTransactionUserActivityToExcel(userActivity, fromDate, toDate)}
+                                onExport={async () => {
+                                    const { exportTransactionUserActivityToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
+                                    exportTransactionUserActivityToExcel(userActivity, fromDate, toDate);
+                                }}
                                 label="تصدير النشاط"
                             />
                         )}
@@ -447,7 +451,10 @@ export default function ReportsPage() {
                         </Card>
                         {activeUsers && activeUsers.length > 0 && (
                             <ExportButton
-                                onExport={() => exportTransactionActiveUsersToExcel(activeUsers, fromDate, toDate)}
+                                onExport={async () => {
+                                    const { exportTransactionActiveUsersToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
+                                    exportTransactionActiveUsersToExcel(activeUsers, fromDate, toDate);
+                                }}
                                 label="تصدير المستخدمين"
                             />
                         )}
@@ -479,7 +486,10 @@ export default function ReportsPage() {
                         </Card>
                         {dailyWorkReport && (
                             <ExportButton
-                                onExport={() => exportTransactionDailyWorkReportToExcel(dailyWorkReport)}
+                                onExport={async () => {
+                                    const { exportTransactionDailyWorkReportToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
+                                    exportTransactionDailyWorkReportToExcel(dailyWorkReport);
+                                }}
                                 label="تصدير Excel متعدد الأوراق"
                             />
                         )}
@@ -507,6 +517,7 @@ export default function ReportsPage() {
                                             }
                                         }
                                     }
+                                    const { exportTransactionChartsToExcel } = await import('@/features/form-builder/model/transaction-excel-export');
                                     await exportTransactionChartsToExcel(chartsData, images);
                                 }}
                                 label="تصدير الرسوم البيانية"

@@ -35,45 +35,57 @@ export const useDepartmentTree = (rootId?: string, mode: 'full' | 'subtree' | 'c
     });
 };
 
-export const convertToMermaid = (trees: DepartmentTree[], highlightId?: string, isDark: boolean = false) => {
+export const convertToMermaid = (
+    trees: DepartmentTree[],
+    highlightId?: string,
+    isDark: boolean = false,
+    collapsedNodeIds?: Set<string>
+) => {
     let mermaidText = 'graph TD\n';
 
     // Define styles based on theme
     if (isDark) {
         mermaidText += '    classDef default fill:#1f2937,stroke:#4b5563,stroke-width:1px,color:#f3f4f6;\n';
         mermaidText += '    classDef highlight fill:#3b82f6,stroke:#60a5fa,stroke-width:2px,color:#ffffff;\n';
-        mermaidText += '    classDef root fill:#059669,stroke:#10b981,stroke-width:2px,color:#ffffff;\n';
+        mermaidText += '    classDef collapsed fill:#374151,stroke:#f59e0b,stroke-width:2px,color:#f3f4f6;\n';
     } else {
         mermaidText += '    classDef default fill:#ffffff,stroke:#e5e7eb,stroke-width:1px,color:#111827;\n';
         mermaidText += '    classDef highlight fill:#2563eb,stroke:#3b82f6,stroke-width:2px,color:#ffffff;\n';
-        mermaidText += '    classDef root fill:#10b981,stroke:#34d399,stroke-width:2px,color:#ffffff;\n';
+        mermaidText += '    classDef collapsed fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e;\n';
     }
-
-
 
     const traverse = (node: DepartmentTree, parentId?: string) => {
         const nodeId = node.id.replace(/-/g, '_');
         const safeName = node.name.replace(/[[](){}]/g, '');
         const headInfo = node.departmentHeadName ? `\\n ${node.departmentHeadName}` : '';
-        // const countInfo = node.children && node.children.length > 0 ? `\\n (${node.children.length})` : '';
-        const countInfo = '';
 
-        mermaidText += `    ${nodeId}["${safeName}${headInfo}${countInfo}"]\n`;
+        const hasChildren = node.children && node.children.length > 0;
+        const isCollapsed = !!(hasChildren && collapsedNodeIds?.has(node.id));
 
+        let displaySuffix = '';
+        if (hasChildren) {
+            displaySuffix = isCollapsed ? '▸' : '▾';
+        }
+
+        mermaidText += `    ${nodeId}["${safeName}${displaySuffix}${headInfo}"]\n`;
 
         if (parentId) {
             const safeParentId = parentId.replace(/-/g, '_');
             mermaidText += `    ${safeParentId} --> ${nodeId}\n`;
         }
 
-        if (node.id === highlightId) {
+        // Apply classes
+        if (isCollapsed) {
+            mermaidText += `    class ${nodeId} collapsed\n`;
+        } else if (node.id === highlightId) {
             mermaidText += `    class ${nodeId} highlight\n`;
         }
 
         // Add click handler for each node
         mermaidText += `    click ${nodeId} call onMermaidNodeClick()\n`;
 
-        if (node.children && node.children.length > 0) {
+        // Only traverse children if not collapsed
+        if (!isCollapsed && hasChildren) {
             node.children.forEach(child => traverse(child, node.id));
         }
     };
