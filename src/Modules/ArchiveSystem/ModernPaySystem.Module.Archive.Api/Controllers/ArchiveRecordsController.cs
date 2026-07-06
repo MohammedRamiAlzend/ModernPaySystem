@@ -21,7 +21,7 @@ using System.Text.Json;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/archive/records")]
+[Route("api/ArchiveSystem/[controller]")]
 [Authorize]
 public class ArchiveRecordsController(
     IArchiveRecordService archiveRecordService,

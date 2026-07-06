@@ -9,7 +9,7 @@ using ModernPaySystem.SharedKernel.Domain.Entities;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/archive/folders")]
+[Route("api/ArchiveSystem/[controller]")]
 [Authorize]
 public class FoldersController(
     IFolderService folderService,

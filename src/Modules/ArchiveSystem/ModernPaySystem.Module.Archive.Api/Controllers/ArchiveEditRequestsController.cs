@@ -11,7 +11,7 @@ using ModernPaySystem.Module.Archive.Infrastructure.Auth;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/archive/edit-requests")]
+[Route("api/ArchiveSystem/[controller]")]
 [Authorize]
 public class ArchiveEditRequestsController(
     IArchiveEditWorkflowService workflowService,

@@ -9,7 +9,7 @@ using ModernPaySystem.SharedKernel.Domain.Entities;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/archive/forms")]
+[Route("api/ArchiveSystem/[controller]")]
 [Authorize]
 public class DynamicFormsController(
     IArchiveFormTemplateService dynamicFormService,

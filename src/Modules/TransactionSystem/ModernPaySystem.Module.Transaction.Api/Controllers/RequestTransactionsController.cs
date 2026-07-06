@@ -10,7 +10,7 @@ using ModernPaySystem.SharedKernel.Domain.Entities;
 namespace ModernPaySystem.Module.Transaction.Api.Controllers;
 
 [ApiController]
-[Route("api/transaction/[controller]")]
+[Route("api/[controller]")]
 [Authorize]
 public class RequestTransactionsController(IRequestTransactionService requestTransactionService, IRequestAuditService requestAuditService, ILogger<RequestTransactionsController> logger) : ControllerBase
 {

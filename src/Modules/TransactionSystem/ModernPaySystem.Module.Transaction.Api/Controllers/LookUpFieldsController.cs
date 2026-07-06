@@ -8,7 +8,7 @@ using ModernPaySystem.SharedKernel.Domain.Entities;
 namespace ModernPaySystem.Module.Transaction.Api.Controllers;
 
 [ApiController]
-[Route("api/transaction/[controller]")]
+[Route("api/[controller]")]
 [Authorize]
 public class LookUpFieldsController(ILookUpFieldService lookUpFieldService, ILogger<LookUpFieldsController> logger) : ControllerBase
 {

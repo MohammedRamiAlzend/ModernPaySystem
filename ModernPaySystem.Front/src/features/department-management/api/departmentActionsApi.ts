@@ -18,7 +18,7 @@ export const departmentActionsApi = {
     },
 
     assignUser: async (departmentId: string, userId: string) => {
-        const response = await api.post<{ data: any }>(`/Departments/${departmentId}/assign-user`, { userId });
+        const response = await api.post<{ data: any }>(`/transaction/Departments/${departmentId}/assign-user`, { userId });
         return response.data.data;
     },
 

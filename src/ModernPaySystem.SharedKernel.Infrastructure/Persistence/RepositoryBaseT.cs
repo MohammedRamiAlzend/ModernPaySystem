@@ -269,7 +269,7 @@ public class RepositoryBase<TEntity, TKey>(DbContext dbcontext,
             var result = await query.FirstOrDefaultAsync();
 
             if (result == null)
-                return new Error("404", "not found", ErrorKind.NotFound);
+                return new Result<TEntity>(null, null, true);
             else
                 return result;
 

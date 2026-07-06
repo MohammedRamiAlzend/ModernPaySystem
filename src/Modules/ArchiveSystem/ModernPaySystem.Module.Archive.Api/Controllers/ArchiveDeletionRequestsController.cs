@@ -10,7 +10,7 @@ using ModernPaySystem.Module.Archive.Infrastructure.Auth;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/archive/deletion-requests")]
+[Route("api/ArchiveSystem/[controller]")]
 [Authorize]
 public class ArchiveDeletionRequestsController(
     IArchiveDeletionWorkflowService workflowService,

@@ -21,7 +21,7 @@ public sealed class Result<TValue> : IResult<TValue>
     {
         if (isSuccess)
         {
-            _value = value ?? throw new ArgumentNullException(nameof(value));
+            _value = value;
             _errors = new List<Error>();
             IsSuccess = true;
         }

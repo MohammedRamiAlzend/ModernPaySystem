@@ -8,7 +8,7 @@ using ModernPaySystem.SharedKernel.Domain.Entities;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/document-indexing")]
+[Route("api/ArchiveSystem/[controller]")]
 [Authorize]
 public class DocumentIndexingController(
     ISemanticSearchService semanticSearchService,
