@@ -9,5 +9,4 @@ public class UserTemplateOwnership : Entity<Guid>
     public Template? Template { get; set; }
 
     public required Guid UserId { get; set; }
-    public User? User { get; set; }
 }

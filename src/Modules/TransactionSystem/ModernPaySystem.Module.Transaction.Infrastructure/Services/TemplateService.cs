@@ -23,7 +23,7 @@ public class TemplateService(
             var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
             var templates = await unitOfWork.Templates.GetAllAsync(
                 filter: TemplateExpressions.CanReadByUserId(getCurrentUserId),
-                transform: x => x.Include(t => t.DepartmentOwnerships)!.ThenInclude(o => o.Department)
+                transform: x => x.Include(t => t.DepartmentOwnerships)!
             );
             if (templates.IsError)
                 return templates.Errors;
@@ -55,7 +55,7 @@ public class TemplateService(
                 filter: TemplateExpressions.CanReadByUserId(getCurrentUserId),
                 page: page,
                 pageSize: pageSize,
-                transform: x => x.Include(t => t.DepartmentOwnerships)!.ThenInclude(o => o.Department)
+                transform: x => x.Include(t => t.DepartmentOwnerships)!
             );
             if (pagedTemplates.IsError)
                 return pagedTemplates.Errors;
@@ -79,7 +79,7 @@ public class TemplateService(
             logger.LogInformation("Fetching template by id: {TemplateId}", id);
             var template = await unitOfWork.Templates.GetAsync(
                 filter: TemplateExpressions.ById(id),
-                transform: x => x.Include(t => t.DepartmentOwnerships)!.ThenInclude(o => o.Department)
+                transform: x => x.Include(t => t.DepartmentOwnerships)!
                                  .Include(t => t.LookUpFields));
 
             if (template.IsError)
@@ -107,7 +107,7 @@ public class TemplateService(
             logger.LogInformation("Fetching template by name: {TemplateName}", name);
             var template = await unitOfWork.Templates.GetAsync(
                 filter: TemplateExpressions.ByName(name),
-                transform: x => x.Include(t => t.DepartmentOwnerships)!.ThenInclude(o => o.Department)
+                transform: x => x.Include(t => t.DepartmentOwnerships)!
                                  .Include(t => t.LookUpFields));
 
             if (template.IsError)
@@ -199,7 +199,7 @@ public class TemplateService(
 
             var existingTemplate = await unitOfWork.Templates.GetAsync(
                 filter: TemplateExpressions.ById(id),
-                transform: x => x.Include(t => t.DepartmentOwnerships)!.ThenInclude(o => o.Department)
+                transform: x => x.Include(t => t.DepartmentOwnerships)!
                                  .Include(t => t.LookUpFields));
 
             if (existingTemplate.IsError)
@@ -238,7 +238,7 @@ public class TemplateService(
 
             var template = await unitOfWork.Templates.GetAsync(
                 filter: TemplateExpressions.ById(id),
-                transform: x => x.Include(t => t.DepartmentOwnerships)!.ThenInclude(o => o.Department));
+                transform: x => x.Include(t => t.DepartmentOwnerships)!);
 
             if (template.IsError)
                 return template.Errors;
@@ -271,8 +271,7 @@ public class TemplateService(
                 return TransactionErrors.InvalidInput;
 
             var ownerships = await unitOfWork.TemplateDepartmentOwnerships.FindAsync(
-                filter: to => to.TemplateId == templateId,
-                transform: q => q.Include(to => to.Department));
+                filter: to => to.TemplateId == templateId);
 
             if (ownerships.IsError)
                 return ownerships.Errors;
@@ -281,8 +280,7 @@ public class TemplateService(
             {
                 Id = o.Id,
                 TemplateId = o.TemplateId,
-                DepartmentId = o.DepartmentId,
-                DepartmentName = o.Department?.Name
+                DepartmentId = o.DepartmentId
             }).ToList();
 
             return dtos;
@@ -487,9 +485,7 @@ public class TemplateService(
             var ownerships = await unitOfWork.TemplateDepartmentOwnerships.FindAsync(
                 filter: to => to.DepartmentId == departmentId,
                 transform: q => q.Include(to => to.Template)
-                                 .ThenInclude(t => t!.DepartmentOwnerships)
-                                 .Include(to => to.Template)
-                                 .ThenInclude(t => t!.LookUpFields));
+                                 .ThenInclude(t => t!.DepartmentOwnerships));
 
             if (ownerships.IsError)
                 return ownerships.Errors;
@@ -520,9 +516,7 @@ public class TemplateService(
             var ownerships = await unitOfWork.UserTemplateOwnerships.FindAsync(
                 filter: uto => uto.UserId == userId,
                 transform: q => q.Include(uto => uto.Template)
-                                 .ThenInclude(t => t!.DepartmentOwnerships)
-                                 .Include(uto => uto.Template)
-                                 .ThenInclude(t => t!.LookUpFields));
+                                 .ThenInclude(t => t!.DepartmentOwnerships));
 
             if (ownerships.IsError)
                 return ownerships.Errors;

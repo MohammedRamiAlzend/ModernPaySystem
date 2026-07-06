@@ -112,6 +112,27 @@ public class DepartmentService(
             return Error.Failure("InternalServerError", "An error occurred while fetching the department.");
         }
     }
+    public async Task<Result<DepartmentDto?>> GetByUserIdAsync(Guid id)
+    {
+        try
+        {
+            var result = await unitOfWork.Departments.GetAsync(
+                x => x.Users.Any(u => u.Id == id),
+                i => i.Include(x => x.DepartmentHead).Include(x => x.Users).Include(x => x.ChildDepartments));
+            if (result.IsError)
+                return result.Errors;
+
+            if (result.Value == null)
+                return null!;
+
+            return MapToDto(result.Value);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching department by id: {DepartmentId}", id);
+            return Error.Failure("InternalServerError", "An error occurred while fetching the department.");
+        }
+    }
 
     public async Task<Result<DepartmentDto>> UpdateAsync(Guid id, UpdateDepartmentDto dto, string userId)
     {
@@ -129,7 +150,7 @@ public class DepartmentService(
             if (dto.ParentDepartmentId.HasValue && dto.ParentDepartmentId != department.ParentDepartmentId)
             {
                 var canAssignResult = await CanAssignParentAsync(id, dto.ParentDepartmentId.Value);
-            if (canAssignResult.IsError || canAssignResult.Value != true)
+                if (canAssignResult.IsError || canAssignResult.Value != true)
                     return new Error("CIRCULAR_REFERENCE", "Cannot create circular reference", ErrorKind.Validation);
 
                 var parentResult = await unitOfWork.Departments.GetByIdAsync(dto.ParentDepartmentId.Value);

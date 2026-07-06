@@ -20,7 +20,6 @@ public class RequestAuditLog : Entity<Guid>, IAuditableEntity
     public Request? Request { get; set; }
 
     public Guid UserId { get; set; }
-    public User? User { get; set; }
     public RequestAuditAction Action { get; set; }
     public string? Details { get; set; }
     public string? IpAddress { get; set; }

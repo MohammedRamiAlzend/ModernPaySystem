@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ModernPaySystem.Module.Identity.Infrastructure.Migrations
 {
     [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260705105200_InitialCreate")]
+    [Migration("20260706132219_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

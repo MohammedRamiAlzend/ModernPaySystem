@@ -18,10 +18,8 @@ public class Request : Entity<Guid>, IAuditableEntity
     public RequestTemplateValues? RequestTemplateValues { get; set; }
 
     public required Guid RequesterId { get; set; }
-    public User? Requester { get; set; }
     public required Guid RequesterDepartmentId { get; set; }
     public required Guid ApproverId { get; set; }
-    public User? Approver { get; set; }
     public required Guid ApproverDepartmentId { get; set; }
 
     public Guid? ResponseId { get; set; }
@@ -37,7 +35,7 @@ public class Request : Entity<Guid>, IAuditableEntity
     public RequestTransaction? CurrentTransaction { get; set; }
 
     public ICollection<RequestAttachment> RequestAttachments { get; set; } = [];
-    public required ICollection<User>? ReadOnlyUsers { get; set; } = [];
+    public ICollection<Guid> ReadOnlyUsers { get; set; } = [];
     public ICollection<RequestRelation> OutgoingRelations { get; set; } = [];
     public ICollection<RequestRelation> IncomingRelations { get; set; } = [];
     public string? CreatedByUserId { get; set; }
@@ -49,7 +47,7 @@ public class Request : Entity<Guid>, IAuditableEntity
     {
         if (userId == this.RequesterId) return true;
         if (userId == this.ApproverId) return false;
-        if (ReadOnlyUsers?.Any(u => u.Id == userId) == true) return false;
+        if (ReadOnlyUsers.Contains(userId)) return false;
         return false;
     }
 
@@ -57,7 +55,7 @@ public class Request : Entity<Guid>, IAuditableEntity
     {
         if (userId == this.RequesterId) return true;
         if (userId == this.ApproverId) return true;
-        if (ReadOnlyUsers?.Any(u => u.Id == userId) == true) return true;
+        if (ReadOnlyUsers.Contains(userId)) return true;
         return false;
     }
 
@@ -78,8 +76,6 @@ public class Request : Entity<Guid>, IAuditableEntity
             Status = this.Status,
             RequestAttachmentDtos = [.. this.RequestAttachments.Select(ra => ra.ToDto())],
             Template = this.RequestTemplateValues?.Template?.ToDto(),
-            Requester = this.Requester?.ToDto(),
-            Approver = this.Approver?.ToDto(),
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
@@ -87,7 +83,7 @@ public class Request : Entity<Guid>, IAuditableEntity
             ResponseId = this.ResponseId,
             FirstTransactionId = this.FirstTransactionId,
             CurrentTransactionId = this.CurrentTransactionId,
-            ReadOnlyUsers = [.. this.ReadOnlyUsers!.Select(u => u.Id)],
+            ReadOnlyUsers = [.. this.ReadOnlyUsers],
             RelatedRequests = [.. this.OutgoingRelations.Select(r => new RelatedRequestDto
                             {
                                RequestId = r.TargetRequestId,
@@ -114,8 +110,6 @@ public class RequestDto
     public required ICollection<InputValueDto> Content { get; set; } = [];
     public List<RequestAttachmentDto> RequestAttachmentDtos { get; set; } = [];
     public TemplateDto? Template { get; set; }
-    public UserDto? Requester { get; set; }
-    public UserDto? Approver { get; set; }
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }
     public string? UpdatedByUserId { get; set; }

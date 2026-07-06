@@ -1,32 +1,36 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Net.Http.Headers;
-using ModernPaySystem.Module.Archive.Infrastructure.Auth;
 using ModernPaySystem.Module.Archive.Api.Extensions;
 using ModernPaySystem.Module.Archive.Application.Interfaces;
 using ModernPaySystem.Module.Archive.Domain.DTOs;
 using ModernPaySystem.Module.Archive.Domain.Entities;
+using ModernPaySystem.Module.Archive.Infrastructure.Auth;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Domain.Attrs;
+using ModernPaySystem.SharedKernel.Domain.Commons;
+using ModernPaySystem.SharedKernel.Domain.DTOs;
 using ModernPaySystem.SharedKernel.Domain.Entities;
-using IArchiveRecordService = ModernPaySystem.Module.Archive.Application.Interfaces.IArchiveRecordService;
-using IArchiveAuthorizationService = ModernPaySystem.Module.Archive.Application.Interfaces.IArchiveAuthorizationService;
 using System.Collections.Concurrent;
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text.Json;
+using IArchiveAuthorizationService = ModernPaySystem.Module.Archive.Application.Interfaces.IArchiveAuthorizationService;
+using IArchiveRecordService = ModernPaySystem.Module.Archive.Application.Interfaces.IArchiveRecordService;
 
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/ArchiveSystem/[controller]")]
+[Route("api/archive-records")]
 [Authorize]
 public class ArchiveRecordsController(
     IArchiveRecordService archiveRecordService,
     IArchiveAuthorizationService archiveAuthorizationService,
     IAuthorizationService authorizationService,
+    IDepartmentService departmentService,
     IMemoryCache memoryCache,
     ILogger<ArchiveRecordsController> logger) : ControllerBase
 {
@@ -47,6 +51,36 @@ public class ArchiveRecordsController(
     {
         logger.LogInformation("Getting archive record by id: {RecordId}", id);
         var result = await archiveRecordService.GetByIdAsync(id);
+        return result.ToActionResult();
+    }
+    [HttpGet("departments/led")]
+    public async Task<IActionResult> GetLedDepartments()
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+        {
+            return Unauthorized();
+        }
+
+        var leaderDepartmentsResult = await archiveAuthorizationService.GetUserArchiveLeaderDepartmentsAsync(userGuid);
+        if (leaderDepartmentsResult.IsError)
+        {
+            return leaderDepartmentsResult.ToActionResult();
+        }
+
+        var leaderDepartments = leaderDepartmentsResult.Value!;
+        var departmentsList = new List<DepartmentDto>();
+
+        foreach (var depId in leaderDepartments)
+        {
+            var depResult = await departmentService.GetByIdAsync(depId);
+            if (!depResult.IsError && depResult.Value != null)
+            {
+                departmentsList.Add(depResult.Value);
+            }
+        }
+
+        Result<List<DepartmentDto>> result = departmentsList;
         return result.ToActionResult();
     }
 

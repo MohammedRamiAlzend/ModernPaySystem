@@ -27,22 +27,9 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Template>()
-            .HasMany(t => t.VisitedByUsers)
-            .WithMany()
-            .UsingEntity(j => j.ToTable("UserVisitedTemplates"));
-
-        modelBuilder.Entity<Department>()
-        .HasOne(u => u.DepartmentHead)
-        .WithOne(u => u.HeadedDepartment)
-        .HasForeignKey<Department>(d => d.DepartmentHeadId)
-        .OnDelete(DeleteBehavior.Restrict);
-        
-        modelBuilder.Entity<User>()
-        .HasOne(u => u.SubSystemUser)
-        .WithOne(u => u.User)
-        .HasForeignKey<User>(d => d.SubSystemUserId)
-        .OnDelete(DeleteBehavior.Restrict);
+        // -----------------------------------------------------------------
+        // Transaction-module-only entity configurations
+        // -----------------------------------------------------------------
 
         modelBuilder.Entity<RequestAttachment>()
             .HasKey(ra => new { ra.RequestId, ra.AttachmentId });
@@ -53,23 +40,11 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
             .HasForeignKey<RequestTemplateValues>(rt => rt.RequestId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<Request>()
-            .HasOne(r => r.Requester)
-            .WithMany()
-            .HasForeignKey(r => r.RequesterId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         modelBuilder.Entity<RequestTemplateValues>()
             .HasMany(rt => rt.InputValues)
             .WithOne(iv => iv.RequestTemplateValues)
             .HasForeignKey(iv => iv.RequestTemplateValuesId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Request>()
-            .HasOne(r => r.Approver)
-            .WithMany()
-            .HasForeignKey(r => r.ApproverId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<RequestAttachment>()
             .HasOne(ra => ra.Request)
@@ -89,6 +64,13 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
             .HasForeignKey<Request>(r => r.ResponseId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<Request>()
+            .Property(r => r.ReadOnlyUsers)
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<ICollection<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
+            .HasColumnType("jsonb");
+
         modelBuilder.Entity<ResponseAttachment>()
             .HasOne(ra => ra.Response)
             .WithMany(r => r.ResponseAttachments)
@@ -107,22 +89,10 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
             .HasForeignKey(to => to.TemplateId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<TemplateDepartmentOwnership>()
-            .HasOne(to => to.Department)
-            .WithMany()
-            .HasForeignKey(to => to.DepartmentId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         modelBuilder.Entity<UserTemplateOwnership>()
             .HasOne(uto => uto.Template)
             .WithMany(t => t.UserOwnerships)
             .HasForeignKey(uto => uto.TemplateId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<UserTemplateOwnership>()
-            .HasOne(uto => uto.User)
-            .WithMany()
-            .HasForeignKey(uto => uto.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<RequestTransaction>()
@@ -136,12 +106,6 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
             .WithMany()
             .HasForeignKey(rt => rt.RequestId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<RequestTransaction>()
-            .HasOne(rt => rt.CurrentUserHolder)
-            .WithMany()
-            .HasForeignKey(rt => rt.CurrentUserHolderId)
-            .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Request>()
             .HasOne(r => r.FirstTransaction)
@@ -184,11 +148,6 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
                 .WithMany()
                 .HasForeignKey(e => e.RequestId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(e => e.User)
-                .WithMany()
-                .HasForeignKey(e => e.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<InputValue>()

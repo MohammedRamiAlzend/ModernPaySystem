@@ -4,6 +4,7 @@ using ModernPaySystem.Module.Archive.Application.Interfaces;
 using ModernPaySystem.Module.Archive.Domain.Entities;
 using ModernPaySystem.SharedKernel.Application.Services;
 using ModernPaySystem.SharedKernel.Domain.Commons;
+using System.IO;
 
 namespace ModernPaySystem.Module.Archive.Infrastructure.Services;
 
@@ -80,6 +81,52 @@ public class ArchiveConfigService(
         {
             logger.LogError(ex, "Error updating archive config");
             return Error.Failure("InternalServerError", "An unexpected error occurred.");
+        }
+    }
+
+    public async Task<Result<string[]>> GetSystemDrivesAsync()
+    {
+        try
+        {
+            var drives = DriveInfo.GetDrives()
+                .Where(d => d.IsReady)
+                .Select(d => d.Name)
+                .ToArray();
+
+            return drives;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving system drives");
+            return Error.Failure("InternalServerError", "Failed to retrieve system drives.");
+        }
+    }
+
+    public async Task<Result<string[]>> GetSubdirectoriesAsync(string path)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return Error.Validation("InvalidPath", "Path cannot be empty.");
+
+            var directories = Directory.GetDirectories(path)
+                .OrderBy(d => d)
+                .ToArray();
+
+            return directories;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Error.Forbidden("AccessDenied", "Access to the specified path is denied.");
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return Error.NotFound("DirectoryNotFound", "The specified directory was not found.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error retrieving subdirectories for path {Path}", path);
+            return Error.Failure("InternalServerError", "Failed to retrieve subdirectories.");
         }
     }
 }

@@ -4,6 +4,7 @@ using ModernPaySystem.Module.Archive.Application;
 using ModernPaySystem.Module.Archive.Application.Interfaces;
 using ModernPaySystem.Module.Archive.Domain;
 using ModernPaySystem.Module.Archive.Domain.Entities;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Application.Services;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 
@@ -15,6 +16,7 @@ public class FolderService(
     IArchiveDeletionWorkflowService archiveDeletionWorkflowService,
     IArchiveResourceAuthorizationService resourceAuth,
     IArchiveLeaderService archiveLeaderService,
+    IDepartmentService departmentService,
     ILogger<FolderService> logger) : IFolderService
 {
     public async Task<Result<IEnumerable<FolderDto>>> GetAllAsync()
@@ -123,8 +125,11 @@ public class FolderService(
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Name))
                 return ArchiveErrors.InvalidInput;
-
-            Guid? departmentId = null;
+            var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+            var departmentResult = await departmentService.GetByUserIdAsync(getCurrentUserId);
+            if (departmentResult.IsError)
+                return departmentResult.Errors;
+            Guid? departmentId = departmentResult.Value!.Id;
 
             if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty)
             {

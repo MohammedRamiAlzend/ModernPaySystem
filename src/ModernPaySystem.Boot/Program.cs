@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
 using ModernPaySystem.Module.Archive.Api.Controllers;
+using ModernPaySystem.Module.Archive.Application.Interfaces;
 using Serilog;
 using Serilog.Events;
 using ModernPaySystem.Module.Archive.Infrastructure;
@@ -125,6 +126,13 @@ builder.Services.AddOpenApi("v1", options =>
 
 var app = builder.Build();
 
+if (archiveEnabled && builder.Configuration.GetValue<bool>("Seeding:Enabled"))
+{
+    using var archiveScope = app.Services.CreateScope();
+    var archiveConfigSeeder = archiveScope.ServiceProvider.GetRequiredService<IArchiveConfigSeeder>();
+    await archiveConfigSeeder.SeedAsync();
+}
+
 if (identityEnabled && builder.Configuration.GetValue<bool>("Seeding:Enabled"))
 {
     using var scope = app.Services.CreateScope();
@@ -161,7 +169,7 @@ app.UseSerilogRequestLogging(opts =>
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<PermissionMiddleware>();
+//app.UseMiddleware<PermissionMiddleware>();
 app.MapControllers();
 app.MapHealthChecks("/healthz");
 app.Run();

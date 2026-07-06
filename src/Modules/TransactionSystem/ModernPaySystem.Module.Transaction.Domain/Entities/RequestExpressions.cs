@@ -21,7 +21,7 @@ public static class RequestExpressions
        r => r.CurrentTransactionId.HasValue || r.FirstTransactionId.HasValue;
 
     public static Expression<Func<Request, bool>> ByUserId(Guid userId) =>
-        r => r.RequesterId == userId || r.ApproverId == userId || r.ReadOnlyUsers.Any(u => u.Id == userId);
+        r => r.RequesterId == userId || r.ApproverId == userId;
 
     public static Expression<Func<Request, bool>> IsActive() =>
         r => r.ResponseId == null;
@@ -75,21 +75,19 @@ public static class RequestExpressions
         r => r.Id == request.Id
              && userId == request.RequesterId
              && userId != request.ApproverId
-             && (request.ReadOnlyUsers == null || !request.ReadOnlyUsers.Any(u => u.Id == userId));
+             && !request.ReadOnlyUsers.Contains(userId);
 
     public static Expression<Func<Request, bool>> CanRead(Request request, Guid userId) =>
         r => r.Id == request.Id
              && (userId == request.RequesterId
                  || userId == request.ApproverId
-                 || (request.ReadOnlyUsers != null && request.ReadOnlyUsers.Any(u => u.Id == userId)));
+                 || request.ReadOnlyUsers.Contains(userId));
 
     public static Expression<Func<Request, bool>> CanReadByUserId(Guid userId) =>
         r => r.RequesterId == userId
-             || r.ApproverId == userId
-             || r.ReadOnlyUsers.Any(u => u.Id == userId);
+             || r.ApproverId == userId;
 
     public static Expression<Func<Request, bool>> CanMakeUpdateByUserId(Guid userId) =>
         r => r.RequesterId == userId
-             && r.ApproverId != userId
-             && (r.ReadOnlyUsers == null || !r.ReadOnlyUsers.Any(u => u.Id == userId));
+             && r.ApproverId != userId;
 }

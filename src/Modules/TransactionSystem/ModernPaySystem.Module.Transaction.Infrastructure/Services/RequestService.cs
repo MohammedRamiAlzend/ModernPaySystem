@@ -256,7 +256,7 @@ public class RequestService(
                 RequestNumber = 0,
                 RequesterId = currentUserId,
                 ApproverId = currentUserId,
-                ReadOnlyUsers = request.ReadOnlyUsers.Select(id => new User { Id = id, UserName = id.ToString(), HashedPassword = "" }).ToList(),
+                ReadOnlyUsers = [],
                 ApproverDepartmentId = request.DepartmentId,
                 RequesterDepartmentId = request.DepartmentId
             };

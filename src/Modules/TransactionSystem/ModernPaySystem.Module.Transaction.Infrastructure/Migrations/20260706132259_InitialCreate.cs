@@ -32,22 +32,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PermissionEntity",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Key = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    SubSystem = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PermissionEntity", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Responses",
                 columns: table => new
                 {
@@ -66,29 +50,23 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Role",
+                name: "Templates",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Description = table.Column<string>(type: "text", nullable: true)
+                    ContentAsJson = table.Column<string>(type: "jsonb", nullable: false),
+                    TemplateName = table.Column<string>(type: "text", nullable: false),
+                    TemplateDescription = table.Column<string>(type: "text", nullable: true),
+                    IsRequireAttachments = table.Column<bool>(type: "boolean", nullable: false),
+                    DefaultReceiverDepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Role", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SubSystemUser",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    SubSystem = table.Column<int>(type: "integer", nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SubSystemUser", x => x.Id);
+                    table.PrimaryKey("PK_Templates", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -116,110 +94,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         name: "FK_ResponseAttachments_Responses_ResponseId",
                         column: x => x.ResponseId,
                         principalTable: "Responses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PermissionEntityRole",
-                columns: table => new
-                {
-                    PermissionsId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RolesId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PermissionEntityRole", x => new { x.PermissionsId, x.RolesId });
-                    table.ForeignKey(
-                        name: "FK_PermissionEntityRole_PermissionEntity_PermissionsId",
-                        column: x => x.PermissionsId,
-                        principalTable: "PermissionEntity",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PermissionEntityRole_Role_RolesId",
-                        column: x => x.RolesId,
-                        principalTable: "Role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Department",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Code = table.Column<string>(type: "text", nullable: true),
-                    Description = table.Column<string>(type: "text", nullable: true),
-                    ParentDepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DepartmentHeadId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Level = table.Column<int>(type: "integer", nullable: false),
-                    MaterializedPath = table.Column<string>(type: "text", nullable: true),
-                    Type = table.Column<int>(type: "integer", nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Department", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Department_Department_ParentDepartmentId",
-                        column: x => x.ParentDepartmentId,
-                        principalTable: "Department",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Templates",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    ContentAsJson = table.Column<string>(type: "jsonb", nullable: false),
-                    TemplateName = table.Column<string>(type: "text", nullable: false),
-                    TemplateDescription = table.Column<string>(type: "text", nullable: true),
-                    IsRequireAttachments = table.Column<bool>(type: "boolean", nullable: false),
-                    DefaultReceiverDepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Templates", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Templates_Department_DefaultReceiverDepartmentId",
-                        column: x => x.DefaultReceiverDepartmentId,
-                        principalTable: "Department",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DepartmentTemplateNumber",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TemplateId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LastRequestNumber = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DepartmentTemplateNumber", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DepartmentTemplateNumber_Department_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Department",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_DepartmentTemplateNumber_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -254,13 +128,26 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_TemplateDepartmentOwnerships", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TemplateDepartmentOwnerships_Department_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Department",
+                        name: "FK_TemplateDepartmentOwnerships_Templates_TemplateId",
+                        column: x => x.TemplateId,
+                        principalTable: "Templates",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTemplateOwnerships",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    TemplateId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTemplateOwnerships", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TemplateDepartmentOwnerships_Templates_TemplateId",
+                        name: "FK_UserTemplateOwnerships_Templates_TemplateId",
                         column: x => x.TemplateId,
                         principalTable: "Templates",
                         principalColumn: "Id",
@@ -379,6 +266,7 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     Status = table.Column<int>(type: "integer", nullable: false),
                     FirstTransactionId = table.Column<Guid>(type: "uuid", nullable: true),
                     CurrentTransactionId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ReadOnlyUsers = table.Column<string>(type: "jsonb", nullable: false),
                     CreatedByUserId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
@@ -427,44 +315,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserName = table.Column<string>(type: "text", nullable: false),
-                    HashedPassword = table.Column<string>(type: "text", nullable: false),
-                    SubSystemUserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    DepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
-                    IsDepartmentHead = table.Column<bool>(type: "boolean", nullable: false),
-                    HeadedDepartmentId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedByUserId = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UpdatedByUserId = table.Column<string>(type: "text", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    RequestId = table.Column<Guid>(type: "uuid", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_User", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_User_Department_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Department",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_User_Requests_RequestId",
-                        column: x => x.RequestId,
-                        principalTable: "Requests",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_User_SubSystemUser_SubSystemUserId",
-                        column: x => x.SubSystemUserId,
-                        principalTable: "SubSystemUser",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "RequestTransactions",
                 columns: table => new
                 {
@@ -494,85 +344,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         name: "FK_RequestTransactions_Requests_RequestId",
                         column: x => x.RequestId,
                         principalTable: "Requests",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RequestTransactions_User_CurrentUserHolderId",
-                        column: x => x.CurrentUserHolderId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RoleUser",
-                columns: table => new
-                {
-                    RolesId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UsersId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RoleUser", x => new { x.RolesId, x.UsersId });
-                    table.ForeignKey(
-                        name: "FK_RoleUser_Role_RolesId",
-                        column: x => x.RolesId,
-                        principalTable: "Role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_RoleUser_User_UsersId",
-                        column: x => x.UsersId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserTemplateOwnerships",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TemplateId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserTemplateOwnerships", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserTemplateOwnerships_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserTemplateOwnerships_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserVisitedTemplates",
-                columns: table => new
-                {
-                    TemplateId = table.Column<Guid>(type: "uuid", nullable: false),
-                    VisitedByUsersId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserVisitedTemplates", x => new { x.TemplateId, x.VisitedByUsersId });
-                    table.ForeignKey(
-                        name: "FK_UserVisitedTemplates_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserVisitedTemplates_User_VisitedByUsersId",
-                        column: x => x.VisitedByUsersId,
-                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -607,27 +378,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Department_DepartmentHeadId",
-                table: "Department",
-                column: "DepartmentHeadId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Department_ParentDepartmentId",
-                table: "Department",
-                column: "ParentDepartmentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DepartmentTemplateNumber_DepartmentId",
-                table: "DepartmentTemplateNumber",
-                column: "DepartmentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DepartmentTemplateNumber_TemplateId",
-                table: "DepartmentTemplateNumber",
-                column: "TemplateId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_InputValue_Lookup",
                 table: "InputValues",
                 columns: new[] { "RequestTemplateValuesId", "Key", "Value" });
@@ -641,11 +391,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 name: "IX_LookUpFiledValues_LookUpFiledId",
                 table: "LookUpFiledValues",
                 column: "LookUpFiledId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PermissionEntityRole_RolesId",
-                table: "PermissionEntityRole",
-                column: "RolesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RequestAttachments_AttachmentId",
@@ -679,11 +424,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 column: "TargetRequestId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Requests_ApproverId",
-                table: "Requests",
-                column: "ApproverId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Requests_CurrentTransactionId",
                 table: "Requests",
                 column: "CurrentTransactionId");
@@ -692,11 +432,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 name: "IX_Requests_FirstTransactionId",
                 table: "Requests",
                 column: "FirstTransactionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Requests_RequesterId",
-                table: "Requests",
-                column: "RequesterId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Requests_ResponseId",
@@ -731,11 +466,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 column: "RequestTransactionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RequestTransactions_CurrentUserHolderId",
-                table: "RequestTransactions",
-                column: "CurrentUserHolderId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_RequestTransactions_ParentTransactionId",
                 table: "RequestTransactions",
                 column: "ParentTransactionId");
@@ -756,63 +486,14 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 column: "ResponseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RoleUser_UsersId",
-                table: "RoleUser",
-                column: "UsersId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TemplateDepartmentOwnerships_DepartmentId",
-                table: "TemplateDepartmentOwnerships",
-                column: "DepartmentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_TemplateDepartmentOwnerships_TemplateId",
                 table: "TemplateDepartmentOwnerships",
                 column: "TemplateId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Templates_DefaultReceiverDepartmentId",
-                table: "Templates",
-                column: "DefaultReceiverDepartmentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_User_DepartmentId",
-                table: "User",
-                column: "DepartmentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_User_RequestId",
-                table: "User",
-                column: "RequestId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_User_SubSystemUserId",
-                table: "User",
-                column: "SubSystemUserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserTemplateOwnerships_TemplateId",
                 table: "UserTemplateOwnerships",
                 column: "TemplateId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserTemplateOwnerships_UserId",
-                table: "UserTemplateOwnerships",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserVisitedTemplates_VisitedByUsersId",
-                table: "UserVisitedTemplates",
-                column: "VisitedByUsersId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Department_User_DepartmentHeadId",
-                table: "Department",
-                column: "DepartmentHeadId",
-                principalTable: "User",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_InputValues_RequestTemplateValues_RequestTemplateValuesId",
@@ -837,14 +518,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 principalTable: "Requests",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_RequestAuditLogs_User_UserId",
-                table: "RequestAuditLogs",
-                column: "UserId",
-                principalTable: "User",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_RequestRelations_Requests_SourceRequestId",
@@ -877,47 +550,11 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 principalTable: "RequestTransactions",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Requests_User_ApproverId",
-                table: "Requests",
-                column: "ApproverId",
-                principalTable: "User",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Requests_User_RequesterId",
-                table: "Requests",
-                column: "RequesterId",
-                principalTable: "User",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Department_User_DepartmentHeadId",
-                table: "Department");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Requests_User_ApproverId",
-                table: "Requests");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Requests_User_RequesterId",
-                table: "Requests");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_RequestTransactions_User_CurrentUserHolderId",
-                table: "RequestTransactions");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Templates_Department_DefaultReceiverDepartmentId",
-                table: "Templates");
-
             migrationBuilder.DropForeignKey(
                 name: "FK_Requests_Templates_TemplateId",
                 table: "Requests");
@@ -927,16 +564,10 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 table: "RequestTransactions");
 
             migrationBuilder.DropTable(
-                name: "DepartmentTemplateNumber");
-
-            migrationBuilder.DropTable(
                 name: "InputValues");
 
             migrationBuilder.DropTable(
                 name: "LookUpFiledValues");
-
-            migrationBuilder.DropTable(
-                name: "PermissionEntityRole");
 
             migrationBuilder.DropTable(
                 name: "RequestAttachments");
@@ -954,16 +585,10 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 name: "ResponseAttachments");
 
             migrationBuilder.DropTable(
-                name: "RoleUser");
-
-            migrationBuilder.DropTable(
                 name: "TemplateDepartmentOwnerships");
 
             migrationBuilder.DropTable(
                 name: "UserTemplateOwnerships");
-
-            migrationBuilder.DropTable(
-                name: "UserVisitedTemplates");
 
             migrationBuilder.DropTable(
                 name: "RequestTemplateValues");
@@ -972,22 +597,7 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 name: "LookUpFields");
 
             migrationBuilder.DropTable(
-                name: "PermissionEntity");
-
-            migrationBuilder.DropTable(
                 name: "Attachments");
-
-            migrationBuilder.DropTable(
-                name: "Role");
-
-            migrationBuilder.DropTable(
-                name: "User");
-
-            migrationBuilder.DropTable(
-                name: "SubSystemUser");
-
-            migrationBuilder.DropTable(
-                name: "Department");
 
             migrationBuilder.DropTable(
                 name: "Templates");

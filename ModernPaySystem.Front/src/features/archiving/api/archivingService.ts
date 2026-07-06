@@ -26,7 +26,7 @@ const overrideMimeType = (blob: Blob, fileName: string): Blob => {
         else if (ext === 'mp4') mimeType = 'video/mp4';
         else if (ext === 'webm') mimeType = 'video/webm';
         else if (ext === 'ogg') mimeType = 'video/ogg';
-        
+
         if (mimeType !== blob.type) {
             return new Blob([blob], { type: mimeType });
         }
@@ -97,7 +97,7 @@ export const archivingService = {
         onUploadProgress?: (progressEvent: any) => void
     ): Promise<ArchiveRecord> => {
         const formData = new FormData();
-        
+
         if (data.id) {
             formData.append('Id', data.id);
         }
@@ -560,22 +560,22 @@ export const archivingService = {
     // Archive Config API
     // ---------------------------------------------
     getArchiveConfig: async (): Promise<ArchiveConfigDto> => {
-        const response = await api.get<any>('/archive-system/config');
+        const response = await api.get<any>('/archive/config');
         return response.data.data;
     },
 
     updateArchiveConfig: async (dto: UpdateArchiveConfigDto): Promise<ArchiveConfigDto> => {
-        const response = await api.put<any>('/archive-system/config', dto);
+        const response = await api.put<any>('/archive/config', dto);
         return response.data.data;
     },
 
     getSystemDrives: async (): Promise<string[]> => {
-        const response = await api.get<any>('/archive-system/config/drives');
+        const response = await api.get<any>('/archive/config/drives');
         return response.data.data;
     },
 
     getSubdirectories: async (path: string): Promise<string[]> => {
-        const response = await api.get<any>('/archive-system/config/subdirs', {
+        const response = await api.get<any>('/archive/config/subdirs', {
             params: { path }
         });
         return response.data.data;

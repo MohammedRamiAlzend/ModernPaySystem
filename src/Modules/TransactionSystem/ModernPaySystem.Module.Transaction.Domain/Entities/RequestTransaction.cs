@@ -25,7 +25,6 @@ public class RequestTransaction : Entity<Guid>, IAuditableEntity
     public RequestTransaction? ParentTransaction { get; set; }
 
     public Guid CurrentUserHolderId { get; set; }
-    public User CurrentUserHolder { get; set; } = null!;
 
     public ICollection<RequestTransaction> ChildTransactions { get; set; } = [];
     public ICollection<RequestTransactionAttachment> RequestTransactionAttachments { get; set; } = [];

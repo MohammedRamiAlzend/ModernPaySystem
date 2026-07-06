@@ -28,7 +28,7 @@ export const departmentActionsApi = {
     },
 
     assignHead: async (departmentId: string, userId: string) => {
-        const response = await api.post<{ data: any }>(`/Departments/${departmentId}/assign-head`, { userId });
+        const response = await api.post<{ data: any }>(`/transaction/Departments/${departmentId}/assign-head`, { userId });
         return response.data.data;
     }
 };

@@ -9,6 +9,7 @@ public interface IDepartmentService
     Task<Result<DepartmentDto>> CreateAsync(CreateDepartmentDto dto, string userId);
 
     Task<Result<DepartmentDto?>> GetByIdAsync(Guid id);
+    Task<Result<DepartmentDto?>> GetByUserIdAsync(Guid id);
 
     Task<Result<DepartmentDto>> UpdateAsync(Guid id, UpdateDepartmentDto dto, string userId);
 

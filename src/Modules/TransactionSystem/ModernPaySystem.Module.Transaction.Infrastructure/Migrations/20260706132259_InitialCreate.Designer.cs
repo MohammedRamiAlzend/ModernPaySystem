@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
 {
     [DbContext(typeof(TransactionDbContext))]
-    [Migration("20260705110515_InitialCreate")]
+    [Migration("20260706132259_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -73,6 +73,10 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.Property<Guid?>("FirstTransactionId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("ReadOnlyUsers")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<int>("RequestNumber")
                         .HasColumnType("integer");
 
@@ -102,13 +106,9 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ApproverId");
-
                     b.HasIndex("CurrentTransactionId");
 
                     b.HasIndex("FirstTransactionId");
-
-                    b.HasIndex("RequesterId");
 
                     b.HasIndex("ResponseId")
                         .IsUnique();
@@ -309,8 +309,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrentUserHolderId");
-
                     b.HasIndex("ParentTransactionId");
 
                     b.HasIndex("RequestId");
@@ -453,8 +451,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DefaultReceiverDepartmentId");
-
                     b.ToTable("Templates");
                 });
 
@@ -471,8 +467,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("TemplateId");
 
@@ -494,8 +488,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TemplateId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("UserTemplateOwnerships");
                 });
@@ -542,83 +534,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.ToTable("Attachments");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.Department", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Code")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("DepartmentHeadId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("MaterializedPath")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("ParentDepartmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedByUserId")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentHeadId")
-                        .IsUnique();
-
-                    b.HasIndex("ParentDepartmentId");
-
-                    b.ToTable("Department");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.DepartmentTemplateNumber", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("LastRequestNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.HasIndex("TemplateId");
-
-                    b.ToTable("DepartmentTemplateNumber");
-                });
-
             modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.LookUpField", b =>
                 {
                     b.Property<Guid>("Id")
@@ -659,166 +574,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.ToTable("LookUpFiledValues");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.PermissionEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<int>("SubSystem")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PermissionEntity");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Role");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.SubSystemUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int?>("SubSystem")
-                        .HasColumnType("integer");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SubSystemUser");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.User", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CreatedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("HashedPassword")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("HeadedDepartmentId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsDepartmentHead")
-                        .HasColumnType("boolean");
-
-                    b.Property<Guid?>("RequestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid?>("SubSystemUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UpdatedByUserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.HasIndex("RequestId");
-
-                    b.HasIndex("SubSystemUserId")
-                        .IsUnique();
-
-                    b.ToTable("User");
-                });
-
-            modelBuilder.Entity("PermissionEntityRole", b =>
-                {
-                    b.Property<Guid>("PermissionsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("RolesId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("PermissionsId", "RolesId");
-
-                    b.HasIndex("RolesId");
-
-                    b.ToTable("PermissionEntityRole");
-                });
-
-            modelBuilder.Entity("RoleUser", b =>
-                {
-                    b.Property<Guid>("RolesId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UsersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("RolesId", "UsersId");
-
-                    b.HasIndex("UsersId");
-
-                    b.ToTable("RoleUser");
-                });
-
-            modelBuilder.Entity("TemplateUser", b =>
-                {
-                    b.Property<Guid>("TemplateId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("VisitedByUsersId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("TemplateId", "VisitedByUsersId");
-
-                    b.HasIndex("VisitedByUsersId");
-
-                    b.ToTable("UserVisitedTemplates", (string)null);
-                });
-
             modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.InputValue", b =>
                 {
                     b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.RequestTemplateValues", "RequestTemplateValues")
@@ -832,12 +587,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
 
             modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.Request", b =>
                 {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", "Approver")
-                        .WithMany()
-                        .HasForeignKey("ApproverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.RequestTransaction", "CurrentTransaction")
                         .WithMany()
                         .HasForeignKey("CurrentTransactionId")
@@ -848,12 +597,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         .HasForeignKey("FirstTransactionId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", "Requester")
-                        .WithMany()
-                        .HasForeignKey("RequesterId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.Response", "Response")
                         .WithOne("Request")
                         .HasForeignKey("ModernPaySystem.Module.Transaction.Domain.Entities.Request", "ResponseId")
@@ -863,13 +606,9 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         .WithMany("Requests")
                         .HasForeignKey("TemplateId");
 
-                    b.Navigation("Approver");
-
                     b.Navigation("CurrentTransaction");
 
                     b.Navigation("FirstTransaction");
-
-                    b.Navigation("Requester");
 
                     b.Navigation("Response");
                 });
@@ -901,15 +640,7 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Request");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.RequestRelation", b =>
@@ -952,12 +683,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
 
             modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.RequestTransaction", b =>
                 {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", "CurrentUserHolder")
-                        .WithMany()
-                        .HasForeignKey("CurrentUserHolderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.RequestTransaction", "ParentTransaction")
                         .WithMany("ChildTransactions")
                         .HasForeignKey("ParentTransactionId")
@@ -968,8 +693,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CurrentUserHolder");
 
                     b.Navigation("ParentTransaction");
 
@@ -1014,32 +737,13 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.Navigation("Response");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.Template", b =>
-                {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Department", "DefaultReceiverDepartment")
-                        .WithMany()
-                        .HasForeignKey("DefaultReceiverDepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("DefaultReceiverDepartment");
-                });
-
             modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.TemplateDepartmentOwnership", b =>
                 {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Department", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.Template", "Template")
                         .WithMany("DepartmentOwnerships")
                         .HasForeignKey("TemplateId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Department");
 
                     b.Navigation("Template");
                 });
@@ -1052,48 +756,7 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Template");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.Department", b =>
-                {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", "DepartmentHead")
-                        .WithOne("HeadedDepartment")
-                        .HasForeignKey("ModernPaySystem.SharedKernel.Domain.Entities.Department", "DepartmentHeadId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Department", "ParentDepartment")
-                        .WithMany("ChildDepartments")
-                        .HasForeignKey("ParentDepartmentId");
-
-                    b.Navigation("DepartmentHead");
-
-                    b.Navigation("ParentDepartment");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.DepartmentTemplateNumber", b =>
-                {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Department", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.Template", null)
-                        .WithMany("DepartmentTemplateNumbers")
-                        .HasForeignKey("TemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.LookUpField", b =>
@@ -1114,78 +777,11 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.Navigation("LookUpFiled");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.User", b =>
-                {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Department", "Department")
-                        .WithMany("Users")
-                        .HasForeignKey("DepartmentId");
-
-                    b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.Request", null)
-                        .WithMany("ReadOnlyUsers")
-                        .HasForeignKey("RequestId");
-
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.SubSystemUser", "SubSystemUser")
-                        .WithOne("User")
-                        .HasForeignKey("ModernPaySystem.SharedKernel.Domain.Entities.User", "SubSystemUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Department");
-
-                    b.Navigation("SubSystemUser");
-                });
-
-            modelBuilder.Entity("PermissionEntityRole", b =>
-                {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.PermissionEntity", null)
-                        .WithMany()
-                        .HasForeignKey("PermissionsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("RoleUser", b =>
-                {
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.Role", null)
-                        .WithMany()
-                        .HasForeignKey("RolesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("TemplateUser", b =>
-                {
-                    b.HasOne("ModernPaySystem.Module.Transaction.Domain.Entities.Template", null)
-                        .WithMany()
-                        .HasForeignKey("TemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ModernPaySystem.SharedKernel.Domain.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("VisitedByUsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("ModernPaySystem.Module.Transaction.Domain.Entities.Request", b =>
                 {
                     b.Navigation("IncomingRelations");
 
                     b.Navigation("OutgoingRelations");
-
-                    b.Navigation("ReadOnlyUsers");
 
                     b.Navigation("RequestAttachments");
 
@@ -1215,8 +811,6 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                 {
                     b.Navigation("DepartmentOwnerships");
 
-                    b.Navigation("DepartmentTemplateNumbers");
-
                     b.Navigation("LookUpFields");
 
                     b.Navigation("Requests");
@@ -1224,26 +818,9 @@ namespace ModernPaySystem.Module.Transaction.Infrastructure.Migrations
                     b.Navigation("UserOwnerships");
                 });
 
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.Department", b =>
-                {
-                    b.Navigation("ChildDepartments");
-
-                    b.Navigation("Users");
-                });
-
             modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.LookUpField", b =>
                 {
                     b.Navigation("LookUpFiledValues");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.SubSystemUser", b =>
-                {
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ModernPaySystem.SharedKernel.Domain.Entities.User", b =>
-                {
-                    b.Navigation("HeadedDepartment");
                 });
 #pragma warning restore 612, 618
         }

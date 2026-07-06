@@ -9,5 +9,4 @@ public class TemplateDepartmentOwnership : Entity<Guid>
     public Template? Template { get; set; }
 
     public required Guid DepartmentId { get; set; }
-    public Department? Department { get; set; }
 }

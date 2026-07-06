@@ -198,8 +198,7 @@ public class ReportService(
 
             var todayLogs = await unitOfWork.RequestAuditLogs.GetAllAsync(
                 al => al.Timestamp >= todayStart,
-                transform: q => q.Include(al => al.Request!)
-                    .ThenInclude(r => r.Requester).AsNoTracking());
+                transform: q => q.Include(al => al.Request!).AsNoTracking());
 
             if (!todayLogs.IsError && todayLogs.Value != null)
             {

@@ -9,6 +9,7 @@ using ModernPaySystem.Module.Archive.Application.Interfaces;
 using ModernPaySystem.Module.Archive.Infrastructure.Auth;
 using ModernPaySystem.Module.Archive.Infrastructure.Interceptors;
 using ModernPaySystem.Module.Archive.Infrastructure.Persistence;
+using ModernPaySystem.Module.Archive.Infrastructure.Seeding;
 using ModernPaySystem.Module.Archive.Infrastructure.Services;
 using ModernPaySystem.Module.Archive.Infrastructure.Services.Qdrant;
 using OcrReader;
@@ -43,6 +44,7 @@ public static class ArchiveModuleRegistration
         services.AddScoped<IArchiveUnitOfWork, ArchiveUnitOfWork>();
 
         services.AddScoped<IArchiveConfigService, ArchiveConfigService>();
+        services.AddScoped<IArchiveConfigSeeder, ArchiveConfigSeeder>();
         services.AddScoped<IArchiveAuthorizationService, ArchiveAuthorizationService>();
         services.AddScoped<IArchiveRecordService, ArchiveRecordService>();
         services.AddScoped<IArchiveDeletionWorkflowService, ArchiveDeletionWorkflowService>();

@@ -5,19 +5,16 @@ namespace ModernPaySystem.Module.Transaction.Domain.Entities;
 
 public class Template : Entity<Guid>, IAuditableEntity
 {
-    public ICollection<User> VisitedByUsers { get; set; } = [];
     public required string ContentAsJson { get; set; }
     public required string TemplateName { get; set; }
     public string? TemplateDescription { get; set; }
     public required bool IsRequireAttachments { get; set; } = false;
-    public Department DefaultReceiverDepartment { get; set; } = null!;
     public Guid DefaultReceiverDepartmentId { get; set; }
 
     public ICollection<Request> Requests { get; set; } = [];
     public ICollection<TemplateDepartmentOwnership>? DepartmentOwnerships { get; set; } = null;
     public ICollection<UserTemplateOwnership>? UserOwnerships { get; set; } = null;
     public ICollection<LookUpField> LookUpFields { get; set; } = [];
-    public ICollection<DepartmentTemplateNumber> DepartmentTemplateNumbers { get; set; } = [];
 
     public string? CreatedByUserId { get; set; }
     public DateTime? CreatedAt { get; set; }

@@ -4,21 +4,11 @@ dotnet ef migrations add <MigrationName>
   --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
   --context IdentityDbContext
 
+
+dotnet ef migrations add InitialCreate --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj  --context IdentityDbContext && dotnet ef migrations add InitialCreate --project src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Infrastructure  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj  --context TransactionDbContext && dotnet ef migrations add InitialCreate --project src/Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Infrastructure  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj  --context ArchiveDbContext
+
 # Update database (apply migrations)
-dotnet ef database update
-  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure 
-  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
-  --context IdentityDbContext
-
-dotnet ef database update
-  --project src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Infrastructure 
-  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
-  --context TransactionDbContext
-
-  dotnet ef database update
-  --project src/Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Infrastructure 
-  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
-  --context ArchiveDbContext
+dotnet ef database update --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj  --context IdentityDbContext && dotnet ef database update --project src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Infrastructure  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj  --context TransactionDbContext && dotnet ef database update --project src/Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Infrastructure  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj  --context ArchiveDbContext
 
 # Update to specific migration
 dotnet ef database update <MigrationName> \
@@ -27,10 +17,7 @@ dotnet ef database update <MigrationName> \
   --context IdentityDbContext
 
 # Drop database
-dotnet ef database drop \
-  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure \
-  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj \
-  --context IdentityDbContext
+dotnet ef database drop --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj --context IdentityDbContext
 
 # List migrations
 dotnet ef migrations list \

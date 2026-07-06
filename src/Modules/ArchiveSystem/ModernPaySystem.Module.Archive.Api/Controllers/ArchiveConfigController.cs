@@ -45,4 +45,22 @@ public class ArchiveConfigController(
         var result = await archiveConfigService.UpdateAsync(dto);
         return result.ToActionResult();
     }
+
+    [HttpGet("drives")]
+    [EndpointPermission("archiving.config.get", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetSystemDrives()
+    {
+        logger.LogInformation("Fetching system drives");
+        var result = await archiveConfigService.GetSystemDrivesAsync();
+        return result.ToActionResult();
+    }
+
+    [HttpGet("subdirs")]
+    [EndpointPermission("archiving.config.get", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetSubdirectories([FromQuery] string path)
+    {
+        logger.LogInformation("Fetching subdirectories for path {Path}", path);
+        var result = await archiveConfigService.GetSubdirectoriesAsync(path);
+        return result.ToActionResult();
+    }
 }

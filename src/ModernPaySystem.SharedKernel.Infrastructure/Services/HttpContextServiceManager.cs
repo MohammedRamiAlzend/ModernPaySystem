@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Application.Services;
 using System.Security.Claims;
 

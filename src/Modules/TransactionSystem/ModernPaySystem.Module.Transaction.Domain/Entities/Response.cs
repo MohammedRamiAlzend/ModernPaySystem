@@ -24,7 +24,7 @@ public class Response : Entity<Guid>, IAuditableEntity
             RequestId = this.RequestId,
             RespondedByUserId = this.RespondedByUserId,
             Comment = this.Comment,
-            DepartmentName = Request?.Approver?.Department?.Name ?? "Unknown",
+            DepartmentName = "Unknown",
             CreatedByUserId = this.CreatedByUserId,
             CreatedAt = this.CreatedAt,
             UpdatedByUserId = this.UpdatedByUserId,
