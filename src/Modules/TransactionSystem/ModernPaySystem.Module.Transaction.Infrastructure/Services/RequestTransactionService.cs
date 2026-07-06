@@ -1,0 +1,450 @@
+using ExpressionBuilderLib.src.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using ModernPaySystem.Module.Transaction.Application;
+using ModernPaySystem.Module.Transaction.Application.Interfaces;
+using ModernPaySystem.Module.Transaction.Domain;
+using ModernPaySystem.Module.Transaction.Domain.DTOs;
+using ModernPaySystem.Module.Transaction.Domain.Entities;
+using ModernPaySystem.SharedKernel.Application.Services;
+using ModernPaySystem.SharedKernel.Domain.Commons;
+using System.Linq.Expressions;
+
+namespace ModernPaySystem.Module.Transaction.Infrastructure.Services;
+
+public class RequestTransactionService(
+    ITransactionUnitOfWork unitOfWork,
+    IWebAttachmentService webAttachmentService,
+    IHttpContextServiceManager httpContextServiceManager,
+    ILogger<RequestTransactionService> logger) : IRequestTransactionService
+{
+    public async Task<Result<PagedList<RequestTransactionDto>>> GetPagedAsync(RequestPagedFilterDto filterDto, TransactionStatus status)
+    {
+        try
+        {
+            logger.LogInformation("Fetching paged request transactions, page: {Page}, size: {PageSize}, status: {Status}", filterDto.Page, filterDto.PageSize, status);
+
+            if (filterDto.Page <= 0)
+                return TransactionErrors.InvalidInput;
+            if (filterDto.PageSize <= 0 || filterDto.PageSize > 100)
+                return TransactionErrors.InvalidInput;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            List<Expression<Func<RequestTransaction, bool>>> filters = [];
+            if (status == TransactionStatus.PendingAction)
+            {
+                filters.Add(RequestTransactionExpressions.CanReadByUserId(currentUserId));
+                filters.Add(RequestTransactionExpressions.TransferStatus(status));
+                filters.Add(RequestTransactionExpressions.DoesNotHasResponse());
+            }
+            else
+            {
+                filters.Add(RequestTransactionExpressions.CreatedByUserId(currentUserId.ToString()));
+            }
+            if (filterDto != null)
+            {
+                if (filterDto.FromDate.HasValue)
+                    filters.Add(r => r.CreatedAt >= filterDto.FromDate);
+                if (filterDto.ToDate.HasValue)
+                    filters.Add(r => r.CreatedAt <= filterDto.ToDate);
+                if (filterDto.InputValueFilters != null && filterDto.InputValueFilters.Count != 0)
+                {
+                    foreach (var ivf in filterDto.InputValueFilters)
+                    {
+                        if (!string.IsNullOrWhiteSpace(ivf.Value))
+                        {
+                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key) && iv.Value.Contains(ivf.Value)));
+                        }
+                        else
+                        {
+                            filters.Add(r => r.Request.RequestTemplateValues != null && r.Request.RequestTemplateValues.InputValues.Any(iv => iv.Key.Contains(ivf.Key)));
+                        }
+                    }
+                }
+            }
+            var combinedExp = ExpressionCombiner.AndAll(filters.ToArray());
+
+            var pagedTransactions = await unitOfWork.RequestTransactions.GetPagedAsync(
+                filterDto!.Page,
+                filterDto.PageSize,
+                combinedExp,
+                transform: x => x.Include(x => x.ParentTransaction)
+                                 .Include(x => x.RequestTransactionAttachments)
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request)
+                                     .ThenInclude(r => r.RequestAttachments)
+                                         .ThenInclude(ra => ra.Attachment)
+                                  .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                  .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
+                                  .Include(x => x.Request).ThenInclude(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest));
+
+            if (pagedTransactions.IsError)
+                return pagedTransactions.Errors;
+
+            var transactionDtos = pagedTransactions.Value!.Items.Select(t => t.ToDto()).ToList();
+            return new PagedList<RequestTransactionDto>(transactionDtos, pagedTransactions.Value.TotalItems, filterDto.Page, filterDto.PageSize);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching paged request transactions, page: {Page}, size: {PageSize}", filterDto.Page, filterDto.PageSize);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching request transactions.");
+        }
+    }
+
+    public async Task<Result<RequestTransactionDto>> GetByIdAsync(Guid id)
+    {
+        try
+        {
+            logger.LogInformation("Fetching request transaction by id: {TransactionId}", id);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var transaction = await unitOfWork.RequestTransactions.GetAsync(
+                filter: rt => rt.Id == id,
+                transform: x => x.Include(x => x.ParentTransaction)
+                                 .Include(x => x.ChildTransactions)
+                                 .Include(x => x.RequestTransactionAttachments)
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request)
+                                     .ThenInclude(r => r.RequestAttachments)
+                                         .ThenInclude(ra => ra.Attachment)
+                                         .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                  .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                  .Include(x => x.Request).ThenInclude(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                additionalFilters: [RequestTransactionExpressions.CanReadByUserId(currentUserId)]);
+
+            if (transaction.IsError)
+                return transaction.Errors;
+
+            if (transaction.Value == null)
+                return TransactionErrors.RequestTransactionNotFound;
+
+            return transaction.Value.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching request transaction by id: {TransactionId}", id);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching request transaction.");
+        }
+    }
+
+    public async Task<Result<List<RequestTransactionDto>>> GetByRequestIdAsync(Guid requestId)
+    {
+        try
+        {
+            logger.LogInformation("Fetching request transactions for request: {RequestId}", requestId);
+
+            var transactions = await unitOfWork.RequestTransactions.GetAllAsync(
+                filter: rt => rt.RequestId == requestId,
+                transform: x => x.Include(x => x.ParentTransaction)
+                                 .Include(x => x.RequestTransactionAttachments)
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request)
+                                     .ThenInclude(r => r.RequestAttachments)
+                                         .ThenInclude(ra => ra.Attachment)
+                                         .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                 .Include(x => x.Request).ThenInclude(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest));
+
+            if (transactions.IsError)
+                return transactions.Errors;
+
+            var transactionDtos = transactions.Value!.Select(t => t.ToDto()).ToList();
+            return transactionDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching request transactions for request: {RequestId}", requestId);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching request transactions.");
+        }
+    }
+
+    public async Task<Result<List<RequestTransactionDto>>> GetChildTransactionsAsync(Guid parentTransactionId)
+    {
+        try
+        {
+            logger.LogInformation("Fetching child transactions for parent: {ParentTransactionId}", parentTransactionId);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var transactions = await unitOfWork.RequestTransactions.GetAllAsync(
+                filter: rt => rt.ParentTransactionId == parentTransactionId,
+                transform: x => x.Include(x => x.ChildTransactions)
+                                 .Include(x => x.RequestTransactionAttachments)
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request)
+                                     .ThenInclude(r => r.RequestAttachments)
+                                         .ThenInclude(ra => ra.Attachment)
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                 .Include(x => x.Request).ThenInclude(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                additionalFilters: [RequestTransactionExpressions.CanReadByUserId(currentUserId)]);
+
+            if (transactions.IsError)
+                return transactions.Errors;
+
+            var transactionDtos = transactions.Value!.Select(t => t.ToDto()).ToList();
+            return transactionDtos;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching child transactions for parent: {ParentTransactionId}", parentTransactionId);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching child transactions.");
+        }
+    }
+
+    public async Task<Result<RequestTransactionDto>> GetRootTransactionAsync(Guid requestId)
+    {
+        try
+        {
+            logger.LogInformation("Fetching root transaction for request: {RequestId}", requestId);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var transaction = await unitOfWork.RequestTransactions.GetAsync(
+                filter: rt => rt.RequestId == requestId && !rt.ParentTransactionId.HasValue,
+                transform: x => x.Include(x => x.RequestTransactionAttachments)
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request)
+                                     .ThenInclude(r => r.RequestAttachments)
+                                         .ThenInclude(ra => ra.Attachment)
+                                         .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                  .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                  .Include(x => x.Request).ThenInclude(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                additionalFilters: [RequestTransactionExpressions.CanReadByUserId(currentUserId)]);
+
+            if (transaction.IsError)
+                return transaction.Errors;
+
+            if (transaction.Value == null)
+                return TransactionErrors.RequestTransactionNotFound;
+
+            return transaction.Value.ToDto();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching root transaction for request: {RequestId}", requestId);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching root transaction.");
+        }
+    }
+
+    public async Task<Result<List<RequestTransactionDto>>> GetTransactionTreeAsync(Guid transactionId)
+    {
+        try
+        {
+            logger.LogInformation("Fetching transaction tree for transaction: {TransactionId}", transactionId);
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+
+            var transaction = await unitOfWork.RequestTransactions.GetAsync(
+                filter: rt => rt.Id == transactionId,
+                transform: x => x.Include(x => x.ParentTransaction)
+                                 .Include(x => x.ChildTransactions)
+                                 .ThenInclude(c => c.RequestTransactionAttachments)
+                                 .ThenInclude(a => a.Attachment)
+                                 .Include(x => x.Request)
+                                     .ThenInclude(r => r.RequestAttachments)
+                                         .ThenInclude(ra => ra.Attachment)
+                                         .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                  .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues)
+                                  .Include(x => x.Request).ThenInclude(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
+                additionalFilters: [RequestTransactionExpressions.CanReadByUserId(currentUserId)]);
+
+            if (transaction.IsError)
+                return transaction.Errors;
+
+            if (transaction.Value == null)
+                return TransactionErrors.RequestTransactionNotFound;
+
+            var tree = new List<RequestTransactionDto>();
+            await BuildTransactionTreeRecursive(transaction.Value, tree, currentUserId, 0);
+
+            return tree;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching transaction tree for transaction: {TransactionId}", transactionId);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching transaction tree.");
+        }
+    }
+
+    public async Task<Result<Success>> AddInitialRequestTransaction(AddInitialRequestTransactionDto dto)
+    {
+        try
+        {
+            if (dto == null)
+                return TransactionErrors.InvalidInput;
+
+            if (dto.RequestId == Guid.Empty || dto.CurrentUserHolderId == Guid.Empty)
+                return TransactionErrors.InvalidInput;
+
+            logger.LogInformation("Creating new request transaction for request: {RequestId}", dto.RequestId);
+
+            var level = 0;
+            var newId = Guid.NewGuid();
+            var path = $"{newId}";
+            var getRequestResult = await unitOfWork.Requests.GetAsync(r => r.Id == dto.RequestId, transform:
+                x => x.Include(i => i.CurrentTransaction).Include(i => i.FirstTransaction)
+                .Include(x => x.RequestTemplateValues).ThenInclude(x => x.Template)
+                                 .Include(x => x.RequestTemplateValues).ThenInclude(x => x.InputValues));
+
+            if (getRequestResult.IsError)
+                return getRequestResult.Errors;
+
+            if (getRequestResult.Value!.FirstTransaction != null || getRequestResult.Value.CurrentTransaction != null)
+                return Error.Validation("TransactionExists", "Request already has a transaction.");
+
+            var transactionEntity = new RequestTransaction
+            {
+                RequestId = dto.RequestId,
+                Notes = dto.Notes,
+                Level = level,
+                Path = path,
+                ParentTransactionId = null,
+                CurrentUserHolderId = dto.CurrentUserHolderId
+            };
+
+            var addResult = await unitOfWork.RequestTransactions.AddAsync(transactionEntity);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            getRequestResult.Value.CurrentTransactionId = transactionEntity.Id;
+            getRequestResult.Value.FirstTransactionId = transactionEntity.Id;
+
+            if (getRequestResult.Value.Status == RequestStatus.Pending || getRequestResult.Value.Status == RequestStatus.Delivered)
+            {
+                getRequestResult.Value.Status = RequestStatus.InProcess;
+            }
+
+            await unitOfWork.Requests.UpdateAsync(getRequestResult.Value);
+
+            await unitOfWork.SaveChangesAsync();
+
+            if (dto.Files?.Any() == true)
+            {
+                logger.LogInformation("Uploading {FileCount} files for transaction: {TransactionId}", dto.Files.Count, transactionEntity.Id);
+                foreach (var file in dto.Files)
+                {
+                    var uploadResult = await webAttachmentService.UploadFileToRequestTransactionAsync(file, transactionEntity.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
+            }
+
+            logger.LogInformation("Successfully created request transaction: {TransactionId}", transactionEntity.Id);
+            return Result.Success;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating request transaction");
+            return Error.Failure("InternalServerError", "An unexpected error occurred while creating request transaction.");
+        }
+    }
+
+    public async Task<Result<Success>> AddChildTransactionAsync(CreateRequestTransactionDto dto)
+    {
+        try
+        {
+            if (dto.ParentTransactionId == Guid.Empty || dto == null)
+                return TransactionErrors.InvalidInput;
+
+            var parentTransaction = await unitOfWork.RequestTransactions.GetAsync(
+                filter: rt => rt.Id == dto.ParentTransactionId,
+                transform: x =>
+                x
+                .Include(x => x.ParentTransaction).ThenInclude(i => i!.Request).ThenInclude(i => i.CurrentTransaction)
+                .Include(x => x.ParentTransaction).ThenInclude(i => i!.Request).ThenInclude(i => i.FirstTransaction)
+                .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
+                                 .Include(x => x.Request).ThenInclude(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues));
+
+            if (parentTransaction.IsError)
+                return parentTransaction.Errors;
+
+            var request = parentTransaction.Value?.Request;
+            var newId = Guid.NewGuid();
+            var childTransaction = new RequestTransaction
+            {
+                Id = newId,
+                RequestId = dto.RequestId,
+                Notes = dto.Notes,
+                ParentTransactionId = dto.ParentTransactionId,
+                CurrentUserHolderId = dto.CurrentUserHolderId,
+                Level = parentTransaction.Value!.Level + 1,
+                Path = $"{parentTransaction.Value!.Path}/{newId}"
+            };
+            var addResult = await unitOfWork.RequestTransactions.AddAsync(childTransaction);
+            if (addResult.IsError)
+                return addResult.Errors;
+
+            request!.CurrentTransactionId = childTransaction.Id;
+
+            await unitOfWork.Requests.UpdateAsync(request);
+
+            parentTransaction.Value.Status = TransactionStatus.Transferred;
+            await unitOfWork.RequestTransactions.UpdateAsync(parentTransaction.Value);
+
+            await unitOfWork.SaveChangesAsync();
+
+            if (dto.Files?.Any() == true)
+            {
+                logger.LogInformation("Uploading {FileCount} files for child transaction: {TransactionId}", dto.Files.Count, childTransaction.Id);
+                foreach (var file in dto.Files)
+                {
+                    var uploadResult = await webAttachmentService.UploadFileToRequestTransactionAsync(file, childTransaction.Id);
+                    if (uploadResult.IsError)
+                        return uploadResult.Errors;
+                }
+            }
+
+            return Result.Success;
+
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error adding child transaction to parent: {ParentTransactionId}", dto.ParentTransactionId);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while adding child transaction.");
+        }
+    }
+
+    public async Task<Result<Success>> MarkAsManagedAsync(Guid requestId)
+    {
+        try
+        {
+            if (requestId == Guid.Empty)
+                return TransactionErrors.InvalidInput;
+
+            logger.LogInformation("Marking request transaction as managed: {RequestId}", requestId);
+
+            var request = await unitOfWork.Requests.GetAsync(r => r.Id == requestId);
+            if (request.IsError)
+                return request.Errors;
+
+            if (request.Value == null)
+                return TransactionErrors.RequestNotFound;
+
+            logger.LogInformation("Successfully marked request transaction as managed: {RequestId}", requestId);
+            return Result.Success;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error marking request transaction as managed: {RequestId}", requestId);
+            return Error.Failure("InternalServerError", "An unexpected error occurred while marking request transaction as managed.");
+        }
+    }
+
+    private static async Task BuildTransactionTreeRecursive(RequestTransaction transaction, List<RequestTransactionDto> tree, Guid currentUserId, int depth)
+    {
+        if (depth > 10)
+            return;
+
+        tree.Add(transaction.ToDto());
+
+        if (transaction.ChildTransactions != null && transaction.ChildTransactions.Any())
+        {
+            foreach (var child in transaction.ChildTransactions)
+            {
+                await BuildTransactionTreeRecursive(child, tree, currentUserId, depth + 1);
+            }
+        }
+    }
+}

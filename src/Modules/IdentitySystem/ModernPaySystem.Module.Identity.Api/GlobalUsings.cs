@@ -1,0 +1,10 @@
+global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.AspNetCore.Mvc;
+global using ModernPaySystem.Module.Identity.Application.Interfaces;
+global using ModernPaySystem.SharedKernel.Application.Interfaces;
+global using ModernPaySystem.SharedKernel.Application.Services;
+global using ModernPaySystem.SharedKernel.Infrastructure.Extensions;
+global using ModernPaySystem.SharedKernel.Domain.Attrs;
+global using ModernPaySystem.SharedKernel.Domain.Commons;
+global using ModernPaySystem.SharedKernel.Domain.DTOs;
+global using ModernPaySystem.SharedKernel.Domain.Entities;

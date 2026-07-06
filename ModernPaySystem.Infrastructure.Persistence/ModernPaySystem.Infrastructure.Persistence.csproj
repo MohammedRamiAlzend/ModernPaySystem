@@ -8,8 +8,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ExpressionBuilderLib\ExpressionBuilderLib.csproj" />
-        <ProjectReference Include="..\ModernPaySystem.Application\ModernPaySystem.Application.csproj" />
-        <ProjectReference Include="..\ModernPaySystem.Domain\ModernPaySystem.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>

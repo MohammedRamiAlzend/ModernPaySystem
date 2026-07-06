@@ -59,4 +59,8 @@ export interface ArchiveLeaderAssignment {
     userName: string;
 }
 
+export interface AssignUserDto {
+    userId: string;
+}
+
 

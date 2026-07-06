@@ -1,0 +1,17 @@
+namespace ModernPaySystem.Module.Identity.Api.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController(IAuthenticationService authService) : ControllerBase
+{
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var result = await authService.AuthenticateAsync(request.Username, request.Password);
+        if (result.IsError)
+            return result.ToActionResult();
+
+        string? accessToken = result.Value;
+        return new OkObjectResult(accessToken);
+    }
+}

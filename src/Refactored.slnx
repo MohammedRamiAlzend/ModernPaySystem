@@ -1,0 +1,29 @@
+<Solution>
+  <!-- Libraries moved into src/ -->
+  <Project Path="ExpressionBuilderLib/ExpressionBuilderLib.csproj" Id="dc27d6a7-b9a4-455b-9782-684d20b70163" />
+  <Project Path="FileManager/FileManager.csproj" Id="b1199e26-db54-4e6d-9e6d-2cee32731fba" />
+  <Project Path="NumberSpelling/NumberSpelling.csproj" Id="e63127fc-72de-4c50-aecc-6962fac1d0b1" />
+  <Project Path="OcrReader/OcrReader.csproj" Id="4b9e67f4-2c12-4ec4-9bd9-86e14daa8a60" />
+  <Project Path="SemanticSearchLib/SemanticSearchLib.csproj" Id="4c1a67f5-3d13-5ec5-9bd9-96e15daa9b61" />
+  <!-- Shared kernel modules (src/) -->
+  <Project Path="ModernPaySystem.SharedKernel.Domain/ModernPaySystem.SharedKernel.Domain.csproj" />
+  <Project Path="ModernPaySystem.SharedKernel.Application/ModernPaySystem.SharedKernel.Application.csproj" />
+  <Project Path="ModernPaySystem.SharedKernel.Infrastructure/ModernPaySystem.SharedKernel.Infrastructure.csproj" />
+  <!-- Transaction module -->
+  <Project Path="Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Domain/ModernPaySystem.Module.Transaction.Domain.csproj" />
+  <Project Path="Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Application/ModernPaySystem.Module.Transaction.Application.csproj" />
+  <Project Path="Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Infrastructure/ModernPaySystem.Module.Transaction.Infrastructure.csproj" />
+  <Project Path="Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Api/ModernPaySystem.Module.Transaction.Api.csproj" />
+  <!-- Identity module -->
+  <Project Path="Modules/IdentitySystem/ModernPaySystem.Module.Identity.Domain/ModernPaySystem.Module.Identity.Domain.csproj" />
+  <Project Path="Modules/IdentitySystem/ModernPaySystem.Module.Identity.Application/ModernPaySystem.Module.Identity.Application.csproj" />
+  <Project Path="Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure/ModernPaySystem.Module.Identity.Infrastructure.csproj" />
+  <Project Path="Modules/IdentitySystem/ModernPaySystem.Module.Identity.Api/ModernPaySystem.Module.Identity.Api.csproj" />
+  <!-- Archive module -->
+  <Project Path="Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Domain/ModernPaySystem.Module.Archive.Domain.csproj" />
+  <Project Path="Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Application/ModernPaySystem.Module.Archive.Application.csproj" />
+  <Project Path="Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Infrastructure/ModernPaySystem.Module.Archive.Infrastructure.csproj" />
+  <Project Path="Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Api/ModernPaySystem.Module.Archive.Api.csproj" />
+  <!-- Boot (src/) -->
+  <Project Path="ModernPaySystem.Boot/ModernPaySystem.Boot.csproj" />
+</Solution>

@@ -9,4 +9,16 @@
   <Project Path="NumberSpelling/NumberSpelling.csproj" Id="e63127fc-72de-4c50-aecc-6962fac1d0b1" />
   <Project Path="OcrReader/OcrReader.csproj" Id="4b9e67f4-2c12-4ec4-9bd9-86e14daa8a60" />
   <Project Path="SemanticSearchLib/SemanticSearchLib.csproj" Id="4c1a67f5-3d13-5ec5-9bd9-96e15daa9b61" />
+  <Project Path="src/ModernPaySystem.SharedKernel.Domain/ModernPaySystem.SharedKernel.Domain.csproj" />
+  <Project Path="src/ModernPaySystem.SharedKernel.Application/ModernPaySystem.SharedKernel.Application.csproj" />
+  <Project Path="src/ModernPaySystem.SharedKernel.Infrastructure/ModernPaySystem.SharedKernel.Infrastructure.csproj" />
+  <Project Path="src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Domain/ModernPaySystem.Module.Transaction.Domain.csproj" />
+  <Project Path="src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Application/ModernPaySystem.Module.Transaction.Application.csproj" />
+  <Project Path="src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Infrastructure/ModernPaySystem.Module.Transaction.Infrastructure.csproj" />
+  <Project Path="src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Api/ModernPaySystem.Module.Transaction.Api.csproj" />
+  <Project Path="src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj" />
+  <Project Path="src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Domain/ModernPaySystem.Module.Identity.Domain.csproj" />
+  <Project Path="src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Application/ModernPaySystem.Module.Identity.Application.csproj" />
+  <Project Path="src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure/ModernPaySystem.Module.Identity.Infrastructure.csproj" />
+  <Project Path="src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Api/ModernPaySystem.Module.Identity.Api.csproj" />
 </Solution>

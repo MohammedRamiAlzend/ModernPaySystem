@@ -1,0 +1,52 @@
+# Create migration (with custom name)
+dotnet ef migrations add <MigrationName> 
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure 
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
+  --context IdentityDbContext
+
+# Update database (apply migrations)
+dotnet ef database update
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure 
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
+  --context IdentityDbContext
+
+dotnet ef database update
+  --project src/Modules/TransactionSystem/ModernPaySystem.Module.Transaction.Infrastructure 
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
+  --context TransactionDbContext
+
+  dotnet ef database update
+  --project src/Modules/ArchiveSystem/ModernPaySystem.Module.Archive.Infrastructure 
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
+  --context ArchiveDbContext
+
+# Update to specific migration
+dotnet ef database update <MigrationName> \
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure \
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj \
+  --context IdentityDbContext
+
+# Drop database
+dotnet ef database drop \
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure \
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj \
+  --context IdentityDbContext
+
+# List migrations
+dotnet ef migrations list \
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure \
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj \
+  --context IdentityDbContext
+
+# Remove last migration
+dotnet ef migrations remove \
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure \
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj \
+  --context IdentityDbContext
+
+# Generate SQL script
+dotnet ef migrations script \
+  --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure \
+  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj \
+  --context IdentityDbContext \
+  -o migration.sql
