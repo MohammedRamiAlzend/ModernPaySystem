@@ -14,6 +14,7 @@ public static class ArchiveErrors
     public static readonly Error FolderArchiveLeaderRequired = Error.Forbidden("10004", "Only a department archive leader can delete this folder directly.");
     public static readonly Error FolderDeleteRequestExists = Error.Conflict("10005", "A pending delete request already exists for this folder.");
     public static readonly Error FolderAccessDenied = Error.Forbidden("10040", "You do not have access to this folder.");
+    public static readonly Error UserNotEnrolledInDepartment = Error.Forbidden("10043", "You are not enrolled in any department.");
 
     public static readonly Error DynamicFormNotFound = Error.NotFound("10010", "The specified form was not found.");
     public static readonly Error DynamicFormAlreadyExists = Error.Conflict("10011", "A form with this name already exists.");

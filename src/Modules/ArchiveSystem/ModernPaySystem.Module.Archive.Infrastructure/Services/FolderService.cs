@@ -129,7 +129,9 @@ public class FolderService(
             var departmentResult = await departmentService.GetByUserIdAsync(getCurrentUserId);
             if (departmentResult.IsError)
                 return departmentResult.Errors;
-            Guid? departmentId = departmentResult.Value!.Id;
+            if (departmentResult.Value is null)
+                return ArchiveErrors.UserNotEnrolledInDepartment;
+            Guid? departmentId = departmentResult.Value.Id;
 
             if (dto.ParentId.HasValue && dto.ParentId.Value != Guid.Empty)
             {
