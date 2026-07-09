@@ -4,53 +4,58 @@ using ModernPaySystem.SharedKernel.Domain.Entities;
 
 namespace ModernPaySystem.Module.Identity.Infrastructure.Seeding.Seeders;
 
-public sealed class DepartmentUserLinkSeeder : EntitySeederBase<User>
+public sealed class DepartmentUserLinkSeeder : IEntitySeeder
 {
-    public override int Order => 4;
+    public int Order => 4;
 
-    public override async Task SeedAsync(
+    public string GetEntityName() => "DepartmentUserLinks";
+
+    public async Task<bool> HasDataAsync(IdentityDbContext context, CancellationToken cancellationToken = default)
+    {
+        return await context.Users.AnyAsync(u => u.DepartmentId.HasValue && !u.IsDepartmentHead, cancellationToken);
+    }
+
+    public async Task SeedAsync(
         IdentityDbContext context,
         SeedingConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
-        var users = await context.Users
-            .Include(user => user.Roles)
-            .Include(user => user.SubSystemUser)
-            .ToListAsync(cancellationToken);
-
         var departments = await context.Departments
-            .OrderBy(department => department.Level)
+            .OrderBy(d => d.Level)
+            .ThenBy(d => d.Id)
             .ToListAsync(cancellationToken);
 
-        if (users.Count == 0 || departments.Count == 0)
-        {
+        if (departments.Count == 0)
             return;
-        }
 
-        var userByName = users.ToDictionary(user => user.UserName, StringComparer.OrdinalIgnoreCase);
-        var departmentByName = departments.ToDictionary(department => department.Name, StringComparer.OrdinalIgnoreCase);
+        var users = await context.Users
+            .Include(u => u.SubSystemUser)
+            .OrderBy(u => u.IsDepartmentHead ? 0 : 1)
+            .ThenBy(u => u.UserName)
+            .ToListAsync(cancellationToken);
 
-        var assignments = new (string UserName, string DepartmentName)[]
+        var departmentsNeedingNormalUsers = departments
+            .Where(d => !users.Any(u => u.DepartmentId == d.Id && !u.IsDepartmentHead))
+            .ToList();
+
+        var availableNormalUsers = users
+            .Where(u => !u.IsDepartmentHead && !u.DepartmentId.HasValue)
+            .OrderBy(u => u.SubSystemUser?.SubSystem == SubSystem.Diwan ? 0 : 1)
+            .ThenBy(u => int.TryParse(u.UserName, out var numericUserName) ? numericUserName : int.MaxValue)
+            .ThenBy(u => u.UserName)
+            .ToList();
+
+        var assignmentIndex = 0;
+        foreach (var user in availableNormalUsers)
         {
-            ("1", "Head Office"),
-            ("manager1", "Operations"),
-            ("employee1", "Finance"),
-            ("employee2", "Human Resources"),
-            ("viewer1", "Support")
-        };
-
-        foreach (var (userName, departmentName) in assignments)
-        {
-            if (!userByName.TryGetValue(userName, out var user) ||
-                !departmentByName.TryGetValue(departmentName, out var department))
+            if (assignmentIndex < departmentsNeedingNormalUsers.Count)
             {
-                continue;
+                user.DepartmentId = departmentsNeedingNormalUsers[assignmentIndex++].Id;
             }
-
-            user.DepartmentId = department.Id;
-            department.DepartmentHeadId = user.Id;
-            user.IsDepartmentHead = true;
-            user.HeadedDepartmentId = department.Id;
+            else
+            {
+                user.DepartmentId = departments[0].Id;
+            }
         }
 
         await context.SaveChangesAsync(cancellationToken);

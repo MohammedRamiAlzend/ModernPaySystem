@@ -9,11 +9,16 @@ public sealed class UserSeeder(IPasswordHasher passwordHasher) : EntitySeederBas
 {
     private static readonly IReadOnlyList<(Guid Id, string UserName, string Password, string RoleName, SubSystem SubSystem)> SeedUsers =
     [
-        (Guid.Parse("00000000-0000-0000-0000-000000000001"), "1", "1", "SuperAdmin", SubSystem.Shared),
-        (Guid.Parse("00000000-0000-0000-0000-000000000002"), "manager1", "123", "Manager", SubSystem.TransactionSystem),
-        (Guid.Parse("00000000-0000-0000-0000-000000000003"), "employee1", "123", "Employee", SubSystem.TransactionSystem),
-        (Guid.Parse("00000000-0000-0000-0000-000000000004"), "employee2", "123", "Employee", SubSystem.TransactionSystem),
-        (Guid.Parse("00000000-0000-0000-0000-000000000005"), "viewer1", "123", "Viewer", SubSystem.TransactionSystem)
+        (Guid.Parse("11111111-1111-1111-1111-111111111111"), "1", "1", "SuperAdmin", SubSystem.Shared),
+        (Guid.Parse("22222222-2222-2222-2222-222222222222"), "محافظة ريف دمشق", "123456", "Admin", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333303"), "مركز خدمة المواطن الكسوة", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333304"), "مركز خدمة المواطن حرستا", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333305"), "مركز خدمة المواطن النبك", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333306"), "مركز خدمة المواطن قطنا", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333307"), "مركز خدمة المواطن يبرود", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333308"), "مركز خدمة المواطن صحنايا", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333309"), "مركز خدمة المواطن جرمانا", "123456", "NormalUser", SubSystem.TransactionSystem),
+        (Guid.Parse("33333333-3333-3333-3333-333333333310"), "ماجد", "123456", "Admin", SubSystem.TransactionSystem)
     ];
 
     public override int Order => 2;
@@ -29,21 +34,17 @@ public sealed class UserSeeder(IPasswordHasher passwordHasher) : EntitySeederBas
             .ToListAsync(cancellationToken);
 
         var rolesByName = await context.Roles.ToDictionaryAsync(role => role.Name, cancellationToken);
-        var existingUsersByName = existingUsers.ToDictionary(user => user.UserName, StringComparer.OrdinalIgnoreCase);
+        var existingUsersByName = existingUsers.ToDictionary(user => user.UserName, StringComparer.Ordinal);
 
         var newUsers = new List<User>();
 
         foreach (var seedUser in SeedUsers)
         {
             if (existingUsersByName.ContainsKey(seedUser.UserName))
-            {
                 continue;
-            }
 
             if (!rolesByName.TryGetValue(seedUser.RoleName, out var role))
-            {
                 continue;
-            }
 
             newUsers.Add(new User
             {
@@ -60,9 +61,7 @@ public sealed class UserSeeder(IPasswordHasher passwordHasher) : EntitySeederBas
         }
 
         if (newUsers.Count == 0)
-        {
             return;
-        }
 
         await context.Users.AddRangeAsync(newUsers, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);

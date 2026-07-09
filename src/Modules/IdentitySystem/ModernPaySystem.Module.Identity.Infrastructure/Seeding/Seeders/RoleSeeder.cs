@@ -6,7 +6,12 @@ namespace ModernPaySystem.Module.Identity.Infrastructure.Seeding.Seeders;
 
 public sealed class RoleSeeder : EntitySeederBase<Role>
 {
-    private static readonly string[] RoleNames = ["SuperAdmin", "Manager", "Employee", "Viewer"];
+    private static readonly (string Name, string Description)[] SeedRoles =
+    [
+        ("SuperAdmin", "Super administrator with all permissions"),
+        ("Admin", "Administrator with most permissions"),
+        ("NormalUser", "Regular user with standard permissions")
+    ];
 
     public override int Order => 1;
 
@@ -19,20 +24,18 @@ public sealed class RoleSeeder : EntitySeederBase<Role>
             .Select(role => role.Name)
             .ToListAsync(cancellationToken);
 
-        var newRoles = RoleNames
-            .Where(roleName => !existingRoleNames.Contains(roleName, StringComparer.OrdinalIgnoreCase))
-            .Select(roleName => new Role
+        var newRoles = SeedRoles
+            .Where(seed => !existingRoleNames.Contains(seed.Name, StringComparer.OrdinalIgnoreCase))
+            .Select(seed => new Role
             {
                 Id = Guid.NewGuid(),
-                Name = roleName,
-                Description = $"{roleName} role"
+                Name = seed.Name,
+                Description = seed.Description
             })
             .ToList();
 
         if (newRoles.Count == 0)
-        {
             return;
-        }
 
         await context.Roles.AddRangeAsync(newRoles, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
