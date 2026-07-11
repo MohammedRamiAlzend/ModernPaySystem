@@ -36,7 +36,10 @@ public class ArchiveRecordService(
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
     IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger,
-    IHttpContextServiceManager httpContextServiceManager) : IArchiveRecordService
+    IHttpContextServiceManager httpContextServiceManager,
+    ISemanticSearchService semanticSearchService,
+    IOptions<ServerSettings> serverSettings,
+    SystemHealthService healthService) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string DefaultUploadsDirectory = "Uploads";
@@ -45,6 +48,11 @@ public class ArchiveRecordService(
 
     private ArchiveRecordFileUploadOptions UploadSettings => uploadOptions.Value;
     private ArchiveRecordZipOptions ZipSettings => zipOptions.Value;
+    private ServerSettings ServerSettingsValue => serverSettings.Value;
+
+    private bool CanAutoIndex => ServerSettingsValue.ActivateSemanticSearch
+                                 && healthService.IsOllamaHealthy
+                                 && healthService.IsQdrantHealthy;
 
     private async Task<string> GetDefaultStoragePathAsync()
     {
@@ -363,6 +371,9 @@ public class ArchiveRecordService(
 
                     await unitOfWork.CommitTransactionAsync();
 
+                    if (CanAutoIndex)
+                        _ = TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
+
                     return await GetByIdAsync(record.Id);
                 }
                 catch
@@ -533,6 +544,9 @@ public class ArchiveRecordService(
                         logger.LogWarning("Record {RecordId} updated, but file cleanup failed for {Path}", id, file.StoragePath);
                     }
                 }
+
+                if (CanAutoIndex && addFiles.Count > 0)
+                    _ = TryAutoIndexPhysicalFilesAsync(addFiles);
 
                 return await GetByIdAsync(record.Id);
             });
@@ -751,6 +765,9 @@ public class ArchiveRecordService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+
+                if (CanAutoIndex)
+                    _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
 
                 return await GetByIdAsync(record.Id);
             });
@@ -1290,6 +1307,36 @@ public class ArchiveRecordService(
             logger.LogError(ex, "Error deleting archive record {RecordId}", id);
             return ArchiveErrors.InternalServerError;
         }
+    }
+
+    private async Task TryAutoIndexPhysicalFilesAsync(IEnumerable<PhysicalFile> files)
+    {
+        foreach (var file in files)
+        {
+            var ext = file.FileExtension.ToLowerInvariant();
+            if (file.IsQrPage || !IsIndexableExtension(ext))
+                continue;
+
+            try
+            {
+                var result = await semanticSearchService.IndexPhysicalFileAsync(file.Id);
+                if (result.IsError)
+                {
+                    logger.LogWarning("Auto-indexing skipped for file {FileId} ({FileName}): {Error}",
+                        file.Id, file.FileName, result.TopError.Description);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Auto-indexing failed for file {FileId} ({FileName})",
+                    file.Id, file.FileName);
+            }
+        }
+    }
+
+    private static bool IsIndexableExtension(string extension)
+    {
+        return extension is ".docx" or ".xlsx" or ".txt" or ".md" or ".pdf" or ".jpg" or ".jpeg" or ".png" or ".gif" or ".bmp" or ".tiff" or ".tif";
     }
 
     public async Task<Result<Success>> LogPrintAsync(Guid recordId)

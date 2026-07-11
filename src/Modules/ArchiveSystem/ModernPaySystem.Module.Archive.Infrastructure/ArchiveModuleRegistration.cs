@@ -71,6 +71,8 @@ public static class ArchiveModuleRegistration
         // Semantic Search
         services.AddSemanticSearchLib(configuration);
         services.Configure<Options.QdrantOptions>(configuration.GetSection(Options.QdrantOptions.SectionName));
+        services.Configure<Options.ServerSettings>(configuration.GetSection(Options.ServerSettings.SectionName));
+        services.AddSingleton<SystemHealthService>();
         services.AddSingleton<IQdrantVectorStore, QdrantVectorStore>();
         services.AddScoped<ISemanticSearchService, SemanticSearchService>();
 

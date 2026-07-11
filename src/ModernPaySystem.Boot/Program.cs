@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.IdentityModel.Tokens;
 using ModernPaySystem.Module.Archive.Api.Controllers;
 using ModernPaySystem.Module.Archive.Application.Interfaces;
+using ModernPaySystem.Module.Archive.Infrastructure.Services;
 using Serilog;
 using Serilog.Events;
 using ModernPaySystem.Module.Archive.Infrastructure;
@@ -131,6 +132,12 @@ if (archiveEnabled && builder.Configuration.GetValue<bool>("Seeding:Enabled"))
     using var archiveScope = app.Services.CreateScope();
     var archiveConfigSeeder = archiveScope.ServiceProvider.GetRequiredService<IArchiveConfigSeeder>();
     await archiveConfigSeeder.SeedAsync();
+
+    var healthService = archiveScope.ServiceProvider.GetService<SystemHealthService>();
+    if (healthService is not null)
+    {
+        await healthService.CheckAsync();
+    }
 }
 
 if (identityEnabled && builder.Configuration.GetValue<bool>("Seeding:Enabled"))
