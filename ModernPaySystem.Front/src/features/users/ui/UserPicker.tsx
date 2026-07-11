@@ -75,7 +75,7 @@ export const UserPicker = (props: UserPickerProps) => {
         showCurrentUser = false,
         className,
         departmentOnly = false,
-        allowCreateUser = true,
+        allowCreateUser = false,
         isCreatingDepartmentHead = false,
     } = props;
 

@@ -90,13 +90,17 @@ public class RequestService(
                 transform: x => x.Include(x => x.RequestTemplateValues).ThenInclude(x => x!.Template)
                                  .Include(x => x.RequestTemplateValues).ThenInclude(x => x!.InputValues)
                                  .Include(x => x.RequestAttachments)
-                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest),
-                additionalFilters: [RequestExpressions.CanReadByUserId(currentUserId)]);
+                                 .Include(x => x.OutgoingRelations).ThenInclude(r => r.TargetRequest)
+                                 .Include(r => r.CurrentTransaction)
+                                 .Include(r => r.FirstTransaction));
 
             if (request.IsError)
                 return request.Errors;
 
             if (request.Value == null)
+                return TransactionErrors.RequestNotFound;
+
+            if (!request.Value.CanView(currentUserId))
                 return Error.Validation("UnauthorizedRequestAccess", "You do not have access to this request.");
 
             return request.Value.ToDto();
@@ -559,14 +563,17 @@ public class RequestService(
                 return TransactionErrors.InvalidInput;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
-            var requestAccess = await unitOfWork.Requests.GetAsync(
+            var request = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == requestId,
-                additionalFilters: [RequestExpressions.CanReadByUserId(currentUserId)]);
+                transform: q => q.Include(r => r.CurrentTransaction).Include(r => r.FirstTransaction));
 
-            if (requestAccess.IsError)
-                return requestAccess.Errors;
+            if (request.IsError)
+                return request.Errors;
 
-            if (requestAccess.Value == null)
+            if (request.Value == null)
+                return TransactionErrors.RequestNotFound;
+
+            if (!request.Value.CanView(currentUserId))
                 return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view related requests.");
 
             var relations = await unitOfWork.RequestRelations.GetAllAsync(
@@ -605,12 +612,15 @@ public class RequestService(
 
             var sourceAccess = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == relation.Value.SourceRequestId,
-                additionalFilters: [RequestExpressions.CanReadByUserId(currentUserId)]);
+                transform: q => q.Include(r => r.CurrentTransaction).Include(r => r.FirstTransaction));
 
             if (sourceAccess.IsError)
                 return sourceAccess.Errors;
 
             if (sourceAccess.Value == null)
+                return TransactionErrors.RequestNotFound;
+
+            if (!sourceAccess.Value.CanView(currentUserId))
                 return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view this relation.");
 
             return relation.Value.ToDto();
@@ -657,11 +667,14 @@ public class RequestService(
 
             var targetRequestAccess = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == dto.TargetRequestId,
-                additionalFilters: [RequestExpressions.CanReadByUserId(currentUserId)]);
+                transform: q => q.Include(r => r.CurrentTransaction).Include(r => r.FirstTransaction));
 
             if (targetRequestAccess.IsError)
                 return targetRequestAccess.Errors;
             if (targetRequestAccess.Value == null)
+                return TransactionErrors.RequestNotFound;
+
+            if (!targetRequestAccess.Value.CanView(currentUserId))
                 return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view the target request.");
 
             var duplicateExists = await unitOfWork.RequestRelations.AnyAsync(
@@ -765,11 +778,14 @@ public class RequestService(
 
             var targetAccess = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == dto.TargetRequestId,
-                additionalFilters: [RequestExpressions.CanReadByUserId(currentUserId)]);
+                transform: q => q.Include(r => r.CurrentTransaction).Include(r => r.FirstTransaction));
 
             if (targetAccess.IsError)
                 return targetAccess.Errors;
             if (targetAccess.Value == null)
+                return TransactionErrors.RequestNotFound;
+
+            if (!targetAccess.Value.CanView(currentUserId))
                 return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view the target request.");
 
             var duplicateExists = await unitOfWork.RequestRelations.AnyAsync(

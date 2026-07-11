@@ -34,24 +34,29 @@ public class TransactionDbContextFactory : IDesignTimeDbContextFactory<Transacti
 
     private static string FindBootPath()
     {
-        var basePath = Directory.GetCurrentDirectory();
-        
-        var possiblePaths = new[]
+        var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (dir != null)
         {
-            Path.GetFullPath(Path.Combine(basePath, "..", "..", "..", "..", "ModernPaySystem.Boot")),
-            Path.GetFullPath(Path.Combine(basePath, "..", "..", "ModernPaySystem.Boot")),
-            Path.GetFullPath(Path.Combine(basePath, "..", "ModernPaySystem.Boot")),
-            Path.Combine(basePath, "ModernPaySystem.Boot"),
-        };
-
-        foreach (var path in possiblePaths)
-        {
-            if (Directory.Exists(path) && File.Exists(Path.Combine(path, "appsettings.json")))
+            if (dir.Name == "ModernPaySystem.Boot" && File.Exists(Path.Combine(dir.FullName, "appsettings.json")))
             {
-                return path;
+                return dir.FullName;
             }
+            
+            var srcBoot = Path.Combine(dir.FullName, "src", "ModernPaySystem.Boot");
+            if (Directory.Exists(srcBoot) && File.Exists(Path.Combine(srcBoot, "appsettings.json")))
+            {
+                return srcBoot;
+            }
+
+            var directBoot = Path.Combine(dir.FullName, "ModernPaySystem.Boot");
+            if (Directory.Exists(directBoot) && File.Exists(Path.Combine(directBoot, "appsettings.json")))
+            {
+                return directBoot;
+            }
+
+            dir = dir.Parent;
         }
 
-        return possiblePaths[0];
+        return Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "ModernPaySystem.Boot"));
     }
 }

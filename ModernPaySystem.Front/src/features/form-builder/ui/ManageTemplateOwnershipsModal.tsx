@@ -45,6 +45,24 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
 
     const userOptions = users.map(u => ({ value: u.id, label: u.userName }));
 
+    const getDeptName = (deptId: string) => {
+        const option = departmentOptions.find(opt => opt.value === deptId);
+        return option ? option.label : 'قسم غير معروف';
+    };
+
+    const getUserName = (userId: string) => {
+        const user = users.find(u => u.id === userId);
+        return user ? user.userName : 'مستخدم غير معروف';
+    };
+
+    const filteredDepartmentOptions = departmentOptions.filter(
+        opt => !departmentOwnerships.some(own => own.departmentId === opt.value)
+    );
+
+    const filteredUserOptions = users
+        .filter(u => !userOwnerships.some(own => own.userId === u.id))
+        .map(u => ({ value: u.id, label: u.userName }));
+
     const handleAddDepartment = () => {
         if (!selectedDept) return;
         addDeptMut.mutate({ templateId, departmentId: selectedDept }, {
@@ -104,7 +122,7 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
                         <div className="flex-1">
                             <label className="text-sm font-medium mb-1 block">اختر القسم</label>
                             <SearchableSelect
-                                options={departmentOptions}
+                                options={filteredDepartmentOptions}
                                 value={selectedDept}
                                 onValueChange={setSelectedDept}
                                 placeholder="ابحث عن قسم لإضافته..."
@@ -128,12 +146,12 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
                             <ul className="divide-y">
                                 {departmentOwnerships.map((own) => (
                                     <li key={own.id} className="flex items-center justify-between p-3 hover:bg-muted/50">
-                                        <span className="font-medium">{own.departmentName || 'قسم غير معروف'}</span>
+                                        <span className="font-medium">{getDeptName(own.departmentId)}</span>
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                                            onClick={() => handleRemoveDepartment(own.departmentId, own.departmentName || '')}
+                                            onClick={() => handleRemoveDepartment(own.departmentId, getDeptName(own.departmentId))}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
@@ -150,7 +168,7 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
                         <div className="flex-1">
                             <label className="text-sm font-medium mb-1 block">اختر المستخدم</label>
                             <SearchableSelect
-                                options={userOptions}
+                                options={filteredUserOptions}
                                 value={selectedUser}
                                 onValueChange={setSelectedUser}
                                 placeholder="ابحث عن مستخدم لمنحه الصلاحية المباشرة..."
@@ -174,12 +192,12 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
                             <ul className="divide-y">
                                 {userOwnerships.map((own) => (
                                     <li key={own.id} className="flex items-center justify-between p-3 hover:bg-muted/50">
-                                        <span className="font-medium">{own.userName || 'مستخدم غير معروف'}</span>
+                                        <span className="font-medium">{getUserName(own.userId)}</span>
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                                            onClick={() => handleRemoveUser(own.userId, own.userName || '')}
+                                            onClick={() => handleRemoveUser(own.userId, getUserName(own.userId))}
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
