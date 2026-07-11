@@ -62,7 +62,7 @@ public static class ArchiveModuleRegistration
             configuration.GetSection("ArchiveRecordZip"));
 
         services.AddMemoryCache();
-        services.AddFileManager();
+        services.AddFileManager(Directory.GetCurrentDirectory());
 
         // OCR
         services.AddOcrTesseract();

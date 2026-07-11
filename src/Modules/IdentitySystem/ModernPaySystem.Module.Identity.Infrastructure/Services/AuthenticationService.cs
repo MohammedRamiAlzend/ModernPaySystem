@@ -21,7 +21,7 @@ public class AuthenticationService(
                   .Include(x => x.SubSystemUser),
             bypassAuth: true);
 
-        if (userResult.IsError)
+        if (userResult.IsError || userResult.Value == null)
             return Error.Unauthorized("InvalidCredentials", "Invalid username or password.");
 
         var user = userResult.Value;

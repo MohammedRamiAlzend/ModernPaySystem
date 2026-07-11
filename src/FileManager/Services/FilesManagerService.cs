@@ -85,12 +85,16 @@ public class FilesManagerService(IFileManager? fileManager = null) : IFilesManag
 
     public async Task<Result<byte[]>> GetFileBytesAsync(string filePath)
     {
-        if (!_fileManager.FileExists(filePath))
+        var absolutePath = Path.IsPathRooted(filePath)
+            ? filePath
+            : Path.Combine(_fileManager.RootDirectory, filePath);
+
+        if (!_fileManager.FileExists(absolutePath))
         {
-            return Error.NotFound("1000", $"File not found at path: {filePath}");
+            return Error.NotFound("1000", $"File not found at path: {absolutePath}");
         }
 
-        var result = await _fileManager.ReadFileAsync(filePath);
+        var result = await _fileManager.ReadFileAsync(absolutePath);
         if (!result.Success)
         {
             return Error.Failure("1001", result.ErrorMessage ?? "Unknown error");
