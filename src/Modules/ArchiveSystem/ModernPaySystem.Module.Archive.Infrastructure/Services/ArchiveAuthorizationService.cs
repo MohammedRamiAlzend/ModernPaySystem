@@ -1,12 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ModernPaySystem.Module.Archive.Application.Interfaces;
 using ModernPaySystem.Module.Archive.Infrastructure.Persistence;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 
 namespace ModernPaySystem.Module.Archive.Infrastructure.Services;
 
 public class ArchiveAuthorizationService(
-    ArchiveDbContext dbContext) : IArchiveAuthorizationService
+    ArchiveDbContext dbContext,
+    IServiceProvider serviceProvider) : IArchiveAuthorizationService
 {
     public async Task<Result<bool>> IsArchiveLeaderAsync(Guid userId, Guid departmentId)
     {
@@ -19,13 +22,26 @@ public class ArchiveAuthorizationService(
         return exists;
     }
 
-    public Task<Result<bool>> IsDepartmentHeadAsync(Guid userId, Guid departmentId)
+    public async Task<Result<bool>> IsDepartmentHeadAsync(Guid userId, Guid departmentId)
     {
         if (userId == Guid.Empty || departmentId == Guid.Empty)
-            return Task.FromResult<Result<bool>>(Error.Validation("InvalidInput", "The provided input is invalid."));
+            return Error.Validation("InvalidInput", "The provided input is invalid.");
 
-        var error = Error.Failure("CrossModuleDependency", "Department entity is not owned by the Archive module. Use the Identity module to check department head status.");
-        return Task.FromResult<Result<bool>>(error);
+        try
+        {
+            using var scope = serviceProvider.CreateScope();
+            var departmentService = scope.ServiceProvider.GetRequiredService<IDepartmentService>();
+            var departmentResult = await departmentService.GetByIdAsync(departmentId);
+            
+            if (departmentResult.IsError || departmentResult.Value == null)
+                return false;
+
+            return departmentResult.Value.DepartmentHeadId == userId;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     public async Task<Result<Guid?>> ResolveFolderDepartmentIdAsync(Guid folderId)

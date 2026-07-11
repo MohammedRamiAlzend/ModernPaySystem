@@ -37,7 +37,7 @@ public class ArchiveDeletionRequestsController(
     [EndpointPermission("archiving.delete-requests.view", SubSystem.Archiving, PermissionType.Read)]
     public async Task<IActionResult> GetPendingForDepartment(Guid departmentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
-        var auth = await authorizationService.AuthorizeAsync(User, new ArchiveDepartmentScope(departmentId), ArchiveAuthorizationPolicyExtensions.RequireDepartmentHead);
+        var auth = await authorizationService.AuthorizeAsync(User, new ArchiveDepartmentScope(departmentId), ArchiveAuthorizationPolicyExtensions.RequireDepartmentArchiveLeader);
         if (!auth.Succeeded)
         {
             return Forbid();
