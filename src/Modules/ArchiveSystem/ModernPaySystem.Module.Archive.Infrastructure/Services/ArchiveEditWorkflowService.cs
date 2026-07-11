@@ -227,9 +227,7 @@ public class ArchiveEditWorkflowService(
         {
             var request = await unitOfWork.EditArchiveRequests.GetAsync(
                 x => x.Id == requestId,
-                q => q.Include(x => x.Requester)
-                      .Include(x => x.Approver)
-                      .Include(x => x.ArchiveRecord)
+                q => q.Include(x => x.ArchiveRecord)
                       .Include(x => x.PhysicalFiles));
 
             if (request.IsError || request.Value == null)
@@ -249,7 +247,6 @@ public class ArchiveEditWorkflowService(
         try
         {
             var query = dbContext.EditArchiveRequests
-                .Include(x => x.Requester)
                 .Include(x => x.ArchiveRecord)
                 .Include(x => x.PhysicalFiles)
                 .Where(x => x.DepartmentId == departmentId && x.Status == EditArchiveRequestStatus.Pending)
@@ -273,8 +270,6 @@ public class ArchiveEditWorkflowService(
         try
         {
             var query = dbContext.EditArchiveRequests
-                .Include(x => x.Requester)
-                .Include(x => x.Approver)
                 .Include(x => x.ArchiveRecord)
                 .Include(x => x.PhysicalFiles)
                 .Where(x => x.RequesterId == requesterId)
@@ -299,8 +294,7 @@ public class ArchiveEditWorkflowService(
         {
             var request = await unitOfWork.EditArchiveRequests.GetAsync(
                 x => x.Id == requestId,
-                q => q.Include(x => x.Requester)
-                      .Include(x => x.ArchiveRecord)
+                q => q.Include(x => x.ArchiveRecord)
                         .ThenInclude(r => r.ArchiveRecordTemplateValuesId)
                             .ThenInclude(v => v.ArchiveRecordFormInputValues)
                       .Include(x => x.PhysicalFiles));
@@ -416,8 +410,7 @@ public class ArchiveEditWorkflowService(
 
             var request = await unitOfWork.EditArchiveRequests.GetAsync(
                 x => x.Id == requestId,
-                q => q.Include(x => x.Requester)
-                      .Include(x => x.ArchiveRecord)
+                q => q.Include(x => x.ArchiveRecord)
                       .Include(x => x.PhysicalFiles));
 
             if (request.IsError || request.Value == null)
