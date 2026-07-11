@@ -56,6 +56,8 @@ public class Request : Entity<Guid>, IAuditableEntity
         if (userId == this.RequesterId) return true;
         if (userId == this.ApproverId) return true;
         if (ReadOnlyUsers.Contains(userId)) return true;
+        if (CurrentTransaction != null && CurrentTransaction.CurrentUserHolderId == userId) return true;
+        if (FirstTransaction != null && FirstTransaction.CurrentUserHolderId == userId) return true;
         return false;
     }
 
