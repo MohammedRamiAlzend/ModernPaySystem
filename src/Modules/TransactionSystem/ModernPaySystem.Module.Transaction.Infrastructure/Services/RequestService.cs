@@ -254,10 +254,32 @@ public class RequestService(
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
+            var departmentTemplateNumberResult = await unitOfWork.DepartmentTemplateNumbers.GetAsync(
+                dtn => dtn.DepartmentId == request.DepartmentId && dtn.TemplateId == request.TemplateId);
+
+            DepartmentTemplateNumber departmentTemplateNumber;
+            if (departmentTemplateNumberResult.IsError || departmentTemplateNumberResult.Value == null)
+            {
+                departmentTemplateNumber = new DepartmentTemplateNumber
+                {
+                    Id = Guid.NewGuid(),
+                    DepartmentId = request.DepartmentId,
+                    TemplateId = request.TemplateId,
+                    LastRequestNumber = 0
+                };
+                var addDtnResult = await unitOfWork.DepartmentTemplateNumbers.AddAsync(departmentTemplateNumber);
+                if (addDtnResult.IsError)
+                    return addDtnResult.Errors;
+            }
+            else
+            {
+                departmentTemplateNumber = departmentTemplateNumberResult.Value;
+            }
+
             var requestEntity = new Request
             {
                 Id = Guid.NewGuid(),
-                RequestNumber = 0,
+                RequestNumber = ++departmentTemplateNumber.LastRequestNumber,
                 RequesterId = currentUserId,
                 ApproverId = currentUserId,
                 ReadOnlyUsers = [],

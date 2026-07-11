@@ -22,6 +22,7 @@ public interface ITransactionUnitOfWork
     IRepositoryBase<Attachment, Guid> Attachments { get; }
     IRepositoryBase<LookUpField, Guid> LookUpFields { get; }
     IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues { get; }
+    IRepositoryBase<DepartmentTemplateNumber, Guid> DepartmentTemplateNumbers { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     bool HasActiveTransaction { get; }

@@ -36,6 +36,7 @@ public class TransactionUnitOfWork(
     private IRepositoryBase<Attachment, Guid>? _attachments;
     private IRepositoryBase<LookUpField, Guid>? _lookUpFields;
     private IRepositoryBase<LookUpFiledValues, Guid>? _lookUpFiledValues;
+    private IRepositoryBase<DepartmentTemplateNumber, Guid>? _departmentTemplateNumbers;
 
     public IRepositoryBase<Request, Guid> Requests =>
         _requests ??= new RepositoryBase<Request, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<Request, Guid>>());
@@ -84,6 +85,9 @@ public class TransactionUnitOfWork(
 
     public IRepositoryBase<LookUpFiledValues, Guid> LookUpFiledValues =>
         _lookUpFiledValues ??= new RepositoryBase<LookUpFiledValues, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<LookUpFiledValues, Guid>>());
+
+    public IRepositoryBase<DepartmentTemplateNumber, Guid> DepartmentTemplateNumbers =>
+        _departmentTemplateNumbers ??= new RepositoryBase<DepartmentTemplateNumber, Guid>(_dbContext, _loggerFactory.CreateLogger<RepositoryBase<DepartmentTemplateNumber, Guid>>());
 
     public bool HasActiveTransaction => _transaction != null;
 

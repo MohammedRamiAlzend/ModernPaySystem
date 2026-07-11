@@ -22,6 +22,7 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
     public DbSet<Attachment> Attachments { get; set; }
     public DbSet<LookUpField> LookUpFields { get; set; }
     public DbSet<LookUpFiledValues> LookUpFiledValues { get; set; }
+    public DbSet<DepartmentTemplateNumber> DepartmentTemplateNumbers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -180,5 +181,14 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
         modelBuilder.Entity<Template>()
             .Property(t => t.ContentAsJson)
             .HasColumnType("jsonb");
+
+        modelBuilder.Entity<DepartmentTemplateNumber>(entity =>
+        {
+            entity.ToTable("DepartmentTemplateNumbers");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LastRequestNumber).IsRequired();
+            entity.Ignore(e => e.Department);
+            entity.HasIndex(e => new { e.DepartmentId, e.TemplateId }).IsUnique();
+        });
     }
 }
