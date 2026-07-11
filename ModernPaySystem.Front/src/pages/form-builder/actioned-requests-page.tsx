@@ -5,6 +5,7 @@ import { Skeleton } from '@/shared/ui/common/skeleton';
 import { ResponseDetailsModal } from '@/widgets/form-editor/ui/response-details-modal';
 import { Button } from '@/shared/ui/button';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
+import { UserDepartmentDisplay } from '@/features/users/ui/UserDepartmentDisplay';
 import { RequestFieldsPreview } from '@/features/form-builder/ui/RequestFieldsPreview';
 import { useActionedRequestsLogic } from '@/features/form-builder/model/useActionedRequestsLogic';
 import { Pagination } from '@/shared/ui/common/pagination';
@@ -118,15 +119,15 @@ export const ActionedRequestsPage = () => {
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-muted-foreground text-[10px]">من:</span>
-                                                    <span className="font-semibold text-foreground bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">
-                                                        {request.requester?.departmentName || 'غير محدد'}
-                                                    </span>
+                                                    <div className="font-semibold text-foreground bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10">
+                                                        <UserDepartmentDisplay userId={request.requesterId} />
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 mt-0.5">
                                                     <span className="text-muted-foreground text-[10px]">إلى:</span>
-                                                    <span className="font-semibold text-foreground bg-emerald-500/5 px-1.5 py-0.5 rounded border border-emerald-500/10">
-                                                        {request.approver?.departmentName || 'غير محدد'}
-                                                    </span>
+                                                    <div className="font-semibold text-foreground bg-emerald-500/5 px-1.5 py-0.5 rounded border border-emerald-500/10">
+                                                        <UserDepartmentDisplay userId={request.approverId} />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>

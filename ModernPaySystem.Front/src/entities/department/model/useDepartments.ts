@@ -25,3 +25,11 @@ export const useDepartments = (searchTerm: string = '', level: number = 0) => {
         departmentOptions
     };
 };
+
+export const useDepartment = (id: string | null | undefined) => {
+    return useQuery({
+        queryKey: queryKeys.department.detail(id || ''),
+        queryFn: () => departmentApi.getById(id!),
+        enabled: !!id,
+    });
+};

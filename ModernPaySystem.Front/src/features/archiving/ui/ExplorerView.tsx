@@ -88,9 +88,11 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
         e.preventDefault();
         e.stopPropagation();
         setActiveMenuId(null);
+        const containerElement = e.currentTarget.closest('.explorer-container') || e.currentTarget;
+        const container = containerElement.getBoundingClientRect();
         setContextMenu({
-            x: e.clientX,
-            y: e.clientY,
+            x: e.clientX - container.left,
+            y: e.clientY - container.top,
             type,
             targetId
         });
@@ -104,7 +106,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
 
     return (
         <div 
-            className="flex flex-col gap-6 min-h-[350px] w-full pb-12 select-none" 
+            className="explorer-container relative flex flex-col gap-6 min-h-[350px] w-full pb-12 select-none" 
             onClick={() => {
                 setActiveMenuId(null);
                 setContextMenu(null);
@@ -308,12 +310,12 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
             {contextMenu && (
                 <div
                     style={{
-                        position: 'fixed',
+                        position: 'absolute',
                         left: `${contextMenu.x}px`,
                         top: `${contextMenu.y}px`,
                         zIndex: 1000,
                     }}
-                    className="w-48 bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl shadow-xl shadow-black/10 py-1.5 animate-in fade-in zoom-in-95 duration-100 select-none text-right"
+                    className="w-48 bg-card/95 backdrop-blur-md border border-border/60 rounded-2xl shadow-xl shadow-black/10 py-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-100 select-none text-right"
                     dir="rtl"
                     onClick={(e) => e.stopPropagation()}
                 >
