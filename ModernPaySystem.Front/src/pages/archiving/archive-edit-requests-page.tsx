@@ -11,6 +11,7 @@ import { Card } from '@/shared/ui/card';
 import { Clock, CheckCircle, XCircle, User, FileClock, ShieldAlert } from 'lucide-react';
 import { departmentApi } from '@/entities/department/api/departmentApi';
 import { AnimatedContainer } from '@/shared/ui/common/animated-container';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 export default function ArchiveEditRequestsPage() {
     const user = useAuthStore((state) => state.user);
@@ -183,8 +184,12 @@ export default function ArchiveEditRequestsPage() {
                                                     <td className="px-6 py-4 text-muted-foreground text-xs">
                                                         {req.createdAt ? new Date(req.createdAt).toLocaleDateString('ar-EG') : '-'}
                                                     </td>
-                                                    <td className="px-6 py-4 flex items-center gap-2 justify-end">
-                                                        <span>{req.approverName || 'لم يتم المراجعة بعد'}</span>
+                                                    <td className="px-6 py-4 flex items-center gap-2 justify-center">
+                                                        {req.approverId ? (
+                                                            <UserDisplay userId={req.approverId} showIcon={false} />
+                                                        ) : (
+                                                            <span>لم يتم المراجعة بعد</span>
+                                                        )}
                                                         <User className="h-4 w-4 text-muted-foreground" />
                                                     </td>
                                                     <td className="px-6 py-4">

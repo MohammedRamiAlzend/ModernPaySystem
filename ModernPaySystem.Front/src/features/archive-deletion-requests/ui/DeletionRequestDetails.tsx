@@ -1,5 +1,6 @@
 import { DeleteArchiveRequest, DeleteArchiveRequestStatus, ArchiveDeletionTargetType } from '../model/types';
 import { X, Calendar, User, FileText, Folder, Clock, CheckCircle, XCircle, HardDrive, File, FolderOpen } from 'lucide-react';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { Button } from '@/shared/ui/button';
 
 interface DeletionRequestDetailsProps {
@@ -73,7 +74,7 @@ export function DeletionRequestDetails({ isOpen, request, onClose }: DeletionReq
                             <span className="text-[10px] font-bold text-muted-foreground">مقدم الطلب</span>
                             <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                                 <User className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span>{request.requesterName}</span>
+                                <UserDisplay userId={request.requesterId} showIcon={false} />
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 items-start">
@@ -175,11 +176,11 @@ export function DeletionRequestDetails({ isOpen, request, onClose }: DeletionReq
                         </div>
                     )}
 
-                    {request.approverName && (
+                    {request.approverId && (
                         <div className="flex items-center gap-2 text-xs border-t border-border pt-4">
                             <User className="h-4 w-4 text-muted-foreground" />
                             <span className="font-bold text-muted-foreground">المدير المعني:</span>
-                            <span className="font-semibold text-foreground">{request.approverName}</span>
+                            <span className="font-semibold text-foreground"><UserDisplay userId={request.approverId} showIcon={false} /></span>
                         </div>
                     )}
 

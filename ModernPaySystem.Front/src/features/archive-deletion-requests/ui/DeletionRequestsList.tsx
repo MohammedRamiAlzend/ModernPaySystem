@@ -5,6 +5,7 @@ import { useUIStore } from '@/app/store/uiStore';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Check, X, Eye, FileText, User, Folder, AlertTriangle } from 'lucide-react';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { Label } from '@radix-ui/react-label';
 
 interface DeletionRequestsListProps {
@@ -130,7 +131,7 @@ export function DeletionRequestsList({ requests, isLoading, onViewDetails }: Del
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 flex items-center gap-2 justify-end">
-                                        <span>{req.requesterName}</span>
+                                        <UserDisplay userId={req.requesterId} showIcon={false} />
                                         <User className="h-4 w-4 text-muted-foreground" />
                                     </td>
                                     <td className="px-6 py-4 max-w-xs truncate">

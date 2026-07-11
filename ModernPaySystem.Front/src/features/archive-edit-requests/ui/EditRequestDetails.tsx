@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { EditArchiveRequest } from '../model/types';
 import { X, Calendar, User, FileText, Download, ExternalLink } from 'lucide-react';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { Button } from '@/shared/ui/button';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
@@ -144,7 +145,7 @@ export function EditRequestDetails({ isOpen, request, onClose }: EditRequestDeta
                             <span className="text-[10px] font-bold text-muted-foreground">مقدم الطلب</span>
                             <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
                                 <User className="h-3.5 w-3.5 text-muted-foreground" />
-                                <span>{request.requesterName}</span>
+                                <UserDisplay userId={request.requesterId} showIcon={false} />
                             </div>
                         </div>
                         <div className="flex flex-col gap-1 items-start">
