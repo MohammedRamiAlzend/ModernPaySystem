@@ -4,6 +4,7 @@ import { Badge } from '@/shared/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { ChevronDown, ChevronLeft, FileText, History, Loader2 } from 'lucide-react';
 import type { DailyWorkReportDto } from '../../model/types';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 
 interface DailyWorkReportViewProps {
     data: DailyWorkReportDto | undefined;
@@ -190,7 +191,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                             <TableCell className="font-medium">{rec.id.slice(0, 8)}</TableCell>
                                             <TableCell className="max-w-xs truncate">{rec.folderPath || '-'}</TableCell>
                                             <TableCell>{rec.formName || '-'}</TableCell>
-                                            <TableCell>{rec.createdByUserName || '-'}</TableCell>
+                                            <TableCell><UserDisplay userId={rec.createdByUserName} showIcon={false} /></TableCell>
                                             <TableCell>{formatDateTime(rec.createdAt)}</TableCell>
                                             <TableCell>
                                                 {expandedRecords.has(rec.id) ? (

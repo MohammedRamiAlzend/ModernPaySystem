@@ -6,7 +6,7 @@ using ModernPaySystem.Module.Archive.Application.Interfaces;
 namespace ModernPaySystem.Module.Archive.Api.Controllers;
 
 [ApiController]
-[Route("api/ArchiveSystem/[controller]")]
+[Route("api/archive-report")]
 [Authorize]
 public class ArchiveReportController(
     IArchiveRecordReportService reportService,
