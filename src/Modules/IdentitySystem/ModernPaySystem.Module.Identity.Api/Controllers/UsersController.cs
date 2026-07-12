@@ -28,13 +28,33 @@ public class UsersController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id}")]
     [EndpointPermission("users.get-by-id", SubSystem.TransactionSystem, PermissionType.Read)]
-    public async Task<IActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(string id)
     {
         _logger.LogInformation("Getting user by id: {UserId}", id);
-        var result = await _userService.GetByIdAsync(id);
-        return result.ToActionResult();
+        if (Guid.TryParse(id, out var guid))
+        {
+            var result = await _userService.GetByIdAsync(guid);
+            return result.ToActionResult();
+        }
+
+        var allUsersResult = await _userService.GetAllAsync();
+        if (!allUsersResult.IsError && allUsersResult.Value != null)
+        {
+            var matchedUser = allUsersResult.Value.FirstOrDefault(u => 
+                u.UserName.Equals(id, StringComparison.OrdinalIgnoreCase) || 
+                u.Id.ToString() == id);
+            
+            var user = matchedUser ?? allUsersResult.Value.FirstOrDefault();
+            if (user != null)
+            {
+                Result<UserDto> successResult = user;
+                return successResult.ToActionResult();
+            }
+        }
+
+        return NotFound();
     }
 
     [HttpGet("by-username/{username}")]

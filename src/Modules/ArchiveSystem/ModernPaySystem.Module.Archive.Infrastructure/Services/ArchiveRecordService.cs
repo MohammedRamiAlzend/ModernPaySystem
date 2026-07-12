@@ -39,7 +39,8 @@ public class ArchiveRecordService(
     IHttpContextServiceManager httpContextServiceManager,
     ISemanticSearchService semanticSearchService,
     IOptions<ServerSettings> serverSettings,
-    SystemHealthService healthService) : IArchiveRecordService
+    SystemHealthService healthService,
+    IAuditLogService auditLogService) : IArchiveRecordService
 {
     private const string UploadRootDirectory = "Diwan";
     private const string DefaultUploadsDirectory = "Uploads";
@@ -91,6 +92,10 @@ public class ArchiveRecordService(
 
             if (result.Value == null)
                 return ArchiveErrors.ArchiveRecordNotFound;
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(id, userId.ToString(), AuditAction.View, "Viewed archive record", ipAddress, userAgent);
 
             return result.Value.ToDto();
         }
@@ -371,6 +376,10 @@ public class ArchiveRecordService(
 
                     await unitOfWork.CommitTransactionAsync();
 
+                    var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                    var userAgent = httpContextServiceManager.GetUserAgent();
+                    await auditLogService.LogAsync(record.Id, userId.ToString(), AuditAction.Create, "Created archive record", ipAddress, userAgent);
+
                     if (CanAutoIndex)
                         _ = TryAutoIndexPhysicalFilesAsync(record.PhysicalFiles);
 
@@ -545,6 +554,10 @@ public class ArchiveRecordService(
                     }
                 }
 
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(id, userId.ToString(), AuditAction.Update, "Updated archive record", ipAddress, userAgent);
+
                 if (CanAutoIndex && addFiles.Count > 0)
                     _ = TryAutoIndexPhysicalFilesAsync(addFiles);
 
@@ -665,6 +678,11 @@ public class ArchiveRecordService(
                     }
                 }
 
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(id, userId.ToString(), AuditAction.Move,
+                    $"Moved from folder '{oldFolder.Name}' to folder '{destFolder.Name}'", ipAddress, userAgent);
+
                 return await GetByIdAsync(record.Id);
             });
         }
@@ -766,6 +784,11 @@ public class ArchiveRecordService(
 
                 await unitOfWork.CommitTransactionAsync();
 
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(record.Id, userId.ToString(), AuditAction.AddFiles,
+                    $"Added {newPhysicalFiles.Value!.Count} file(s) to archive record", ipAddress, userAgent);
+
                 if (CanAutoIndex)
                     _ = TryAutoIndexPhysicalFilesAsync(newPhysicalFiles.Value!);
 
@@ -855,6 +878,11 @@ public class ArchiveRecordService(
                 return deleteResult.Errors;
             }
 
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(id, userId.ToString(), AuditAction.RemoveFiles,
+                $"Removed file '{file.FileName}' from archive record", ipAddress, userAgent);
+
             return true;
         }
         catch (Exception ex)
@@ -908,6 +936,12 @@ public class ArchiveRecordService(
             var contentType = string.IsNullOrWhiteSpace(physicalFile.ContentType)
                 ? filesManagerService.GetContentType(physicalFile.FileExtension)
                 : physicalFile.ContentType;
+
+            var auditAction = isDownload ? AuditAction.Download : AuditAction.View;
+            var auditDetails = isDownload ? "Downloaded archive record file" : "Viewed archive record file";
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(physicalFile.ArchiveRecordId, userId.ToString(), auditAction, auditDetails, ipAddress, userAgent);
 
             return new ArchivePhysicalFileDownloadDto
             {
@@ -1039,6 +1073,10 @@ public class ArchiveRecordService(
                 return access.Errors;
             if (!access.Value)
                 return ArchiveErrors.ArchiveRecordAccessDenied;
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Download, "Downloaded archive record as ZIP", ipAddress, userAgent);
 
             var normalizedPassword = string.IsNullOrWhiteSpace(password) ? null : password;
             var recordResult = await unitOfWork.ArchiveRecords.GetAsync(
@@ -1297,6 +1335,10 @@ public class ArchiveRecordService(
                 }
             }
 
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(id, userId.ToString(), AuditAction.Delete, "Deleted archive record", ipAddress, userAgent);
+
             return true;
         }
         catch (Exception ex)
@@ -1352,6 +1394,10 @@ public class ArchiveRecordService(
                 return access.Errors;
             if (!access.Value)
                 return ArchiveErrors.ArchiveRecordAccessDenied;
+
+            var ipAddress = httpContextServiceManager.GetClientIpAddress();
+            var userAgent = httpContextServiceManager.GetUserAgent();
+            await auditLogService.LogAsync(recordId, userId.ToString(), AuditAction.Print, "Printed archive record", ipAddress, userAgent);
 
             return Result.Success;
         }
@@ -1747,6 +1793,59 @@ public class ArchiveRecordService(
             .ToDictionary(x => x.Key, x => x.Count(), StringComparer.OrdinalIgnoreCase);
 
         return (totalSize, averageSize, fileTypeBreakdown);
+    }
+
+    public async Task<Result<PagedList<ArchiveAuditLog>>> GetAuditLogsByDepartmentAsync(
+        Guid departmentId,
+        int page = 1,
+        int pageSize = 50,
+        AuditAction? action = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null)
+    {
+        try
+        {
+            if (departmentId == Guid.Empty || page <= 0 || pageSize <= 0 || pageSize > 100)
+            {
+                return ArchiveErrors.InvalidInput;
+            }
+
+            var query = from auditLog in dbContext.Set<ArchiveAuditLog>()
+                        join archiveRecord in dbContext.Set<ArchiveRecord>().IgnoreQueryFilters()
+                            on auditLog.ArchiveRecordId equals archiveRecord.Id
+                        where archiveRecord.DepartmentId == departmentId
+                        select auditLog;
+
+            if (action.HasValue)
+            {
+                query = query.Where(x => x.Action == action.Value);
+            }
+
+            if (fromDate.HasValue)
+            {
+                query = query.Where(x => x.Timestamp >= fromDate.Value);
+            }
+
+            if (toDate.HasValue)
+            {
+                query = query.Where(x => x.Timestamp <= toDate.Value);
+            }
+
+            query = query.OrderByDescending(x => x.Timestamp);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedList<ArchiveAuditLog>(items, totalCount, page, pageSize);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error getting audit logs by department");
+            return ArchiveErrors.InternalServerError;
+        }
     }
 
     private static List<PhysicalFile> SortPagedFiles(List<PhysicalFile> files, ArchiveFileSortBy sortBy, ArchiveFileSortOrder sortOrder)

@@ -42,6 +42,7 @@ public static class ArchiveModuleRegistration
 
         services.AddScoped<ArchiveAuditInterceptor>();
         services.AddScoped<IArchiveUnitOfWork, ArchiveUnitOfWork>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
 
         services.AddScoped<IArchiveConfigService, ArchiveConfigService>();
         services.AddScoped<IArchiveConfigSeeder, ArchiveConfigSeeder>();

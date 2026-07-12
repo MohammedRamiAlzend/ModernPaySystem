@@ -92,6 +92,7 @@ export const useArchiveAuditLogs = (params: {
         queryKey: queryKeys.archiving.auditLogs.list(params),
         queryFn: () => archivingService.getAuditLogs(params),
         enabled: !!params.departmentId,
+        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
     });
 };
 

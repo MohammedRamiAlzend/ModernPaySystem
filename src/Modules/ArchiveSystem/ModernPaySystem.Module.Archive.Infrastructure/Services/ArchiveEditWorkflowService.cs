@@ -22,6 +22,7 @@ public class ArchiveEditWorkflowService(
     IArchiveAuthorizationService archiveAuthorizationService,
     IArchiveLeaderService archiveLeaderService,
     IFilesManagerService filesManagerService,
+    IAuditLogService auditLogService,
     ILogger<ArchiveEditWorkflowService> logger) : IArchiveEditWorkflowService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -203,6 +204,11 @@ public class ArchiveEditWorkflowService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(dto.ArchiveRecordId, requesterId.ToString(), AuditAction.SubmitEditRequest,
+                    "Submitted edit request for archive record", ipAddress, userAgent);
 
                 request.ArchiveRecord = record;
                 return EditArchiveRequestDto.FromEntity(request);
@@ -386,6 +392,11 @@ public class ArchiveEditWorkflowService(
 
                 await unitOfWork.CommitTransactionAsync();
 
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(requestEntity.ArchiveRecordId, approverId.ToString(), AuditAction.ApproveEdit,
+                    $"Approved edit request for archive record{(notes != null ? $": {notes}" : "")}", ipAddress, userAgent);
+
                 return EditArchiveRequestDto.FromEntity(requestEntity);
             }
             catch (Exception)
@@ -451,6 +462,11 @@ public class ArchiveEditWorkflowService(
                 }
 
                 await unitOfWork.CommitTransactionAsync();
+
+                var ipAddress = httpContextServiceManager.GetClientIpAddress();
+                var userAgent = httpContextServiceManager.GetUserAgent();
+                await auditLogService.LogAsync(requestEntity.ArchiveRecordId, approverId.ToString(), AuditAction.RejectEdit,
+                    $"Rejected edit request for archive record: {reason}", ipAddress, userAgent);
 
                 return EditArchiveRequestDto.FromEntity(requestEntity);
             }

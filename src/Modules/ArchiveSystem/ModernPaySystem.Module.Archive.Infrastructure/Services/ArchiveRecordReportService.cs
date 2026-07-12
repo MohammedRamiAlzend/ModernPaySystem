@@ -105,6 +105,7 @@ public class ArchiveRecordReportService(
             var totalStorageBytes = await filesQuery.SumAsync(pf => pf.FileSize);
 
             var auditQuery = dbContext.ArchiveAuditLogs
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(al => al.ArchiveRecord.DepartmentId != null
                     && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value));
@@ -174,6 +175,7 @@ public class ArchiveRecordReportService(
                 .CountAsync(r => r.DeletedAt >= dayStart && r.DeletedAt < dayEnd);
 
             var auditQuery = dbContext.ArchiveAuditLogs
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(al => al.ArchiveRecord.DepartmentId != null
                     && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
@@ -290,6 +292,7 @@ public class ArchiveRecordReportService(
             var to = toDate.HasValue ? DateTime.SpecifyKind(toDate.Value, DateTimeKind.Utc).Date.AddDays(1) : DateTime.UtcNow.Date.AddDays(1);
 
             var auditQuery = dbContext.ArchiveAuditLogs
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(al => al.ArchiveRecord.DepartmentId != null
                     && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
@@ -353,6 +356,7 @@ public class ArchiveRecordReportService(
             var to = toDate.HasValue ? DateTime.SpecifyKind(toDate.Value, DateTimeKind.Utc).Date.AddDays(1) : DateTime.UtcNow.Date.AddDays(1);
 
             var auditQuery = dbContext.ArchiveAuditLogs
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(al => al.ArchiveRecord.DepartmentId != null
                     && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
@@ -505,6 +509,7 @@ public class ArchiveRecordReportService(
             var to = toDate.HasValue ? DateTime.SpecifyKind(toDate.Value, DateTimeKind.Utc).Date.AddDays(1) : now.Date.AddDays(1);
 
             var auditQuery = dbContext.ArchiveAuditLogs
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Where(al => al.ArchiveRecord.DepartmentId != null
                     && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
@@ -644,6 +649,7 @@ public class ArchiveRecordReportService(
 
             // ---- Audit Logs ----
             var auditLogs = await dbContext.ArchiveAuditLogs
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .Include(al => al.ArchiveRecord)
                 .Where(al => al.ArchiveRecord.DepartmentId != null
@@ -757,6 +763,7 @@ public class ArchiveRecordReportService(
             .CountAsync(r => r.DeletedAt >= periodStart && r.DeletedAt < periodEnd);
 
         var auditQuery = dbContext.ArchiveAuditLogs
+            .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(al => al.ArchiveRecord.DepartmentId != null
                 && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)

@@ -45,6 +45,54 @@ public class ArchiveRecordsController(
         return result.ToActionResult();
     }
 
+    [HttpGet("audit-logs")]
+    [EndpointPermission("archiving.records.get-audit-logs", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetAuditLogsByDepartment(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] AuditAction? action = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] Guid? departmentId = null)
+    {
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var userGuid))
+        {
+            return Unauthorized();
+        }
+
+        var leaderDepartmentsResult = await archiveAuthorizationService.GetUserArchiveLeaderDepartmentsAsync(userGuid);
+        if (leaderDepartmentsResult.IsError)
+        {
+            return leaderDepartmentsResult.ToActionResult();
+        }
+
+        var leaderDepartments = leaderDepartmentsResult.Value!;
+        if (leaderDepartments.Count == 0)
+        {
+            return Forbid();
+        }
+
+        Guid targetDepartmentId;
+        if (departmentId.HasValue)
+        {
+            if (!leaderDepartments.Contains(departmentId.Value))
+            {
+                return Forbid();
+            }
+            targetDepartmentId = departmentId.Value;
+        }
+        else
+        {
+            targetDepartmentId = leaderDepartments[0];
+        }
+
+        logger.LogInformation("Getting audit logs for department: {DepartmentId}, page: {Page}, size: {PageSize}", targetDepartmentId, page, pageSize);
+
+        var result = await archiveRecordService.GetAuditLogsByDepartmentAsync(targetDepartmentId, page, pageSize, action, fromDate, toDate);
+        return result.ToActionResult();
+    }
+
     [HttpGet("{id}")]
     [EndpointPermission("archiving.records.get-by-id", SubSystem.Archiving, PermissionType.Read)]
     public async Task<IActionResult> GetById(Guid id)

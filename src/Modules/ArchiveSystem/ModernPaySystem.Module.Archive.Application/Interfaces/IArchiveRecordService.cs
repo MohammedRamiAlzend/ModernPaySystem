@@ -35,4 +35,11 @@ public interface IArchiveRecordService
     //Task<Result<ArchiveFileCleanupDto>> CleanupOrphanFilesAsync();
     Task<Result<bool>> DeleteAsync(Guid id);
     Task<Result<Success>> LogPrintAsync(Guid recordId);
+    Task<Result<PagedList<ArchiveAuditLog>>> GetAuditLogsByDepartmentAsync(
+        Guid departmentId,
+        int page = 1,
+        int pageSize = 50,
+        AuditAction? action = null,
+        DateTime? fromDate = null,
+        DateTime? toDate = null);
 }
