@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Badge } from '@/shared/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
-import { ChevronDown, ChevronLeft, FileText, History, Loader2 } from 'lucide-react';
+import { Button } from '@/shared/ui/button';
+import { ChevronDown, ChevronLeft, ChevronRight, FileText, History, Loader2 } from 'lucide-react';
 import type { DailyWorkReportDto } from '../../model/types';
 
 interface DailyWorkReportViewProps {
@@ -136,6 +137,10 @@ const ACTION_LABEL: Record<string, string> = {
 
 export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProps) {
     const [expandedRecords, setExpandedRecords] = useState<Set<string>>(new Set());
+    const [recordsPage, setRecordsPage] = useState(1);
+    const recordsPerPage = 10;
+    const [auditPage, setAuditPage] = useState(1);
+    const auditPerPage = 10;
 
     const toggleRecord = (id: string) => {
         setExpandedRecords(prev => {
@@ -164,6 +169,20 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
         );
     }
 
+    const totalRecords = data.archiveRecords.length;
+    const totalRecordPages = Math.ceil(totalRecords / recordsPerPage);
+    const paginatedRecords = data.archiveRecords.slice(
+        (recordsPage - 1) * recordsPerPage,
+        recordsPage * recordsPerPage
+    );
+
+    const totalAuditLogs = data.auditLogs.length;
+    const totalAuditPages = Math.ceil(totalAuditLogs / auditPerPage);
+    const paginatedAuditLogs = data.auditLogs.slice(
+        (auditPage - 1) * auditPerPage,
+        auditPage * auditPerPage
+    );
+
     return (
         <div className="space-y-6" dir="rtl">
             <Card className="border border-border/40 shadow-sm">
@@ -188,39 +207,74 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    {data.auditLogs.length === 0 ? (
+                    {totalAuditLogs === 0 ? (
                         <div className="p-6 text-center text-muted-foreground text-sm">
                             لا توجد نشاطات في هذا التاريخ
                         </div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-right w-10">#</TableHead>
-                                    <TableHead className="text-right">رقم السجل</TableHead>
-                                    <TableHead className="text-right">المستخدم</TableHead>
-                                    <TableHead className="text-right">الإجراء</TableHead>
-                                    <TableHead className="text-right">التفاصيل</TableHead>
-                                    <TableHead className="text-right">الوقت</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {data.auditLogs.map((log, idx) => (
-                                    <TableRow key={log.id}>
-                                        <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                                        <TableCell className="font-medium">{log.id.slice(0, 8)}</TableCell>
-                                        <TableCell>{log.userName}</TableCell>
-                                        <TableCell>
-                                            <Badge variant="outline" className={ACTION_BADGE[log.action] || ''}>
-                                                {ACTION_LABEL[log.action] || log.action}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="max-w-xs truncate">{translateDetails(log.details)}</TableCell>
-                                        <TableCell>{formatDateTime(log.timestamp)}</TableCell>
+                        <>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="text-right w-10">#</TableHead>
+                                        <TableHead className="text-right">رقم السجل</TableHead>
+                                        <TableHead className="text-right">المستخدم</TableHead>
+                                        <TableHead className="text-right">الإجراء</TableHead>
+                                        <TableHead className="text-right">التفاصيل</TableHead>
+                                        <TableHead className="text-right">الوقت</TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {paginatedAuditLogs.map((log, idx) => {
+                                        const globalIdx = (auditPage - 1) * auditPerPage + idx;
+                                        return (
+                                            <TableRow key={log.id}>
+                                                <TableCell className="text-muted-foreground">{globalIdx + 1}</TableCell>
+                                                <TableCell className="font-medium">{log.id.slice(0, 8)}</TableCell>
+                                                <TableCell>{log.userName}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className={ACTION_BADGE[log.action] || ''}>
+                                                        {ACTION_LABEL[log.action] || log.action}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="max-w-xs truncate">{translateDetails(log.details)}</TableCell>
+                                                <TableCell>{formatDateTime(log.timestamp)}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+
+                            {totalAuditLogs > 0 && (
+                                <div className="flex justify-between items-center px-6 py-4 border-t border-border">
+                                    <span className="text-sm text-muted-foreground">
+                                        عرض صفحة {auditPage} من {totalAuditPages} (إجمالي {totalAuditLogs} سجل)
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setAuditPage(p => Math.min(p + 1, totalAuditPages))}
+                                            disabled={auditPage === totalAuditPages}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                            <span>التالي</span>
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setAuditPage(p => Math.max(p - 1, 1))}
+                                            disabled={auditPage === 1}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <span>السابق</span>
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>
@@ -235,72 +289,106 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    {data.archiveRecords.length === 0 ? (
+                    {totalRecords === 0 ? (
                         <div className="p-6 text-center text-muted-foreground text-sm">
                             لا توجد سجلات أرشيف في هذا التاريخ
                         </div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="text-right w-10">#</TableHead>
-                                    <TableHead className="text-right">رقم السجل</TableHead>
-                                    <TableHead className="text-right">المسار</TableHead>
-                                    <TableHead className="text-right">النموذج</TableHead>
-                                    <TableHead className="text-right">المستخدم</TableHead>
-                                    <TableHead className="text-right">تاريخ الإنشاء</TableHead>
-                                    <TableHead className="text-right w-8"></TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {data.archiveRecords.map((rec, idx) => (
-                                    <>
-                                        <TableRow
-                                            key={rec.id}
-                                            className="cursor-pointer hover:bg-muted/50"
-                                            onClick={() => toggleRecord(rec.id)}
-                                        >
-                                            <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                                            <TableCell className="font-medium">{rec.id.slice(0, 8)}</TableCell>
-                                            <TableCell className="max-w-xs truncate">{rec.folderPath || '-'}</TableCell>
-                                            <TableCell>{rec.formName || '-'}</TableCell>
-                                            <TableCell>{rec.createdByUserName || '-'}</TableCell>
-                                            <TableCell>{formatDateTime(rec.createdAt)}</TableCell>
-                                            <TableCell>
-                                                {expandedRecords.has(rec.id) ? (
-                                                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                                                ) : (
-                                                    <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                        {expandedRecords.has(rec.id) && (
-                                            <TableRow key={`${rec.id}-form`}>
-                                                <TableCell colSpan={7} className="bg-muted/20 p-4">
-                                                    <div className="space-y-2">
-                                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                                                            بيانات الحقول
-                                                        </h4>
-                                                        {rec.formValues.length === 0 ? (
-                                                            <p className="text-sm text-muted-foreground">لا توجد بيانات حقول</p>
+                        <>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="text-right w-10">#</TableHead>
+                                        <TableHead className="text-right">رقم السجل</TableHead>
+                                        <TableHead className="text-right">المسار</TableHead>
+                                        <TableHead className="text-right">النموذج</TableHead>
+                                        <TableHead className="text-right">المستخدم</TableHead>
+                                        <TableHead className="text-right">تاريخ الإنشاء</TableHead>
+                                        <TableHead className="text-right w-8"></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {paginatedRecords.map((rec, idx) => {
+                                        const globalIdx = (recordsPage - 1) * recordsPerPage + idx;
+                                        return (
+                                            <Fragment key={rec.id}>
+                                                <TableRow
+                                                    className="cursor-pointer hover:bg-muted/50"
+                                                    onClick={() => toggleRecord(rec.id)}
+                                                >
+                                                    <TableCell className="text-muted-foreground">{globalIdx + 1}</TableCell>
+                                                    <TableCell className="font-medium">{rec.id.slice(0, 8)}</TableCell>
+                                                    <TableCell className="max-w-xs truncate">{rec.folderPath || '-'}</TableCell>
+                                                    <TableCell>{rec.formName || '-'}</TableCell>
+                                                    <TableCell>{rec.createdByUserName || '-'}</TableCell>
+                                                    <TableCell>{formatDateTime(rec.createdAt)}</TableCell>
+                                                    <TableCell>
+                                                        {expandedRecords.has(rec.id) ? (
+                                                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
                                                         ) : (
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                                                {rec.formValues.map((fv, i) => (
-                                                                    <div key={i} className="flex gap-2 text-sm bg-background rounded-lg p-2 border">
-                                                                        <span className="font-semibold text-primary whitespace-nowrap">{fv.key}:</span>
-                                                                        <span className="text-muted-foreground">{fv.value || '-'}</span>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
+                                                            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
                                                         )}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                                    </TableCell>
+                                                </TableRow>
+                                                {expandedRecords.has(rec.id) && (
+                                                    <TableRow key={`${rec.id}-form`}>
+                                                        <TableCell colSpan={7} className="bg-muted/20 p-4">
+                                                            <div className="space-y-2">
+                                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                                                                    بيانات الحقول
+                                                                </h4>
+                                                                {rec.formValues.length === 0 ? (
+                                                                    <p className="text-sm text-muted-foreground">لا توجد بيانات حقول</p>
+                                                                ) : (
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                                                        {rec.formValues.map((fv, i) => (
+                                                                            <div key={i} className="flex gap-2 text-sm bg-background rounded-lg p-2 border">
+                                                                                <span className="font-semibold text-primary whitespace-nowrap">{fv.key}:</span>
+                                                                                <span className="text-muted-foreground">{fv.value || '-'}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </Fragment>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+
+                            {totalRecords > 0 && (
+                                <div className="flex justify-between items-center px-6 py-4 border-t border-border">
+                                    <span className="text-sm text-muted-foreground">
+                                        عرض صفحة {recordsPage} من {totalRecordPages} (إجمالي {totalRecords} سجل)
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setRecordsPage(p => Math.min(p + 1, totalRecordPages))}
+                                            disabled={recordsPage === totalRecordPages}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                            <span>التالي</span>
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setRecordsPage(p => Math.max(p - 1, 1))}
+                                            disabled={recordsPage === 1}
+                                            className="flex items-center gap-1"
+                                        >
+                                            <span>السابق</span>
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>
