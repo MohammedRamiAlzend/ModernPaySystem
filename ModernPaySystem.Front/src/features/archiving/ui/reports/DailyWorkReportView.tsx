@@ -24,6 +24,80 @@ function formatDateTime(dateStr: string | null | undefined): string {
     });
 }
 
+function translateDetails(details: string | null | undefined): string {
+    if (!details) return '-';
+
+    const mappings: Record<string, string> = {
+        'Viewed archive record': 'عرض السجل الأرشيفي',
+        'Created archive record': 'إنشاء السجل الأرشيفي',
+        'Updated archive record': 'تحديث السجل الأرشيفي',
+        'Deleted archive record': 'حذف السجل الأرشيفي',
+        'Downloaded archive record as ZIP': 'تحميل السجل الأرشيفي كملف ZIP',
+        'Printed archive record': 'طباعة السجل الأرشيفي',
+        'Submitted delete request for archive record': 'تقديم طلب حذف سجل أرشيفي',
+        'Approved delete request for archive record': 'الموافقة على طلب حذف سجل أرشيفي',
+        'Rejected delete request for archive record': 'رفض طلب حذف سجل أرشيفي',
+        'Submitted edit request for archive record': 'تقديم طلب تعديل سجل أرشيفي',
+        'Approved edit request for archive record': 'الموافقة على طلب تعديل سجل أرشيفي',
+        'Rejected edit request for archive record': 'رفض طلب تعديل سجل أرشيفي',
+        'Downloaded archive record file': 'تحميل ملف من السجل الأرشيفي',
+        'Viewed archive record file': 'عرض ملف من السجل الأرشيفي',
+    };
+
+    if (mappings[details]) {
+        return mappings[details];
+    }
+
+    let match;
+
+    match = details.match(/Moved from folder '(.*)' to folder '(.*)'/);
+    if (match) {
+        return `نُقل من المجلد "${match[1]}" إلى المجلد "${match[2]}"`;
+    }
+
+    match = details.match(/Added (\d+) file\(s\) to archive record/);
+    if (match) {
+        return `إضافة ${match[1]} ملف(ات) إلى السجل الأرشيفي`;
+    }
+
+    match = details.match(/Removed file '(.*)' from archive record/);
+    if (match) {
+        return `إزالة الملف "${match[1]}" من السجل الأرشيفي`;
+    }
+
+    match = details.match(/Downloaded file: (.*)/);
+    if (match) {
+        return `تحميل الملف: ${match[1]}`;
+    }
+
+    match = details.match(/Viewed file: (.*)/);
+    if (match) {
+        return `عرض الملف: ${match[1]}`;
+    }
+
+    match = details.match(/Approved delete request for archive record: (.*)/);
+    if (match) {
+        return `الموافقة على طلب حذف سجل أرشيفي: ${match[1]}`;
+    }
+
+    match = details.match(/Rejected delete request for archive record: (.*)/);
+    if (match) {
+        return `رفض طلب حذف سجل أرشيفي: ${match[1]}`;
+    }
+
+    match = details.match(/Approved edit request for archive record: (.*)/);
+    if (match) {
+        return `الموافقة على طلب تعديل سجل أرشيفي: ${match[1]}`;
+    }
+
+    match = details.match(/Rejected edit request for archive record: (.*)/);
+    if (match) {
+        return `رفض طلب تعديل سجل أرشيفي: ${match[1]}`;
+    }
+
+    return details;
+}
+
 const ACTION_BADGE: Record<string, string> = {
     View: 'bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-800',
     Create: 'bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800',
@@ -141,7 +215,7 @@ export function DailyWorkReportView({ data, isLoading }: DailyWorkReportViewProp
                                                 {ACTION_LABEL[log.action] || log.action}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="max-w-xs truncate">{log.details || '-'}</TableCell>
+                                        <TableCell className="max-w-xs truncate">{translateDetails(log.details)}</TableCell>
                                         <TableCell>{formatDateTime(log.timestamp)}</TableCell>
                                     </TableRow>
                                 ))}
