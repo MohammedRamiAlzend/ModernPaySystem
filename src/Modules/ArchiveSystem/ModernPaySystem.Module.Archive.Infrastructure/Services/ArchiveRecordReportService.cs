@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Module.Archive.Application;
 using ModernPaySystem.Module.Archive.Application.Interfaces;
@@ -6,6 +7,7 @@ using ModernPaySystem.Module.Archive.Domain;
 using ModernPaySystem.Module.Archive.Domain.DTOs;
 using ModernPaySystem.Module.Archive.Domain.Entities;
 using ModernPaySystem.Module.Archive.Infrastructure.Persistence;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Application.Services;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 using ModernPaySystem.SharedKernel.Domain.DTOs;
@@ -18,6 +20,7 @@ public class ArchiveRecordReportService(
     ArchiveDbContext dbContext,
     IHttpContextServiceManager httpContextServiceManager,
     IArchiveAuthorizationService archiveAuthorizationService,
+    IServiceProvider serviceProvider,
     ILogger<ArchiveRecordReportService> logger) : IArchiveRecordReportService
 {
     public async Task<Result<List<DepartmentDto>>> GetMyDepartmentsAsync()
@@ -29,17 +32,17 @@ public class ArchiveRecordReportService(
                 return deptIdsResult.Errors;
 
             var departmentIds = deptIdsResult.Value!;
-            var departments = departmentIds.Select(id => new DepartmentDto
+            var departments = new List<DepartmentDto>();
+
+            using var scope = serviceProvider.CreateScope();
+            var deptService = scope.ServiceProvider.GetRequiredService<IDepartmentService>();
+
+            foreach (var deptId in departmentIds)
             {
-                Id = id,
-                Name = id.ToString(),
-                Code = null,
-                Description = null,
-                Level = 0,
-                ChildrenCount = 0,
-                UsersCount = 0,
-                CreatedAt = null
-            }).ToList();
+                var deptResult = await deptService.GetByIdAsync(deptId);
+                if (!deptResult.IsError && deptResult.Value != null)
+                    departments.Add(deptResult.Value);
+            }
 
             return departments;
         }
@@ -64,6 +67,21 @@ public class ArchiveRecordReportService(
             var todayStart = now.Date;
             var weekStart = todayStart.AddDays(-(int)todayStart.DayOfWeek);
             var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            // Get department info
+            string departmentName = "Unknown";
+            int totalUsers = 0;
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var deptService = scope.ServiceProvider.GetRequiredService<IDepartmentService>();
+                var deptResult = await deptService.GetByIdAsync(departmentIds[0]);
+                if (!deptResult.IsError && deptResult.Value != null)
+                    departmentName = deptResult.Value.Name;
+
+                var usersResult = await deptService.GetUsersInDepartmentAsync(departmentIds[0], false);
+                if (!usersResult.IsError && usersResult.Value != null)
+                    totalUsers = usersResult.Value.Count;
+            }
 
             var recordsQuery = dbContext.ArchiveRecords
                 .AsNoTracking()
@@ -110,16 +128,20 @@ public class ArchiveRecordReportService(
 
             return new DepartmentArchiveDashboardDto
             {
+                DepartmentId = departmentIds[0],
+                DepartmentName = departmentName,
+                TotalArchiveRecords = totalRecords,
+                TotalUsers = totalUsers,
                 TotalFolders = totalFolders,
-                TotalRecords = totalRecords,
-                RecordsToday = todayRecords,
-                RecordsThisWeek = weekRecords,
-                RecordsThisMonth = monthRecords,
+                TotalPhysicalFiles = totalFiles,
+                TotalStorageBytes = totalStorageBytes,
+                RecordsCreatedToday = todayRecords,
+                RecordsCreatedThisWeek = weekRecords,
+                RecordsCreatedThisMonth = monthRecords,
                 ActiveUsersToday = todayActiveUsers,
                 ActiveUsersThisWeek = weekActiveUsers,
                 ActiveUsersThisMonth = monthActiveUsers,
-                TotalStorageBytes = totalStorageBytes,
-                StatusBreakdown = actionBreakdown.ToDictionary(x => x.Action.ToString(), x => x.Count)
+                ActionTypeBreakdown = actionBreakdown.ToDictionary(x => x.Action.ToString(), x => x.Count)
             };
         }
         catch (Exception ex)
@@ -148,14 +170,23 @@ public class ArchiveRecordReportService(
             var recordsCreated = await recordsQuery
                 .CountAsync(r => r.CreatedAt >= dayStart && r.CreatedAt < dayEnd);
 
+            var recordsDeleted = await recordsQuery
+                .CountAsync(r => r.DeletedAt >= dayStart && r.DeletedAt < dayEnd);
+
             var auditQuery = dbContext.ArchiveAuditLogs
                 .AsNoTracking()
                 .Where(al => al.ArchiveRecord.DepartmentId != null
                     && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
                     && al.Timestamp >= dayStart && al.Timestamp < dayEnd);
 
-            var filesUploaded = await auditQuery
+            var filesAdded = await auditQuery
                 .CountAsync(al => al.Action == AuditAction.AddFiles);
+
+            var filesDownloaded = await auditQuery
+                .CountAsync(al => al.Action == AuditAction.Download);
+
+            var printActions = await auditQuery
+                .CountAsync(al => al.Action == AuditAction.Print);
 
             var views = await auditQuery
                 .CountAsync(al => al.Action == AuditAction.View);
@@ -168,7 +199,8 @@ public class ArchiveRecordReportService(
                 .Select(g => new HourlyBreakdownDto
                 {
                     Hour = g.Key,
-                    Count = g.Count()
+                    Actions = g.Count(),
+                    RecordsCreated = g.Count(al => al.Action == AuditAction.Create)
                 })
                 .OrderBy(h => h.Hour)
                 .ToListAsync();
@@ -177,7 +209,10 @@ public class ArchiveRecordReportService(
             {
                 Date = dayStart,
                 RecordsCreated = recordsCreated,
-                FilesUploaded = filesUploaded,
+                RecordsDeleted = recordsDeleted,
+                FilesAdded = filesAdded,
+                FilesDownloaded = filesDownloaded,
+                PrintActions = printActions,
                 Views = views,
                 ActiveUsers = activeUsers,
                 HourlyBreakdown = hourlyData
@@ -266,11 +301,16 @@ public class ArchiveRecordReportService(
                 {
                     UserId = g.Key,
                     RecordsCreated = g.Count(al => al.Action == AuditAction.Create),
-                    FilesUploaded = g.Count(al => al.Action == AuditAction.AddFiles),
+                    RecordsViewed = g.Count(al => al.Action == AuditAction.View),
+                    FilesDownloaded = g.Count(al => al.Action == AuditAction.Download),
+                    PrintActions = g.Count(al => al.Action == AuditAction.Print),
                     TotalActions = g.Count(),
                     LastActivity = g.Max(al => al.Timestamp)
                 })
                 .ToListAsync();
+
+            var userMap = await ResolveUserNamesAsync(
+                userActions.Select(u => u.UserId).ToList(), departmentIds);
 
             var result = userActions.Select(ua =>
             {
@@ -278,9 +318,11 @@ public class ArchiveRecordReportService(
                 return new UserActivityReportItemDto
                 {
                     UserId = uid,
-                    UserName = ua.UserId,
+                    UserName = uid != Guid.Empty && userMap.TryGetValue(uid, out var name) ? name : ua.UserId,
                     RecordsCreated = ua.RecordsCreated,
-                    FilesUploaded = ua.FilesUploaded,
+                    RecordsViewed = ua.RecordsViewed,
+                    FilesDownloaded = ua.FilesDownloaded,
+                    PrintActions = ua.PrintActions,
                     TotalActions = ua.TotalActions,
                     LastActivityDate = ua.LastActivity
                 };
@@ -324,21 +366,27 @@ public class ArchiveRecordReportService(
                     TotalActions = g.Count(),
                     LastActionDate = g.Max(al => al.Timestamp),
                     FirstActionDate = g.Min(al => al.Timestamp),
-                    ActionsPerformed = g.Select(al => al.Action.ToString()).Distinct().ToList()
+                    ActionsPerformed = g.Select(al => al.Action).Distinct().ToList()
                 })
                 .ToListAsync();
+
+            var userMap = await ResolveUserNamesWithDeptAsync(
+                userActions.Select(u => u.UserId).ToList(), departmentIds);
 
             var result = userActions.Select(ua =>
             {
                 var uid = Guid.TryParse(ua.UserId, out var id) ? id : Guid.Empty;
+                var (userName, deptName) = uid != Guid.Empty && userMap.TryGetValue(uid, out var info)
+                    ? info : (ua.UserId, (string?)null);
                 return new ActiveUserReportItemDto
                 {
                     UserId = uid,
-                    UserName = ua.UserId,
+                    UserName = userName,
+                    DepartmentName = deptName,
                     TotalActions = ua.TotalActions,
                     LastActionDate = ua.LastActionDate,
                     FirstActionDate = ua.FirstActionDate,
-                    ActionsPerformed = ua.ActionsPerformed.ToList()
+                    ActionsPerformed = ua.ActionsPerformed.Select(a => a.ToString()).ToList()
                 };
             })
             .OrderByDescending(u => u.TotalActions)
@@ -382,9 +430,14 @@ public class ArchiveRecordReportService(
                     UserId = g.Key,
                     TotalFiles = g.Count(),
                     TotalBytes = g.Sum(pf => pf.FileSize),
+                    FileTypeCounts = g.GroupBy(pf => pf.FileExtension ?? "unknown")
+                        .ToDictionary(fg => fg.Key, fg => fg.Count()),
                     LastFileAdded = g.Max(pf => pf.CreatedAt)
                 })
                 .ToList();
+
+            var userMap = await ResolveUserNamesAsync(
+                perUserData.Select(u => u.UserId).ToList()!, departmentIds);
 
             var perUser = perUserData.Select(pu =>
             {
@@ -392,10 +445,11 @@ public class ArchiveRecordReportService(
                 return new StoragePerUserDto
                 {
                     UserId = uid,
-                    UserName = pu.UserId ?? "Unknown",
+                    UserName = uid != Guid.Empty && userMap.TryGetValue(uid, out var name) ? name : pu.UserId ?? "Unknown",
                     TotalFiles = pu.TotalFiles,
                     TotalBytes = pu.TotalBytes,
                     PercentageOfTotal = totalBytes > 0 ? Math.Round((double)pu.TotalBytes / totalBytes * 100, 2) : 0,
+                    FileTypeCounts = pu.FileTypeCounts,
                     LastFileAddedAt = pu.LastFileAdded
                 };
             })
@@ -415,9 +469,10 @@ public class ArchiveRecordReportService(
 
             var fileTypeBreakdown = fileTypeData.Select(ft => new StoragePerTypeDto
             {
-                FileType = ft.Extension ?? "unknown",
+                Extension = ft.Extension ?? "unknown",
                 Count = ft.Count,
-                TotalBytes = ft.TotalBytes
+                TotalBytes = ft.TotalBytes,
+                PercentageOfTotal = totalBytes > 0 ? Math.Round((double)ft.TotalBytes / totalBytes * 100, 2) : 0
             }).ToList();
 
             return new StorageConsumptionReportDto
@@ -495,12 +550,15 @@ public class ArchiveRecordReportService(
                 .Take(10)
                 .ToList();
 
+            var topUserMap = await ResolveUserNamesAsync(
+                topUsers.Select(u => u.UserId).ToList(), departmentIds);
+
             var topActiveUsers = topUsers.Select(tu =>
             {
                 var uid = Guid.TryParse(tu.UserId, out var id) ? id : Guid.Empty;
                 return new ChartDataPointDto
                 {
-                    Label = tu.UserId,
+                    Label = uid != Guid.Empty && topUserMap.TryGetValue(uid, out var name) ? name : tu.UserId,
                     Value = tu.Count
                 };
             }).ToList();
@@ -517,12 +575,15 @@ public class ArchiveRecordReportService(
                 .Take(10)
                 .ToListAsync();
 
+            var storageUserMap = await ResolveUserNamesAsync(
+                topStorageUsers.Select(u => u.UserId).ToList()!, departmentIds);
+
             var topStorageUsersChart = topStorageUsers.Select(tu =>
             {
                 var uid = Guid.TryParse(tu.UserId, out var id) ? id : Guid.Empty;
                 return new ChartDataPointDto
                 {
-                    Label = tu.UserId ?? "Unknown",
+                    Label = uid != Guid.Empty && storageUserMap.TryGetValue(uid, out var name) ? name : tu.UserId ?? "Unknown",
                     Value = tu.TotalBytes
                 };
             }).ToList();
@@ -571,7 +632,17 @@ public class ArchiveRecordReportService(
             var dayStart = date.HasValue ? DateTime.SpecifyKind(date.Value, DateTimeKind.Utc).Date : DateTime.UtcNow.Date;
             var dayEnd = dayStart.AddDays(1);
 
-            // Audit Logs
+            // Get department name
+            string departmentName = "Unknown";
+            using (var scope = serviceProvider.CreateScope())
+            {
+                var deptService = scope.ServiceProvider.GetRequiredService<IDepartmentService>();
+                var deptResult = await deptService.GetByIdAsync(departmentIds[0]);
+                if (!deptResult.IsError && deptResult.Value != null)
+                    departmentName = deptResult.Value.Name;
+            }
+
+            // ---- Audit Logs ----
             var auditLogs = await dbContext.ArchiveAuditLogs
                 .AsNoTracking()
                 .Include(al => al.ArchiveRecord)
@@ -581,21 +652,24 @@ public class ArchiveRecordReportService(
                 .OrderByDescending(al => al.Timestamp)
                 .ToListAsync();
 
+            var auditUserMap = await ResolveUserNamesAsync(
+                auditLogs.Select(al => al.UserId).Distinct().ToList(), departmentIds);
+
             var auditLogDtos = auditLogs.Select(al =>
             {
                 var uid = Guid.TryParse(al.UserId, out var id) ? id : Guid.Empty;
                 return new DailyWorkAuditLogItemDto
                 {
                     Id = al.Id,
-                    RecordId = al.ArchiveRecordId,
-                    UserName = al.UserId,
+                    ArchiveRecordId = al.ArchiveRecordId,
+                    UserName = uid != Guid.Empty && auditUserMap.TryGetValue(uid, out var name) ? name : al.UserId,
                     Action = al.Action.ToString(),
                     Details = al.Details,
                     Timestamp = al.Timestamp
                 };
             }).ToList();
 
-            // Archive Records
+            // ---- Archive Records ----
             var records = await dbContext.ArchiveRecords
                 .AsNoTracking()
                 .Include(r => r.Folder)
@@ -608,15 +682,41 @@ public class ArchiveRecordReportService(
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
+            // Load all folders in these departments for building paths
+            var allFolders = await dbContext.Folders
+                .AsNoTracking()
+                .Where(f => f.DepartmentId != null && departmentIds.Contains(f.DepartmentId.Value))
+                .ToListAsync();
+
+            var folderDict = allFolders.ToDictionary(f => f.Id, f => f);
+
+            var recordUserMap = await ResolveUserNamesAsync(
+                records.Select(r => r.CreatedByUserId).Where(u => u != null).Distinct().ToList()!, departmentIds);
+
             var recordDtos = records.Select(r =>
             {
                 var uid = Guid.TryParse(r.CreatedByUserId, out var id) ? id : Guid.Empty;
 
+                // Build folder path by walking parent chain
+                var pathParts = new List<string>();
+                var current = r.Folder;
+                while (current != null)
+                {
+                    pathParts.Add(current.Name);
+                    current = current.ParentId.HasValue && folderDict.TryGetValue(current.ParentId.Value, out var parent)
+                        ? parent
+                        : null;
+                }
+                pathParts.Reverse();
+                var folderPath = string.Join(" / ", pathParts);
+
                 return new DailyWorkArchiveRecordItemDto
                 {
                     Id = r.Id,
-                    FolderName = r.Folder?.Name,
-                    UploaderName = r.CreatedByUserId,
+                    FolderPath = folderPath,
+                    FormName = r.Form?.FormName,
+                    DepartmentName = departmentName,
+                    CreatedByUserName = uid != Guid.Empty && recordUserMap.TryGetValue(uid, out var name) ? name : r.CreatedByUserId,
                     CreatedAt = r.CreatedAt ?? dayStart,
                     UpdatedAt = r.UpdatedAt,
                     FormValues = r.ArchiveRecordTemplateValuesId?.ArchiveRecordFormInputValues
@@ -631,8 +731,9 @@ public class ArchiveRecordReportService(
             return new DailyWorkReportDto
             {
                 Date = dayStart,
+                DepartmentName = departmentName,
                 AuditLogs = auditLogDtos,
-                Records = recordDtos
+                ArchiveRecords = recordDtos
             };
         }
         catch (Exception ex)
@@ -652,14 +753,23 @@ public class ArchiveRecordReportService(
         var totalCreated = await recordsQuery
             .CountAsync(r => r.CreatedAt >= periodStart && r.CreatedAt < periodEnd);
 
+        var totalDeleted = await recordsQuery
+            .CountAsync(r => r.DeletedAt >= periodStart && r.DeletedAt < periodEnd);
+
         var auditQuery = dbContext.ArchiveAuditLogs
             .AsNoTracking()
             .Where(al => al.ArchiveRecord.DepartmentId != null
                 && departmentIds.Contains(al.ArchiveRecord.DepartmentId.Value)
                 && al.Timestamp >= periodStart && al.Timestamp < periodEnd);
 
-        var filesUploaded = await auditQuery
+        var filesAdded = await auditQuery
             .CountAsync(al => al.Action == AuditAction.AddFiles);
+
+        var downloads = await auditQuery
+            .CountAsync(al => al.Action == AuditAction.Download);
+
+        var prints = await auditQuery
+            .CountAsync(al => al.Action == AuditAction.Print);
 
         var views = await auditQuery
             .CountAsync(al => al.Action == AuditAction.View);
@@ -672,8 +782,9 @@ public class ArchiveRecordReportService(
             .Select(g => new DailyBreakdownItemDto
             {
                 Date = g.Key,
-                Records = g.Count(al => al.Action == AuditAction.Create),
-                FilesUploaded = g.Count(al => al.Action == AuditAction.AddFiles)
+                Actions = g.Count(),
+                RecordsCreated = g.Count(al => al.Action == AuditAction.Create),
+                ActiveUsers = g.Select(al => al.UserId).Distinct().Count()
             })
             .OrderBy(d => d.Date)
             .ToListAsync();
@@ -684,7 +795,9 @@ public class ArchiveRecordReportService(
             {
                 UserId = g.Key,
                 RecordsCreated = g.Count(al => al.Action == AuditAction.Create),
-                FilesUploaded = g.Count(al => al.Action == AuditAction.AddFiles),
+                RecordsViewed = g.Count(al => al.Action == AuditAction.View),
+                FilesDownloaded = g.Count(al => al.Action == AuditAction.Download),
+                PrintActions = g.Count(al => al.Action == AuditAction.Print),
                 TotalActions = g.Count(),
                 LastActivity = g.Max(al => al.Timestamp)
             })
@@ -692,16 +805,22 @@ public class ArchiveRecordReportService(
             .Take(10)
             .ToListAsync();
 
+        var userMap = await ResolveUserNamesAsync(
+            userActivity.Select(u => u.UserId).ToList(), departmentIds);
+
         var topUsers = userActivity.Select(ua =>
         {
             var uid = Guid.TryParse(ua.UserId, out var id) ? id : Guid.Empty;
-            return new ArchiveUserSummaryDto
+            return new UserActivitySummaryDto
             {
                 UserId = uid,
-                UserName = ua.UserId,
+                UserName = uid != Guid.Empty && userMap.TryGetValue(uid, out var name) ? name : ua.UserId,
                 RecordsCreated = ua.RecordsCreated,
-                FilesUploaded = ua.FilesUploaded,
-                TotalActions = ua.TotalActions
+                RecordsViewed = ua.RecordsViewed,
+                FilesDownloaded = ua.FilesDownloaded,
+                PrintActions = ua.PrintActions,
+                TotalActions = ua.TotalActions,
+                LastActivityDate = ua.LastActivity
             };
         }).ToList();
 
@@ -711,12 +830,96 @@ public class ArchiveRecordReportService(
             PeriodEnd = periodEnd,
             PeriodLabel = periodLabel,
             TotalRecordsCreated = totalCreated,
-            TotalFilesUploaded = filesUploaded,
+            TotalRecordsDeleted = totalDeleted,
+            TotalFilesAdded = filesAdded,
+            TotalDownloads = downloads,
+            TotalPrints = prints,
             TotalViews = views,
             UniqueActiveUsers = uniqueUsers,
             DailyBreakdown = dailyData,
             TopUsers = topUsers
         };
+    }
+
+    // ---- Helper Methods ----
+
+    private async Task<Dictionary<Guid, string>> ResolveUserNamesAsync(
+        List<string> userIdStrings, List<Guid> departmentIds)
+    {
+        try
+        {
+            var userIds = userIdStrings
+                .Select(u => Guid.TryParse(u, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            if (userIds.Count == 0)
+                return new Dictionary<Guid, string>();
+
+            using var scope = serviceProvider.CreateScope();
+            var deptService = scope.ServiceProvider.GetRequiredService<IDepartmentService>();
+
+            var allUsers = new List<UserDto>();
+            foreach (var deptId in departmentIds)
+            {
+                var usersResult = await deptService.GetUsersInDepartmentAsync(deptId, false);
+                if (!usersResult.IsError && usersResult.Value != null)
+                    allUsers.AddRange(usersResult.Value);
+            }
+
+            return allUsers
+                .Where(u => userIds.Contains(u.Id))
+                .GroupBy(u => u.Id)
+                .ToDictionary(g => g.Key, g => g.First().UserName);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to resolve user names, falling back to user IDs");
+            return new Dictionary<Guid, string>();
+        }
+    }
+
+    private async Task<Dictionary<Guid, (string UserName, string? DepartmentName)>> ResolveUserNamesWithDeptAsync(
+        List<string> userIdStrings, List<Guid> departmentIds)
+    {
+        try
+        {
+            var userIds = userIdStrings
+                .Select(u => Guid.TryParse(u, out var id) ? id : Guid.Empty)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            if (userIds.Count == 0)
+                return new Dictionary<Guid, (string, string?)>();
+
+            using var scope = serviceProvider.CreateScope();
+            var deptService = scope.ServiceProvider.GetRequiredService<IDepartmentService>();
+
+            var result = new Dictionary<Guid, (string UserName, string? DepartmentName)>();
+            foreach (var deptId in departmentIds)
+            {
+                var deptResult = await deptService.GetByIdAsync(deptId);
+                var deptName = !deptResult.IsError && deptResult.Value != null ? deptResult.Value.Name : null;
+
+                var usersResult = await deptService.GetUsersInDepartmentAsync(deptId, false);
+                if (!usersResult.IsError && usersResult.Value != null)
+                {
+                    foreach (var user in usersResult.Value.Where(u => userIds.Contains(u.Id)))
+                    {
+                        result.TryAdd(user.Id, (user.UserName, user.DepartmentName ?? deptName));
+                    }
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to resolve user names with dept, falling back to user IDs");
+            return new Dictionary<Guid, (string, string?)>();
+        }
     }
 
     private async Task<Result<List<Guid>>> ResolveUserDepartmentIdsAsync()
