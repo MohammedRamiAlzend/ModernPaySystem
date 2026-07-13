@@ -12,4 +12,5 @@ public static class TransactionErrors
     public static readonly Error DepartmentNotFound = Error.NotFound("310", "The specified department was not found.");
     public static readonly Error DatabaseError = Error.Failure("801", "A database error occurred.");
     public static readonly Error InvalidInput = Error.Validation("700", "The provided input is invalid.");
+    public static readonly Error DepartmentHeadIsNotSet = Error.Validation("701", "The department head is not set for the selected department.");
 }

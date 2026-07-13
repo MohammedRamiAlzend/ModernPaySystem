@@ -47,7 +47,7 @@ public static class RequestExpressions
             var noTransaction = (Expression<Func<Request, bool>>)(r => !(r.CurrentTransactionId.HasValue || r.FirstTransactionId.HasValue));
 
             var needsActionInner = ExpressionCombiner.Combine(noResponse, noTransaction, LogicalOperator.And);
-            var finalExpression = ExpressionCombiner.Combine(ByApproverId(approverId), needsActionInner, LogicalOperator.And);
+            var finalExpression = ExpressionCombiner.Combine(ByUserId(approverId), needsActionInner, LogicalOperator.And);
 
             return new List<Expression<Func<Request, bool>>> { finalExpression };
         }

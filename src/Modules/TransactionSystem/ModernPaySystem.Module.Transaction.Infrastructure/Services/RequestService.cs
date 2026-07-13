@@ -9,6 +9,7 @@ using ModernPaySystem.Module.Transaction.Domain;
 using ModernPaySystem.Module.Transaction.Domain.DTOs;
 using ModernPaySystem.Module.Transaction.Domain.Entities;
 using ModernPaySystem.SharedKernel.Application.Services;
+using SKIdepartmentService = ModernPaySystem.SharedKernel.Application.Interfaces.IDepartmentService;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 using ModernPaySystem.SharedKernel.Domain.Entities;
 using System.Linq.Expressions;
@@ -19,7 +20,8 @@ public class RequestService(
     ITransactionUnitOfWork unitOfWork,
     ILogger<RequestService> logger,
     IWebAttachmentService webAttachmentService,
-    IHttpContextServiceManager httpContextServiceManager) : IRequestService
+    IHttpContextServiceManager httpContextServiceManager,
+    SKIdepartmentService departmentService) : IRequestService
 {
     public async Task<Result<PagedList<RequestDto>>> GetPagedAsync(RequestPagedFilterDto? filterDto = null)
     {
@@ -254,6 +256,18 @@ public class RequestService(
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
 
+            var departmentResult = await departmentService.GetByIdAsync(request.DepartmentId);
+            if (departmentResult.IsError)
+                return departmentResult.Errors;
+            if (departmentResult.Value == null)
+                return TransactionErrors.InvalidInput;
+            if (departmentResult.Value.DepartmentHeadId == Guid.Empty)
+                return TransactionErrors.DepartmentHeadIsNotSet;
+
+            var userDepartmentResult = await departmentService.GetByUserIdAsync(currentUserId);
+            if (userDepartmentResult.IsError)
+                return userDepartmentResult.Errors;
+
             var departmentTemplateNumberResult = await unitOfWork.DepartmentTemplateNumbers.GetAsync(
                 dtn => dtn.DepartmentId == request.DepartmentId && dtn.TemplateId == request.TemplateId);
 
@@ -281,10 +295,10 @@ public class RequestService(
                 Id = Guid.NewGuid(),
                 RequestNumber = ++departmentTemplateNumber.LastRequestNumber,
                 RequesterId = currentUserId,
-                ApproverId = currentUserId,
-                ReadOnlyUsers = [],
-                ApproverDepartmentId = request.DepartmentId,
-                RequesterDepartmentId = request.DepartmentId
+                ApproverId = departmentResult.Value.DepartmentHeadId,
+                ReadOnlyUsers = request.ReadOnlyUsers,
+                ApproverDepartmentId = departmentResult.Value.Id,
+                RequesterDepartmentId = userDepartmentResult.Value!.Id
             };
 
             var newRequestTemplateValues = new RequestTemplateValues
