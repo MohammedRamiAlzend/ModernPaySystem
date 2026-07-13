@@ -298,7 +298,7 @@ public class ArchiveDeletionWorkflowService(
             {
                 var ipAddress = httpContextServiceManager.GetClientIpAddress();
                 var userAgent = httpContextServiceManager.GetUserAgent();
-                await auditLogService.LogAsync(request.TargetId, currentUserId.ToString(), AuditAction.ApproveDelete, $"Approved delete request for archive record{(notes != null ? $": {notes}" : "")}", ipAddress, userAgent);
+                await auditLogService.LogAsync(request.TargetId, currentUserId.ToString(), AuditAction.ApproveDelete, $"الموافقة على طلب حذف سجل أرشيفي{(notes != null ? $": {notes}" : "")}", ipAddress, userAgent);
             }
 
             return request.ToDto();

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DocumentGallery } from './DocumentGallery';
 import { archivingService } from '../api/archivingService';
 import type { ArchiveRecord, DynamicFormTemplate } from '../model/types';
@@ -28,7 +29,7 @@ export function DocumentGalleryModal({ record, dynamicTemplates, onClose, onFile
         }
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in animate-duration-300">
             <div className="bg-card border border-border rounded-3xl w-full max-w-7xl h-[90vh] shadow-2xl flex flex-col overflow-hidden text-right">
                 <div className="p-6 border-b border-border flex items-center justify-between">
@@ -53,7 +54,8 @@ export function DocumentGalleryModal({ record, dynamicTemplates, onClose, onFile
                     />
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
