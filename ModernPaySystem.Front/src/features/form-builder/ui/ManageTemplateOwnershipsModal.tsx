@@ -43,7 +43,6 @@ export const ManageTemplateOwnershipsModal: React.FC<ManageTemplateOwnershipsMod
     const [selectedDept, setSelectedDept] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<string>('');
 
-    const userOptions = users.map(u => ({ value: u.id, label: u.userName }));
 
     const getDeptName = (deptId: string) => {
         const option = departmentOptions.find(opt => opt.value === deptId);
