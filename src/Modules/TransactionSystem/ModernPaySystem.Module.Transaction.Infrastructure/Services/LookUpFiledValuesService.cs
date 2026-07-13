@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Module.Transaction.Application;
 using ModernPaySystem.Module.Transaction.Application.Interfaces;
+using ModernPaySystem.Module.Transaction.Domain;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 using ModernPaySystem.SharedKernel.Domain.Entities;
 
@@ -25,7 +26,7 @@ public class LookUpFiledValuesService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching all lookup field values");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -36,9 +37,9 @@ public class LookUpFiledValuesService(
             logger.LogInformation("Fetching paged lookup field values, page: {Page}, size: {PageSize}", page, pageSize);
 
             if (page <= 0)
-                return Error.Validation("InvalidInput", "The provided input is invalid.");
+                return TransactionErrors.InvalidInput;
             if (pageSize <= 0 || pageSize > 100)
-                return Error.Validation("InvalidInput", "The provided input is invalid.");
+                return TransactionErrors.InvalidInput;
 
             var pagedValues = await unitOfWork.LookUpFiledValues.GetPagedAsync(page, pageSize);
             if (pagedValues.IsError)
@@ -50,7 +51,7 @@ public class LookUpFiledValuesService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged lookup field values, page: {Page}, size: {PageSize}", page, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -65,14 +66,14 @@ public class LookUpFiledValuesService(
                 return value.Errors;
 
             if (value.Value == null)
-                return Error.NotFound("LookUpFiledValueNotFound", "The specified lookup field value was not found.");
+                return TransactionErrors.LookUpFiledValueNotFound;
 
             return value.Value.ToDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching lookup field value by id: {LookUpFiledValueId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -81,7 +82,7 @@ public class LookUpFiledValuesService(
         try
         {
             if (dto == null || string.IsNullOrWhiteSpace(dto.Desc))
-                return Error.Validation("InvalidInput", "The provided input is invalid.");
+                return TransactionErrors.InvalidInput;
 
             logger.LogInformation("Creating new lookup field value");
 
@@ -98,7 +99,7 @@ public class LookUpFiledValuesService(
 
             var saveResult = await unitOfWork.SaveChangesAsync();
             if (saveResult <= 0)
-                return Error.Failure("DatabaseError", "A database error occurred.");
+                return TransactionErrors.DatabaseError;
 
             logger.LogInformation("Successfully created lookup field value: {LookUpFiledValueId}", entity.Id);
             return entity.ToDto();
@@ -106,7 +107,7 @@ public class LookUpFiledValuesService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating lookup field value");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -115,14 +116,14 @@ public class LookUpFiledValuesService(
         try
         {
             if (id == Guid.Empty || dto == null || string.IsNullOrWhiteSpace(dto.Desc))
-                return Error.Validation("InvalidInput", "The provided input is invalid.");
+                return TransactionErrors.InvalidInput;
 
             var existing = await unitOfWork.LookUpFiledValues.GetAsync(filter: v => v.Id == id);
             if (existing.IsError)
                 return existing.Errors;
 
             if (existing.Value == null)
-                return Error.NotFound("LookUpFiledValueNotFound", "The specified lookup field value was not found.");
+                return TransactionErrors.LookUpFiledValueNotFound;
 
             logger.LogInformation("Updating lookup field value: {LookUpFiledValueId}", id);
 
@@ -141,7 +142,7 @@ public class LookUpFiledValuesService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error updating lookup field value: {LookUpFiledValueId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -150,14 +151,14 @@ public class LookUpFiledValuesService(
         try
         {
             if (id == Guid.Empty)
-                return Error.Validation("InvalidInput", "The provided input is invalid.");
+                return TransactionErrors.InvalidInput;
 
             var existing = await unitOfWork.LookUpFiledValues.GetAsync(filter: v => v.Id == id);
             if (existing.IsError)
                 return existing.Errors;
 
             if (existing.Value == null)
-                return Error.NotFound("LookUpFiledValueNotFound", "The specified lookup field value was not found.");
+                return TransactionErrors.LookUpFiledValueNotFound;
 
             logger.LogInformation("Deleting lookup field value: {LookUpFiledValueId}", id);
 
@@ -167,7 +168,7 @@ public class LookUpFiledValuesService(
 
             var saveResult = await unitOfWork.SaveChangesAsync();
             if (saveResult <= 0)
-                return Error.Failure("DatabaseError", "A database error occurred.");
+                return TransactionErrors.DatabaseError;
 
             logger.LogInformation("Successfully deleted lookup field value: {LookUpFiledValueId}", id);
             return true;
@@ -175,7 +176,7 @@ public class LookUpFiledValuesService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting lookup field value: {LookUpFiledValueId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -195,7 +196,7 @@ public class LookUpFiledValuesService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching lookup field values for field: {LookUpFieldId}", lookUpFieldId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 }

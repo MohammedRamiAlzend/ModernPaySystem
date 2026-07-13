@@ -75,7 +75,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged requests, page: {Page}, size: {PageSize}", filterDto?.Page, filterDto?.PageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -103,14 +103,14 @@ public class RequestService(
                 return TransactionErrors.RequestNotFound;
 
             if (!request.Value.CanView(currentUserId))
-                return Error.Validation("UnauthorizedRequestAccess", "You do not have access to this request.");
+                return TransactionErrors.UnauthorizedRequestAccess;
 
             return request.Value.ToDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching request by id: {RequestId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -165,7 +165,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged requests for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -198,7 +198,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged requests for approver: {ApproverId}, page: {Page}, size: {PageSize}", approverId, page, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -228,7 +228,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged requests for template: {TemplateId}, page: {Page}, size: {PageSize}", templateId, page, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -251,7 +251,7 @@ public class RequestService(
             if (getTemplateResult.Value!.IsRequireAttachments)
             {
                 if (files == null || files.Count == 0)
-                    return Error.Validation("MissingRequiredField", "Attachments are required for this template.");
+                    return TransactionErrors.MissingRequiredField;
             }
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
@@ -323,7 +323,7 @@ public class RequestService(
 
                     var relationKey = $"{relatedRequest.TargetRequestId}:{(int)relatedRequest.RelationType}";
                     if (!relationKeys.Add(relationKey))
-                        return Error.Validation("RequestRelationAlreadyExists", "Duplicate relation.");
+                        return TransactionErrors.DuplicateRelation;
 
                     var targetRequestResult = await unitOfWork.Requests.GetByIdAsync(relatedRequest.TargetRequestId);
                     if (targetRequestResult.IsError)
@@ -399,7 +399,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating request");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -420,7 +420,7 @@ public class RequestService(
                 return request.Errors;
 
             if (request.Value == null)
-                return Error.Validation("UnauthorizedRequestAccess", "You do not have access to delete this request.");
+                return TransactionErrors.UnauthorizedDeleteRequest;
 
             logger.LogInformation("Deleting request: {RequestId}", id);
 
@@ -435,7 +435,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting request: {RequestId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -457,7 +457,7 @@ public class RequestService(
                 return request.Errors;
 
             if (request.Value == null)
-                return Error.Validation("UnauthorizedRequestAccess", "You do not have access to modify this request.");
+                return TransactionErrors.UnauthorizedModifyRequest;
 
             logger.LogInformation("Adding {FileCount} Files to request: {RequestId}", files.Count, requestId);
 
@@ -488,7 +488,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error adding Files to request: {RequestId}", requestId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -548,7 +548,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged requests with hasResponse filter, page: {Page}, size: {PageSize}, hasResponse: {HasResponse}", filterDto?.Page, filterDto?.PageSize, hasResponse);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -587,7 +587,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching pending requests for requester, page: {Page}, size: {PageSize}", page, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -610,7 +610,7 @@ public class RequestService(
                 return TransactionErrors.RequestNotFound;
 
             if (!request.Value.CanView(currentUserId))
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view related requests.");
+                return TransactionErrors.UnauthorizedRequestRelationAccess;
 
             var relations = await unitOfWork.RequestRelations.GetAllAsync(
                 filter: r => r.SourceRequestId == requestId,
@@ -624,7 +624,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching request relations for request: {RequestId}", requestId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -644,7 +644,7 @@ public class RequestService(
                 return relation.Errors;
 
             if (relation.Value == null)
-                return Error.Validation("RequestRelationNotFound", "The specified request relation was not found.");
+                return TransactionErrors.RequestRelationNotFound;
 
             var sourceAccess = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == relation.Value.SourceRequestId,
@@ -657,14 +657,14 @@ public class RequestService(
                 return TransactionErrors.RequestNotFound;
 
             if (!sourceAccess.Value.CanView(currentUserId))
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view this relation.");
+                return TransactionErrors.UnauthorizedViewRelation;
 
             return relation.Value.ToDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching request relation by id: {RelationId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -693,7 +693,7 @@ public class RequestService(
             if (sourceRequestAccess.IsError)
                 return sourceRequestAccess.Errors;
             if (sourceRequestAccess.Value == null)
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to modify the source request.");
+                return TransactionErrors.UnauthorizedModifySourceRequest;
 
             var targetRequestExists = await unitOfWork.Requests.GetByIdAsync(dto.TargetRequestId);
             if (targetRequestExists.IsError)
@@ -711,7 +711,7 @@ public class RequestService(
                 return TransactionErrors.RequestNotFound;
 
             if (!targetRequestAccess.Value.CanView(currentUserId))
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view the target request.");
+                return TransactionErrors.UnauthorizedViewTargetRequest;
 
             var duplicateExists = await unitOfWork.RequestRelations.AnyAsync(
                 r => r.SourceRequestId == dto.SourceRequestId
@@ -719,7 +719,7 @@ public class RequestService(
                      && r.RelationType == dto.RelationType);
 
             if (duplicateExists)
-                return Error.Validation("RequestRelationAlreadyExists", "This relation already exists.");
+                return TransactionErrors.RequestRelationAlreadyExists;
 
             var relation = new RequestRelation
             {
@@ -754,7 +754,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating request relation");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -777,7 +777,7 @@ public class RequestService(
                 return existingRelation.Errors;
 
             if (existingRelation.Value == null)
-                return Error.Validation("RequestRelationNotFound", "The specified request relation was not found.");
+                return TransactionErrors.RequestRelationNotFound;
 
             var currentSourceAccess = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == existingRelation.Value.SourceRequestId,
@@ -786,7 +786,7 @@ public class RequestService(
             if (currentSourceAccess.IsError)
                 return currentSourceAccess.Errors;
             if (currentSourceAccess.Value == null)
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to modify the source request.");
+                return TransactionErrors.UnauthorizedModifySourceRequest;
 
             if (existingRelation.Value.SourceRequestId != dto.SourceRequestId)
             {
@@ -803,7 +803,7 @@ public class RequestService(
                 if (newSourceAccess.IsError)
                     return newSourceAccess.Errors;
                 if (newSourceAccess.Value == null)
-                    return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to modify the new source request.");
+                    return TransactionErrors.UnauthorizedModifyNewSourceRequest;
             }
 
             var targetExists = await unitOfWork.Requests.GetByIdAsync(dto.TargetRequestId);
@@ -822,7 +822,7 @@ public class RequestService(
                 return TransactionErrors.RequestNotFound;
 
             if (!targetAccess.Value.CanView(currentUserId))
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to view the target request.");
+                return TransactionErrors.UnauthorizedViewTargetRequest;
 
             var duplicateExists = await unitOfWork.RequestRelations.AnyAsync(
                 r => r.Id != id
@@ -831,7 +831,7 @@ public class RequestService(
                      && r.RelationType == dto.RelationType);
 
             if (duplicateExists)
-                return Error.Validation("RequestRelationAlreadyExists", "This relation already exists.");
+                return TransactionErrors.RequestRelationAlreadyExists;
 
             existingRelation.Value.SourceRequestId = dto.SourceRequestId;
             existingRelation.Value.TargetRequestId = dto.TargetRequestId;
@@ -860,7 +860,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error updating request relation: {RelationId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -880,7 +880,7 @@ public class RequestService(
                 return relation.Errors;
 
             if (relation.Value == null)
-                return Error.Validation("RequestRelationNotFound", "The specified request relation was not found.");
+                return TransactionErrors.RequestRelationNotFound;
 
             var sourceAccess = await unitOfWork.Requests.GetAsync(
                 filter: r => r.Id == relation.Value.SourceRequestId,
@@ -890,7 +890,7 @@ public class RequestService(
                 return sourceAccess.Errors;
 
             if (sourceAccess.Value == null)
-                return Error.Validation("UnauthorizedRequestRelationAccess", "You do not have access to delete this relation.");
+                return TransactionErrors.UnauthorizedDeleteRelation;
 
             var deleteResult = await unitOfWork.RequestRelations.RemoveAsync(r => r.Id == id);
             if (deleteResult.IsError)
@@ -905,7 +905,7 @@ public class RequestService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting request relation: {RelationId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 }

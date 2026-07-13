@@ -87,7 +87,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged request transactions, page: {Page}, size: {PageSize}", filterDto.Page, filterDto.PageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching request transactions.");
+            return TransactionErrors.FetchRequestTransactionsFailed;
         }
     }
 
@@ -124,7 +124,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching request transaction by id: {TransactionId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching request transaction.");
+            return TransactionErrors.FetchRequestTransactionFailed;
         }
     }
 
@@ -155,7 +155,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching request transactions for request: {RequestId}", requestId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching request transactions.");
+            return TransactionErrors.FetchRequestTransactionsFailed;
         }
     }
 
@@ -189,7 +189,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching child transactions for parent: {ParentTransactionId}", parentTransactionId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching child transactions.");
+            return TransactionErrors.FetchChildTransactionsFailed;
         }
     }
 
@@ -224,7 +224,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching root transaction for request: {RequestId}", requestId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching root transaction.");
+            return TransactionErrors.FetchRootTransactionFailed;
         }
     }
 
@@ -264,7 +264,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching transaction tree for transaction: {TransactionId}", transactionId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching transaction tree.");
+            return TransactionErrors.FetchTransactionTreeFailed;
         }
     }
 
@@ -292,7 +292,7 @@ public class RequestTransactionService(
                 return getRequestResult.Errors;
 
             if (getRequestResult.Value!.FirstTransaction != null || getRequestResult.Value.CurrentTransaction != null)
-                return Error.Validation("TransactionExists", "Request already has a transaction.");
+                return TransactionErrors.RequestAlreadyHasTransaction;
 
             var transactionEntity = new RequestTransaction
             {
@@ -337,7 +337,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating request transaction");
-            return Error.Failure("InternalServerError", "An unexpected error occurred while creating request transaction.");
+            return TransactionErrors.CreateRequestTransactionFailed;
         }
     }
 
@@ -402,7 +402,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error adding child transaction to parent: {ParentTransactionId}", dto.ParentTransactionId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while adding child transaction.");
+            return TransactionErrors.AddChildTransactionFailed;
         }
     }
 
@@ -428,7 +428,7 @@ public class RequestTransactionService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error marking request transaction as managed: {RequestId}", requestId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while marking request transaction as managed.");
+            return TransactionErrors.MarkTransactionManagedFailed;
         }
     }
 

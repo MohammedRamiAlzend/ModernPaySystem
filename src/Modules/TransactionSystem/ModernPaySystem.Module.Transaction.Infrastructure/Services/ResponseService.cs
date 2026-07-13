@@ -48,7 +48,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged responses for current user, page: {Page}, size: {PageSize}", page, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching responses.");
+            return TransactionErrors.FetchResponsesFailed;
         }
     }
 
@@ -80,7 +80,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching response by id: {ResponseId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching response.");
+            return TransactionErrors.FetchResponseFailed;
         }
     }
 
@@ -134,7 +134,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged responses for request: {RequestId}, page: {Page}, size: {PageSize}", requestId, filterDto.Page, filterDto.PageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching responses by request.");
+            return TransactionErrors.FetchResponsesByRequestFailed;
         }
     }
 
@@ -191,7 +191,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged responses for responder: {ResponderId}, page: {Page}, size: {PageSize}", responderId, filterDto.Page, filterDto.PageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching responses by responder.");
+            return TransactionErrors.FetchResponsesByResponderFailed;
         }
     }
 
@@ -248,7 +248,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged responses for requester: {RequesterId}, page: {Page}, size: {PageSize}", requesterId, filterDto.Page, filterDto.PageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while fetching responses by requester.");
+            return TransactionErrors.FetchResponsesByRequesterFailed;
         }
     }
 
@@ -311,7 +311,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating response");
-            return Error.Failure("InternalServerError", "An unexpected error occurred while creating response.");
+            return TransactionErrors.CreateResponseFailed;
         }
     }
 
@@ -354,7 +354,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error updating response: {ResponseId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while updating response.");
+            return TransactionErrors.UpdateResponseFailed;
         }
     }
 
@@ -390,7 +390,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting response: {ResponseId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while deleting response.");
+            return TransactionErrors.DeleteResponseFailed;
         }
     }
 
@@ -441,7 +441,7 @@ public class ResponseService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error adding Files to response: {ResponseId}", responseId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred while adding files to response.");
+            return TransactionErrors.AddFilesToResponseFailed;
         }
     }
 

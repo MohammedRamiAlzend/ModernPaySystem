@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Module.Transaction.Application.Interfaces;
+using ModernPaySystem.Module.Transaction.Domain;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 using NumberSpelling;
 
@@ -21,7 +22,7 @@ public class NumberSpellingWrapperService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error converting decimal number {Number} to Arabic words", number);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -37,7 +38,7 @@ public class NumberSpellingWrapperService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error converting integer number {Number} to Arabic words", number);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -53,7 +54,7 @@ public class NumberSpellingWrapperService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error converting long number {Number} to Arabic words", number);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 }

@@ -43,7 +43,7 @@ public class ReportService(
                 endDate = DateTime.UtcNow;
 
             if (startDate.HasValue && endDate.HasValue && startDate >= endDate)
-                return Error.Validation("R001", "startDate must be earlier than endDate.");
+                return TransactionErrors.StartDateMustBeEarlier;
 
             List<Expression<Func<Request, bool>>> filters = [];
 
@@ -78,7 +78,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching requests report, page: {Page}, size: {PageSize}", pageNumber, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -108,7 +108,7 @@ public class ReportService(
                 endDate = DateTime.UtcNow;
 
             if (startDate.HasValue && endDate.HasValue && startDate >= endDate)
-                return Error.Validation("R002", "startDate must be earlier than endDate.");
+                return TransactionErrors.StartDateMustBeEarlier;
 
             List<Expression<Func<Response, bool>>> filters = [];
 
@@ -146,7 +146,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching responses report, page: {Page}, size: {PageSize}", pageNumber, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -219,7 +219,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching dashboard");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -275,7 +275,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching daily report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -290,7 +290,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching weekly report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -310,7 +310,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching monthly report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -425,7 +425,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching user activity report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -465,7 +465,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching active users report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -538,7 +538,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching storage report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -629,7 +629,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching charts data");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -700,7 +700,7 @@ public class ReportService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching daily work report");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 

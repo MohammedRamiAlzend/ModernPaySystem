@@ -311,7 +311,7 @@ public class AttachmentService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to read file at {Path}", path);
-            return Error.Failure("1000", $"Failed to read file: {ex.Message}");
+            return TransactionErrors.FailedToReadFile(ex.Message);
         }
     }
 

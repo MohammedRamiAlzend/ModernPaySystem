@@ -34,7 +34,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching all templates");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -68,7 +68,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching paged templates, page: {Page}, size: {PageSize}", page, pageSize);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -93,7 +93,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching template by id: {TemplateId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -121,7 +121,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching template by name: {TemplateName}", name);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -133,7 +133,7 @@ public class TemplateService(
                 return TransactionErrors.InvalidInput;
 
             if (string.IsNullOrWhiteSpace(template.TemplateName))
-                return Error.Validation("MissingRequiredField", "Template name is required.");
+                return TransactionErrors.TemplateNameRequired;
 
             logger.LogInformation("Creating new template: {TemplateName}", template.TemplateName);
 
@@ -186,7 +186,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating template");
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -225,7 +225,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error updating template: {TemplateId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -259,7 +259,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error deleting template: {TemplateId}", id);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -288,7 +288,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching template ownerships for template: {TemplateId}", templateId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -307,7 +307,7 @@ public class TemplateService(
 
             var exists = await unitOfWork.TemplateDepartmentOwnerships.AnyAsync(to => to.TemplateId == templateId && to.DepartmentId == departmentId);
             if (exists)
-                return Error.Validation("DuplicateEntry", "Department is already an owner of this template.");
+                return TransactionErrors.DepartmentAlreadyOwner;
 
             var ownership = new TemplateDepartmentOwnership
             {
@@ -333,7 +333,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error adding template ownership for template {TemplateId}", templateId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -357,7 +357,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error removing template ownership for template {TemplateId}", templateId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -386,7 +386,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching user template ownerships for template: {TemplateId}", templateId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -405,7 +405,7 @@ public class TemplateService(
 
             var exists = await unitOfWork.UserTemplateOwnerships.AnyAsync(uto => uto.TemplateId == templateId && uto.UserId == userId);
             if (exists)
-                return Error.Validation("DuplicateEntry", "User is already an owner of this template.");
+                return TransactionErrors.UserAlreadyOwner;
 
             var ownership = new UserTemplateOwnership
             {
@@ -431,7 +431,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error adding user template ownership for template {TemplateId}", templateId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -469,7 +469,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error removing user template ownership for template {TemplateId}", templateId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -500,7 +500,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching templates for department: {DepartmentId}", departmentId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 
@@ -531,7 +531,7 @@ public class TemplateService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Error fetching direct templates for user: {UserId}", userId);
-            return Error.Failure("InternalServerError", "An unexpected error occurred.");
+            return TransactionErrors.InternalServerError;
         }
     }
 }
