@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using ModernPaySystem.Module.Identity.Application;
 using ModernPaySystem.Module.Identity.Application.Interfaces;
+using ModernPaySystem.Module.Transaction.Application;
 using ModernPaySystem.Module.Transaction.Domain.Entities;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 using ModernPaySystem.SharedKernel.Domain.DTOs;
@@ -11,6 +12,7 @@ namespace ModernPaySystem.Module.Identity.Infrastructure.Services;
 
 public class UserService(
     IIdentityUnitOfWork unitOfWork,
+    ITransactionUnitOfWork transactionUnitOfWork,
     IPasswordHasher passwordHasher,
     ILogger<UserService> logger) : IUserService
 {
@@ -293,16 +295,70 @@ public class UserService(
         try
         {
             logger.LogInformation("Fetching visited templates for user: {UserId}", userId);
-            var user = await unitOfWork.Users.GetAsync(
-                filter: u => u.Id == userId,
-                transform: q => q.Include(u => u.Roles));
 
+            // 1. Get user's department
+            var user = await unitOfWork.Users.GetAsync(filter: u => u.Id == userId);
             if (user.IsError)
                 return user.Errors;
             if (user.Value == null)
                 return new Error("NotFound", "User not found.", ErrorKind.NotFound);
 
-            return new List<TemplateDto>();
+            Guid? departmentId = user.Value.DepartmentId;
+
+            // 2. Get templates the user owns directly (UserTemplateOwnership)
+            var userOwnershipResult = await transactionUnitOfWork.UserTemplateOwnerships.FindAsync(
+                filter: uto => uto.UserId == userId,
+                transform: q => q.Include(uto => uto.Template));
+
+            var userDirectTemplates = userOwnershipResult.IsSuccess
+                ? userOwnershipResult.Value!
+                    .Where(uto => uto.Template != null)
+                    .Select(uto => uto.Template!)
+                    .ToList()
+                : [];
+
+            // 3. Get templates owned by user's department (TemplateDepartmentOwnership)
+            List<Template> departmentTemplates = [];
+            if (departmentId.HasValue)
+            {
+                var deptOwnershipResult = await transactionUnitOfWork.TemplateDepartmentOwnerships.FindAsync(
+                    filter: dto => dto.DepartmentId == departmentId.Value,
+                    transform: q => q.Include(dto => dto.Template));
+
+                departmentTemplates = deptOwnershipResult.IsSuccess
+                    ? deptOwnershipResult.Value!
+                        .Where(dto => dto.Template != null)
+                        .Select(dto => dto.Template!)
+                        .ToList()
+                    : [];
+            }
+
+            // 4. Get templates from referrals (RequestTransactions where user is CurrentUserHolderId)
+            var referralResult = await transactionUnitOfWork.RequestTransactions.FindAsync(
+                filter: rt => rt.CurrentUserHolderId == userId,
+                transform: q => q.Include(rt => rt.Request)
+                                  .ThenInclude(r => r.RequestTemplateValues)
+                                  .ThenInclude(rtv => rtv!.Template));
+
+            List<Template> referralTemplates = [];
+            if (referralResult.IsSuccess)
+            {
+                referralTemplates = referralResult.Value!
+                    .Where(rt => rt.Request?.RequestTemplateValues?.Template != null)
+                    .Select(rt => rt.Request.RequestTemplateValues!.Template!)
+                    .ToList();
+            }
+
+            // 5. Merge and deduplicate by template ID
+            var allTemplates = userDirectTemplates
+                .Concat(departmentTemplates)
+                .Concat(referralTemplates)
+                .GroupBy(t => t.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            var templateDtos = allTemplates.Select(t => t.ToDto()).ToList();
+            return templateDtos;
         }
         catch (Exception ex)
         {
