@@ -7,13 +7,15 @@ using ModernPaySystem.Module.Transaction.Domain.DTOs;
 using ModernPaySystem.Module.Transaction.Domain.Entities;
 using ModernPaySystem.SharedKernel.Application.Services;
 using ModernPaySystem.SharedKernel.Domain.Commons;
+using SKIdepartmentService = ModernPaySystem.SharedKernel.Application.Interfaces.IDepartmentService;
 
 namespace ModernPaySystem.Module.Transaction.Infrastructure.Services;
 
 public class TemplateService(
     ITransactionUnitOfWork unitOfWork,
     ILogger<TemplateService> logger,
-    IHttpContextServiceManager httpContextServiceManager) : ITemplateService
+    IHttpContextServiceManager httpContextServiceManager,
+    SKIdepartmentService departmentService) : ITemplateService
 {
     public async Task<Result<IEnumerable<TemplateDto>>> GetAllAsync()
     {
@@ -21,8 +23,13 @@ public class TemplateService(
         {
             logger.LogInformation("Fetching all templates");
             var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+            var departmentResult = await departmentService.GetByUserIdAsync(getCurrentUserId);
+            Guid? departmentId = departmentResult.IsSuccess && departmentResult.Value != null
+                ? departmentResult.Value.Id
+                : null;
+
             var templates = await unitOfWork.Templates.GetAllAsync(
-                filter: TemplateExpressions.CanReadByUserId(getCurrentUserId),
+                filter: TemplateExpressions.CanReadByUserId(getCurrentUserId, departmentId),
                 transform: x => x.Include(t => t.DepartmentOwnerships)!
             );
             if (templates.IsError)
@@ -50,9 +57,13 @@ public class TemplateService(
                 return TransactionErrors.InvalidInput;
 
             var getCurrentUserId = httpContextServiceManager.GetCurrentUserId();
+            var departmentResult = await departmentService.GetByUserIdAsync(getCurrentUserId);
+            Guid? departmentId = departmentResult.IsSuccess && departmentResult.Value != null
+                ? departmentResult.Value.Id
+                : null;
 
             var pagedTemplates = await unitOfWork.Templates.GetPagedAsync(
-                filter: TemplateExpressions.CanReadByUserId(getCurrentUserId),
+                filter: TemplateExpressions.CanReadByUserId(getCurrentUserId, departmentId),
                 page: page,
                 pageSize: pageSize,
                 transform: x => x.Include(t => t.DepartmentOwnerships)!

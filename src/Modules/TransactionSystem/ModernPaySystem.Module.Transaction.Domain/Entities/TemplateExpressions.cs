@@ -24,14 +24,20 @@ public static class TemplateExpressions
         return t => t.CreatedByUserId == userId;
     }
 
-    public static Expression<Func<Template, bool>> CanReadByUserId(Guid userId)
+    public static Expression<Func<Template, bool>> CanReadByUserId(Guid userId, Guid? departmentId)
     {
-        return t => t.UserOwnerships != null && t.UserOwnerships.Any(u => u.UserId == userId);
+        return t => t.DepartmentOwnerships == null 
+             || !t.DepartmentOwnerships.Any()
+             || (departmentId.HasValue && t.DepartmentOwnerships.Any(o => o.DepartmentId == departmentId.Value))
+             || (t.UserOwnerships != null && t.UserOwnerships.Any(u => u.UserId == userId));
     }
 
-    public static Expression<Func<Template, bool>> CanMakeUpdateByUserId(Guid userId)
+    public static Expression<Func<Template, bool>> CanMakeUpdateByUserId(Guid userId, Guid? departmentId)
     {
-        return t => t.UserOwnerships != null && t.UserOwnerships.Any(u => u.UserId == userId);
+        return t => t.DepartmentOwnerships == null 
+             || !t.DepartmentOwnerships.Any()
+             || (departmentId.HasValue && t.DepartmentOwnerships.Any(o => o.DepartmentId == departmentId.Value))
+             || (t.UserOwnerships != null && t.UserOwnerships.Any(u => u.UserId == userId));
     }
 
     public static List<Expression<Func<Template, bool>>> ByIdWithIncludes(Guid id)
