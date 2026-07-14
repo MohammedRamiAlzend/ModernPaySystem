@@ -206,7 +206,7 @@ public class ResponseService(
             if (filterDto.PageSize <= 0 || filterDto.PageSize > 100)
                 return TransactionErrors.InvalidInput;
 
-            List<Expression<Func<Response, bool>>> filters = [ResponseExpressions.ByRequesterId(requesterId)];
+            List<Expression<Func<Response, bool>>> filters = [ResponseExpressions.CanReadByUserId(requesterId)];
 
             if (filterDto != null)
             {
