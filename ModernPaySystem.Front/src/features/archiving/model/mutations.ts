@@ -3,6 +3,7 @@ import { queryKeys } from '@/shared/constants/query-keys';
 import { archivingService } from '../api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
 import { CreateFolderDto, CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto, UpdateArchiveConfigDto, CreateFolderIconDto, AssignFolderIconDto } from './types';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 
 // ---------------------------------------------------------
 // Folders Mutations
@@ -23,10 +24,12 @@ export const useCreateFolder = () => {
         },
         onError: (error: any) => {
             console.error('Failed to create folder', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة إنشاء المجلد.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في إنشاء المجلد',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة إنشاء المجلد.'
+                message: message
             });
         }
     });
@@ -47,11 +50,13 @@ export const useUpdateFolder = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to update folder', error);
+            // console.error('Failed to update folder', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة تحديث المجلد.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في تحديث المجلد',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث المجلد.'
+                message: message
             });
         }
     });
@@ -62,7 +67,7 @@ export const useMoveFolder = () => {
     const { showStatus } = useUIStore();
 
     return useMutation({
-        mutationFn: ({ folderId, destinationFolderId }: { folderId: string; destinationFolderId: string }) => 
+        mutationFn: ({ folderId, destinationFolderId }: { folderId: string; destinationFolderId: string }) =>
             archivingService.moveFolder(folderId, destinationFolderId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.archiving.folders.all });
@@ -73,11 +78,13 @@ export const useMoveFolder = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to move folder', error);
+            // console.error('Failed to move folder', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة نقل المجلد.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في نقل المجلد',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة نقل المجلد.'
+                message: message
             });
         }
     });
@@ -98,11 +105,13 @@ export const useDeleteFolder = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to delete folder', error);
+            // console.error('Failed to delete folder', error);
+            const message = extractErrorMessage(error, 'فشل حذف المجلد، يرجى التأكد من خلوه من الملفات أو المجلدات الفرعية.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في حذف المجلد',
-                message: error?.response?.data?.message || 'فشل حذف المجلد، يرجى التأكد من خلوه من الملفات أو المجلدات الفرعية.'
+                message: message
             });
         }
     });
@@ -116,7 +125,7 @@ export const useCreateArchiveRecord = () => {
     const { showStatus } = useUIStore();
 
     return useMutation({
-        mutationFn: ({ data, onUploadProgress }: { 
+        mutationFn: ({ data, onUploadProgress }: {
             data: {
                 id?: string;
                 folderId: string;
@@ -135,11 +144,13 @@ export const useCreateArchiveRecord = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to create archive record', error);
+            // console.error('Failed to create archive record', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة أرشفة المستند.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في الأرشفة',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة أرشفة المستند.'
+                message: message
             });
         }
     });
@@ -171,11 +182,13 @@ export const useUpdateArchiveRecord = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to update archive record', error);
+            // console.error('Failed to update archive record', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة تحديث مستند الأرشيف.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في التحديث',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث مستند الأرشيف.'
+                message: message
             });
         }
     });
@@ -198,11 +211,13 @@ export const useMoveArchiveRecord = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to move archive record', error);
+            // console.error('Failed to move archive record', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة نقل المستند.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في النقل',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة نقل المستند.'
+                message: message
             });
         }
     });
@@ -223,11 +238,13 @@ export const useDeleteArchiveRecord = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to delete archive record', error);
+            // console.error('Failed to delete archive record', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة حذف مستند الأرشيف.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في الحذف',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة حذف مستند الأرشيف.'
+                message: message
             });
         }
     });
@@ -251,11 +268,13 @@ export const useCreateDynamicForm = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to create dynamic form', error);
+            // console.error('Failed to create dynamic form', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة إنشاء النموذج الأرشيفي.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في الإنشاء',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة إنشاء النموذج الأرشيفي.'
+                message: message
             });
         }
     });
@@ -266,7 +285,7 @@ export const useUpdateDynamicForm = () => {
     const { showStatus } = useUIStore();
 
     return useMutation({
-        mutationFn: ({ id, dto }: { id: string; dto: UpdateDynamicFormTemplateDto }) => 
+        mutationFn: ({ id, dto }: { id: string; dto: UpdateDynamicFormTemplateDto }) =>
             archivingService.updateDynamicForm(id, dto),
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.archiving.dynamicForms.all });
@@ -277,11 +296,13 @@ export const useUpdateDynamicForm = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to update dynamic form', error);
+            // console.error('Failed to update dynamic form', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة تحديث النموذج الأرشيفي.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في حفظ التعديلات',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث النموذج الأرشيفي.'
+                message: message
             });
         }
     });
@@ -302,11 +323,12 @@ export const useDeleteDynamicForm = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to delete dynamic form', error);
+            // console.error('Failed to delete dynamic form', error);
+            const message = extractErrorMessage(error, 'فشل حذف النموذج الأرشيفي، قد يكون مرتبطاً ببيانات قائمة.');
             showStatus({
                 type: 'error',
                 title: 'خطأ في الحذف',
-                message: error?.response?.data?.message || 'فشل حذف النموذج الأرشيفي، قد يكون مرتبطاً ببيانات قائمة.'
+                message: message
             });
         }
     });
@@ -330,11 +352,13 @@ export const useCreateFolderIcon = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to create folder icon', error);
+            // console.error('Failed to create folder icon', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة إنشاء الأيقونة.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في إنشاء الأيقونة',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة إنشاء الأيقونة.'
+                message: message
             });
         }
     });
@@ -355,11 +379,13 @@ export const useUpdateFolderIcon = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to update folder icon', error);
+            // console.error('Failed to update folder icon', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة تحديث الأيقونة.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في تحديث الأيقونة',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث الأيقونة.'
+                message: message
             });
         }
     });
@@ -380,11 +406,13 @@ export const useDeleteFolderIcon = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to delete folder icon', error);
+            // console.error('Failed to delete folder icon', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة حذف الأيقونة.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في حذف الأيقونة',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة حذف الأيقونة.'
+                message: message
             });
         }
     });
@@ -405,11 +433,13 @@ export const useAssignIconToFolder = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to assign icon to folder', error);
+            // console.error('Failed to assign icon to folder', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة تعيين الأيقونة للمجلد.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في تعيين الأيقونة',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تعيين الأيقونة للمجلد.'
+                message: message
             });
         }
     });
@@ -433,11 +463,13 @@ export const useUpdateArchiveConfig = () => {
             });
         },
         onError: (error: any) => {
-            console.error('Failed to update archive config', error);
+            // console.error('Failed to update archive config', error);
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء محاولة تحديث إعدادات الأرشفة.');
+
             showStatus({
                 type: 'error',
                 title: 'خطأ في حفظ الإعدادات',
-                message: error?.response?.data?.message || 'حدث خطأ أثناء محاولة تحديث إعدادات الأرشفة.'
+                message: message
             });
         }
     });

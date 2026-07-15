@@ -3,6 +3,7 @@ import { departmentActionsApi } from '../api/departmentActionsApi';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { useUIStore } from '@/app/store/uiStore';
 import { CreateDepartmentDto, UpdateDepartmentDto } from '@/entities/department/model/types';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 
 export const useDepartmentActions = () => {
     const queryClient = useQueryClient();
@@ -20,7 +21,7 @@ export const useDepartmentActions = () => {
         },
         onError: (error: any) => {
             const backendErrors = error.response?.data?.errors;
-            let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء إنشاء القسم';
+            let errorMessage = extractErrorMessage(error, 'حدث خطأ أثناء إنشاء القسم');
 
             if (Array.isArray(backendErrors) && backendErrors.length > 0) {
                 const firstError = backendErrors[0];
@@ -62,7 +63,6 @@ export const useDepartmentActions = () => {
 
             if (Array.isArray(backendErrors) && backendErrors.length > 0) {
                 const firstError = backendErrors[0];
-                // استخدام الوصف العربي أولاً ثم الإنجليزي
                 errorMessage = firstError.arabicDescription || firstError.description || errorMessage;
             } else if (error.response?.data?.message) {
                 errorMessage = error.response.data.message;
@@ -95,10 +95,11 @@ export const useDepartmentActions = () => {
             });
         },
         onError: (error: any) => {
+            const message = extractErrorMessage(error, 'لا يمكن حذف هذا القسم لأنه قد يحتوي على أقسام فرعية أو بيانات مرتبطة');
             showStatus({
                 type: 'error',
                 title: 'خطأ في الحذف',
-                message: error.response?.data?.message || 'لا يمكن حذف هذا القسم لأنه قد يحتوي على أقسام فرعية أو بيانات مرتبطة'
+                message
             });
         }
     });
@@ -116,10 +117,11 @@ export const useDepartmentActions = () => {
             });
         },
         onError: (error: any) => {
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء تعيين المستخدم للقسم');
             showStatus({
                 type: 'error',
                 title: 'خطأ في التعيين',
-                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين المستخدم للقسم'
+                message
             });
         }
     });
@@ -137,10 +139,11 @@ export const useDepartmentActions = () => {
             });
         },
         onError: (error: any) => {
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء تعيين مدير القسم');
             showStatus({
                 type: 'error',
                 title: 'خطأ في تعيين المدير',
-                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير القسم'
+                message
             });
         }
     });

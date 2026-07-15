@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { useScannerSettings } from './use-scanner-settings';
 import { localScannerService } from '../api/localScannerService';
 
@@ -82,7 +83,7 @@ export const useScanner = () => {
             onSuccess(fileObjects);
         } catch (error: any) {
             console.error('Error in new scanner:', error);
-            setScanError(error.message || 'حدث خطأ أثناء الاتصال بالماسح الضوئي المحلي');
+            setScanError(extractErrorMessage(error, 'حدث خطأ أثناء الاتصال بالماسح الضوئي المحلي'));
         } finally {
             setIsScanning(false);
         }

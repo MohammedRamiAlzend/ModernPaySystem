@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Folder } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 
 const flattenFolders = (nodes: Folder[]): Folder[] => {
     let result: Folder[] = [];
@@ -173,7 +174,7 @@ export function useArchivingFolders() {
                     await loadFolders();
                 } catch (error: any) {
                     // console.error('Failed to delete folder', error);
-                    const errMsg = error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription || error.response?.data?.message || error.message || 'تعذر إتمام عملية الحذف. يرجى التحقق من محتويات المجلد.';
+                    const errMsg = extractErrorMessage(error, 'تعذر إتمام عملية الحذف. يرجى التحقق من محتويات المجلد.');
                     showStatus({
                         type: 'error',
                         title: 'فشل حذف المجلد',

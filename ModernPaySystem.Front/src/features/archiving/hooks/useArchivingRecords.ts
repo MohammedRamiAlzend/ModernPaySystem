@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { ArchiveRecord, DynamicFormTemplate, PhysicalFile } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { v4 } from '@/shared/utils/uuid';
 import * as htmlToImage from 'html-to-image';
 import { useUploadStore, storeFiles } from '@/features/upload-manager';
@@ -371,19 +372,12 @@ export function useArchivingRecords(currentFolderId: string | null | undefined) 
             await loadRecords(currentFolderId, 1);
         } catch (error: any) {
             console.error('Failed to save record', error);
-            if (error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription) {
-                showStatus({
-                    type: 'error',
-                    title: 'خطأ في الأرشفة',
-                    message: error.response.data.errors[0].arabicDescription
-                });
-            } else {
-                showStatus({
-                    type: 'error',
-                    title: 'خطأ في الأرشفة',
-                    message: 'حدث خطأ أثناء حفظ السجل، يرجى مراجعة البيانات المرفقة.'
-                });
-            }
+            const message = extractErrorMessage(error, 'حدث خطأ أثناء حفظ السجل، يرجى مراجعة البيانات المرفقة.');
+            showStatus({
+                type: 'error',
+                title: 'خطأ في الأرشفة',
+                message
+            });
         } finally {
             setIsSavingRecord(false);
         }

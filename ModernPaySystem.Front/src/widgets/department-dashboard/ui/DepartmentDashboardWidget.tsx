@@ -15,6 +15,7 @@ import { departmentApi } from '@/entities/department/api/departmentApi';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/shared/ui/dialog';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { useTheme } from '@/app/providers/theme-context';
 import { useSearchParams } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/shared/ui/sheet';
@@ -146,7 +147,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
             showStatus({
                 type: 'error',
                 title: 'خطأ في التعيين',
-                message: error.response?.data?.message || 'حدث خطأ أثناء تعيين مدير الأرشيف'
+                message: extractErrorMessage(error, 'حدث خطأ أثناء تعيين مدير الأرشيف')
             });
         }
     });
@@ -166,7 +167,7 @@ export const DepartmentDashboardWidget: React.FC = () => {
             showStatus({
                 type: 'error',
                 title: 'خطأ في إلغاء التعيين',
-                message: error.response?.data?.message || 'حدث خطأ أثناء إلغاء تعيين مدير الأرشيف'
+                message: extractErrorMessage(error, 'حدث خطأ أثناء إلغاء تعيين مدير الأرشيف')
             });
         }
     });

@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '@/app/store/authStore';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { login } from '../api/login.api';
 import { LoginCredentials, DecodedToken } from './types';
 import { jwtDecode } from 'jwt-decode';
@@ -39,7 +40,7 @@ export const useLogin = () => {
             showStatusState({
                 type: 'error',
                 title: 'فشل تسجيل الدخول',
-                message: error.response?.data?.message || 'تأكد من صحة البيانات وحاول مرة أخرى'
+                message: extractErrorMessage(error, 'تأكد من صحة البيانات وحاول مرة أخرى')
             });
             console.error('Login failed:', error);
         },

@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from '@/shared/ui/input';
 import { Button } from '@/shared/ui/button';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 
 // ─── Single-select mode props ────────────────────────────────────────────────
 
@@ -126,11 +127,7 @@ export const UserPicker = (props: UserPickerProps) => {
                 props.onUserSelect(newUser.id);
             }
         } catch (error: any) {
-            const backendErrors = error.response?.data?.errors;
-            let errorMessage = error.response?.data?.message || 'حدث خطأ أثناء إنشاء المستخدم';
-            if (Array.isArray(backendErrors) && backendErrors.length > 0) {
-                errorMessage = backendErrors[0].arabicDescription || backendErrors[0].description || errorMessage;
-            }
+            const errorMessage = extractErrorMessage(error, 'حدث خطأ أثناء إنشاء المستخدم');
             showStatus({
                 type: 'error',
                 title: 'خطأ في إنشاء المستخدم',

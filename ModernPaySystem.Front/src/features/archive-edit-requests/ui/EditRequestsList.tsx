@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { EditArchiveRequest } from '../model/types';
 import { useApproveEditRequest, useRejectEditRequest } from '../model/mutations';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Check, X, Eye, FileText, User } from 'lucide-react';
@@ -42,7 +43,7 @@ export function EditRequestsList({ requests, isLoading, onViewDetails }: EditReq
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
-                        message: err?.response?.data?.message || 'حدث خطأ أثناء معالجة الطلب.'
+                        message: extractErrorMessage(err, 'حدث خطأ أثناء معالجة الطلب.')
                     });
                 }
             }
@@ -76,7 +77,7 @@ export function EditRequestsList({ requests, isLoading, onViewDetails }: EditReq
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
-                        message: err?.response?.data?.message || 'حدث خطأ أثناء رفض الطلب.'
+                        message: extractErrorMessage(err, 'حدث خطأ أثناء رفض الطلب.')
                     });
                 }
             }

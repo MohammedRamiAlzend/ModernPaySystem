@@ -3,6 +3,7 @@ import { useUploadStore } from './uploadStore';
 import { getFile, removeFile } from './fileStore';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useAuthStore } from '@/app/store/authStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import type { UploadSession } from './types';
 
 /** الحد الأقصى لعدد الجلسات التي ترفع بالتوازي */
@@ -51,12 +52,7 @@ export function useUploadEngine() {
                 updateFileStatus(session.id, fileId, 'success');
                 await removeFile(fileId);
             } catch (error: any) {
-                const message =
-                    error?.response?.data?.errors?.[0]?.arabicDescription ||
-                    error?.response?.data?.errors?.[0]?.description ||
-                    error?.response?.data?.message ||
-                    error?.message ||
-                    'فشل رفع الملف';
+                const message = extractErrorMessage(error, 'فشل رفع الملف');
                 updateFileStatus(session.id, fileId, 'failed', message);
             }
         },

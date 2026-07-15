@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSubmitDeletionRequest } from '../model/mutations';
 import { ArchiveDeletionTargetType } from '../model/types';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { Button } from '@/shared/ui/button';
 import { Label } from '@/shared/ui/label';
 import { X, AlertTriangle, FileText, Folder } from 'lucide-react';
@@ -65,7 +66,7 @@ export function SubmitDeletionRequestModal({ isOpen, targetType, targetId, targe
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
-                        message: err?.response?.data?.message || 'فشل إرسال طلب الحذف. يرجى المحاولة لاحقاً.'
+                        message: extractErrorMessage(err, 'فشل إرسال طلب الحذف. يرجى المحاولة لاحقاً.')
                     });
                 }
             }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DeleteArchiveRequest, ArchiveDeletionTargetType } from '../model/types';
 import { useApproveDeletionRequest, useRejectDeletionRequest } from '../model/mutations';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Check, X, Eye, FileText, User, Folder, AlertTriangle } from 'lucide-react';
@@ -42,7 +43,7 @@ export function DeletionRequestsList({ requests, isLoading, onViewDetails }: Del
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
-                        message: err?.response?.data?.message || 'حدث خطأ أثناء الموافقة على الطلب.'
+                        message: extractErrorMessage(err, 'حدث خطأ أثناء الموافقة على الطلب.')
                     });
                 }
             }
@@ -76,7 +77,7 @@ export function DeletionRequestsList({ requests, isLoading, onViewDetails }: Del
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
-                        message: err?.response?.data?.message || 'حدث خطأ أثناء رفض الطلب.'
+                        message: extractErrorMessage(err, 'حدث خطأ أثناء رفض الطلب.')
                     });
                 }
             }

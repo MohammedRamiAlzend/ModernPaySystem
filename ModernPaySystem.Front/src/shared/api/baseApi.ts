@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useUIStore } from '@/app/store/uiStore';
 import { useAuthStore } from '@/app/store/authStore';
 import { APP_CONFIG } from '../config/appConfig';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 
 const api = axios.create({
     baseURL: APP_CONFIG.API_BASE_URL || 'http://localhost:5173/api',
@@ -28,7 +29,7 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
-        const message = error?.response?.data?.errors && error.response.data.errors[0]?.arabicDescription || error.response?.data?.message || error.message || 'حدث خطأ في الاتصال بالخادم';
+        const message = extractErrorMessage(error, 'حدث خطأ في الاتصال بالخادم');
 
         // التعامل مع أخطاء 401 (غير مصرح به) - يعني التوكن انتهى أو غير صالح
         if (status === 401) {

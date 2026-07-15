@@ -3,6 +3,7 @@ import { ArchiveRecord } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { useSubmitEditRequest } from '../model/mutations';
 import { useUIStore } from '@/app/store/uiStore';
+import { extractErrorMessage } from '@/shared/lib/error-utils';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
@@ -120,7 +121,7 @@ export function SubmitEditRequestModal({ isOpen, record, onClose }: SubmitEditRe
                     onClose();
                 },
                 onError: (err: any) => {
-                    const errMesg = err?.response?.data?.errors && err.response.data.errors[0]?.arabicDescription || err?.response?.data?.errors && err.response.data.errors[0]?.description || "فشل إرسال طلب التعديل. يرجى المحاولة لاحقاً.";
+                    const errMesg = extractErrorMessage(err, "فشل إرسال طلب التعديل. يرجى المحاولة لاحقاً.");
                     showStatus({
                         type: 'error',
                         title: 'خطأ',
