@@ -1,6 +1,7 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/constants/query-keys';
 import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
+import { createDirectReportQuery } from '@/shared/lib/query-factory';
 import { archivingService } from '../api/archivingService';
 
 // ---------------------------------------------------------
@@ -96,14 +97,10 @@ export const useArchiveAuditLogs = (params: {
     });
 };
 
-export const useDailyWorkReport = (date?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.dailyWork.detail(date),
-        queryFn: () => archivingService.getDailyWorkReport(date),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useDailyWorkReport = createDirectReportQuery(
+    (date?: string | null) => archivingService.getDailyWorkReport(date ?? undefined),
+    (date?: string | null) => queryKeys.archiving.dailyWork.detail(date),
+);
 
 export const useArchiveConfig = () => {
     return useQuery({
@@ -166,74 +163,42 @@ export const useMyDepartments = () => {
     });
 };
 
-export const useDepartmentDashboard = (enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.dashboard(),
-        queryFn: () => archivingService.getDepartmentDashboard(),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useDepartmentDashboard = createDirectReportQuery(
+    () => archivingService.getDepartmentDashboard(),
+    () => queryKeys.archiving.reports.dashboard(),
+);
 
-export const useDailyReport = (date?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.daily(date),
-        queryFn: () => archivingService.getDailyReport(date),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useDailyReport = createDirectReportQuery(
+    (date?: string | null) => archivingService.getDailyReport(date ?? undefined),
+    (date?: string | null) => queryKeys.archiving.reports.daily(date),
+);
 
-export const useWeeklyReport = (weekStart?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.weekly(weekStart),
-        queryFn: () => archivingService.getWeeklyReport(weekStart),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useWeeklyReport = createDirectReportQuery(
+    (weekStart?: string | null) => archivingService.getWeeklyReport(weekStart ?? undefined),
+    (weekStart?: string | null) => queryKeys.archiving.reports.weekly(weekStart),
+);
 
-export const useMonthlyReport = (year?: number | null, month?: number | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.monthly(year, month),
-        queryFn: () => archivingService.getMonthlyReport(year, month),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useMonthlyReport = createDirectReportQuery(
+    (year?: number | null, month?: number | null) => archivingService.getMonthlyReport(year ?? undefined, month ?? undefined),
+    (year?: number | null, month?: number | null) => queryKeys.archiving.reports.monthly(year, month),
+);
 
-export const useUserActivityReport = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.userActivity(fromDate, toDate),
-        queryFn: () => archivingService.getUserActivityReport(fromDate, toDate),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useUserActivityReport = createDirectReportQuery(
+    (fromDate?: string | null, toDate?: string | null) => archivingService.getUserActivityReport(fromDate ?? undefined, toDate ?? undefined),
+    (fromDate?: string | null, toDate?: string | null) => queryKeys.archiving.reports.userActivity(fromDate, toDate),
+);
 
-export const useActiveUsersReport = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.activeUsers(fromDate, toDate),
-        queryFn: () => archivingService.getActiveUsers(fromDate, toDate),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useActiveUsersReport = createDirectReportQuery(
+    (fromDate?: string | null, toDate?: string | null) => archivingService.getActiveUsers(fromDate ?? undefined, toDate ?? undefined),
+    (fromDate?: string | null, toDate?: string | null) => queryKeys.archiving.reports.activeUsers(fromDate, toDate),
+);
 
-export const useStorageReport = (enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.storage(),
-        queryFn: () => archivingService.getStorageReport(),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useStorageReport = createDirectReportQuery(
+    () => archivingService.getStorageReport(),
+    () => queryKeys.archiving.reports.storage(),
+);
 
-export const useChartsData = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.archiving.reports.charts(fromDate, toDate),
-        queryFn: () => archivingService.getChartsData(fromDate, toDate),
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+export const useChartsData = createDirectReportQuery(
+    (fromDate?: string | null, toDate?: string | null) => archivingService.getChartsData(fromDate ?? undefined, toDate ?? undefined),
+    (fromDate?: string | null, toDate?: string | null) => queryKeys.archiving.reports.charts(fromDate, toDate),
+);

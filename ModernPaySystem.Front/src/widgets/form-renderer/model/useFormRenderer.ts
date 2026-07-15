@@ -41,7 +41,14 @@ export const useFormRenderer = (schema: FormSchema, onSubmit: (data: Record<stri
         fieldStatesRef.current = fieldStates;
     }, [fieldStates]);
 
-    const spellingTimeoutRef = useRef<Record<string, any>>({});
+    const spellingTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+    useEffect(() => {
+        const timeouts = spellingTimeoutRef.current;
+        return () => {
+            Object.values(timeouts).forEach(clearTimeout);
+        };
+    }, []);
 
     const handleChange = (fieldName: string, value: any) => {
         // Clear any existing timeout for this field's spelling

@@ -1,11 +1,6 @@
-
 import api from '@/shared/api/baseApi';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/shared/constants/query-keys';
-import { QUERY_STRATEGIES, UpdateStrategy } from '@/shared/constants/query-strategies';
 import type {
     Template,
-    FormSchema,
     CreateTemplateDto,
     CreateRequestDto,
     CreateResponseDto,
@@ -20,10 +15,8 @@ import type {
     RequestRelationDto
 } from '@/entities/form/model/types';
 
-// --- API Service ---
-
 export const formEndpoints = {
-    // Templates 
+    // Templates
     createTemplate: async (data: CreateTemplateDto): Promise<{ data: Template }> => {
         const response = await api.post('/Templates', data);
         return response.data;
@@ -35,7 +28,6 @@ export const formEndpoints = {
     },
 
     getTemplates: async (): Promise<Template[] | { data: Template[] }> => {
-        // User said: "For display, use endpoint: Templates of type post"
         const response = await api.get('/Templates', {});
         return response.data;
     },
@@ -43,7 +35,6 @@ export const formEndpoints = {
     getTemplateById: async (id: string): Promise<Template> => {
         const response = await api.get(`/Templates/${id}`);
         const raw = response.data;
-        // Handle both { data: Template } and direct Template response
         return raw?.data ?? raw;
     },
 
@@ -85,11 +76,9 @@ export const formEndpoints = {
         formData.append('TemplateId', data.TemplateId);
         formData.append('DepartmentId', data.DepartmentId);
 
-        // Handle structured content for model binding
         data.Content.forEach((item, index) => {
             formData.append(`Content[${index}].Key`, item.key);
 
-            // Handle complex types (arrays, objects) by stringifying them
             const valueToAppend = (typeof item.value === 'object' && item.value !== null)
                 ? JSON.stringify(item.value)
                 : String(item.value ?? '');
@@ -128,7 +117,6 @@ export const formEndpoints = {
         return response.data;
     },
 
-
     getRequests: async (): Promise<{ data: TemplateRequest[] }> => {
         const response = await api.get('/Requests');
         return response.data;
@@ -143,7 +131,6 @@ export const formEndpoints = {
         const response = await api.post(`/Requests/by-requester/${requesterId}`, filterDto);
         return response.data;
     },
-
 
     // Responses
     getResponsesByRequestId: async (requestId: string, filterDto: RequestPagedFilterDto = { page: 1, pageSize: 100 }): Promise<{ data: PagedResult<TemplateResponse> | TemplateResponse[] }> => {
@@ -233,7 +220,6 @@ export const formEndpoints = {
         window.URL.revokeObjectURL(url);
     },
 
-
     getResponsesByRequesterId: async (requesterId: string, filterDto: RequestPagedFilterDto): Promise<{ data: PagedResult<TemplateResponse> }> => {
         const response = await api.post(`/Responses/by-requester/${requesterId}`, filterDto);
         return response.data;
@@ -284,7 +270,7 @@ export const formEndpoints = {
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
         params.append('forCurrentDepartment', String(forCurrentDepartment));
-        
+
         const response = await api.get(`/Reports/requests?${params.toString()}`);
         return response.data;
     },
@@ -296,7 +282,7 @@ export const formEndpoints = {
         if (startDate) params.append('startDate', startDate);
         if (endDate) params.append('endDate', endDate);
         params.append('forCurrentDepartment', String(forCurrentDepartment));
-        
+
         const response = await api.get(`/Reports/responses?${params.toString()}`);
         return response.data;
     },
@@ -389,397 +375,39 @@ export const formEndpoints = {
         const response = await api.delete(`/Requests/relations/${id}`);
         return response.data;
     }
-
 };
 
-
-// --- Hooks ---
-
-export const useRequests = (hasResponse: boolean = false, filterOrPage: RequestPagedFilterDto | number = 1, pageSize: number = 15) => {
-    const filter = typeof filterOrPage === 'object'
-        ? filterOrPage
-        : { page: filterOrPage, pageSize };
-
-    return useQuery({
-        queryKey: queryKeys.form.list({ hasResponse, ...filter }),
-        queryFn: async () => {
-            // Only send filter values if hasResponse is true
-            const filterToSend = hasResponse ? filter : { page: filter.page, pageSize: filter.pageSize };
-            const res = await formEndpoints.getRequestsByActionStatus(hasResponse, filterToSend);
-            return res.data;
-        },
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useAllPendingRequests = (page: number = 1, pageSize: number = 15) => {
-    return useQuery({
-        queryKey: queryKeys.form.list({ type: 'all-pending', page, pageSize }),
-        queryFn: async () => {
-            const res = await formEndpoints.getAllPendingRequestsPaged(page, pageSize);
-            return res.data;
-        },
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useTemplates = (showExternal: boolean = false) => {
-    return useQuery({
-        queryKey: queryKeys.template.list({ showExternal }),
-        queryFn: async (): Promise<Template[]> => {
-            const res = await formEndpoints.getTemplates();
-            const filterFn = (t: Template) => showExternal || (!t.isExternal && !t.templateName.toLocaleLowerCase().includes("delphi"));
-
-            if (Array.isArray(res)) return res.filter(filterFn);
-
-            // Handle if data is wrapped in { data: [] }
-            if (res && !Array.isArray(res) && 'data' in res && Array.isArray(res.data)) {
-                return (res.data as Template[]).filter(filterFn);
-            }
-
-            return [];
-        },
-        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
-    });
-};
-
-export const useTemplateById = (templateId: string | null) => {
-    return useQuery({
-        queryKey: queryKeys.template.detail(templateId),
-        queryFn: async (): Promise<FormSchema | null> => {
-            if (!templateId) return null;
-            const t = await formEndpoints.getTemplateById(templateId);
-            if (!t || !t.contentAsJson) return null;
-            try {
-                let parsed;
-                try {
-                    parsed = JSON.parse(t.contentAsJson);
-                } catch {
-                    parsed = JSON.parse(t.contentAsJson.replace(/'/g, '"'));
-                }
-                const baseSchema = Array.isArray(parsed) ? parsed[0] : parsed;
-                if (!baseSchema || typeof baseSchema !== 'object') return null;
-                const schema = baseSchema as FormSchema;
-                schema.id = t.id;
-                schema.title = t.templateName;
-                schema.description = t.templateDescription || '';
-                return schema;
-            } catch {
-                console.error('Failed to parse template content by ID', t);
-                return null;
-            }
-        },
-        enabled: !!templateId,
-        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
-    });
-};
-
-export const useCreateTemplate = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: formEndpoints.createTemplate,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
-            queryClient.invalidateQueries({ queryKey: queryKeys.form.all });
-        }
-    });
-};
-
-export const useUpdateTemplate = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: CreateTemplateDto }) =>
-            formEndpoints.updateTemplate(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.template.all });
-            queryClient.invalidateQueries({ queryKey: queryKeys.form.all }); // Some hooks use 'forms' key
-        }
-    });
-};
-
-export const useCreateRequest = () => {
-    return useMutation({
-        mutationFn: (data: CreateRequestDto) => formEndpoints.createRequest(data)
-    });
-};
-
-export const useRequestsPaged = (filter: RequestPagedFilterDto) => {
-    return useQuery({
-        queryKey: queryKeys.form.list({ type: 'paged', ...filter }),
-        queryFn: async () => {
-            const res = await formEndpoints.getRequestsPaged(filter);
-            return res.data;
-        },
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useRequestById = (id: string | null) => {
-    return useQuery({
-        queryKey: queryKeys.form.detail(id),
-        queryFn: async (): Promise<TemplateRequest | null> => {
-            if (!id) return null;
-            const res = await formEndpoints.getRequestById(id);
-            return res;
-        },
-        enabled: !!id,
-        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
-    });
-};
-
-export const useRequestRelations = (requestId: string | null) => {
-    return useQuery({
-        queryKey: [...queryKeys.form.detail(requestId), 'relations'],
-        queryFn: async () => {
-            if (!requestId) return [];
-            const res = await formEndpoints.getRequestRelations(requestId);
-            return res.data || [];
-        },
-        enabled: !!requestId,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useCreateRelation = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: formEndpoints.createRelation,
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({
-                queryKey: [...queryKeys.form.detail(variables.sourceRequestId), 'relations']
-            });
-        }
-    });
-};
-
-export const useDeleteRelation = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id }: { id: string; sourceRequestId: string }) => formEndpoints.deleteRelation(id),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({
-                queryKey: [...queryKeys.form.detail(variables.sourceRequestId), 'relations']
-            });
-        }
-    });
-};
-
-
-export const useCreateResponse = () => {
-    return useMutation({
-        mutationFn: (data: CreateResponseDto) => formEndpoints.createResponse(data)
-    });
-};
-
-export const useCreateReferral = () => {
-    return useMutation({
-        mutationFn: (data: CreateRequestTransactionDto) => formEndpoints.createReferral(data)
-    });
-};
-
-export const useRequestResponses = (requestId: string | null) => {
-    return useQuery({
-        queryKey: queryKeys.form.responses(requestId),
-        queryFn: async () => {
-            if (!requestId) return [];
-            const res = await formEndpoints.getResponsesByRequestId(requestId);
-
-            // Handle PagedResult wrapping: { data: { items: [...] } }
-            if (res && typeof res === 'object' && 'data' in res) {
-                const inner = res.data as any;
-                if (Array.isArray(inner)) return inner;
-                if (inner && Array.isArray(inner.items)) return inner.items;
-            }
-
-            if (Array.isArray(res)) return res as TemplateResponse[];
-
-            return [] as TemplateResponse[];
-        },
-        enabled: !!requestId,
-        ...QUERY_STRATEGIES[UpdateStrategy.BACKGROUND]
-    });
-};
-
-export const useResponsesByRequester = (requesterId: string | null, filter: RequestPagedFilterDto) => {
-    return useQuery({
-        queryKey: queryKeys.form.list({ type: 'responses', requester: requesterId, ...filter }),
-        queryFn: async () => {
-            if (!requesterId) return null;
-            const res = await formEndpoints.getResponsesByRequesterId(requesterId, filter);
-            return res.data;
-        },
-        enabled: !!requesterId,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useRequestsByRequester = (requesterId: string | null, filter: RequestPagedFilterDto) => {
-    return useQuery({
-        queryKey: queryKeys.form.list({ requester: requesterId, ...filter }),
-        queryFn: async () => {
-            if (!requesterId) return null;
-            const res = await formEndpoints.getRequestsByRequesterId(requesterId, filter);
-            return res.data;
-        },
-        enabled: !!requesterId,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useRequestTransactions = (status: number, filter: RequestPagedFilterDto) => {
-    return useQuery({
-        queryKey: queryKeys.process.list({ status, ...filter }),
-        queryFn: async () => {
-            const res = await formEndpoints.getRequestTransactions(status, filter);
-            return res.data;
-        },
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useRequestTransactionsHistory = (requestId: string | null) => {
-    return useQuery({
-        queryKey: queryKeys.form.transactions(requestId),
-        queryFn: async () => {
-            if (!requestId) return [];
-            const res = await formEndpoints.getRequestTransactionsByRequestId(requestId);
-            return res.data;
-        },
-        enabled: !!requestId,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useRequestsReport = (pageNumber: number, pageSize: number, startDate?: string, endDate?: string, forCurrentDepartment: boolean = false, enabled: boolean = false) => {
-    return useQuery({
-        queryKey: queryKeys.form.list({ type: 'report-requests', page: pageNumber, pageSize, startDate, endDate, forCurrentDepartment }),
-        queryFn: async () => {
-            const res = await formEndpoints.getRequestsReport(pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
-            return (res as any).data ?? null;
-        },
-        enabled: enabled && pageNumber > 0,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-export const useResponsesReport = (pageNumber: number, pageSize: number, startDate?: string, endDate?: string, forCurrentDepartment: boolean = false, enabled: boolean = false) => {
-    return useQuery({
-        queryKey: queryKeys.form.list({ type: 'report-responses', page: pageNumber, pageSize, startDate, endDate, forCurrentDepartment }),
-        queryFn: async () => {
-            const res = await formEndpoints.getResponsesReport(pageNumber, pageSize, startDate, endDate, forCurrentDepartment);
-            return (res as any).data ?? null;
-        },
-        enabled: enabled && pageNumber > 0,
-        ...QUERY_STRATEGIES[UpdateStrategy.LIVE]
-    });
-};
-
-// Transaction Report Hooks
-export const useTransactionDashboard = (enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.dashboard,
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionDashboard();
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionDailyReport = (date?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.daily(date),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionDailyReport(date ?? undefined);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionWeeklyReport = (weekStart?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.weekly(weekStart),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionWeeklyReport(weekStart ?? undefined);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionMonthlyReport = (year?: number | null, month?: number | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.monthly(year, month),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionMonthlyReport(year ?? undefined, month ?? undefined);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionUserActivityReport = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.userActivity(fromDate, toDate),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionUserActivity(fromDate ?? undefined, toDate ?? undefined);
-            console.log('[UserActivity] res:', res, 'type:', typeof res, 'isArray:', Array.isArray(res), 'data:', (res as any).data);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionActiveUsersReport = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.activeUsers(fromDate, toDate),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionActiveUsers(fromDate ?? undefined, toDate ?? undefined);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionStorageReport = (enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.storage,
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionStorageReport();
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionChartsData = (fromDate?: string | null, toDate?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.charts(fromDate, toDate),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionChartsData(fromDate ?? undefined, toDate ?? undefined);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
-
-export const useTransactionDailyWorkReport = (date?: string | null, enabled = true) => {
-    return useQuery({
-        queryKey: queryKeys.transactionReports.dailyWork(date),
-        queryFn: async () => {
-            const res = await formEndpoints.getTransactionDailyWork(date ?? undefined);
-            return (res as any).data ?? null;
-        },
-        enabled,
-        ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
-    });
-};
+// Re-export all hooks from model/queries.ts
+// This maintains backward compatibility for existing imports
+export {
+    useRequests,
+    useAllPendingRequests,
+    useTemplates,
+    useTemplateById,
+    useCreateTemplate,
+    useUpdateTemplate,
+    useCreateRequest,
+    useRequestsPaged,
+    useRequestById,
+    useRequestRelations,
+    useCreateRelation,
+    useDeleteRelation,
+    useCreateResponse,
+    useCreateReferral,
+    useRequestResponses,
+    useResponsesByRequester,
+    useRequestsByRequester,
+    useRequestTransactions,
+    useRequestTransactionsHistory,
+    useRequestsReport,
+    useResponsesReport,
+    useTransactionDashboard,
+    useTransactionDailyReport,
+    useTransactionWeeklyReport,
+    useTransactionMonthlyReport,
+    useTransactionUserActivityReport,
+    useTransactionActiveUsersReport,
+    useTransactionStorageReport,
+    useTransactionChartsData,
+    useTransactionDailyWorkReport,
+} from '../model/queries';
