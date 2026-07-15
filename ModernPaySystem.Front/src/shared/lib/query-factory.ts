@@ -6,9 +6,9 @@ interface ReportQueryOptions {
   strategy?: UpdateStrategy;
 }
 
-function buildReportHook<TArgs extends unknown[]>(
+function buildReportHook<TData, TArgs extends unknown[]>(
   queryKeyFn: (...args: TArgs) => QueryKey,
-  queryFn: (...args: TArgs) => Promise<unknown>,
+  queryFn: (...args: TArgs) => Promise<TData>,
   options: ReportQueryOptions = {},
 ) {
   return (...allArgs: [...TArgs, boolean?]) => {
@@ -32,7 +32,7 @@ export function createReportQuery<TData, TArgs extends unknown[]>(
   queryKeyFn: (...args: TArgs) => QueryKey,
   options?: ReportQueryOptions,
 ) {
-  return buildReportHook(
+  return buildReportHook<TData | null, TArgs>(
     queryKeyFn,
     async (...args: TArgs) => {
       const res = await endpoint(...args);
@@ -48,5 +48,5 @@ export function createDirectReportQuery<TData, TArgs extends unknown[]>(
   queryKeyFn: (...args: TArgs) => QueryKey,
   options?: ReportQueryOptions,
 ) {
-  return buildReportHook(queryKeyFn, endpoint, options);
+  return buildReportHook<TData, TArgs>(queryKeyFn, endpoint, options);
 }
