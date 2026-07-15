@@ -1,4 +1,6 @@
 import ExcelJS from 'exceljs';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
+import { resolveUserDeptNames } from '@/shared/utils/resolve-user-dept-names';
 
 type CellValue = string | number | boolean | Date | null | undefined;
 
@@ -379,11 +381,13 @@ export async function exportPeriodReportToExcel(
         totalViews: number;
         uniqueActiveUsers: number;
         dailyBreakdown: { date: string; recordsCreated: number; actions: number; activeUsers: number }[];
-        topUsers: { userName: string; recordsCreated: number; recordsViewed: number; filesDownloaded: number; printActions: number; totalActions: number }[];
+        topUsers: { userId: string; userName: string; recordsCreated: number; recordsViewed: number; filesDownloaded: number; printActions: number; totalActions: number }[];
     },
     sheetLabel: string,
 ) {
     const wb = await createWorkbook();
+    const topUsers = report.topUsers ?? [];
+    const namesMap = await resolveUserNames(topUsers.map(u => u.userId));
     const dateLabel = `${formatDate(report.periodStart)} - ${formatDate(report.periodEnd)}`;
 
     // Sheet 1: Summary
@@ -447,7 +451,7 @@ export async function exportPeriodReportToExcel(
     }
 
     // Sheet 3: Top Users
-    if (report.topUsers.length > 0) {
+    if (topUsers.length > 0) {
         const usersSheet = wb.addWorksheet('المستخدمون', { views: [{ rightToLeft: true }] });
         const userCols = 6;
         addTitleRow(usersSheet, `أكثر المستخدمين نشاطاً - ${report.periodLabel}`, userCols);
@@ -471,8 +475,8 @@ export async function exportPeriodReportToExcel(
             ],
             userCols,
         );
-        report.topUsers.forEach((u) => {
-            addDataRow(usersSheet, [u.userName, u.recordsCreated, u.recordsViewed, u.filesDownloaded, u.printActions, u.totalActions], usersAligns);
+        topUsers.forEach((u) => {
+            addDataRow(usersSheet, [namesMap.get(u.userId) || u.userName, u.recordsCreated, u.recordsViewed, u.filesDownloaded, u.printActions, u.totalActions], usersAligns);
         });
 
         usersSheet.getColumn(1).width = 28;
@@ -492,11 +496,12 @@ export async function exportPeriodReportToExcel(
 // User Activity Export
 // -----------------------------------------------------------------------
 export async function exportUserActivityToExcel(
-    data: { userName: string; recordsCreated: number; recordsViewed: number; filesDownloaded: number; printActions: number; totalActions: number; lastActivityDate: string | null }[],
+    data: { userId: string; userName: string; recordsCreated: number; recordsViewed: number; filesDownloaded: number; printActions: number; totalActions: number; lastActivityDate: string | null }[],
     fromDate?: string,
     toDate?: string,
 ) {
     const wb = await createWorkbook();
+    const namesMap = await resolveUserNames(data.map(u => u.userId));
     const ws = wb.addWorksheet('نشاط المستخدمين', { properties: { tabColor: { argb: 'FF7C3AED' } } });
 
     const colCount = 7;
@@ -524,7 +529,7 @@ export async function exportUserActivityToExcel(
     );
 
     data.forEach((u) => {
-        addDataRow(ws, [u.userName, u.recordsCreated, u.recordsViewed, u.filesDownloaded, u.printActions, u.totalActions, formatDateTime(u.lastActivityDate)], aligns);
+        addDataRow(ws, [namesMap.get(u.userId) || u.userName, u.recordsCreated, u.recordsViewed, u.filesDownloaded, u.printActions, u.totalActions, formatDateTime(u.lastActivityDate)], aligns);
     });
 
     // Summary row
@@ -564,11 +569,16 @@ export async function exportUserActivityToExcel(
 // Active Users Export
 // -----------------------------------------------------------------------
 export async function exportActiveUsersToExcel(
-    data: { userName: string; departmentName: string | null; totalActions: number; firstActionDate: string | null; lastActionDate: string | null; actionsPerformed: string[] }[],
+    data: { userId: string; userName: string; departmentName: string | null; totalActions: number; firstActionDate: string | null; lastActionDate: string | null; actionsPerformed: string[] }[],
     fromDate?: string,
     toDate?: string,
 ) {
+    const userIds = data.map(u => u.userId);
     const wb = await createWorkbook();
+    const [namesMap, deptNamesMap] = await Promise.all([
+        resolveUserNames(userIds),
+        resolveUserDeptNames(userIds),
+    ]);
     const ws = wb.addWorksheet('المستخدمون النشطون', { properties: { tabColor: { argb: 'FF059669' } } });
 
     const colCount = 6;
@@ -596,8 +606,8 @@ export async function exportActiveUsersToExcel(
 
     data.forEach((u) => {
         addDataRow(ws, [
-            u.userName,
-            u.departmentName || '-',
+            namesMap.get(u.userId) || u.userName,
+            deptNamesMap.get(u.userId) || u.departmentName || '-',
             u.totalActions,
             formatDate(u.firstActionDate),
             formatDate(u.lastActionDate),
@@ -623,10 +633,11 @@ export async function exportActiveUsersToExcel(
 export async function exportStorageReportToExcel(report: {
     totalStorageBytes: number;
     totalFiles: number;
-    perUser: { userName: string; totalFiles: number; totalBytes: number; percentageOfTotal: number; lastFileAddedAt: string | null }[];
+    perUser: { userId: string; userName: string; totalFiles: number; totalBytes: number; percentageOfTotal: number; lastFileAddedAt: string | null }[];
     fileTypeBreakdown: { extension: string; count: number; totalBytes: number; percentageOfTotal: number }[];
 }) {
     const wb = await createWorkbook();
+    const storageNamesMap = await resolveUserNames(report.perUser.map(u => u.userId));
     const now = new Date().toISOString().split('T')[0];
     const dateLabelArabic = new Date().toLocaleDateString('ar-SY', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -709,7 +720,7 @@ export async function exportStorageReportToExcel(report: {
             userCols,
         );
         report.perUser.forEach((u) => {
-            addDataRow(userSheet, [u.userName, u.totalFiles, formatBytes(u.totalBytes), `${u.percentageOfTotal.toFixed(1)}%`, formatDate(u.lastFileAddedAt)], userAligns);
+            addDataRow(userSheet, [storageNamesMap.get(u.userId) || u.userName, u.totalFiles, formatBytes(u.totalBytes), `${u.percentageOfTotal.toFixed(1)}%`, formatDate(u.lastFileAddedAt)], userAligns);
         });
 
         userSheet.getColumn(1).width = 28;

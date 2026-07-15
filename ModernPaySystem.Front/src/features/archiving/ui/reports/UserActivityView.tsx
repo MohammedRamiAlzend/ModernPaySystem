@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2 } from 'lucide-react';
 import type { UserActivityReportItem } from '../../model/types';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
 
 interface UserActivityViewProps {
     data: UserActivityReportItem[] | undefined;
@@ -17,6 +19,16 @@ function formatDate(dateStr: string | null): string {
 }
 
 export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
+    const list: UserActivityReportItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+
+    const [userNames, setUserNames] = useState<Map<string, string>>(new Map());
+
+    useEffect(() => {
+        if (list.length === 0) return;
+        const userIds = list.map((u) => u.userId);
+        resolveUserNames(userIds).then(setUserNames);
+    }, [data]);
+
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -24,8 +36,6 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
             </div>
         );
     }
-
-    const list: UserActivityReportItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
 
     if (list.length === 0) {
         return (
@@ -58,7 +68,7 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
                     <TableBody>
                         {list.map((u) => (
                             <TableRow key={u.userId}>
-                                <TableCell className="font-medium">{u.userName}</TableCell>
+                                <TableCell className="font-medium">{userNames.get(u.userId) || u.userName}</TableCell>
                                 <TableCell>{u.recordsCreated}</TableCell>
                                 <TableCell>{u.recordsViewed}</TableCell>
                                 <TableCell>{u.filesDownloaded}</TableCell>

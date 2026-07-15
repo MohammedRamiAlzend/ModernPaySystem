@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2 } from 'lucide-react';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
+import { resolveUserDeptNames } from '@/shared/utils/resolve-user-dept-names';
 import type { TransactionUserActivityItem } from '../../model/transaction-report-types';
 
 interface UserActivityViewProps {
@@ -17,6 +20,18 @@ function formatDate(dateStr: string | null): string {
 }
 
 export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
+    const [userNames, setUserNames] = useState<Map<string, string>>(new Map());
+    const [deptNames, setDeptNames] = useState<Map<string, string>>(new Map());
+
+    const list: TransactionUserActivityItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
+
+    useEffect(() => {
+        if (list.length === 0) return;
+        const userIds = list.map((u) => u.userId);
+        resolveUserNames(userIds).then(setUserNames);
+        resolveUserDeptNames(userIds).then(setDeptNames);
+    }, [data]);
+
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -24,8 +39,6 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
             </div>
         );
     }
-
-    const list: TransactionUserActivityItem[] = Array.isArray(data) ? data : (data && Array.isArray((data as any).data) ? (data as any).data : []);
 
     if (list.length === 0) {
         return (
@@ -58,8 +71,8 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
                     <TableBody>
                         {list.map((u) => (
                             <TableRow key={u.userId}>
-                                <TableCell className="font-medium">{u.userName}</TableCell>
-                                <TableCell className="text-muted-foreground">{u.departmentName || '-'}</TableCell>
+                                <TableCell className="font-medium">{userNames.get(u.userId) || u.userName}</TableCell>
+                                <TableCell className="text-muted-foreground">{deptNames.get(u.userId) || u.departmentName || '-'}</TableCell>
                                 <TableCell>{u.requestsCreated}</TableCell>
                                 <TableCell>{u.responsesMade}</TableCell>
                                 <TableCell>{u.attachmentsAdded}</TableCell>

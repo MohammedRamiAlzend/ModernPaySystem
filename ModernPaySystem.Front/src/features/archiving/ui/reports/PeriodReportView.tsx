@@ -1,8 +1,10 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2 } from 'lucide-react';
 import type { ArchivePeriodReport } from '../../model/types';
 import { DailyBreakdownChart } from './charts/DailyBreakdownChart';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
 
 interface PeriodReportViewProps {
     data: ArchivePeriodReport | undefined;
@@ -26,6 +28,15 @@ function StatCard({ label, value }: { label: string; value: number }) {
 }
 
 export function PeriodReportView({ data, isLoading, periodLabel }: PeriodReportViewProps) {
+    const [userNames, setUserNames] = useState<Map<string, string>>(new Map());
+    const topUsers = data?.topUsers ?? [];
+
+    useEffect(() => {
+        if (topUsers.length === 0) return;
+        const userIds = topUsers.map((u) => u.userId);
+        resolveUserNames(userIds).then(setUserNames);
+    }, [data]);
+
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -127,7 +138,7 @@ export function PeriodReportView({ data, isLoading, periodLabel }: PeriodReportV
                             <TableBody>
                                 {data.topUsers.map((u) => (
                                     <TableRow key={u.userId}>
-                                        <TableCell className="font-medium">{u.userName}</TableCell>
+                                        <TableCell className="font-medium">{userNames.get(u.userId) || u.userName}</TableCell>
                                         <TableCell>{u.recordsCreated}</TableCell>
                                         <TableCell>{u.recordsViewed}</TableCell>
                                         <TableCell>{u.filesDownloaded}</TableCell>

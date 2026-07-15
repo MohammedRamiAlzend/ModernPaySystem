@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/ui/card';
 import { Progress } from '@/shared/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table';
 import { Loader2, HardDrive, FileText } from 'lucide-react';
 import type { StorageConsumptionReport } from '../../model/types';
 import { StorageChart } from './charts/StorageChart';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
 
 interface StorageReportViewProps {
     data: StorageConsumptionReport | undefined;
@@ -19,6 +21,17 @@ function formatBytes(bytes: number): string {
 }
 
 export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
+    const reportData = (data as any)?.data ? (data as any).data : data;
+    const perUser: any[] = Array.isArray(reportData?.perUser) ? reportData.perUser : (Array.isArray((reportData as any)?.PerUser) ? (reportData as any).PerUser : []);
+
+    const [userNames, setUserNames] = useState<Map<string, string>>(new Map());
+
+    useEffect(() => {
+        if (perUser.length === 0) return;
+        const userIds = perUser.map((u: any) => u.userId);
+        resolveUserNames(userIds).then(setUserNames);
+    }, [data]);
+
     if (isLoading) {
         return (
             <div className="flex h-64 items-center justify-center">
@@ -26,8 +39,6 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
             </div>
         );
     }
-
-    const reportData = (data as any)?.data ? (data as any).data : data;
 
     if (!reportData) {
         return (
@@ -41,7 +52,6 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
 
     const totalStorageBytes = reportData.totalStorageBytes ?? reportData.TotalStorageBytes ?? 0;
     const totalFiles = reportData.totalFiles ?? reportData.TotalFiles ?? 0;
-    const perUser: any[] = Array.isArray(reportData.perUser) ? reportData.perUser : (Array.isArray(reportData.PerUser) ? reportData.PerUser : []);
     const fileTypeBreakdown: any[] = Array.isArray(reportData.fileTypeBreakdown) ? reportData.fileTypeBreakdown : (Array.isArray(reportData.FileTypeBreakdown) ? reportData.FileTypeBreakdown : []);
 
     return (
@@ -106,7 +116,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
                         <TableBody>
                             {perUser.map((u) => (
                                 <TableRow key={u.userId}>
-                                    <TableCell className="font-medium">{u.userName}</TableCell>
+                                    <TableCell className="font-medium">{userNames.get(u.userId) || u.userName}</TableCell>
                                     <TableCell>{u.totalFiles}</TableCell>
                                     <TableCell>{formatBytes(u.totalBytes)}</TableCell>
                                     <TableCell>

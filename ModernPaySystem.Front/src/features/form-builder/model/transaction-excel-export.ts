@@ -1,4 +1,6 @@
 import ExcelJS from 'exceljs';
+import { resolveUserNames } from '@/shared/utils/resolve-user-names';
+import { resolveUserDeptNames } from '@/shared/utils/resolve-user-dept-names';
 import type {
     TransactionDashboard,
     TransactionDailyReport,
@@ -449,6 +451,12 @@ export async function exportTransactionUserActivityToExcel(
     fromDate?: string,
     toDate?: string,
 ) {
+    const userIds = data.map((u) => u.userId);
+    const [namesMap, deptNamesMap] = await Promise.all([
+        resolveUserNames(userIds),
+        resolveUserDeptNames(userIds),
+    ]);
+
     const wb = await createWorkbook();
     const ws = wb.addWorksheet('نشاط المستخدمين', { properties: { tabColor: { argb: 'FF7C3AED' } } });
 
@@ -477,7 +485,7 @@ export async function exportTransactionUserActivityToExcel(
     );
 
     data.forEach((u) => {
-        addDataRow(ws, [u.userName, u.departmentName || '-', u.requestsCreated, u.responsesMade, u.attachmentsAdded, u.totalActions, formatDateTime(u.lastActivityDate)], aligns);
+        addDataRow(ws, [namesMap.get(u.userId) || u.userName, deptNamesMap.get(u.userId) || u.departmentName || '-', u.requestsCreated, u.responsesMade, u.attachmentsAdded, u.totalActions, formatDateTime(u.lastActivityDate)], aligns);
     });
 
     addBlankRow(ws);
@@ -520,6 +528,12 @@ export async function exportTransactionActiveUsersToExcel(
     fromDate?: string,
     toDate?: string,
 ) {
+    const userIds = data.map((u) => u.userId);
+    const [namesMap, deptNamesMap] = await Promise.all([
+        resolveUserNames(userIds),
+        resolveUserDeptNames(userIds),
+    ]);
+
     const wb = await createWorkbook();
     const ws = wb.addWorksheet('المستخدمون النشطون', { properties: { tabColor: { argb: 'FF059669' } } });
 
@@ -548,8 +562,8 @@ export async function exportTransactionActiveUsersToExcel(
 
     data.forEach((u) => {
         addDataRow(ws, [
-            u.userName,
-            u.departmentName || '-',
+            namesMap.get(u.userId) || u.userName,
+            deptNamesMap.get(u.userId) || u.departmentName || '-',
             u.totalActions,
             formatDate(u.firstActionDate),
             formatDate(u.lastActionDate),
@@ -573,6 +587,9 @@ export async function exportTransactionActiveUsersToExcel(
 // Storage Report Export (multi-sheet)
 // -----------------------------------------------------------------------
 export async function exportTransactionStorageReportToExcel(report: TransactionStorageReport) {
+    const storageUserIds = report.perUser.map((u) => u.userId);
+    const storageNamesMap = await resolveUserNames(storageUserIds);
+
     const wb = await createWorkbook();
     const now = new Date().toISOString().split('T')[0];
     const dateLabelArabic = new Date().toLocaleDateString('ar-SY', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -653,7 +670,7 @@ export async function exportTransactionStorageReportToExcel(report: TransactionS
             userCols,
         );
         report.perUser.forEach((u) => {
-            addDataRow(userSheet, [u.userName, u.totalFiles, formatBytes(u.totalBytes), `${u.percentageOfTotal.toFixed(1)}%`, formatDate(u.lastFileAddedAt)], userAligns);
+            addDataRow(userSheet, [storageNamesMap.get(u.userId) || u.userName, u.totalFiles, formatBytes(u.totalBytes), `${u.percentageOfTotal.toFixed(1)}%`, formatDate(u.lastFileAddedAt)], userAligns);
         });
 
         userSheet.getColumn(1).width = 28;
