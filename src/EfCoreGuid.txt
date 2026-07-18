@@ -1,7 +1,7 @@
 # Create migration (with custom name)
 dotnet ef migrations add <MigrationName> 
   --project src/Modules/IdentitySystem/ModernPaySystem.Module.Identity.Infrastructure 
-  --startup-project src/ModernPaySystem.Boot/ModernPaySystem.Boot.csproj 
+  --startup-project src/ModernPaySystem.Boot/ModernPaCySystem.Boot.csproj 
   --context IdentityDbContext
 
 

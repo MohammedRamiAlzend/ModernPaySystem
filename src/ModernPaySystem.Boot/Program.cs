@@ -174,9 +174,12 @@ app.UseSerilogRequestLogging(opts =>
 });
 
 app.UseCors("AllowAll");
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 //app.UseMiddleware<PermissionMiddleware>();
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 app.MapHealthChecks("/healthz");
 app.Run();
