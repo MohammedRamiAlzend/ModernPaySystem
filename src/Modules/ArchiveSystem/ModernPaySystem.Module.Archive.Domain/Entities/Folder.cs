@@ -63,6 +63,7 @@ public class FolderDto
     public string? DefaultStoragePath { get; set; }
     public int Level { get; set; }
     public Guid? DepartmentId { get; set; }
+    public string? DepartmentName { get; set; }
     public Guid? ParentId { get; set; }
     public Guid? IconId { get; set; }
 

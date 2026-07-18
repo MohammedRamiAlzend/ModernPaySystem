@@ -26,6 +26,8 @@ export interface Folder {
     parentId: string | null;
     iconId?: string | null;
     folderDtos: Folder[];
+    departmentId?: string | null;
+    departmentName?: string | null;
     createdByUserId?: string | null;
     createdAt?: string | null;
     updatedByUserId?: string | null;

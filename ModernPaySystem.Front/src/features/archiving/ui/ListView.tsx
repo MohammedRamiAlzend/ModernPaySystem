@@ -1,5 +1,6 @@
 import React from 'react';
 import { Folder, ArchiveRecord } from '../model/types';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { Button } from '@/shared/ui/button';
 import {
     FileText,
@@ -9,7 +10,10 @@ import {
     Eye,
     Folder as FolderIcon,
     Move,
-    FileX2
+    FileX2,
+    User,
+    Calendar,
+    Building2
 } from 'lucide-react';
 
 interface ListViewProps {
@@ -55,14 +59,16 @@ export const ListView: React.FC<ListViewProps> = ({
                         <tr>
                             <th className="p-4 font-semibold text-right">الاسم / رقم الأرشيف</th>
                             <th className="p-4 font-semibold text-right">النوع / النموذج</th>
-                            <th className="p-4 font-semibold text-right">التفاصيل</th>
+                            <th className="p-4 font-semibold text-right">المنشئ</th>
+                            <th className="p-4 font-semibold text-right">تاريخ الإنشاء</th>
+                            <th className="p-4 font-semibold text-right">القسم</th>
                             <th className="p-4 font-semibold text-center">الإجراءات</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
                         {folders.length === 0 && records.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="p-12 text-center text-muted-foreground font-semibold">
+                                <td colSpan={6} className="p-12 text-center text-muted-foreground font-semibold">
                                     المجلد فارغ تماماً
                                 </td>
                             </tr>
@@ -81,8 +87,19 @@ export const ListView: React.FC<ListViewProps> = ({
                                             </div>
                                             <span className="font-bold text-foreground">{folder.name}</span>
                                         </td>
-                                        <td className="p-4 text-muted-foreground font-semibold text-xs">مجلد فرعي</td>
-                                        <td className="p-4 text-muted-foreground text-xs">-</td>
+                                        <td className="p-4 text-muted-foreground font-semibold text-xs">مجلد</td>
+                                        <td className="p-4 text-muted-foreground text-xs">
+                                            {folder.createdByUserId ? <UserDisplay userId={folder.createdByUserId} showIcon={false} className="text-xs" /> : '-'}
+                                        </td>
+                                        <td className="p-4 text-muted-foreground text-xs whitespace-nowrap">
+                                            {folder.createdAt ? new Date(folder.createdAt).toLocaleDateString('ar-SA') : '-'}
+                                        </td>
+                                        <td className="p-4 text-muted-foreground text-xs">
+                                            <div className="flex items-center gap-1">
+                                                {folder.departmentName && <Building2 className="w-3 h-3 shrink-0" />}
+                                                {folder.departmentName || '-'}
+                                            </div>
+                                        </td>
                                         <td className="p-4">
                                             <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                                 {onFolderEdit && (

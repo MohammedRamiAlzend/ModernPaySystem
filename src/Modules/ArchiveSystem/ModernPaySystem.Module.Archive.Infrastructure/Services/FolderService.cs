@@ -49,6 +49,14 @@ public class FolderService(
                 .Distinct()
                 .ToList();
 
+            var deptNames = new Dictionary<Guid, string>();
+            foreach (var dId in departmentIds)
+            {
+                var deptResult = await departmentService.GetByIdAsync(dId);
+                if (!deptResult.IsError && deptResult.Value != null)
+                    deptNames[dId] = deptResult.Value.Name;
+            }
+
             var isLeaderTasks = departmentIds.Select(d => archiveLeaderService.IsArchiveLeaderAsync(userId, d));
             var leaderResults = await Task.WhenAll(isLeaderTasks);
             var leaderDepartments = new HashSet<Guid>();
@@ -67,6 +75,7 @@ public class FolderService(
                 IconId = x.IconId,
                 FolderDtos = [], // Frontend handles flat structure
                 DepartmentId = x.DepartmentId,
+                DepartmentName = x.DepartmentId.HasValue && deptNames.TryGetValue(x.DepartmentId.Value, out var dn) ? dn : null,
                 CreatedByUserId = x.CreatedByUserId,
                 CreatedAt = x.CreatedAt,
                 UpdatedByUserId = x.UpdatedByUserId,

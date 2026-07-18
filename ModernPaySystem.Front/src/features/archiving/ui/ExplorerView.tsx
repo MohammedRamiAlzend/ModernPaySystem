@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Folder, ArchiveRecord } from '../model/types';
 import { useFolderIcons } from '../model/queries';
+import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { 
     Folder as FolderIcon, 
     FileText, 
@@ -14,7 +15,10 @@ import {
     Shield,
     Image,
     Move,
-    FileX2
+    FileX2,
+    User,
+    Calendar,
+    Building2
 } from 'lucide-react';
 
 interface ExplorerViewProps {
@@ -186,6 +190,30 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                 <span className="text-xs font-bold text-foreground line-clamp-2 break-all w-full px-1">
                                     {folder.name}
                                 </span>
+
+                                {/* Tooltip with folder details */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-card border border-border rounded-xl shadow-xl p-3 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-30">
+                                    <div className="flex flex-col gap-1.5">
+                                        {folder.createdByUserId && (
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                <User className="w-3 h-3 shrink-0" />
+                                                <UserDisplay userId={folder.createdByUserId} showIcon={false} className="text-[10px]" />
+                                            </div>
+                                        )}
+                                        {folder.createdAt && (
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                <Calendar className="w-3 h-3 shrink-0" />
+                                                <span>{new Date(folder.createdAt).toLocaleDateString('ar-SA')}</span>
+                                            </div>
+                                        )}
+                                        {folder.departmentName && (
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                <Building2 className="w-3 h-3 shrink-0" />
+                                                <span>{folder.departmentName}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
