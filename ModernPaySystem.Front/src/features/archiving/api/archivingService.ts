@@ -2,7 +2,8 @@ import api from '@/shared/api/baseApi';
 import {
     Folder, ArchiveRecord, DynamicFormTemplate, CreateFolderDto,
     CreateDynamicFormTemplateDto, UpdateDynamicFormTemplateDto,
-    FolderPermissionDto, CreateFolderPermissionDto,
+    FolderPermissionDto, CreateFolderPermissionDto, BulkCreateFolderPermissionDto,
+    SubFolderTreeNodeDto,
     SemanticSearchRequest, SemanticSearchResultItem, ArchiveAuditLog,
     DepartmentArchiveDashboard, ArchiveDailyReport, ArchivePeriodReport,
     UserActivityReportItem, ActiveUserReportItem,
@@ -431,6 +432,16 @@ export const archivingService = {
 
     deleteFolderPermission: async (permissionId: string): Promise<void> => {
         await api.delete(`/ArchiveSystem/Folders/permissions/${permissionId}`);
+    },
+
+    createBulkFolderPermission: async (dto: BulkCreateFolderPermissionDto): Promise<FolderPermissionDto[]> => {
+        const response = await api.post<any>('/ArchiveSystem/Folders/permissions/bulk', dto);
+        return response.data.data;
+    },
+
+    getSubFolderTree: async (folderId: string): Promise<SubFolderTreeNodeDto[]> => {
+        const response = await api.get<any>(`/ArchiveSystem/Folders/${folderId}/subfolders`);
+        return response.data.data;
     },
 
     // ---------------------------------------------

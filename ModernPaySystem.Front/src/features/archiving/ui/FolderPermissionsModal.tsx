@@ -4,15 +4,20 @@ import { Folder, FolderPermissionDto } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
 import { UserDisplay } from '@/features/users/ui/UserDisplay';
+import { DepartmentPicker } from '@/features/departments/ui/DepartmentPicker';
+import { SubfolderTreeView } from '@/features/archiving/ui/SubfolderTreeView';
 import { Button } from '@/shared/ui/button';
-import { X, Shield, Loader2, Trash2, Lock, Unlock } from 'lucide-react';
+import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree } from 'lucide-react';
 import { useUIStore } from '@/app/store/uiStore';
+import { cn } from '@/shared/lib/utils';
 
 interface FolderPermissionsModalProps {
     isOpen: boolean;
     folder: Folder | null;
     onClose: () => void;
 }
+
+type PermissionTab = 'users' | 'departments';
 
 const accessLevelLabel = (level: number): string => {
     switch (level) {
@@ -33,7 +38,12 @@ export const FolderPermissionsModal = ({
     const [permissions, setPermissions] = useState<FolderPermissionDto[]>([]);
     const [loading, setLoading] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    // New state
+    const [activeTab, setActiveTab] = useState<PermissionTab>('users');
     const [newUserIds, setNewUserIds] = useState<string[]>([]);
+    const [newDepartmentIds, setNewDepartmentIds] = useState<string[]>([]);
+    const [selectedSubFolderIds, setSelectedSubFolderIds] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
 
     const loadPermissions = useCallback(async (folderId: string) => {
@@ -52,6 +62,9 @@ export const FolderPermissionsModal = ({
     if (folder && folder.id !== prevFolderId) {
         setPrevFolderId(folder.id);
         setNewUserIds([]);
+        setNewDepartmentIds([]);
+        setSelectedSubFolderIds([]);
+        setActiveTab('users');
     }
 
     useEffect(() => {
@@ -61,25 +74,46 @@ export const FolderPermissionsModal = ({
     }, [isOpen, folder, loadPermissions]);
 
     const handleAddUsers = async () => {
-        if (!folder || newUserIds.length === 0) return;
+        if (!folder) return;
         setSaving(true);
         let added = 0;
-        for (const userId of newUserIds) {
-            try {
-                await archivingService.createFolderPermission(folder.id, {
-                    userId,
-                    accessLevel: 1,
-                    isInherited: true
-                });
-                added++;
-            } catch {
-                // skip duplicates / errors
+
+        const targetFolderIds = selectedSubFolderIds.length > 0
+            ? selectedSubFolderIds
+            : [folder.id];
+
+        try {
+            if (activeTab === 'users' && newUserIds.length > 0) {
+                for (const userId of newUserIds) {
+                    const result = await archivingService.createBulkFolderPermission({
+                        folderIds: targetFolderIds,
+                        userId,
+                        accessLevel: 1,
+                        isInherited: true
+                    });
+                    added += result.length;
+                }
+                setNewUserIds([]);
+            } else if (activeTab === 'departments' && newDepartmentIds.length > 0) {
+                for (const deptId of newDepartmentIds) {
+                    const result = await archivingService.createBulkFolderPermission({
+                        folderIds: targetFolderIds,
+                        departmentId: deptId,
+                        accessLevel: 1,
+                        isInherited: true
+                    });
+                    added += result.length;
+                }
+                setNewDepartmentIds([]);
             }
+            setSelectedSubFolderIds([]);
+        } catch {
+            showStatus({ type: 'error', title: 'خطأ', message: 'حدث خطأ أثناء إضافة الصلاحيات.' });
         }
+
         setSaving(false);
-        setNewUserIds([]);
         if (added > 0) {
-            showStatus({ type: 'success', title: 'تمت الإضافة', message: `تمت إضافة ${added} مستخدم بنجاح.` });
+            showStatus({ type: 'success', title: 'تمت الإضافة', message: `تمت إضافة ${added} صلاحية بنجاح.` });
             await loadPermissions(folder.id);
         }
     };
@@ -98,6 +132,8 @@ export const FolderPermissionsModal = ({
     };
 
     if (!isOpen || !folder) return null;
+
+    const canAdd = activeTab === 'users' ? newUserIds.length > 0 : newDepartmentIds.length > 0;
 
     return (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-200" onClick={onClose}>
@@ -120,24 +156,73 @@ export const FolderPermissionsModal = ({
 
                 {/* Body */}
                 <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
-                    {/* Add users section */}
+                    {/* Tabs */}
+                    <div className="flex bg-muted/50 rounded-xl p-1">
+                        <button
+                            onClick={() => { setActiveTab('users'); setNewUserIds([]); setNewDepartmentIds([]); }}
+                            className={cn(
+                                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all',
+                                activeTab === 'users' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            <Users className="w-4 h-4" />
+                            مستخدمين
+                        </button>
+                        <button
+                            onClick={() => { setActiveTab('departments'); setNewUserIds([]); setNewDepartmentIds([]); }}
+                            className={cn(
+                                'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all',
+                                activeTab === 'departments' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            <Building2 className="w-4 h-4" />
+                            أقسام
+                        </button>
+                    </div>
+
+                    {/* Add permission section */}
                     <div className="space-y-3">
-                        <span className="text-xs font-bold text-muted-foreground">إضافة مستخدمين للاطلاع</span>
-                        <MultiUserPicker
-                            selectedUserIds={newUserIds}
-                            onUsersChange={setNewUserIds}
-                            label="مستخدمين جدد"
-                            placeholder="ابحث عن مستخدم..."
-                            departmentOnly={true}
-                        />
-                        {newUserIds.length > 0 && (
+                        <span className="text-xs font-bold text-muted-foreground">
+                            {activeTab === 'users' ? 'إضافة مستخدمين للاطلاع' : 'إضافة أقسام للاطلاع'}
+                        </span>
+
+                        {activeTab === 'users' ? (
+                            <MultiUserPicker
+                                selectedUserIds={newUserIds}
+                                onUsersChange={setNewUserIds}
+                                label="مستخدمين جدد"
+                                placeholder="ابحث عن مستخدم..."
+                            />
+                        ) : (
+                            <DepartmentPicker
+                                selectedDepartmentIds={newDepartmentIds}
+                                onDepartmentsChange={setNewDepartmentIds}
+                            />
+                        )}
+
+                        {/* Subfolder scope */}
+                        {canAdd && (
+                            <div className="border border-border/60 rounded-xl p-3 space-y-3 bg-muted/20">
+                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                                    <FolderTree className="w-3.5 h-3.5" />
+                                    نطاق الصلاحية
+                                </div>
+                                <SubfolderTreeView
+                                    folderId={folder.id}
+                                    selectedFolderIds={selectedSubFolderIds}
+                                    onSelectionChange={setSelectedSubFolderIds}
+                                />
+                            </div>
+                        )}
+
+                        {canAdd && (
                             <Button
                                 onClick={handleAddUsers}
                                 disabled={saving}
                                 className="w-full rounded-xl font-bold text-sm"
                                 size="sm"
                             >
-                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : `إضافة ${newUserIds.length} مستخدم`}
+                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : `إضافة ${activeTab === 'users' ? newUserIds.length : newDepartmentIds.length} ${activeTab === 'users' ? 'مستخدم' : 'قسم'}`}
                             </Button>
                         )}
                     </div>
@@ -157,10 +242,16 @@ export const FolderPermissionsModal = ({
                                     <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/60">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                                <Shield className="h-4 w-4" />
+                                                {p.departmentId ? <Building2 className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <UserDisplay userId={p.userId} showIcon={false} className="text-xs font-bold" />
+                                                {p.departmentId ? (
+                                                    <span className="text-xs font-bold truncate">
+                                                        {p.departmentName ?? 'قسم'}
+                                                    </span>
+                                                ) : (
+                                                    <UserDisplay userId={p.userId!} showIcon={false} className="text-xs font-bold" />
+                                                )}
                                                 <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                                                     {p.isInherited ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                                                     {accessLevelLabel(p.accessLevel)}

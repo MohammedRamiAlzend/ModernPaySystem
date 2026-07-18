@@ -51,6 +51,8 @@ public static class ArchiveErrors
     public static readonly Error FolderPermissionAlreadyExists = Error.Conflict("10061", "A permission for this user on this folder already exists.", "توجد بالفعل صلاحية لهذا المستخدم على هذا المجلد.");
     public static readonly Error CannotRemoveOwnFolderPermission = Error.Conflict("10062", "You cannot remove your own folder permission.", "لا يمكنك إزالة صلاحية المجلد الخاصة بك.");
     public static readonly Error FolderAlreadyExists = Error.Conflict("10063", "A folder with this name already exists in the target location.", "يوجد بالفعل مجلد بنفس الاسم في الموقع المستهدف.");
+    public static readonly Error FolderPermissionDepartmentOrUserRequired = Error.Validation("10064", "Either userId or departmentId must be provided.", "يجب تحديد مستخدم أو قسم.");
+    public static readonly Error FolderPermissionDepartmentAlreadyExists = Error.Conflict("10065", "A permission for this department on this folder already exists.", "توجد بالفعل صلاحية لهذا القسم على هذا المجلد.");
 
     public static Error InvalidAttachmentType(List<string> rejectedFileNames) =>
         Error.Validation("601", $"The following file types are not allowed: {string.Join(", ", rejectedFileNames)}.", $"أنواع الملفات التالية غير مسموح بها: {string.Join(", ", rejectedFileNames)}.");

@@ -1,7 +1,35 @@
+# Visual Studio
 .vs/
-logs/
-**/bin/
-**/obj/
 *.user
 *.suo
+*.userprefs
 *.vsidx
+
+# .NET build artifacts
+**/bin/
+**/obj/
+*.dll
+*.exe
+*.pdb
+*.so
+*.dylib
+*.nupkg
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend
+node_modules/
+dist/
+.next/

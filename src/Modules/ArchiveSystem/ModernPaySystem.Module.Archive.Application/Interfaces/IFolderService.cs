@@ -15,6 +15,9 @@ public interface IFolderService
     Task<Result<List<FolderPermissionDto>>> GetPermissionsByFolderAsync(Guid folderId);
     Task<Result<FolderPermissionDto>> GetPermissionByIdAsync(Guid id);
     Task<Result<FolderPermissionDto>> CreatePermissionAsync(CreateFolderPermissionDto dto);
+    Task<Result<List<FolderPermissionDto>>> CreateBulkPermissionAsync(BulkCreateFolderPermissionDto dto);
     Task<Result<FolderPermissionDto>> UpdatePermissionAsync(Guid id, UpdateFolderPermissionDto dto);
     Task<Result<bool>> DeletePermissionAsync(Guid id);
+
+    Task<Result<List<SubFolderTreeNodeDto>>> GetSubFolderTreeAsync(Guid folderId);
 }

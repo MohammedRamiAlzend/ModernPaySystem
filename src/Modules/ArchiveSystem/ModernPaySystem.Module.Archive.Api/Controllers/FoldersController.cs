@@ -94,8 +94,28 @@ public class FoldersController(
     public async Task<IActionResult> CreatePermission(Guid folderId, [FromBody] CreateFolderPermissionDto dto)
     {
         dto.FolderId = folderId;
-        logger.LogInformation("Creating folder permission for user {UserId} on folder {FolderId}", dto.UserId, folderId);
+        logger.LogInformation("Creating folder permission for user/dept {UserId}/{DepartmentId} on folder {FolderId}",
+            dto.UserId, dto.DepartmentId, folderId);
         var result = await folderService.CreatePermissionAsync(dto);
+        return result.ToActionResult();
+    }
+
+    [HttpPost("permissions/bulk")]
+    [EndpointPermission("archiving.folders.permissions.create", SubSystem.Archiving, PermissionType.Insert)]
+    public async Task<IActionResult> CreateBulkPermission([FromBody] BulkCreateFolderPermissionDto dto)
+    {
+        logger.LogInformation("Creating bulk permissions for {FolderCount} folders for user/dept {UserId}/{DepartmentId}",
+            dto.FolderIds.Count, dto.UserId, dto.DepartmentId);
+        var result = await folderService.CreateBulkPermissionAsync(dto);
+        return result.ToActionResult();
+    }
+
+    [HttpGet("{folderId}/subfolders")]
+    [EndpointPermission("archiving.folders.get-by-id", SubSystem.Archiving, PermissionType.Read)]
+    public async Task<IActionResult> GetSubFolderTree(Guid folderId)
+    {
+        logger.LogInformation("Getting subfolder tree for folder {FolderId}", folderId);
+        var result = await folderService.GetSubFolderTreeAsync(folderId);
         return result.ToActionResult();
     }
 

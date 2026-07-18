@@ -406,8 +406,11 @@ public class FolderService(
     {
         try
         {
-            if (dto == null || dto.FolderId == Guid.Empty || dto.UserId == Guid.Empty)
+            if (dto == null || dto.FolderId == Guid.Empty)
                 return ArchiveErrors.InvalidInput;
+
+            if (dto.UserId == null && dto.DepartmentId == null)
+                return ArchiveErrors.FolderPermissionDepartmentOrUserRequired;
 
             var currentUserId = httpContextServiceManager.GetCurrentUserId();
             var canManage = await CanManageFolderPermissionsAsync(currentUserId, dto.FolderId);
@@ -416,16 +419,28 @@ public class FolderService(
             if (!canManage.Value)
                 return ArchiveErrors.FolderAccessDenied;
 
-            var exists = await unitOfWork.FolderPermissions.AnyAsync(
-                x => x.FolderId == dto.FolderId && x.UserId == dto.UserId.ToString());
-            if (exists)
-                return ArchiveErrors.FolderPermissionAlreadyExists;
+            if (dto.UserId.HasValue && dto.UserId.Value != Guid.Empty)
+            {
+                var exists = await unitOfWork.FolderPermissions.AnyAsync(
+                    x => x.FolderId == dto.FolderId && x.UserId == dto.UserId.Value.ToString());
+                if (exists)
+                    return ArchiveErrors.FolderPermissionAlreadyExists;
+            }
+
+            if (dto.DepartmentId.HasValue && dto.DepartmentId.Value != Guid.Empty)
+            {
+                var deptExists = await unitOfWork.FolderPermissions.AnyAsync(
+                    x => x.FolderId == dto.FolderId && x.DepartmentId == dto.DepartmentId.Value);
+                if (deptExists)
+                    return ArchiveErrors.FolderPermissionDepartmentAlreadyExists;
+            }
 
             var permission = new FolderPermission
             {
                 Id = Guid.NewGuid(),
                 FolderId = dto.FolderId,
-                UserId = dto.UserId.ToString(),
+                UserId = dto.UserId?.ToString(),
+                DepartmentId = dto.DepartmentId,
                 AccessLevel = dto.AccessLevel,
                 IsInherited = dto.IsInherited
             };
@@ -436,12 +451,149 @@ public class FolderService(
 
             await unitOfWork.SaveChangesAsync();
 
-            logger.LogInformation("Folder permission created for user {UserId} on folder {FolderId}", dto.UserId, dto.FolderId);
+            logger.LogInformation("Folder permission created for user/dept {UserId}/{DepartmentId} on folder {FolderId}",
+                dto.UserId, dto.DepartmentId, dto.FolderId);
             return permission.ToDto();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error creating folder permission");
+            return ArchiveErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<List<FolderPermissionDto>>> CreateBulkPermissionAsync(BulkCreateFolderPermissionDto dto)
+    {
+        try
+        {
+            if (dto == null || dto.FolderIds.Count == 0)
+                return ArchiveErrors.InvalidInput;
+
+            if (dto.UserId == null && dto.DepartmentId == null)
+                return ArchiveErrors.FolderPermissionDepartmentOrUserRequired;
+
+            var currentUserId = httpContextServiceManager.GetCurrentUserId();
+            var createdPermissions = new List<FolderPermissionDto>();
+
+            foreach (var folderId in dto.FolderIds)
+            {
+                var canManage = await CanManageFolderPermissionsAsync(currentUserId, folderId);
+                if (canManage.IsError || !canManage.Value)
+                    continue;
+
+                if (dto.UserId.HasValue && dto.UserId.Value != Guid.Empty)
+                {
+                    var exists = await unitOfWork.FolderPermissions.AnyAsync(
+                        x => x.FolderId == folderId && x.UserId == dto.UserId.Value.ToString());
+                    if (exists)
+                        continue;
+                }
+
+                if (dto.DepartmentId.HasValue && dto.DepartmentId.Value != Guid.Empty)
+                {
+                    var deptExists = await unitOfWork.FolderPermissions.AnyAsync(
+                        x => x.FolderId == folderId && x.DepartmentId == dto.DepartmentId.Value);
+                    if (deptExists)
+                        continue;
+                }
+
+                var permission = new FolderPermission
+                {
+                    Id = Guid.NewGuid(),
+                    FolderId = folderId,
+                    UserId = dto.UserId?.ToString(),
+                    DepartmentId = dto.DepartmentId,
+                    AccessLevel = dto.AccessLevel,
+                    IsInherited = dto.IsInherited
+                };
+
+                var addResult = await unitOfWork.FolderPermissions.AddAsync(permission);
+                if (addResult.IsError)
+                    continue;
+
+                createdPermissions.Add(permission.ToDto());
+            }
+
+            await unitOfWork.SaveChangesAsync();
+
+            logger.LogInformation("Bulk folder permission created: {Count} folders for user/dept {UserId}/{DepartmentId}",
+                createdPermissions.Count, dto.UserId, dto.DepartmentId);
+            return createdPermissions;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error creating bulk folder permissions");
+            return ArchiveErrors.InternalServerError;
+        }
+    }
+
+    public async Task<Result<List<SubFolderTreeNodeDto>>> GetSubFolderTreeAsync(Guid folderId)
+    {
+        try
+        {
+            if (folderId == Guid.Empty)
+                return ArchiveErrors.InvalidInput;
+
+            var userId = httpContextServiceManager.GetCurrentUserId();
+            var access = await resourceAuth.CanAccessFolderAsync(userId, folderId, AccessLevel.View);
+            if (access.IsError)
+                return access.Errors;
+            if (!access.Value)
+                return ArchiveErrors.FolderAccessDenied;
+
+            var allSubFolderIds = new List<Guid>();
+            var queue = new Queue<Guid>();
+            queue.Enqueue(folderId);
+
+            while (queue.Count > 0)
+            {
+                var currentId = queue.Dequeue();
+                var childrenResult = await unitOfWork.Folders.GetAllAsync(
+                    x => x.ParentId == currentId);
+
+                if (childrenResult.IsError || childrenResult.Value == null)
+                    continue;
+
+                foreach (var child in childrenResult.Value)
+                {
+                    allSubFolderIds.Add(child.Id);
+                    queue.Enqueue(child.Id);
+                }
+            }
+
+            var rootChildrenResult = await unitOfWork.Folders.GetAllAsync(
+                x => x.ParentId == folderId);
+
+            if (rootChildrenResult.IsError || rootChildrenResult.Value == null)
+                return new List<SubFolderTreeNodeDto>();
+
+            async Task<List<SubFolderTreeNodeDto>> BuildTreeAsync(IEnumerable<Folder> folders)
+            {
+                var result = new List<SubFolderTreeNodeDto>();
+                foreach (var folder in folders.OrderBy(f => f.Name))
+                {
+                    var grandChildrenResult = await unitOfWork.Folders.GetAllAsync(
+                        x => x.ParentId == folder.Id);
+                    var children = grandChildrenResult.IsError || grandChildrenResult.Value == null
+                        ? new List<SubFolderTreeNodeDto>()
+                        : await BuildTreeAsync(grandChildrenResult.Value);
+
+                    result.Add(new SubFolderTreeNodeDto
+                    {
+                        Id = folder.Id,
+                        Name = folder.Name,
+                        Level = folder.Level,
+                        Children = children
+                    });
+                }
+                return result;
+            }
+
+            return await BuildTreeAsync(rootChildrenResult.Value);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching subfolder tree for folder {FolderId}", folderId);
             return ArchiveErrors.InternalServerError;
         }
     }

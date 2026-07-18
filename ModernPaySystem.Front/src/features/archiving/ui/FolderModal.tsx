@@ -2,6 +2,9 @@ import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
 import { Label } from '@/shared/ui/label';
 import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
+import { DepartmentPicker } from '@/features/departments/ui/DepartmentPicker';
+import { cn } from '@/shared/lib/utils';
+import { useState } from 'react';
 
 interface FolderModalProps {
     isOpen: boolean;
@@ -22,14 +25,15 @@ export function FolderModal({
     mode,
     folderName,
     onFolderNameChange,
-    // folderStoragePath = '',
-    // onFolderStoragePathChange,
     onClose,
     onSubmit,
     isSaving,
     initialPermissionIds = [],
     onPermissionIdsChange
 }: FolderModalProps) {
+    const [showDeptPicker, setShowDeptPicker] = useState(false);
+    const [initialDepartmentIds, setInitialDepartmentIds] = useState<string[]>([]);
+
     if (!isOpen) return null;
 
     return (
@@ -58,27 +62,37 @@ export function FolderModal({
                         />
                     </div>
 
-                    {/* {mode === 'create' && onFolderStoragePathChange && (
-                        <div className="flex flex-col gap-2">
-                            <Label className="text-xs font-semibold text-muted-foreground">مسار التخزين (اختياري)</Label>
-                            <Input
-                                value={folderStoragePath}
-                                onChange={(e) => onFolderStoragePathChange(e.target.value)}
-                                placeholder="مثال: ArchivedDocs/2026"
-                                className="rounded-2xl h-11 bg-background border-border"
-                                dir="ltr"
-                            />
-                        </div>
-                    )} */}
-
                     {mode === 'create' && (
                         <div className="flex flex-col gap-2 border-t border-border pt-4">
                             <MultiUserPicker
                                 selectedUserIds={initialPermissionIds}
                                 onUsersChange={onPermissionIdsChange ?? (() => { })}
-                                label="صلاحيات إضافية (اختياري)"
+                                label="صلاحيات إضافية لمستخدمين (اختياري)"
                                 placeholder="اضف مستخدم للاطلاع فقط..."
                             />
+
+                            <div className="flex items-center gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowDeptPicker(!showDeptPicker)}
+                                    className={cn(
+                                        'text-xs font-bold flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors',
+                                        showDeptPicker ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    {showDeptPicker ? 'إخفاء' : '+ إضافة صلاحية لقسم'}
+                                </button>
+                            </div>
+
+                            {showDeptPicker && (
+                                <div className="pt-1">
+                                    <DepartmentPicker
+                                        selectedDepartmentIds={initialDepartmentIds}
+                                        onDepartmentsChange={setInitialDepartmentIds}
+                                        label="أقسام ذات صلاحية اطلاع"
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
 

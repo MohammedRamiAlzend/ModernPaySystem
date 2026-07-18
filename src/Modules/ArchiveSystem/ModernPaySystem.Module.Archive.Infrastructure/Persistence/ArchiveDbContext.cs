@@ -157,6 +157,8 @@ public class ArchiveDbContext(DbContextOptions<ArchiveDbContext> options) : DbCo
         modelBuilder.Entity<FolderPermission>(entity =>
         {
             entity.HasIndex(e => e.FolderId);
+            entity.HasIndex(e => e.DepartmentId);
+            entity.Property(e => e.UserId).HasMaxLength(450);
         });
 
         modelBuilder.Entity<FolderIcon>(entity =>

@@ -129,8 +129,10 @@ export interface SemanticSearchRequest {
 export interface FolderPermissionDto {
     id: string;
     folderId: string;
-    userId: string;
+    userId: string | null;
     userName?: string | null;
+    departmentId: string | null;
+    departmentName?: string | null;
     accessLevel: number;
     isInherited: boolean;
     createdByUserId?: string | null;
@@ -141,9 +143,25 @@ export interface FolderPermissionDto {
 
 export interface CreateFolderPermissionDto {
     folderId: string;
-    userId: string;
+    userId?: string | null;
+    departmentId?: string | null;
     accessLevel: number;
     isInherited: boolean;
+}
+
+export interface BulkCreateFolderPermissionDto {
+    folderIds: string[];
+    userId?: string | null;
+    departmentId?: string | null;
+    accessLevel: number;
+    isInherited: boolean;
+}
+
+export interface SubFolderTreeNodeDto {
+    id: string;
+    name: string;
+    level: number;
+    children: SubFolderTreeNodeDto[];
 }
 
 export interface SemanticSearchResultItem {

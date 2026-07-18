@@ -4,12 +4,14 @@ using ModernPaySystem.Module.Archive.Application.Interfaces;
 using ModernPaySystem.Module.Archive.Domain;
 using ModernPaySystem.Module.Archive.Domain.Entities;
 using ModernPaySystem.Module.Archive.Infrastructure.Persistence;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 
 namespace ModernPaySystem.Module.Archive.Infrastructure.Services;
 
 public class ArchiveResourceAuthorizationService(
     ArchiveDbContext dbContext,
+    IDepartmentService departmentService,
     ILogger<ArchiveResourceAuthorizationService> logger)
     : IArchiveResourceAuthorizationService
 {
@@ -23,10 +25,6 @@ public class ArchiveResourceAuthorizationService(
 
         try
         {
-            var folderExists = await dbContext.Folders.AnyAsync(f => f.Id == folderId);
-            if (!folderExists)
-                return ArchiveErrors.FolderNotFound;
-
             var userIdString = userId.ToString();
 
             var hasDirectPermission = await dbContext.FolderPermissions
@@ -35,15 +33,54 @@ public class ArchiveResourceAuthorizationService(
             if (hasDirectPermission)
                 return true;
 
-            var departmentId = await dbContext.Folders
+            var userDeptResult = await departmentService.GetByUserIdAsync(userId);
+            Guid? userDepartmentId = userDeptResult.Value?.Id;
+
+            if (userDepartmentId.HasValue)
+            {
+                var hasDepartmentPermission = await dbContext.FolderPermissions
+                    .AnyAsync(fp => fp.FolderId == folderId && fp.DepartmentId == userDepartmentId.Value && (int)fp.AccessLevel >= (int)minimumLevel);
+
+                if (hasDepartmentPermission)
+                    return true;
+            }
+
+            var currentFolderId = folderId;
+            while (currentFolderId != Guid.Empty)
+            {
+                currentFolderId = await dbContext.Folders
+                    .Where(f => f.Id == currentFolderId)
+                    .Select(f => f.ParentId ?? Guid.Empty)
+                    .FirstOrDefaultAsync();
+
+                if (currentFolderId == Guid.Empty)
+                    break;
+
+                var hasInheritedUserPermission = await dbContext.FolderPermissions
+                    .AnyAsync(fp => fp.FolderId == currentFolderId && fp.UserId == userIdString && fp.IsInherited && (int)fp.AccessLevel >= (int)minimumLevel);
+
+                if (hasInheritedUserPermission)
+                    return true;
+
+                if (userDepartmentId.HasValue)
+                {
+                    var hasInheritedDeptPermission = await dbContext.FolderPermissions
+                        .AnyAsync(fp => fp.FolderId == currentFolderId && fp.DepartmentId == userDepartmentId.Value && fp.IsInherited && (int)fp.AccessLevel >= (int)minimumLevel);
+
+                    if (hasInheritedDeptPermission)
+                        return true;
+                }
+            }
+
+            var folderDeptId = await dbContext.Folders
                 .Where(f => f.Id == folderId)
                 .Select(f => f.DepartmentId)
                 .FirstOrDefaultAsync();
 
-            if (departmentId.HasValue)
+            if (folderDeptId.HasValue)
             {
                 var isArchiveLeader = await dbContext.DepartmentArchiveLeaders
-                    .AnyAsync(dal => dal.DepartmentId == departmentId.Value && dal.UserId == userId);
+                    .AnyAsync(dal => dal.DepartmentId == folderDeptId.Value && dal.UserId == userId);
 
                 if (isArchiveLeader)
                     return true;
@@ -134,16 +171,31 @@ public class ArchiveResourceAuthorizationService(
             var maxLevel = (AccessLevel)0;
             var currentFolderId = folderId;
 
+            var userDeptResult = await departmentService.GetByUserIdAsync(userId);
+            Guid? userDepartmentId = userDeptResult.Value?.Id;
+
             while (currentFolderId != Guid.Empty)
             {
-                var folderLevel = await dbContext.FolderPermissions
+                var userLevel = await dbContext.FolderPermissions
                     .Where(fp => fp.FolderId == currentFolderId && fp.UserId == userIdString)
                     .Select(fp => (int)fp.AccessLevel)
                     .DefaultIfEmpty(0)
                     .MaxAsync();
 
-                if (folderLevel > (int)maxLevel)
-                    maxLevel = (AccessLevel)folderLevel;
+                if (userLevel > (int)maxLevel)
+                    maxLevel = (AccessLevel)userLevel;
+
+                if (userDepartmentId.HasValue)
+                {
+                    var deptLevel = await dbContext.FolderPermissions
+                        .Where(fp => fp.FolderId == currentFolderId && fp.DepartmentId == userDepartmentId.Value)
+                        .Select(fp => (int)fp.AccessLevel)
+                        .DefaultIfEmpty(0)
+                        .MaxAsync();
+
+                    if (deptLevel > (int)maxLevel)
+                        maxLevel = (AccessLevel)deptLevel;
+                }
 
                 currentFolderId = await dbContext.Folders
                     .Where(f => f.Id == currentFolderId)
@@ -169,10 +221,47 @@ public class ArchiveResourceAuthorizationService(
         {
             var userIdString = userId.ToString();
 
-            var folderIdsFromPermissions = await dbContext.FolderPermissions
+            var folderIdsFromDirectPermissions = await dbContext.FolderPermissions
                 .Where(fp => fp.UserId == userIdString && (int)fp.AccessLevel >= (int)minimumLevel)
                 .Select(fp => fp.FolderId)
                 .ToListAsync();
+
+            var userDeptResult = await departmentService.GetByUserIdAsync(userId);
+            Guid? userDepartmentId = userDeptResult.Value?.Id;
+
+            var folderIdsFromDeptPermissions = new List<Guid>();
+            if (userDepartmentId.HasValue)
+            {
+                folderIdsFromDeptPermissions = await dbContext.FolderPermissions
+                    .Where(fp => fp.DepartmentId == userDepartmentId.Value && (int)fp.AccessLevel >= (int)minimumLevel)
+                    .Select(fp => fp.FolderId)
+                    .ToListAsync();
+            }
+
+            var inheritedFolderIds = await dbContext.FolderPermissions
+                .Where(fp => fp.UserId == userIdString && fp.IsInherited && (int)fp.AccessLevel >= (int)minimumLevel)
+                .Select(fp => fp.FolderId)
+                .ToListAsync();
+
+            var inheritedDeptFolderIds = new List<Guid>();
+            if (userDepartmentId.HasValue)
+            {
+                inheritedDeptFolderIds = await dbContext.FolderPermissions
+                    .Where(fp => fp.DepartmentId == userDepartmentId.Value && fp.IsInherited && (int)fp.AccessLevel >= (int)minimumLevel)
+                    .Select(fp => fp.FolderId)
+                    .ToListAsync();
+            }
+
+            var allInheritedRootIds = inheritedFolderIds
+                .Union(inheritedDeptFolderIds)
+                .Distinct()
+                .ToList();
+
+            var descendantIds = new List<Guid>();
+            if (allInheritedRootIds.Count != 0)
+            {
+                descendantIds = await GetDescendantFolderIdsAsync(allInheritedRootIds);
+            }
 
             var folderIdsFromArchiveLeader = await dbContext.Folders
                 .Where(f => f.DepartmentId != null)
@@ -181,7 +270,9 @@ public class ArchiveResourceAuthorizationService(
                 .Select(f => f.Id)
                 .ToListAsync();
 
-            var result = folderIdsFromPermissions
+            var result = folderIdsFromDirectPermissions
+                .Union(folderIdsFromDeptPermissions)
+                .Union(descendantIds)
                 .Union(folderIdsFromArchiveLeader)
                 .Distinct()
                 .ToList();
@@ -193,5 +284,45 @@ public class ArchiveResourceAuthorizationService(
             logger.LogError(ex, "Error getting accessible folder IDs for user {UserId}", userId);
             return ArchiveErrors.InternalServerError;
         }
+    }
+
+    public async Task<Result<bool>> HasDepartmentFolderPermissionAsync(Guid departmentId, Guid folderId, AccessLevel minimumLevel = AccessLevel.View)
+    {
+        try
+        {
+            var hasPermission = await dbContext.FolderPermissions
+                .AnyAsync(fp => fp.FolderId == folderId && fp.DepartmentId == departmentId && (int)fp.AccessLevel >= (int)minimumLevel);
+
+            return hasPermission;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error checking department folder permission for dept {DepartmentId} on folder {FolderId}", departmentId, folderId);
+            return ArchiveErrors.InternalServerError;
+        }
+    }
+
+    private async Task<List<Guid>> GetDescendantFolderIdsAsync(List<Guid> rootFolderIds)
+    {
+        var result = new List<Guid>();
+        var queue = new Queue<Guid>(rootFolderIds);
+
+        while (queue.Count > 0)
+        {
+            var currentId = queue.Dequeue();
+            result.Add(currentId);
+
+            var childIds = await dbContext.Folders
+                .Where(f => f.ParentId == currentId)
+                .Select(f => f.Id)
+                .ToListAsync();
+
+            foreach (var childId in childIds)
+            {
+                queue.Enqueue(childId);
+            }
+        }
+
+        return result;
     }
 }
