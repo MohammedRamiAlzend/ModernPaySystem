@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Folder, FolderPermissionDto } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import { MultiUserPicker } from '@/features/users/ui/MultiUserPicker';
@@ -135,9 +136,9 @@ export const FolderPermissionsModal = ({
 
     const canAdd = activeTab === 'users' ? newUserIds.length > 0 : newDepartmentIds.length > 0;
 
-    return (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[100] animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col" dir="rtl" onClick={e => e.stopPropagation()}>
+    return createPortal(
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center z-[200] animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col mx-4" dir="rtl" onClick={e => e.stopPropagation()}>
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border/60">
                     <div className="flex items-center gap-3">
@@ -284,6 +285,7 @@ export const FolderPermissionsModal = ({
                     </Button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
