@@ -369,7 +369,28 @@ public class FolderService(
             if (result.IsError)
                 return result.Errors;
 
-            return result.Value!.Select(p => p.ToDto()).ToList();
+            var permissions = result.Value!.ToList();
+            var departmentIds = permissions
+                .Where(p => p.DepartmentId.HasValue)
+                .Select(p => p.DepartmentId!.Value)
+                .Distinct()
+                .ToList();
+
+            var departmentNames = new Dictionary<Guid, string>();
+            foreach (var deptId in departmentIds)
+            {
+                var deptResult = await departmentService.GetByIdAsync(deptId);
+                if (!deptResult.IsError && deptResult.Value != null)
+                    departmentNames[deptId] = deptResult.Value.Name;
+            }
+
+            return permissions.Select(p =>
+            {
+                var dto = p.ToDto();
+                if (p.DepartmentId.HasValue && departmentNames.TryGetValue(p.DepartmentId.Value, out var deptName))
+                    dto.DepartmentName = deptName;
+                return dto;
+            }).ToList();
         }
         catch (Exception ex)
         {

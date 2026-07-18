@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Folder, FolderPermissionDto } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';
@@ -8,9 +8,10 @@ import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { DepartmentPicker } from '@/features/departments/ui/DepartmentPicker';
 import { SubfolderTreeView } from '@/features/archiving/ui/SubfolderTreeView';
 import { Button } from '@/shared/ui/button';
-import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree } from 'lucide-react';
+import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree, Search, Filter } from 'lucide-react';
 import { useUIStore } from '@/app/store/uiStore';
 import { cn } from '@/shared/lib/utils';
+import { Input } from '@/shared/ui/input';
 
 interface FolderPermissionsModalProps {
     isOpen: boolean;
@@ -46,6 +47,8 @@ export const FolderPermissionsModal = ({
     const [newDepartmentIds, setNewDepartmentIds] = useState<string[]>([]);
     const [selectedSubFolderIds, setSelectedSubFolderIds] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterType, setFilterType] = useState<'all' | 'users' | 'departments'>('all');
 
     const loadPermissions = useCallback(async (folderId: string) => {
         Promise.resolve().then(() => setLoading(true));
@@ -66,6 +69,8 @@ export const FolderPermissionsModal = ({
         setNewDepartmentIds([]);
         setSelectedSubFolderIds([]);
         setActiveTab('users');
+        setSearchQuery('');
+        setFilterType('all');
     }
 
     useEffect(() => {
@@ -131,6 +136,20 @@ export const FolderPermissionsModal = ({
             setDeletingId(null);
         }
     };
+
+    const filteredPermissions = useMemo(() => {
+        let result = permissions;
+        if (filterType === 'users') result = result.filter(p => !p.departmentId);
+        if (filterType === 'departments') result = result.filter(p => p.departmentId);
+        if (searchQuery.trim()) {
+            const q = searchQuery.trim().toLowerCase();
+            result = result.filter(p => {
+                if (p.departmentId) return p.departmentName?.toLowerCase().includes(q);
+                return p.userId?.toLowerCase().includes(q);
+            });
+        }
+        return result;
+    }, [permissions, searchQuery, filterType]);
 
     if (!isOpen || !folder) return null;
 
@@ -230,16 +249,31 @@ export const FolderPermissionsModal = ({
 
                     {/* Existing permissions */}
                     <div className="space-y-3">
-                        <span className="text-xs font-bold text-muted-foreground">الصلاحيات الحالية ({permissions.length})</span>
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-muted-foreground">الصلاحيات الحالية ({filteredPermissions.length})</span>
+                            {permissions.length > 0 && (
+                                <div className="flex items-center gap-1">
+                                    <button onClick={() => setFilterType('all')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'all' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>الكل</button>
+                                    <button onClick={() => setFilterType('users')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'users' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>مستخدمين</button>
+                                    <button onClick={() => setFilterType('departments')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'departments' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>أقسام</button>
+                                </div>
+                            )}
+                        </div>
+                        {permissions.length > 0 && (
+                            <div className="relative">
+                                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/60" />
+                                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="ابحث بالاسم..." className="h-8 text-xs pr-8 rounded-lg" />
+                            </div>
+                        )}
                         {loading ? (
                             <div className="flex items-center justify-center py-8 text-muted-foreground">
                                 <Loader2 className="h-6 w-6 animate-spin" />
                             </div>
-                        ) : permissions.length === 0 ? (
-                            <p className="text-xs text-muted-foreground/60 text-center py-6">لا توجد صلاحيات مخصصة لهذا المجلد.</p>
+                        ) : filteredPermissions.length === 0 ? (
+                            <p className="text-xs text-muted-foreground/60 text-center py-6">{searchQuery || filterType !== 'all' ? 'لا توجد صلاحيات تطابق البحث' : 'لا توجد صلاحيات مخصصة لهذا المجلد.'}</p>
                         ) : (
                             <div className="space-y-2">
-                                {permissions.map(p => (
+                                {filteredPermissions.map(p => (
                                     <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/60">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
