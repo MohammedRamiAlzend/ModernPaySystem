@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ModernPaySystem.Boot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b7b3de307c58416f36ef33522140cd9356a9c13c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ebf38580c9b865ff967149a1ae0d664904002776")]
 [assembly: System.Reflection.AssemblyProductAttribute("ModernPaySystem.Boot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ModernPaySystem.Boot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

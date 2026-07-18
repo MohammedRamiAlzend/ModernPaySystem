@@ -1391,6 +1391,22 @@
   },
   {
     "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "GetSubFolderTree",
+    "RelativePath": "api/ArchiveSystem/Folders/{folderId}/subfolders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "folderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
     "Method": "GetById",
     "RelativePath": "api/ArchiveSystem/Folders/{id}",
     "HttpMethod": "GET",
@@ -1506,6 +1522,22 @@
       {
         "Name": "id",
         "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "CreateBulkPermission",
+    "RelativePath": "api/ArchiveSystem/Folders/permissions/bulk",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.BulkCreateFolderPermissionDto",
         "IsRequired": true
       }
     ],

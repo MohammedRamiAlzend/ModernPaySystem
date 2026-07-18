@@ -2655,6 +2655,67 @@
         ]
       }
     },
+    "/api/ArchiveSystem/Folders/permissions/bulk": {
+      "post": {
+        "tags": [
+          "Folders"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateFolderPermissionDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateFolderPermissionDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkCreateFolderPermissionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
+    },
+    "/api/ArchiveSystem/Folders/{folderId}/subfolders": {
+      "get": {
+        "tags": [
+          "Folders"
+        ],
+        "parameters": [
+          {
+            "name": "folderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          { }
+        ]
+      }
+    },
     "/api/ocr/extract-text-from-image": {
       "post": {
         "tags": [
@@ -6791,6 +6852,38 @@
       "AuditAction": {
         "type": "integer"
       },
+      "BulkCreateFolderPermissionDto": {
+        "type": "object",
+        "properties": {
+          "folderIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "userId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "departmentId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "accessLevel": {
+            "$ref": "#/components/schemas/AccessLevel"
+          },
+          "isInherited": {
+            "type": "boolean"
+          }
+        }
+      },
       "CompressionLevel": {
         "type": "integer",
         "default": 0
@@ -6907,7 +7000,17 @@
             "format": "uuid"
           },
           "userId": {
-            "type": "string",
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "departmentId": {
+            "type": [
+              "null",
+              "string"
+            ],
             "format": "uuid"
           },
           "accessLevel": {
