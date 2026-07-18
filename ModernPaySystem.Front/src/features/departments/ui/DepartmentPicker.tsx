@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useDepartments } from '@/entities/department/model/useDepartments';
-import { Department } from '@/entities/department/model/types';
+// import { Department } from '@/entities/department/model/types';
 import { Badge } from '@/shared/ui/badge';
 import { X, Building2, ChevronDown, Check } from 'lucide-react';
 import { Input } from '@/shared/ui/input';

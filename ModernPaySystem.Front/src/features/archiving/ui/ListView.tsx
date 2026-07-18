@@ -11,8 +11,6 @@ import {
     Folder as FolderIcon,
     Move,
     FileX2,
-    User,
-    Calendar,
     Building2
 } from 'lucide-react';
 

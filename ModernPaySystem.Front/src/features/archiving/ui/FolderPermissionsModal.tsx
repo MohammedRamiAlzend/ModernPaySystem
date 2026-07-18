@@ -169,7 +169,7 @@ export const FolderPermissionsModal = ({
         }
     };
 
-    const filteredPermissions = useMemo(() => {
+    const filteredPermissions = (() => {
         let result = permissions;
         if (filterType === 'users') result = result.filter(p => !p.departmentId);
         if (filterType === 'departments') result = result.filter(p => p.departmentId);
@@ -181,7 +181,7 @@ export const FolderPermissionsModal = ({
             });
         }
         return result;
-    }, [permissions, searchQuery, filterType]);
+    })();
 
     if (!isOpen || !folder) return null;
 
