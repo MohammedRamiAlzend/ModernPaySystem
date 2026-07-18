@@ -35,6 +35,7 @@ export function PeriodReportView({ data, isLoading, periodLabel }: PeriodReportV
         if (topUsers.length === 0) return;
         const userIds = topUsers.map((u) => u.userId);
         resolveUserNames(userIds).then(setUserNames);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     if (isLoading) {

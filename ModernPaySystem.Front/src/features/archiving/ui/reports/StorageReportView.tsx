@@ -30,6 +30,7 @@ export function StorageReportView({ data, isLoading }: StorageReportViewProps) {
         if (perUser.length === 0) return;
         const userIds = perUser.map((u: any) => u.userId);
         resolveUserNames(userIds).then(setUserNames);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     if (isLoading) {

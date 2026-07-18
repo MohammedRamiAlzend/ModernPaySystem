@@ -27,6 +27,7 @@ export function UserActivityView({ data, isLoading }: UserActivityViewProps) {
         if (list.length === 0) return;
         const userIds = list.map((u) => u.userId);
         resolveUserNames(userIds).then(setUserNames);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     if (isLoading) {

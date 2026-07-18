@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Folder, FolderPermissionDto } from '@/features/archiving/model/types';
 import { archivingService } from '@/features/archiving/api/archivingService';

@@ -42,6 +42,7 @@ export function ActiveUsersView({ data, isLoading }: ActiveUsersViewProps) {
         const userIds = list.map((u) => u.userId);
         resolveUserNames(userIds).then(setUserNames);
         resolveUserDeptNames(userIds).then(setDeptNames);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     if (isLoading) {

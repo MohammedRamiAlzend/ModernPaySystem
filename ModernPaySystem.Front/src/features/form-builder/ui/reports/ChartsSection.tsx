@@ -16,34 +16,16 @@ interface ChartsSectionProps {
 
 export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
     function ChartsSection({ data, isLoading }, ref) {
-        if (isLoading) {
-            return (
-                <div className="flex h-64 items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-            );
-        }
-
-        const reportData = (data as any)?.data ? (data as any).data : data;
-
-        if (!reportData) {
-            return (
-                <Card>
-                    <CardContent className="pt-8 text-center text-muted-foreground">
-                        لا توجد بيانات رسوم بيانية متاحة
-                    </CardContent>
-                </Card>
-            );
-        }
-
-        const dailyActivity = Array.isArray(reportData.dailyActivity) ? reportData.dailyActivity : (Array.isArray(reportData.DailyActivity) ? reportData.DailyActivity : []);
-        const actionTypeBreakdown = Array.isArray(reportData.actionTypeBreakdown) ? reportData.actionTypeBreakdown : (Array.isArray(reportData.ActionTypeBreakdown) ? reportData.ActionTypeBreakdown : []);
-        const hourlyDistribution = Array.isArray(reportData.hourlyDistribution) ? reportData.hourlyDistribution : (Array.isArray(reportData.HourlyDistribution) ? reportData.HourlyDistribution : []);
-        const rawTopActiveUsers: ChartDataPoint[] = Array.isArray(reportData.topActiveUsers) ? reportData.topActiveUsers : (Array.isArray(reportData.TopActiveUsers) ? reportData.TopActiveUsers : []);
-        const rawTopStorageUsers: ChartDataPoint[] = Array.isArray(reportData.topStorageUsers) ? reportData.topStorageUsers : (Array.isArray(reportData.TopStorageUsers) ? reportData.TopStorageUsers : []);
-        const trend7Days = Array.isArray(reportData.trend7Days) ? reportData.trend7Days : (Array.isArray(reportData.Trend7Days) ? reportData.Trend7Days : []);
-
         const [userNames, setUserNames] = useState<Map<string, string>>(new Map());
+
+        const processedData = (data as any)?.data ? (data as any).data : data;
+
+        const dailyActivity = Array.isArray(processedData?.dailyActivity) ? processedData.dailyActivity : (Array.isArray(processedData?.DailyActivity) ? processedData.DailyActivity : []);
+        const actionTypeBreakdown = Array.isArray(processedData?.actionTypeBreakdown) ? processedData.actionTypeBreakdown : (Array.isArray(processedData?.ActionTypeBreakdown) ? processedData.ActionTypeBreakdown : []);
+        const hourlyDistribution = Array.isArray(processedData?.hourlyDistribution) ? processedData.hourlyDistribution : (Array.isArray(processedData?.HourlyDistribution) ? processedData.HourlyDistribution : []);
+        const rawTopActiveUsers: ChartDataPoint[] = Array.isArray(processedData?.topActiveUsers) ? processedData.topActiveUsers : (Array.isArray(processedData?.TopActiveUsers) ? processedData.TopActiveUsers : []);
+        const rawTopStorageUsers: ChartDataPoint[] = Array.isArray(processedData?.topStorageUsers) ? processedData.topStorageUsers : (Array.isArray(processedData?.TopStorageUsers) ? processedData.TopStorageUsers : []);
+        const trend7Days = Array.isArray(processedData?.trend7Days) ? processedData.trend7Days : (Array.isArray(processedData?.Trend7Days) ? processedData.Trend7Days : []);
 
         useEffect(() => {
             const chartUserIds = [...rawTopActiveUsers, ...rawTopStorageUsers]
@@ -52,7 +34,26 @@ export const ChartsSection = forwardRef<HTMLDivElement, ChartsSectionProps>(
             if (chartUserIds.length > 0) {
                 resolveUserNames(chartUserIds).then(setUserNames);
             }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [data]);
+
+        if (isLoading) {
+            return (
+                <div className="flex h-64 items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            );
+        }
+
+        if (!processedData) {
+            return (
+                <Card>
+                    <CardContent className="pt-8 text-center text-muted-foreground">
+                        لا توجد بيانات رسوم بيانية متاحة
+                    </CardContent>
+                </Card>
+            );
+        }
 
         const topActiveUsers = rawTopActiveUsers.map(p => ({
             ...p,

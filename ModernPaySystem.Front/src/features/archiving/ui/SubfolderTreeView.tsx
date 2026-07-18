@@ -26,8 +26,6 @@ export const SubfolderTreeView = ({
 
     useEffect(() => {
         if (!folderId) return;
-        setLoading(true);
-        setError(null);
         archivingService.getSubFolderTree(folderId)
             .then(data => {
                 setTree(data);
