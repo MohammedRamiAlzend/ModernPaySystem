@@ -541,55 +541,30 @@ public class FolderService(
             if (!access.Value)
                 return ArchiveErrors.FolderAccessDenied;
 
-            var allSubFolderIds = new List<Guid>();
-            var queue = new Queue<Guid>();
-            queue.Enqueue(folderId);
-
-            while (queue.Count > 0)
-            {
-                var currentId = queue.Dequeue();
-                var childrenResult = await unitOfWork.Folders.GetAllAsync(
-                    x => x.ParentId == currentId);
-
-                if (childrenResult.IsError || childrenResult.Value == null)
-                    continue;
-
-                foreach (var child in childrenResult.Value)
-                {
-                    allSubFolderIds.Add(child.Id);
-                    queue.Enqueue(child.Id);
-                }
-            }
-
-            var rootChildrenResult = await unitOfWork.Folders.GetAllAsync(
-                x => x.ParentId == folderId);
-
-            if (rootChildrenResult.IsError || rootChildrenResult.Value == null)
+            var allFoldersResult = await unitOfWork.Folders.GetAllAsync();
+            if (allFoldersResult.IsError || allFoldersResult.Value == null)
                 return new List<SubFolderTreeNodeDto>();
 
-            async Task<List<SubFolderTreeNodeDto>> BuildTreeAsync(IEnumerable<Folder> folders)
+            var folderList = allFoldersResult.Value.ToList();
+            var childrenLookup = folderList
+                .Where(f => f.ParentId.HasValue)
+                .ToLookup(f => f.ParentId!.Value);
+
+            SubFolderTreeNodeDto MapToTreeNode(Folder folder) => new()
             {
-                var result = new List<SubFolderTreeNodeDto>();
-                foreach (var folder in folders.OrderBy(f => f.Name))
-                {
-                    var grandChildrenResult = await unitOfWork.Folders.GetAllAsync(
-                        x => x.ParentId == folder.Id);
-                    var children = grandChildrenResult.IsError || grandChildrenResult.Value == null
-                        ? new List<SubFolderTreeNodeDto>()
-                        : await BuildTreeAsync(grandChildrenResult.Value);
+                Id = folder.Id,
+                Name = folder.Name,
+                Level = folder.Level,
+                Children = childrenLookup[folder.Id]
+                    .OrderBy(f => f.Name)
+                    .Select(MapToTreeNode)
+                    .ToList()
+            };
 
-                    result.Add(new SubFolderTreeNodeDto
-                    {
-                        Id = folder.Id,
-                        Name = folder.Name,
-                        Level = folder.Level,
-                        Children = children
-                    });
-                }
-                return result;
-            }
-
-            return await BuildTreeAsync(rootChildrenResult.Value);
+            return childrenLookup[folderId]
+                .OrderBy(f => f.Name)
+                .Select(MapToTreeNode)
+                .ToList();
         }
         catch (Exception ex)
         {
