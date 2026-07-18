@@ -58,7 +58,7 @@ export function FolderModal({
                         />
                     </div>
 
-                    {mode === 'create' && onFolderStoragePathChange && (
+                    {/* {mode === 'create' && onFolderStoragePathChange && (
                         <div className="flex flex-col gap-2">
                             <Label className="text-xs font-semibold text-muted-foreground">مسار التخزين (اختياري)</Label>
                             <Input
@@ -69,13 +69,13 @@ export function FolderModal({
                                 dir="ltr"
                             />
                         </div>
-                    )}
+                    )} */}
 
                     {mode === 'create' && (
                         <div className="flex flex-col gap-2 border-t border-border pt-4">
                             <MultiUserPicker
                                 selectedUserIds={initialPermissionIds}
-                                onUsersChange={onPermissionIdsChange ?? (() => {})}
+                                onUsersChange={onPermissionIdsChange ?? (() => { })}
                                 label="صلاحيات إضافية (اختياري)"
                                 placeholder="اضف مستخدم للاطلاع فقط..."
                             />

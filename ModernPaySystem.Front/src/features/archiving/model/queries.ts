@@ -148,7 +148,7 @@ export const useSubdirectories = (path: string) => {
     return useQuery({
         queryKey: [...queryKeys.archiving.config.all, 'subdirs', path] as const,
         queryFn: () => archivingService.getSubdirectories(path),
-        enabled: path !== undefined,
+        enabled: !!path,
         ...QUERY_STRATEGIES[UpdateStrategy.CRITICAL]
     });
 };
