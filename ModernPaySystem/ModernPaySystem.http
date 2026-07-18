@@ -1,6 +1,0 @@
-@ModernPaySystem_HostAddress = http://localhost:5107
-
-GET {{ModernPaySystem_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

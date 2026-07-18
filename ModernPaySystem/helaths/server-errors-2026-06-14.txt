@@ -1,3 +1,0 @@
-[2026-06-14T13:32:45.5435840Z] QDRANT: Status(StatusCode="Unavailable", Detail="Error connecting to subchannel.", DebugException="System.Net.Sockets.SocketException: No connection could be made because the target machine actively refused it.")
-[2026-06-14T13:44:28.5607220Z] QDRANT: Status(StatusCode="Unavailable", Detail="Error connecting to subchannel.", DebugException="System.Net.Sockets.SocketException: No connection could be made because the target machine actively refused it.")
-[2026-06-14T13:52:59.6420368Z] QDRANT: Status(StatusCode="Unavailable", Detail="Error connecting to subchannel.", DebugException="System.Net.Sockets.SocketException: No connection could be made because the target machine actively refused it.")
