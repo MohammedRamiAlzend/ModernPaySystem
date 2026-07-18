@@ -1,0 +1,16 @@
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\bin\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.deps.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\bin\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\bin\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\bin\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\bin\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.csproj.AssemblyReference.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.AssemblyInfoInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.AssemblyInfo.cs
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.sourcelink.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPa.46607E2B.Up2Date
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\refint\ModernPaySystem.Module.Archive.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ModernPaySystem.Module.Archive.Domain.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\Modules\ArchiveSystem\ModernPaySystem.Module.Archive.Domain\obj\Debug\net10.0\ref\ModernPaySystem.Module.Archive.Domain.dll

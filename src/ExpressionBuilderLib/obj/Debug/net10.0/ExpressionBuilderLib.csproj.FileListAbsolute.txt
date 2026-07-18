@@ -1,0 +1,12 @@
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\bin\Debug\net10.0\ExpressionBuilderLib.deps.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\bin\Debug\net10.0\ExpressionBuilderLib.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\bin\Debug\net10.0\ExpressionBuilderLib.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.AssemblyInfoInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.AssemblyInfo.cs
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.sourcelink.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\refint\ExpressionBuilderLib.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ExpressionBuilderLib.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ExpressionBuilderLib\obj\Debug\net10.0\ref\ExpressionBuilderLib.dll

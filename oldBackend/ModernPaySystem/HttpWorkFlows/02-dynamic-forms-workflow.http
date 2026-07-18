@@ -1,0 +1,71 @@
+### ═══════════════════════════════════════════════════════════
+### DYNAMIC FORMS WORKFLOW - Archiving Sub-System
+### Base Route: api/ArchiveSystem/DynamicForms
+### ═══════════════════════════════════════════════════════════
+
+@baseUrl = https://localhost:5001
+@baseUrl = https://localhost:7010
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImMzMjMxZDlhLWYyMzMtNGUzYS05MWI4LWI5NDEyZWE0MmU1MiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3lzdGVtIjoiVHJhbnNhY3Rpb25TeXN0ZW0iLCJJc0RlcGFydG1lbnRIZWFkIjoiVHJ1ZSIsImV4cCI6MTc4MDUyNDM1OSwiaXNzIjoiTW9kZXJuUGF5U3lzdGVtIiwiYXVkIjoiTW9kZXJuUGF5U3lzdGVtVXNlcnMifQ.Q2jA5PJdQpjOZ9F0wnU_2GCorgyE4UQlEIGWMeofAmQ
+
+### ──────────────────────────────────────────────
+### 1. GET ALL DYNAMIC FORMS
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/DynamicForms
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 2. GET PAGED DYNAMIC FORMS
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/DynamicForms/paged?page=1&pageSize=10
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 3. GET DYNAMIC FORM BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/DynamicForms/{{formId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 4. GET DYNAMIC FORM BY NAME
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/ArchiveSystem/DynamicForms/by-name/FormName
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 5. CREATE DYNAMIC FORM
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/ArchiveSystem/DynamicForms
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "templateFormName": "Sample Dynamic Form",
+  "description": "Form description",
+  "fields": [
+    {
+      "key": "field1",
+      "label": "Field 1",
+      "type": "text",
+      "required": true
+    }
+  ]
+}
+
+### ──────────────────────────────────────────────
+### 6. UPDATE DYNAMIC FORM
+### ──────────────────────────────────────────────
+PUT {{baseUrl}}/api/ArchiveSystem/DynamicForms/{{formId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "templateFormName": "Updated Form Name",
+  "description": "Updated description",
+  "fields": []
+}
+
+### ──────────────────────────────────────────────
+### 7. DELETE DYNAMIC FORM
+### ──────────────────────────────────────────────
+DELETE {{baseUrl}}/api/ArchiveSystem/DynamicForms/{{formId}}
+Authorization: Bearer {{token}}

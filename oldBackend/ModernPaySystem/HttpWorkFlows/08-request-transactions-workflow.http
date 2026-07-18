@@ -1,0 +1,104 @@
+### ═══════════════════════════════════════════════════════════
+### REQUEST TRANSACTIONS WORKFLOW - Transaction System
+### Base Route: api/RequestTransactions
+### ═══════════════════════════════════════════════════════════
+
+@baseUrl = https://localhost:7010
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6ImMzMjMxZDlhLWYyMzMtNGUzYS05MWI4LWI5NDEyZWE0MmU1MiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiIxIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvc3lzdGVtIjoiVHJhbnNhY3Rpb25TeXN0ZW0iLCJJc0RlcGFydG1lbnRIZWFkIjoiVHJ1ZSIsImV4cCI6MTc4MDUyNDM1OSwiaXNzIjoiTW9kZXJuUGF5U3lzdGVtIiwiYXVkIjoiTW9kZXJuUGF5U3lzdGVtVXNlcnMifQ.Q2jA5PJdQpjOZ9F0wnU_2GCorgyE4UQlEIGWMeofAmQ
+
+@transactionId = 00000000-0000-0000-0000-000000000000
+@parentTransactionId = 00000000-0000-0000-0000-000000000000
+@requestId = 00000000-0000-0000-0000-000000000000
+
+### ──────────────────────────────────────────────
+### 1. GET TRANSACTION BY ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/RequestTransactions/{{transactionId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 2. GET TRANSACTIONS BY REQUEST ID
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/RequestTransactions/by-request/{{requestId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 3. GET CHILD TRANSACTIONS
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/RequestTransactions/{{parentTransactionId}}/children
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 4. GET ROOT TRANSACTION FOR REQUEST
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/RequestTransactions/root/{{requestId}}
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 5. GET TRANSACTION TREE
+### ──────────────────────────────────────────────
+GET {{baseUrl}}/api/RequestTransactions/{{transactionId}}/tree
+Authorization: Bearer {{token}}
+
+### ──────────────────────────────────────────────
+### 6. CREATE INITIAL TRANSACTION (multipart/form-data)
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/RequestTransactions
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="RequestId"
+
+{{requestId}}
+------Boundary
+Content-Disposition: form-data; name="Notes"
+
+Initial transaction notes
+------Boundary
+Content-Disposition: form-data; name="Files"; filename="supporting-doc.pdf"
+Content-Type: application/pdf
+
+< ./supporting-doc.pdf
+------Boundary--
+
+### ──────────────────────────────────────────────
+### 7. ADD CHILD TRANSACTION (multipart/form-data)
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/RequestTransactions/AddTransactionChildren
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----Boundary
+
+------Boundary
+Content-Disposition: form-data; name="ParentTransactionId"
+
+{{parentTransactionId}}
+------Boundary
+Content-Disposition: form-data; name="Notes"
+
+Child transaction notes
+------Boundary
+Content-Disposition: form-data; name="Files"; filename="additional-doc.pdf"
+Content-Type: application/pdf
+
+< ./additional-doc.pdf
+------Boundary--
+
+### ──────────────────────────────────────────────
+### 8. GET PAGED TRANSACTIONS BY STATUS
+### TransactionStatus: 0=Pending, 1=InProgress, 2=Completed, etc.
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/RequestTransactions/paged?status=0
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "page": 1,
+  "pageSize": 10
+}
+
+### ──────────────────────────────────────────────
+### 9. MARK REQUEST AS MANAGED
+### ──────────────────────────────────────────────
+POST {{baseUrl}}/api/RequestTransactions/{{requestId}}/mark-as-managed
+Authorization: Bearer {{token}}

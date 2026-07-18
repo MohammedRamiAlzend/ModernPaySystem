@@ -1,0 +1,13 @@
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\bin\Debug\net10.0\NumberSpelling.deps.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\bin\Debug\net10.0\NumberSpelling.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\bin\Debug\net10.0\NumberSpelling.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.csproj.AssemblyReference.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.AssemblyInfoInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.AssemblyInfo.cs
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.sourcelink.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\refint\NumberSpelling.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\NumberSpelling.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\NumberSpelling\obj\Debug\net10.0\ref\NumberSpelling.dll

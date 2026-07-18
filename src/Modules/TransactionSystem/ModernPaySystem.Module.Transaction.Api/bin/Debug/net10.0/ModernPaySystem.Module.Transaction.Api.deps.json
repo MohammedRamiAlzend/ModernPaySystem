@@ -1,0 +1,327 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "ModernPaySystem.Module.Transaction.Api/1.0.0": {
+        "dependencies": {
+          "ModernPaySystem.Module.Archive.Application": "1.0.0",
+          "ModernPaySystem.Module.Transaction.Application": "1.0.0",
+          "ModernPaySystem.Module.Transaction.Infrastructure": "1.0.0",
+          "ModernPaySystem.SharedKernel.Domain": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.Module.Transaction.Api.dll": {}
+        }
+      },
+      "FluentValidation/12.1.1": {
+        "runtime": {
+          "lib/net8.0/FluentValidation.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.1.1.0"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore/10.0.2": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.Abstractions": "10.0.2"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.dll": {
+            "assemblyVersion": "10.0.2.0",
+            "fileVersion": "10.0.225.61305"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Abstractions/10.0.2": {
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
+            "assemblyVersion": "10.0.2.0",
+            "fileVersion": "10.0.225.61305"
+          }
+        }
+      },
+      "Microsoft.EntityFrameworkCore.Relational/10.0.0": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.2"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.EntityFrameworkCore.Relational.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
+      "Npgsql/10.0.0": {
+        "runtime": {
+          "lib/net10.0/Npgsql.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.0.0"
+          }
+        }
+      },
+      "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.0": {
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.2",
+          "Microsoft.EntityFrameworkCore.Relational": "10.0.0",
+          "Npgsql": "10.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.0.0"
+          }
+        }
+      },
+      "NumberToArabicText/1.0.0": {
+        "runtime": {
+          "lib/net6.0/NumberToArabicText.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ExpressionBuilderLib/1.0.0": {
+        "runtime": {
+          "ExpressionBuilderLib.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "FileManager/1.0.0": {
+        "dependencies": {
+          "ModernPaySystem.SharedKernel.Domain": "1.0.0"
+        },
+        "runtime": {
+          "FileManager.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.Module.Archive.Application/1.0.0": {
+        "dependencies": {
+          "ModernPaySystem.Module.Archive.Domain": "1.0.0",
+          "ModernPaySystem.SharedKernel.Application": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.Module.Archive.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.Module.Archive.Domain/1.0.0": {
+        "dependencies": {
+          "ModernPaySystem.SharedKernel.Domain": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.Module.Archive.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.Module.Transaction.Application/1.0.0": {
+        "dependencies": {
+          "FluentValidation": "12.1.1",
+          "ModernPaySystem.Module.Transaction.Domain": "1.0.0",
+          "ModernPaySystem.SharedKernel.Application": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.Module.Transaction.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.Module.Transaction.Domain/1.0.0": {
+        "dependencies": {
+          "ExpressionBuilderLib": "1.0.0",
+          "ModernPaySystem.SharedKernel.Domain": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.Module.Transaction.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.Module.Transaction.Infrastructure/1.0.0": {
+        "dependencies": {
+          "FileManager": "1.0.0",
+          "Microsoft.EntityFrameworkCore": "10.0.2",
+          "ModernPaySystem.Module.Transaction.Application": "1.0.0",
+          "ModernPaySystem.SharedKernel.Infrastructure": "1.0.0",
+          "Npgsql.EntityFrameworkCore.PostgreSQL": "10.0.0",
+          "NumberSpelling": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.Module.Transaction.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.SharedKernel.Application/1.0.0": {
+        "dependencies": {
+          "ExpressionBuilderLib": "1.0.0",
+          "ModernPaySystem.SharedKernel.Domain": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.SharedKernel.Application.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.SharedKernel.Domain/1.0.0": {
+        "runtime": {
+          "ModernPaySystem.SharedKernel.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "ModernPaySystem.SharedKernel.Infrastructure/1.0.0": {
+        "dependencies": {
+          "ExpressionBuilderLib": "1.0.0",
+          "Microsoft.EntityFrameworkCore": "10.0.2",
+          "ModernPaySystem.SharedKernel.Application": "1.0.0"
+        },
+        "runtime": {
+          "ModernPaySystem.SharedKernel.Infrastructure.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "NumberSpelling/1.0.0": {
+        "dependencies": {
+          "NumberToArabicText": "1.0.0"
+        },
+        "runtime": {
+          "NumberSpelling.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ModernPaySystem.Module.Transaction.Api/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "FluentValidation/12.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-EPpkIe1yh1a0OXyC100oOA8WMbZvqUu5plwhvYcb7oSELfyUZzfxV48BLhvs3kKo4NwG7MGLNgy1RJiYtT8Dpw==",
+      "path": "fluentvalidation/12.1.1",
+      "hashPath": "fluentvalidation.12.1.1.nupkg.sha512"
+    },
+    "Microsoft.EntityFrameworkCore/10.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-d3+XKbLSHPCu3vwpXECoXcFbvGKmAhEeUmc1xy2czmuPnEF7rZN2HP5ZGMwCMbAKk4B01+nS4HixSMo2Vf/Y9g==",
+      "path": "microsoft.entityframeworkcore/10.0.2",
+      "hashPath": "microsoft.entityframeworkcore.10.0.2.nupkg.sha512"
+    },
+    "Microsoft.EntityFrameworkCore.Abstractions/10.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BzAwIU5mYeOmnKbEXrkwx7feW2V+zUTrK/kRonSib94tjvc0/iRj2a4N6YGXRhTNjaFP3tvCMIDaX1vIFF6dkg==",
+      "path": "microsoft.entityframeworkcore.abstractions/10.0.2",
+      "hashPath": "microsoft.entityframeworkcore.abstractions.10.0.2.nupkg.sha512"
+    },
+    "Microsoft.EntityFrameworkCore.Relational/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-A3MX1ee7RDxWCUdx/KqP+74fbksz0UIhkVZh56YHvbPkEKsffCXgHU3LGkRDwqR/MrBNWLCWC/IVX79tzM30ZA==",
+      "path": "microsoft.entityframeworkcore.relational/10.0.0",
+      "hashPath": "microsoft.entityframeworkcore.relational.10.0.0.nupkg.sha512"
+    },
+    "Npgsql/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xZAYhPOU2rUIFpV48xsqhCx9vXs6Y+0jX2LCoSEfDFYMw9jtAOUk3iQsCnDLrFIv9NT3JGMihn7nnuZsPKqJmA==",
+      "path": "npgsql/10.0.0",
+      "hashPath": "npgsql.10.0.0.nupkg.sha512"
+    },
+    "Npgsql.EntityFrameworkCore.PostgreSQL/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-E2+uSWxSB8LdsUVwPaqRWOcGOP92biry2JEwc0KJMdLJF+aZdczeIdEXVwEyv4nSVMQJH0o8tLhyAMiR6VF0lw==",
+      "path": "npgsql.entityframeworkcore.postgresql/10.0.0",
+      "hashPath": "npgsql.entityframeworkcore.postgresql.10.0.0.nupkg.sha512"
+    },
+    "NumberToArabicText/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-txhd5M7upQGlaZcEpHytxa98wFFymQKH+RzXK25Lxt5mGU9XlYkyieP6xd7yOSqRFIjcJe3+e1mbDQj7x48Prw==",
+      "path": "numbertoarabictext/1.0.0",
+      "hashPath": "numbertoarabictext.1.0.0.nupkg.sha512"
+    },
+    "ExpressionBuilderLib/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "FileManager/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.Module.Archive.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.Module.Archive.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.Module.Transaction.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.Module.Transaction.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.Module.Transaction.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.SharedKernel.Application/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.SharedKernel.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "ModernPaySystem.SharedKernel.Infrastructure/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NumberSpelling/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

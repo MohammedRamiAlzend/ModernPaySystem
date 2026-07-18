@@ -1,0 +1,37 @@
+# See https://aka.ms/customizecontainer to learn how to customize your debug container.
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+USER $APP_UID
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM node:22-alpine AS frontend-build
+WORKDIR /src/ModernPaySystem.Front
+COPY ModernPaySystem.Front/package*.json ./
+RUN npm ci
+COPY ModernPaySystem.Front/ ./
+RUN npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+
+COPY ModernPaySystem/ModernPaySystem.csproj ModernPaySystem/
+COPY ModernPaySystem.Application/ModernPaySystem.Application.csproj ModernPaySystem.Application/
+COPY ModernPaySystem.Domain/ModernPaySystem.Domain.csproj ModernPaySystem.Domain/
+COPY ModernPaySystem.Infrastructure/ModernPaySystem.Infrastructure.csproj ModernPaySystem.Infrastructure/
+COPY ModernPaySystem.Infrastructure.Persistence/ModernPaySystem.Infrastructure.Persistence.csproj ModernPaySystem.Infrastructure.Persistence/
+
+RUN dotnet restore "ModernPaySystem/ModernPaySystem.csproj"
+
+COPY . .
+COPY --from=frontend-build /src/ModernPaySystem/wwwroot ./ModernPaySystem/wwwroot
+
+WORKDIR /src/ModernPaySystem
+RUN dotnet publish "./ModernPaySystem.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "ModernPaySystem.dll"]

@@ -1,0 +1,3806 @@
+[
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveDeletionRequestsController",
+    "Method": "Submit",
+    "RelativePath": "api/archive-deletion-requests",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.CreateDeleteArchiveRequestDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveDeletionRequestsController",
+    "Method": "GetById",
+    "RelativePath": "api/archive-deletion-requests/{requestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveDeletionRequestsController",
+    "Method": "Approve",
+    "RelativePath": "api/archive-deletion-requests/{requestId}/approve",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.DeleteArchiveRequestDecisionDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveDeletionRequestsController",
+    "Method": "Reject",
+    "RelativePath": "api/archive-deletion-requests/{requestId}/reject",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.DeleteArchiveRequestRejectDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveDeletionRequestsController",
+    "Method": "GetPendingForDepartment",
+    "RelativePath": "api/archive-deletion-requests/department/{departmentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "departmentId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveEditRequestsController",
+    "Method": "Submit",
+    "RelativePath": "api/archive-edit-requests",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ArchiveRecordId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "Justification",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "RequestedRecordName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "RequestedChanges",
+        "Type": "System.Collections.Generic.List\u00601[[ModernPaySystem.Module.Archive.Domain.Entities.ArchiveRecordFormInputValueDto, ModernPaySystem.Module.Archive.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      },
+      {
+        "Name": "FileIdsToDelete",
+        "Type": "System.Collections.Generic.List\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveEditRequestsController",
+    "Method": "GetById",
+    "RelativePath": "api/archive-edit-requests/{requestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveEditRequestsController",
+    "Method": "Approve",
+    "RelativePath": "api/archive-edit-requests/{requestId}/approve",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.EditArchiveRequestDecisionDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveEditRequestsController",
+    "Method": "Reject",
+    "RelativePath": "api/archive-edit-requests/{requestId}/reject",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.EditArchiveRequestRejectDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveEditRequestsController",
+    "Method": "GetPendingForDepartment",
+    "RelativePath": "api/archive-edit-requests/department/{departmentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "departmentId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveEditRequestsController",
+    "Method": "GetMyRequests",
+    "RelativePath": "api/archive-edit-requests/my-requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "Create",
+    "RelativePath": "api/archive-records",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Id",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FolderId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "FormId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "DepartmentId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      },
+      {
+        "Name": "Content",
+        "Type": "System.Collections.Generic.List\u00601[[ModernPaySystem.Module.Archive.Domain.Entities.ArchiveRecordFormInputValueDto, ModernPaySystem.Module.Archive.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetById",
+    "RelativePath": "api/archive-records/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "Update",
+    "RelativePath": "api/archive-records/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FolderId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "FormId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Content",
+        "Type": "System.Collections.Generic.List\u00601[[ModernPaySystem.Module.Archive.Domain.Entities.ArchiveRecordFormInputValueDto, ModernPaySystem.Module.Archive.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      },
+      {
+        "Name": "FileIdsToRemove",
+        "Type": "System.Collections.Generic.List\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "ReplaceFiles",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "Delete",
+    "RelativePath": "api/archive-records/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "AddFiles",
+    "RelativePath": "api/archive-records/{id}/files",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "RemoveFile",
+    "RelativePath": "api/archive-records/{id}/files/{fileId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "fileId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "MoveRecord",
+    "RelativePath": "api/archive-records/{id}/move",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.MoveArchiveRecordDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "DownloadFile",
+    "RelativePath": "api/archive-records/{recordId}/files/{fileId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "fileId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "download",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetFilesMetadata",
+    "RelativePath": "api/archive-records/{recordId}/files/metadata",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "includeDeleted",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetPaginatedFiles",
+    "RelativePath": "api/archive-records/{recordId}/files/paginated",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "mode",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.ArchiveFileRetrievalMode",
+        "IsRequired": false
+      },
+      {
+        "Name": "sortBy",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.ArchiveFileSortBy",
+        "IsRequired": false
+      },
+      {
+        "Name": "sortOrder",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.ArchiveFileSortOrder",
+        "IsRequired": false
+      },
+      {
+        "Name": "searchTerm",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fileTypes",
+        "Type": "System.String[]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [],
+    "Description": "Retrieves archive files in pages and supports three retrieval modes. MetadataOnly returns file metadata, WithUrls adds download and view links, and WithData additionally includes inline Base64 data for small files. Sorting is available by CreatedAt, FileName, or FileSize, and the sort order can be Asc or Desc. The fileTypes filter expects content types, for example application/pdf or image/png.",
+    "Summary": "Get paginated archive file results."
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "HeadPaginatedFiles",
+    "RelativePath": "api/archive-records/{recordId}/files/paginated",
+    "HttpMethod": "HEAD",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "mode",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.ArchiveFileRetrievalMode",
+        "IsRequired": false
+      },
+      {
+        "Name": "sortBy",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.ArchiveFileSortBy",
+        "IsRequired": false
+      },
+      {
+        "Name": "sortOrder",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.ArchiveFileSortOrder",
+        "IsRequired": false
+      },
+      {
+        "Name": "searchTerm",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fileTypes",
+        "Type": "System.String[]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "DownloadZip",
+    "RelativePath": "api/archive-records/{recordId}/files/zip",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "flatten",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "password",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "compression",
+        "Type": "System.IO.Compression.CompressionLevel",
+        "IsRequired": false
+      },
+      {
+        "Name": "includeMetadata",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [],
+    "Description": "Creates a ZIP archive containing the files for the selected archive record. Use flatten to ignore folder nesting, password to encrypt the ZIP, compression to control ZIP size versus speed, and includeMetadata to embed archive metadata in the bundle.",
+    "Summary": "Download an archive record as a ZIP bundle."
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "LogPrint",
+    "RelativePath": "api/archive-records/{recordId}/print",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "recordId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetAuditLogsByDepartment",
+    "RelativePath": "api/archive-records/audit-logs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "action",
+        "Type": "System.Nullable\u00601[[ModernPaySystem.Module.Archive.Domain.Entities.AuditAction, ModernPaySystem.Module.Archive.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "departmentId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetLedDepartments",
+    "RelativePath": "api/archive-records/departments/led",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "DownloadFileById",
+    "RelativePath": "api/archive-records/files/{fileId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fileId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "download",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "includeDeleted",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetByFolderId",
+    "RelativePath": "api/archive-records/folder/{folderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "folderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetByFormId",
+    "RelativePath": "api/archive-records/form/{formId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "formId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveRecordsController",
+    "Method": "GetPaged",
+    "RelativePath": "api/archive-records/paged",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "PageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "FolderId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "FormTemplateId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "FromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "ToDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "SearchTerm",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "InputValueFilters",
+        "Type": "System.Collections.Generic.List\u00601[[ModernPaySystem.Module.Archive.Domain.DTOs.InputValueFilterDto, ModernPaySystem.Module.Archive.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "LogicalOperator",
+        "Type": "ModernPaySystem.Module.Archive.Domain.DTOs.FilterLogicalOperator",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetActiveUsers",
+    "RelativePath": "api/archive-report/active-users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetChartsData",
+    "RelativePath": "api/archive-report/charts",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetDailyReport",
+    "RelativePath": "api/archive-report/daily",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "date",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetDailyWorkReport",
+    "RelativePath": "api/archive-report/daily-work",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "date",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetDashboard",
+    "RelativePath": "api/archive-report/dashboard",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetMonthlyReport",
+    "RelativePath": "api/archive-report/monthly",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetMyDepartments",
+    "RelativePath": "api/archive-report/my-departments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetStorageReport",
+    "RelativePath": "api/archive-report/storage",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetUserActivity",
+    "RelativePath": "api/archive-report/user-activity",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveReportController",
+    "Method": "GetWeeklyReport",
+    "RelativePath": "api/archive-report/weekly",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "weekStart",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveConfigController",
+    "Method": "Get",
+    "RelativePath": "api/archive/config",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveConfigController",
+    "Method": "Update",
+    "RelativePath": "api/archive/config",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.UpdateArchiveConfigDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveConfigController",
+    "Method": "GetSystemDrives",
+    "RelativePath": "api/archive/config/drives",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.ArchiveConfigController",
+    "Method": "GetSubdirectories",
+    "RelativePath": "api/archive/config/subdirs",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "path",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DocumentIndexingController",
+    "Method": "IndexArchiveRecord",
+    "RelativePath": "api/ArchiveSystem/DocumentIndexing/archive-record/{id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DocumentIndexingController",
+    "Method": "IndexPhysicalFile",
+    "RelativePath": "api/ArchiveSystem/DocumentIndexing/physical-file/{id}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DocumentIndexingController",
+    "Method": "ReIndexPhysicalFile",
+    "RelativePath": "api/ArchiveSystem/DocumentIndexing/physical-file/{id}/reindex",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "GetAll",
+    "RelativePath": "api/ArchiveSystem/DynamicForms",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "Create",
+    "RelativePath": "api/ArchiveSystem/DynamicForms",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.CreateDynamicFormTemplateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "GetById",
+    "RelativePath": "api/ArchiveSystem/DynamicForms/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "Update",
+    "RelativePath": "api/ArchiveSystem/DynamicForms/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.UpdateDynamicFormTemplateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "Delete",
+    "RelativePath": "api/ArchiveSystem/DynamicForms/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "GetByName",
+    "RelativePath": "api/ArchiveSystem/DynamicForms/by-name/{name}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.DynamicFormsController",
+    "Method": "GetPaged",
+    "RelativePath": "api/ArchiveSystem/DynamicForms/paged",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "GetAll",
+    "RelativePath": "api/ArchiveSystem/FolderIcons",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "Create",
+    "RelativePath": "api/ArchiveSystem/FolderIcons",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.CreateFolderIconDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "GetById",
+    "RelativePath": "api/ArchiveSystem/FolderIcons/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "Update",
+    "RelativePath": "api/ArchiveSystem/FolderIcons/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.UpdateFolderIconDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "Delete",
+    "RelativePath": "api/ArchiveSystem/FolderIcons/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "GetSvg",
+    "RelativePath": "api/ArchiveSystem/FolderIcons/{id}/svg",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FolderIconsController",
+    "Method": "AssignIconToFolder",
+    "RelativePath": "api/ArchiveSystem/FolderIcons/assign",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.AssignFolderIconDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "GetAll",
+    "RelativePath": "api/ArchiveSystem/Folders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "Create",
+    "RelativePath": "api/ArchiveSystem/Folders",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.CreateFolderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "GetPermissions",
+    "RelativePath": "api/ArchiveSystem/Folders/{folderId}/permissions",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "folderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "CreatePermission",
+    "RelativePath": "api/ArchiveSystem/Folders/{folderId}/permissions",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "folderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.CreateFolderPermissionDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "GetById",
+    "RelativePath": "api/ArchiveSystem/Folders/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "Update",
+    "RelativePath": "api/ArchiveSystem/Folders/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.UpdateFolderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "Delete",
+    "RelativePath": "api/ArchiveSystem/Folders/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "MoveFolder",
+    "RelativePath": "api/ArchiveSystem/Folders/move",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.MoveFolderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "GetPermissionById",
+    "RelativePath": "api/ArchiveSystem/Folders/permissions/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "UpdatePermission",
+    "RelativePath": "api/ArchiveSystem/Folders/permissions/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.UpdateFolderPermissionDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.FoldersController",
+    "Method": "DeletePermission",
+    "RelativePath": "api/ArchiveSystem/Folders/permissions/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.AttachmentsController",
+    "Method": "GetById",
+    "RelativePath": "api/Attachments/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.AttachmentsController",
+    "Method": "DownloadAllFilesFromRequest",
+    "RelativePath": "api/Attachments/request/{requestId}/download-all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.AttachmentsController",
+    "Method": "DownloadAllFilesFromResponse",
+    "RelativePath": "api/Attachments/response/{responseId}/download-all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "responseId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.AttachmentsController",
+    "Method": "DownloadAllFilesFromTransaction",
+    "RelativePath": "api/Attachments/transaction/{transactionId}/download-all",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "ModernPaySystem.SharedKernel.Domain.DTOs.LoginRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "Create",
+    "RelativePath": "api/Departments",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.SharedKernel.Domain.DTOs.CreateDepartmentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetById",
+    "RelativePath": "api/Departments/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "Update",
+    "RelativePath": "api/Departments/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.SharedKernel.Domain.DTOs.UpdateDepartmentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "Delete",
+    "RelativePath": "api/Departments/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetChildren",
+    "RelativePath": "api/Departments/{id}/children",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetParent",
+    "RelativePath": "api/Departments/{id}/parent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetPathToRoot",
+    "RelativePath": "api/Departments/{id}/path",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetSubTree",
+    "RelativePath": "api/Departments/{id}/subtree",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetUsersInDepartment",
+    "RelativePath": "api/Departments/{id}/users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "includeSubDepartments",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetByLevel",
+    "RelativePath": "api/Departments/level/{level}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "level",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "Search",
+    "RelativePath": "api/Departments/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "searchTerm",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "level",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.DepartmentsController",
+    "Method": "GetTree",
+    "RelativePath": "api/Departments/tree",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFieldsController",
+    "Method": "GetAll",
+    "RelativePath": "api/LookUpFields",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFieldsController",
+    "Method": "Create",
+    "RelativePath": "api/LookUpFields",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "lookUpField",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.CreateLookUpFieldDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFieldsController",
+    "Method": "GetById",
+    "RelativePath": "api/LookUpFields/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFieldsController",
+    "Method": "Update",
+    "RelativePath": "api/LookUpFields/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "lookUpField",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.UpdateLookUpFieldDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFieldsController",
+    "Method": "Delete",
+    "RelativePath": "api/LookUpFields/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFiledValuesController",
+    "Method": "GetAll",
+    "RelativePath": "api/LookUpFiledValues",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFiledValuesController",
+    "Method": "Create",
+    "RelativePath": "api/LookUpFiledValues",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "lookUpFiledValue",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.CreateLookUpFiledValuesDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFiledValuesController",
+    "Method": "GetById",
+    "RelativePath": "api/LookUpFiledValues/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFiledValuesController",
+    "Method": "Update",
+    "RelativePath": "api/LookUpFiledValues/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "lookUpFiledValue",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.UpdateLookUpFiledValuesDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFiledValuesController",
+    "Method": "Delete",
+    "RelativePath": "api/LookUpFiledValues/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.LookUpFiledValuesController",
+    "Method": "GetByLookUpFieldId",
+    "RelativePath": "api/LookUpFiledValues/by-lookup-field/{lookUpFieldId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "lookUpFieldId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.NumberSpellingController",
+    "Method": "ConvertDecimal",
+    "RelativePath": "api/NumberSpelling/convert-decimal",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "number",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.NumberSpellingController",
+    "Method": "ConvertInt",
+    "RelativePath": "api/NumberSpelling/convert-int",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "number",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.NumberSpellingController",
+    "Method": "ConvertLong",
+    "RelativePath": "api/NumberSpelling/convert-long",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "number",
+        "Type": "System.Int64",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.OcrController",
+    "Method": "ExtractTextFromImage",
+    "RelativePath": "api/ocr/extract-text-from-image",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ContentType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ContentDisposition",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Headers",
+        "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary",
+        "IsRequired": false
+      },
+      {
+        "Name": "Length",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FileName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "language",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.OcrController",
+    "Method": "ExtractTextFromPdf",
+    "RelativePath": "api/ocr/extract-text-from-pdf",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ContentType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ContentDisposition",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Headers",
+        "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary",
+        "IsRequired": false
+      },
+      {
+        "Name": "Length",
+        "Type": "System.Int64",
+        "IsRequired": false
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FileName",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "language",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.OcrController",
+    "Method": "GetSupportedLanguages",
+    "RelativePath": "api/ocr/supported-languages",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetActiveUsers",
+    "RelativePath": "api/Reports/active-users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetChartsData",
+    "RelativePath": "api/Reports/charts",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetDailyReport",
+    "RelativePath": "api/Reports/daily",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "date",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetDailyWorkReport",
+    "RelativePath": "api/Reports/daily-work",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "date",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetDashboard",
+    "RelativePath": "api/Reports/dashboard",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetMonthlyReport",
+    "RelativePath": "api/Reports/monthly",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "month",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetRequestsReportPaged",
+    "RelativePath": "api/Reports/requests",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "forCurrentDepartment",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetResponsesReportPaged",
+    "RelativePath": "api/Reports/responses",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "pageNumber",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "forCurrentDepartment",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetStorageReport",
+    "RelativePath": "api/Reports/storage",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetUserActivityReport",
+    "RelativePath": "api/Reports/user-activity",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "fromDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "toDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ReportsController",
+    "Method": "GetWeeklyReport",
+    "RelativePath": "api/Reports/weekly",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "weekStart",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "Create",
+    "RelativePath": "api/Requests",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "TemplateId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "DepartmentId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "ReadOnlyUsers",
+        "Type": "System.Collections.Generic.ICollection\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Content",
+        "Type": "System.Collections.Generic.List\u00601[[ModernPaySystem.Module.Transaction.Domain.Entities.InputValueDto, ModernPaySystem.Module.Transaction.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "RelatedRequests",
+        "Type": "System.Collections.Generic.List\u00601[[ModernPaySystem.Module.Transaction.Domain.Entities.CreateRequestRelatedRequestDto, ModernPaySystem.Module.Transaction.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetById",
+    "RelativePath": "api/Requests/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "Delete",
+    "RelativePath": "api/Requests/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetRelationsByRequestId",
+    "RelativePath": "api/Requests/{requestId}/relations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetByApproverId",
+    "RelativePath": "api/Requests/by-approver/{approverId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "approverId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetByRequesterId",
+    "RelativePath": "api/Requests/by-requester/{requesterId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requesterId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetByTemplateId",
+    "RelativePath": "api/Requests/by-template/{templateId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "templateId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetPagedRequestsNeedAction",
+    "RelativePath": "api/Requests/GetPagedRequestsNeedAction/{hasResponse}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hasResponse",
+        "Type": "System.Boolean",
+        "IsRequired": true
+      },
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetMyPendingPaged",
+    "RelativePath": "api/Requests/my-pending/paged",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetPaged",
+    "RelativePath": "api/Requests/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestsController",
+    "Method": "GetRelationById",
+    "RelativePath": "api/Requests/relations/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "Create",
+    "RelativePath": "api/RequestTransactions",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "RequestId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "CurrentUserHolderId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "GetById",
+    "RelativePath": "api/RequestTransactions/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "GetChildTransactions",
+    "RelativePath": "api/RequestTransactions/{parentTransactionId}/children",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "parentTransactionId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "MarkAsManaged",
+    "RelativePath": "api/RequestTransactions/{requestId}/mark-as-managed",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "GetTransactionTree",
+    "RelativePath": "api/RequestTransactions/{transactionId}/tree",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "AddChildTransaction",
+    "RelativePath": "api/RequestTransactions/AddTransactionChildren",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "RequestId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "Notes",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "ParentTransactionId",
+        "Type": "System.Nullable\u00601[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "CurrentUserHolderId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "GetByRequestId",
+    "RelativePath": "api/RequestTransactions/by-request/{requestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "GetPaged",
+    "RelativePath": "api/RequestTransactions/paged",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "status",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.Entities.TransactionStatus",
+        "IsRequired": false
+      },
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.RequestTransactionsController",
+    "Method": "GetRootTransaction",
+    "RelativePath": "api/RequestTransactions/root/{requestId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "Create",
+    "RelativePath": "api/Responses",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "RequestId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "RespondedByUserId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "Comment",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Files",
+        "Type": "Microsoft.AspNetCore.Http.IFormFileCollection",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "GetById",
+    "RelativePath": "api/Responses/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "Update",
+    "RelativePath": "api/Responses/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "response",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.Entities.UpdateResponseDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "Delete",
+    "RelativePath": "api/Responses/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "AddFilesToResponse",
+    "RelativePath": "api/Responses/AddFilesToResponse",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "responseId",
+        "Type": "System.Guid",
+        "IsRequired": false
+      },
+      {
+        "Name": "files",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=10.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "GetByRequestId",
+    "RelativePath": "api/Responses/by-request/{requestId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "GetByRequesterId",
+    "RelativePath": "api/Responses/by-requester/{requesterId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requesterId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "GetByResponderId",
+    "RelativePath": "api/Responses/by-responder/{responderId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "responderId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "filterDto",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.DTOs.RequestPagedFilterDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.ResponsesController",
+    "Method": "GetPaged",
+    "RelativePath": "api/Responses/paged",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.RolesController",
+    "Method": "GetAll",
+    "RelativePath": "api/Roles",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.RolesController",
+    "Method": "Create",
+    "RelativePath": "api/Roles",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "role",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.CreateRoleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.RolesController",
+    "Method": "GetById",
+    "RelativePath": "api/Roles/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.RolesController",
+    "Method": "Update",
+    "RelativePath": "api/Roles/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "role",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.UpdateRoleDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.RolesController",
+    "Method": "Delete",
+    "RelativePath": "api/Roles/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.RolesController",
+    "Method": "GetByName",
+    "RelativePath": "api/Roles/by-name/{name}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.SemanticSearchController",
+    "Method": "GetDocuments",
+    "RelativePath": "api/semantic-search/documents",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.SemanticSearchController",
+    "Method": "DeleteDocument",
+    "RelativePath": "api/semantic-search/documents/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Archive.Api.Controllers.SemanticSearchController",
+    "Method": "Search",
+    "RelativePath": "api/semantic-search/search",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "query",
+        "Type": "ModernPaySystem.Module.Archive.Domain.Entities.SearchQueryDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetAll",
+    "RelativePath": "api/Templates",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "Create",
+    "RelativePath": "api/Templates",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "template",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.Entities.CreateTemplateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetById",
+    "RelativePath": "api/Templates/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "Update",
+    "RelativePath": "api/Templates/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "template",
+        "Type": "ModernPaySystem.Module.Transaction.Domain.Entities.UpdateTemplateDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "Delete",
+    "RelativePath": "api/Templates/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetOwnerships",
+    "RelativePath": "api/Templates/{id}/ownerships",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "AddOwnership",
+    "RelativePath": "api/Templates/{id}/ownerships",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Transaction.Application.Interfaces.CreateTemplateOwnershipDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "RemoveOwnership",
+    "RelativePath": "api/Templates/{id}/ownerships/{departmentId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "departmentId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetUserOwnerships",
+    "RelativePath": "api/Templates/{id}/ownerships/user",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "AddUserOwnership",
+    "RelativePath": "api/Templates/{id}/ownerships/user",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Transaction.Application.Interfaces.CreateUserTemplateOwnershipDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "RemoveUserOwnership",
+    "RelativePath": "api/Templates/{id}/ownerships/user/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetByName",
+    "RelativePath": "api/Templates/by-name/{name}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "name",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetByDepartment",
+    "RelativePath": "api/Templates/department/{departmentId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "departmentId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.TemplatesController",
+    "Method": "GetUserDirect",
+    "RelativePath": "api/Templates/user/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "Create",
+    "RelativePath": "api/transaction/Departments",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.SharedKernel.Domain.DTOs.CreateDepartmentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetById",
+    "RelativePath": "api/transaction/Departments/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "Update",
+    "RelativePath": "api/transaction/Departments/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.SharedKernel.Domain.DTOs.UpdateDepartmentDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "Delete",
+    "RelativePath": "api/transaction/Departments/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetArchiveLeaders",
+    "RelativePath": "api/transaction/Departments/{id}/archive-leaders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "AssignArchiveLeader",
+    "RelativePath": "api/transaction/Departments/{id}/archive-leaders/{userId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "UnassignArchiveLeader",
+    "RelativePath": "api/transaction/Departments/{id}/archive-leaders/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "AssignDepartmentHead",
+    "RelativePath": "api/transaction/Departments/{id}/assign-head",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Transaction.Api.Controllers.AssignUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "AssignUser",
+    "RelativePath": "api/transaction/Departments/{id}/assign-user",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "ModernPaySystem.Module.Transaction.Api.Controllers.AssignUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetChildren",
+    "RelativePath": "api/transaction/Departments/{id}/children",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetParent",
+    "RelativePath": "api/transaction/Departments/{id}/parent",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetPathToRoot",
+    "RelativePath": "api/transaction/Departments/{id}/path",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "RemoveUser",
+    "RelativePath": "api/transaction/Departments/{id}/remove-user/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetSubTree",
+    "RelativePath": "api/transaction/Departments/{id}/subtree",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetUsersInDepartment",
+    "RelativePath": "api/transaction/Departments/{id}/users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "includeSubDepartments",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetByLevel",
+    "RelativePath": "api/transaction/Departments/level/{level}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "level",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "Search",
+    "RelativePath": "api/transaction/Departments/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "searchTerm",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "level",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Transaction.Api.Controllers.DepartmentsController",
+    "Method": "GetTree",
+    "RelativePath": "api/transaction/Departments/tree",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetAll",
+    "RelativePath": "api/Users",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "Create",
+    "RelativePath": "api/Users",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "user",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.CreateUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetById",
+    "RelativePath": "api/Users/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "Update",
+    "RelativePath": "api/Users/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      },
+      {
+        "Name": "user",
+        "Type": "ModernPaySystem.SharedKernel.Domain.Entities.CreateUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "Delete",
+    "RelativePath": "api/Users/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Guid",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetByCurrentDepartment",
+    "RelativePath": "api/Users/by-current-department",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetBySubSystem",
+    "RelativePath": "api/Users/by-subsystem/{subSystemId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "subSystemId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetByUsername",
+    "RelativePath": "api/Users/by-username/{username}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "username",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetSubSystems",
+    "RelativePath": "api/Users/subsystems",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ModernPaySystem.Module.Identity.Api.Controllers.UsersController",
+    "Method": "GetVisitedTemplates",
+    "RelativePath": "api/Users/visited-templates",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]

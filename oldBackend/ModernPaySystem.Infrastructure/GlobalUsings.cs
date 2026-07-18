@@ -1,0 +1,15 @@
+﻿global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.IdentityModel.Tokens;
+global using ModernPaySystem.Application.Interfaces;
+global using ModernPaySystem.Domain.Commons;
+global using ModernPaySystem.Domain.Entities.SharedEntities;
+global using ModernPaySystem.Domain.Entities.TransactionSystemEntities;
+global using ModernPaySystem.Infrastructure.Persistence;
+global using ModernPaySystem.Infrastructure.Persistence.UnitOfWork;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Linq.Expressions;
+global using System.Security.Claims;
+global using System.Text;
+

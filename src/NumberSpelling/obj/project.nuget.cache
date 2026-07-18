@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "346INYjNdLU=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Dell\\Desktop\\Project\\ModernPaySystem\\src\\NumberSpelling\\NumberSpelling.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Dell\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.0\\microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512",
+    "C:\\Users\\Dell\\.nuget\\packages\\numbertoarabictext\\1.0.0\\numbertoarabictext.1.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Auto-build frontend before backend build -->
+  <Target Name="BuildFrontend" BeforeTargets="BeforeBuild" Condition="'$(BuildingProject)' == 'true' AND '$(WatchBuild)' != 'true'">
+    <Exec Command="npm run build" WorkingDirectory="..\ModernPaySystem.Front" Condition="Exists('..\ModernPaySystem.Front\package.json')" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.14.14" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ModernPaySystem.Application\ModernPaySystem.Application.csproj" />
+    <ProjectReference Include="..\ModernPaySystem.Domain\ModernPaySystem.Domain.csproj" />
+    <ProjectReference Include="..\ModernPaySystem.Infrastructure.Persistence\ModernPaySystem.Infrastructure.Persistence.csproj" />
+    <ProjectReference Include="..\ModernPaySystem.Infrastructure\ModernPaySystem.Infrastructure.csproj" />
+    <ProjectReference Include="..\SemanticSearchLib\SemanticSearchLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\DiwanController\" />
+    <Folder Include="Diwan\Uploads\TransactionSystem\Requests\" />
+    <Folder Include="Diwan\Uploads\TransactionSystem\Responses\" />
+    <Folder Include="logs\" />
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+</Project>

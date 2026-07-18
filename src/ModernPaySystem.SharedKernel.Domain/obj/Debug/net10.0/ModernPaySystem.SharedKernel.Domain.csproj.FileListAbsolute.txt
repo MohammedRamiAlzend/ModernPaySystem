@@ -1,0 +1,13 @@
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\bin\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.deps.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\bin\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\bin\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.csproj.AssemblyReference.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.AssemblyInfoInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.AssemblyInfo.cs
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.sourcelink.json
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\refint\ModernPaySystem.SharedKernel.Domain.dll
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ModernPaySystem.SharedKernel.Domain.pdb
+C:\Users\Dell\Desktop\Project\ModernPaySystem\src\ModernPaySystem.SharedKernel.Domain\obj\Debug\net10.0\ref\ModernPaySystem.SharedKernel.Domain.dll
