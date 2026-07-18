@@ -1,8 +1,7 @@
 .vs/
 logs/
-bin/
-obj/
+**/bin/
+**/obj/
 *.user
 *.suo
-.vs/
 *.vsidx
