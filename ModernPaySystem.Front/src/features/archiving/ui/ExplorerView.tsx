@@ -140,7 +140,7 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
 
                                     {activeMenuId === folder.id && (
                                         <div className="absolute left-0 mt-1 w-40 bg-card border border-border rounded-xl shadow-xl z-20 py-1 text-right" onClick={(e) => e.stopPropagation()}>
-                                            {onFolderEdit && (
+                                            {onFolderEdit && folder.canEdit && (
                                                 <button
                                                     onClick={() => handleAction(() => onFolderEdit(folder))}
                                                     className="w-full px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-end gap-2"

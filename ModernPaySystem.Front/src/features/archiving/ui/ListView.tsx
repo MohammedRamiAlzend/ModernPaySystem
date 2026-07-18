@@ -102,7 +102,7 @@ export const ListView: React.FC<ListViewProps> = ({
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                                {onFolderEdit && (
+                                                {onFolderEdit && folder.canEdit && (
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"

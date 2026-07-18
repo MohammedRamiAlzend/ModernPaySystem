@@ -81,7 +81,8 @@ public class FolderService(
                 UpdatedByUserId = x.UpdatedByUserId,
                 UpdatedAt = x.UpdatedAt,
                 CanManagePermissions = x.CreatedByUserId == userIdStr
-                    || (x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value))
+                    || (x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value)),
+                CanEdit = x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value)
             }).ToList();
         }
         catch (Exception ex)
@@ -119,6 +120,9 @@ public class FolderService(
             var canManage = await CanManageFolderPermissionsAsync(userId, id);
             var dto = folder.ToDto();
             dto.CanManagePermissions = !canManage.IsError && canManage.Value;
+            dto.CanEdit = folder.DepartmentId.HasValue
+                && (await archiveLeaderService.IsArchiveLeaderAsync(userId, folder.DepartmentId.Value)).IsSuccess
+                && (await archiveLeaderService.IsArchiveLeaderAsync(userId, folder.DepartmentId.Value)).Value;
             return dto;
         }
         catch (Exception ex)

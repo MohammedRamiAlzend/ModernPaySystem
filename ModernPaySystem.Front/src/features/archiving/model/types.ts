@@ -33,6 +33,7 @@ export interface Folder {
     updatedByUserId?: string | null;
     updatedAt?: string | null;
     canManagePermissions?: boolean;
+    canEdit?: boolean;
 }
 
 export interface PhysicalFile {

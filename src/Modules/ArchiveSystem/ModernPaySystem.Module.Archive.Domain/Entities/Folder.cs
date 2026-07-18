@@ -79,6 +79,7 @@ public class FolderDto
     public DateTime? UpdatedAt { get; set; }
 
     public bool CanManagePermissions { get; set; }
+    public bool CanEdit { get; set; }
 }
 
 public class CreateFolderDto
