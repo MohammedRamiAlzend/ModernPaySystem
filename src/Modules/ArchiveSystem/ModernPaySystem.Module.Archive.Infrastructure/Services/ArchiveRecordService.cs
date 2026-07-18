@@ -12,6 +12,7 @@ using ModernPaySystem.Module.Archive.Domain.DTOs;
 using ModernPaySystem.Module.Archive.Domain.Entities;
 using ModernPaySystem.Module.Archive.Infrastructure.Options;
 using ModernPaySystem.Module.Archive.Infrastructure.Persistence;
+using ModernPaySystem.SharedKernel.Application.Interfaces;
 using ModernPaySystem.SharedKernel.Application.Services;
 using ModernPaySystem.SharedKernel.Domain.Commons;
 using System.Collections.Concurrent;
@@ -33,6 +34,7 @@ public class ArchiveRecordService(
     IMemoryCache memoryCache,
     IArchiveAuthorizationService archiveAuthorizationService,
     IArchiveResourceAuthorizationService resourceAuth,
+    IDepartmentService departmentService,
     IOptions<ArchiveRecordFileUploadOptions> uploadOptions,
     IOptions<ArchiveRecordZipOptions> zipOptions,
     ILogger<ArchiveRecordService> logger,
@@ -133,6 +135,21 @@ public class ArchiveRecordService(
                 return result.Errors;
 
             var items = result.Value!.Items.Select(x => x.ToDto()).ToList();
+
+            var deptIds = items.Where(i => i.DepartmentId.HasValue).Select(i => i.DepartmentId!.Value).Distinct().ToList();
+            var deptNames = new Dictionary<Guid, string>();
+            foreach (var dId in deptIds)
+            {
+                var deptResult = await departmentService.GetByIdAsync(dId);
+                if (!deptResult.IsError && deptResult.Value != null)
+                    deptNames[dId] = deptResult.Value.Name;
+            }
+            foreach (var item in items)
+            {
+                if (item.DepartmentId.HasValue && deptNames.TryGetValue(item.DepartmentId.Value, out var dn))
+                    item.DepartmentName = dn;
+            }
+
             return new PagedList<ArchiveRecordDto>(items, result.Value.TotalItems, page, pageSize);
         }
         catch (Exception ex)

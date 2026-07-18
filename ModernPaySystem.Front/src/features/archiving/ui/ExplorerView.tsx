@@ -317,6 +317,30 @@ export const ExplorerView: React.FC<ExplorerViewProps> = ({
                                 <span className="text-[10px] text-muted-foreground mt-1 block">
                                     {record.physicalFiles?.length || 0} ملف
                                 </span>
+
+                                {/* Tooltip with record details */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-card border border-border rounded-xl shadow-xl p-3 text-right opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-30">
+                                    <div className="flex flex-col gap-1.5">
+                                        {record.createdByUserId && (
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                <User className="w-3 h-3 shrink-0" />
+                                                <UserDisplay userId={record.createdByUserId} showIcon={false} className="text-[10px]" />
+                                            </div>
+                                        )}
+                                        {record.createdAt && (
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                <Calendar className="w-3 h-3 shrink-0" />
+                                                <span>{new Date(record.createdAt).toLocaleDateString('ar-SA')}</span>
+                                            </div>
+                                        )}
+                                        {record.departmentName && (
+                                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                                                <Building2 className="w-3 h-3 shrink-0" />
+                                                <span>{record.departmentName}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -148,7 +148,16 @@ export const ListView: React.FC<ListViewProps> = ({
                                             {record.formId ? 'نموذج مخصص' : 'نموذج عام'}
                                         </td>
                                         <td className="p-4 text-muted-foreground text-xs">
-                                            {record.physicalFiles?.length || 0} ملف
+                                            {record.createdByUserId ? <UserDisplay userId={record.createdByUserId} showIcon={false} className="text-xs" /> : '-'}
+                                        </td>
+                                        <td className="p-4 text-muted-foreground text-xs whitespace-nowrap">
+                                            {record.createdAt ? new Date(record.createdAt).toLocaleDateString('ar-SA') : '-'}
+                                        </td>
+                                        <td className="p-4 text-muted-foreground text-xs">
+                                            <div className="flex items-center gap-1">
+                                                {record.departmentName && <Building2 className="w-3 h-3 shrink-0" />}
+                                                {record.departmentName || '-'}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>

@@ -67,6 +67,8 @@ export interface ArchiveRecord {
     name?: string | null;
     folderId: string;
     formId: string | null;
+    departmentId?: string | null;
+    departmentName?: string | null;
     archiveRecordTemplateValues?: ArchiveRecordTemplateValues | null;
     physicalFiles: PhysicalFile[];
     createdByUserId?: string | null;

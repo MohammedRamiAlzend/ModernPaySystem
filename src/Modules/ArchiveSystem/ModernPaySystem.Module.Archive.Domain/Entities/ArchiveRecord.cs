@@ -62,6 +62,7 @@ public class ArchiveRecordDto
     public string? Name { get; set; }
     public Guid FolderId { get; set; }
     public Guid? DepartmentId { get; set; }
+    public string? DepartmentName { get; set; }
     public Guid? FormId { get; set; }
     public ArchiveRecordTemplateValuesDto? ArchiveRecordTemplateValues { get; set; }
     public List<PhysicalFileDto> PhysicalFiles { get; set; } = [];
