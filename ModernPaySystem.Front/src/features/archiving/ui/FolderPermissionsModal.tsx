@@ -8,10 +8,10 @@ import { UserDisplay } from '@/features/users/ui/UserDisplay';
 import { DepartmentPicker } from '@/features/departments/ui/DepartmentPicker';
 import { SubfolderTreeView } from '@/features/archiving/ui/SubfolderTreeView';
 import { Button } from '@/shared/ui/button';
-import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree, Search, Filter } from 'lucide-react';
+import { Input } from '@/shared/ui/input';
+import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree, Search, Check, Minus, Filter } from 'lucide-react';
 import { useUIStore } from '@/app/store/uiStore';
 import { cn } from '@/shared/lib/utils';
-import { Input } from '@/shared/ui/input';
 
 interface FolderPermissionsModalProps {
     isOpen: boolean;
@@ -49,6 +49,7 @@ export const FolderPermissionsModal = ({
     const [saving, setSaving] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filterType, setFilterType] = useState<'all' | 'users' | 'departments'>('all');
+    const [selectedPermissionIds, setSelectedPermissionIds] = useState<Set<string>>(new Set());
 
     const loadPermissions = useCallback(async (folderId: string) => {
         Promise.resolve().then(() => setLoading(true));
@@ -71,6 +72,7 @@ export const FolderPermissionsModal = ({
         setActiveTab('users');
         setSearchQuery('');
         setFilterType('all');
+        setSelectedPermissionIds(new Set());
     }
 
     useEffect(() => {
@@ -122,6 +124,36 @@ export const FolderPermissionsModal = ({
             showStatus({ type: 'success', title: 'تمت الإضافة', message: `تمت إضافة ${added} صلاحية بنجاح.` });
             await loadPermissions(folder.id);
         }
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedPermissionIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    };
+
+    const selectAll = () => {
+        setSelectedPermissionIds(new Set(filteredPermissions.map(p => p.id)));
+    };
+
+    const deselectAll = () => {
+        setSelectedPermissionIds(new Set());
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedPermissionIds.size === 0) return;
+        let deleted = 0;
+        for (const id of selectedPermissionIds) {
+            try {
+                await archivingService.deleteFolderPermission(id);
+                deleted++;
+            } catch { /* skip */ }
+        }
+        setPermissions(prev => prev.filter(p => !selectedPermissionIds.has(p.id)));
+        setSelectedPermissionIds(new Set());
+        if (deleted > 0) showStatus({ type: 'success', title: 'تم', message: `تم إزالة ${deleted} صلاحية بنجاح.` });
     };
 
     const handleDelete = async (permissionId: string) => {
@@ -250,14 +282,29 @@ export const FolderPermissionsModal = ({
                     {/* Existing permissions */}
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-muted-foreground">الصلاحيات الحالية ({filteredPermissions.length})</span>
-                            {permissions.length > 0 && (
-                                <div className="flex items-center gap-1">
-                                    <button onClick={() => setFilterType('all')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'all' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>الكل</button>
-                                    <button onClick={() => setFilterType('users')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'users' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>مستخدمين</button>
-                                    <button onClick={() => setFilterType('departments')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'departments' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>أقسام</button>
-                                </div>
-                            )}
+                            <div className="flex items-center gap-2">
+                                {filteredPermissions.length > 0 && (
+                                    <button
+                                        onClick={() => selectedPermissionIds.size === filteredPermissions.length ? deselectAll() : selectAll()}
+                                        className="w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
+                                        style={{ borderColor: selectedPermissionIds.size > 0 ? 'var(--primary)' : undefined, backgroundColor: selectedPermissionIds.size === filteredPermissions.length ? 'var(--primary)' : selectedPermissionIds.size > 0 ? 'var(--primary)' : undefined }}
+                                    >
+                                        {selectedPermissionIds.size === filteredPermissions.length && <Check className="w-3 h-3 text-primary-foreground" />}
+                                        {selectedPermissionIds.size > 0 && selectedPermissionIds.size < filteredPermissions.length && <Minus className="w-3 h-3 text-primary-foreground" />}
+                                    </button>
+                                )}
+                                <span className="text-xs font-bold text-muted-foreground">الصلاحيات الحالية ({filteredPermissions.length})</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                {selectedPermissionIds.size > 0 && (
+                                    <button onClick={handleBulkDelete} className="text-[10px] px-2 py-1 rounded-lg font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">
+                                        <Trash2 className="w-3 h-3 inline ml-1" />حذف المحدد ({selectedPermissionIds.size})
+                                    </button>
+                                )}
+                                <button onClick={() => setFilterType('all')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'all' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>الكل</button>
+                                <button onClick={() => setFilterType('users')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'users' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>مستخدمين</button>
+                                <button onClick={() => setFilterType('departments')} className={`text-[10px] px-2 py-1 rounded-lg font-bold transition-colors ${filterType === 'departments' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground'}`}>أقسام</button>
+                            </div>
                         </div>
                         {permissions.length > 0 && (
                             <div className="relative">
@@ -273,40 +320,48 @@ export const FolderPermissionsModal = ({
                             <p className="text-xs text-muted-foreground/60 text-center py-6">{searchQuery || filterType !== 'all' ? 'لا توجد صلاحيات تطابق البحث' : 'لا توجد صلاحيات مخصصة لهذا المجلد.'}</p>
                         ) : (
                             <div className="space-y-2">
-                                {filteredPermissions.map(p => (
-                                    <div key={p.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/60">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                                {p.departmentId ? <Building2 className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
-                                            </div>
-                                            <div className="flex flex-col min-w-0">
-                                                {p.departmentId ? (
-                                                    <span className="text-xs font-bold truncate">
-                                                        {p.departmentName ?? 'قسم'}
-                                                    </span>
-                                                ) : (
-                                                    <UserDisplay userId={p.userId!} showIcon={false} className="text-xs font-bold" />
-                                                )}
-                                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                    {p.isInherited ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                                                    {accessLevelLabel(p.accessLevel)}
-                                                    {p.isInherited ? ' · موروث' : ''}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => handleDelete(p.id)}
-                                            disabled={deletingId === p.id}
-                                            className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
-                                            title="إزالة الصلاحية"
+                                {filteredPermissions.map(p => {
+                                    const isSelected = selectedPermissionIds.has(p.id);
+                                    return (
+                                        <div
+                                            key={p.id}
+                                            onClick={() => toggleSelect(p.id)}
+                                            className={`flex items-center justify-between p-3 rounded-xl border border-border/60 cursor-pointer transition-colors ${isSelected ? 'bg-primary/5 border-primary/30' : 'bg-muted/30 hover:bg-muted/50'}`}
                                         >
-                                            {deletingId === p.id
-                                                ? <Loader2 className="h-4 w-4 animate-spin" />
-                                                : <Trash2 className="h-4 w-4" />
-                                            }
-                                        </button>
-                                    </div>
-                                ))}
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); toggleSelect(p.id); }}
+                                                    className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-primary border-primary' : 'border-muted-foreground/30'}`}
+                                                >
+                                                    {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                                                </button>
+                                                <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                                    {p.departmentId ? <Building2 className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+                                                </div>
+                                                <div className="flex flex-col min-w-0">
+                                                    {p.departmentId ? (
+                                                        <span className="text-xs font-bold truncate">{p.departmentName ?? 'قسم'}</span>
+                                                    ) : (
+                                                        <UserDisplay userId={p.userId!} showIcon={false} className="text-xs font-bold" />
+                                                    )}
+                                                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                                        {p.isInherited ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                                                        {accessLevelLabel(p.accessLevel)}
+                                                        {p.isInherited ? ' · موروث' : ''}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
+                                                disabled={deletingId === p.id}
+                                                className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                                                title="إزالة الصلاحية"
+                                            >
+                                                {deletingId === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
