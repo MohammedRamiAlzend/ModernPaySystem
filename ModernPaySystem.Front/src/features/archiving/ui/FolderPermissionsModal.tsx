@@ -9,7 +9,7 @@ import { DepartmentPicker } from '@/features/departments/ui/DepartmentPicker';
 import { SubfolderTreeView } from '@/features/archiving/ui/SubfolderTreeView';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
-import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree, Search, Check, Minus, Filter } from 'lucide-react';
+import { X, Shield, Loader2, Trash2, Lock, Unlock, Users, Building2, FolderTree, Search, Check, Minus } from 'lucide-react';
 import { useUIStore } from '@/app/store/uiStore';
 import { cn } from '@/shared/lib/utils';
 
