@@ -33,7 +33,7 @@ public class FolderService(
                 return new List<FolderDto>();
 
             var result = await unitOfWork.Folders.GetAllAsync(
-                filter: f => accessibleIds.Contains(f.Id));
+                filter: f => accessibleIds.ToArray().Contains(f.Id));
 
             if (result.IsError)
                 return result.Errors;
