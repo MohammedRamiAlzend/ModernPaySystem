@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { archivingService } from '@/features/archiving/api/archivingService';
 import type { SubFolderTreeNodeDto } from '@/features/archiving/model/types';
 import { Label } from '@/shared/ui/label';
-import { Folder, ChevronLeft, ChevronDown, Loader2, Check } from 'lucide-react';
+import { Folder, ChevronLeft, ChevronDown, Loader2, Check, Minus } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
 interface SubfolderTreeViewProps {
@@ -37,6 +37,46 @@ export const SubfolderTreeView = ({
             .finally(() => setLoading(false));
     }, [folderId]);
 
+    const parentMap = useMemo(() => {
+        const map = new Map<string, string>();
+        const walk = (nodes: SubFolderTreeNodeDto[], parentId?: string) => {
+            for (const node of nodes) {
+                if (parentId !== undefined) {
+                    map.set(node.id, parentId);
+                }
+                walk(node.children, node.id);
+            }
+        };
+        walk(tree);
+        return map;
+    }, [tree]);
+
+    const ancestorNodeIds = useMemo(() => {
+        const ancestors = new Set<string>();
+        const selectedSet = new Set(selectedFolderIds);
+
+        const walk = (node: SubFolderTreeNodeDto): boolean => {
+            let hasSelectedDescendant = false;
+            for (const child of node.children) {
+                if (walk(child)) {
+                    hasSelectedDescendant = true;
+                }
+            }
+            if (node.children.some(c => selectedSet.has(c.id))) {
+                hasSelectedDescendant = true;
+            }
+            if (selectedSet.has(node.id) && hasSelectedDescendant) {
+                ancestors.add(node.id);
+            }
+            return selectedSet.has(node.id) || hasSelectedDescendant;
+        };
+
+        for (const node of tree) {
+            walk(node);
+        }
+        return ancestors;
+    }, [tree, selectedFolderIds]);
+
     const getAllDescendantIds = (nodes: SubFolderTreeNodeDto[]): string[] => {
         const ids: string[] = [];
         for (const node of nodes) {
@@ -58,10 +98,23 @@ export const SubfolderTreeView = ({
 
     const toggleNode = (nodeId: string) => {
         setMode('custom');
-        const newSet = selectedFolderIds.includes(nodeId)
-            ? selectedFolderIds.filter(id => id !== nodeId)
-            : [...selectedFolderIds, nodeId];
-        onSelectionChange(newSet);
+        const isCurrentlyChecked = selectedFolderIds.includes(nodeId);
+
+        if (isCurrentlyChecked) {
+            onSelectionChange(selectedFolderIds.filter(id => id !== nodeId));
+        } else {
+            const newSet = new Set(selectedFolderIds);
+            newSet.add(nodeId);
+
+            let currentId = nodeId;
+            while (parentMap.has(currentId)) {
+                const parentId = parentMap.get(currentId)!;
+                newSet.add(parentId);
+                currentId = parentId;
+            }
+
+            onSelectionChange([...newSet]);
+        }
     };
 
     const toggleExpand = (nodeId: string) => {
@@ -77,6 +130,7 @@ export const SubfolderTreeView = ({
         const hasChildren = node.children.length > 0;
         const isExpanded = expandedIds.has(node.id);
         const isChecked = selectedFolderIds.includes(node.id);
+        const isAncestor = ancestorNodeIds.has(node.id);
 
         return (
             <div key={node.id}>
@@ -106,13 +160,24 @@ export const SubfolderTreeView = ({
                         onClick={() => toggleNode(node.id)}
                         className={cn(
                             'w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors',
-                            isChecked ? 'bg-primary border-primary' : 'border-muted-foreground/30'
+                            isChecked && !isAncestor && 'bg-primary border-primary',
+                            isAncestor && 'bg-primary/50 border-primary/50',
+                            !isChecked && !isAncestor && 'border-muted-foreground/30'
                         )}
                     >
-                        {isChecked && <Check className="w-3 h-3 text-primary-foreground" />}
+                        {isChecked && !isAncestor && <Check className="w-3 h-3 text-primary-foreground" />}
+                        {isAncestor && <Minus className="w-3 h-3 text-primary-foreground" />}
                     </button>
-                    <Folder className="w-4 h-4 text-amber-500/80 shrink-0" />
-                    <span className="text-sm truncate">{node.name}</span>
+                    <Folder className={cn(
+                        'w-4 h-4 shrink-0',
+                        isAncestor ? 'text-amber-500/50' : 'text-amber-500/80'
+                    )} />
+                    <span className={cn(
+                        'text-sm truncate',
+                        isAncestor && 'text-muted-foreground'
+                    )}>
+                        {node.name}
+                    </span>
                 </div>
                 {hasChildren && isExpanded && (
                     <div>

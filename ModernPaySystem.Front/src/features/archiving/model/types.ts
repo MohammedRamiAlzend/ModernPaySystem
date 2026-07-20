@@ -34,6 +34,7 @@ export interface Folder {
     updatedAt?: string | null;
     canManagePermissions?: boolean;
     canEdit?: boolean;
+    hasDirectPermission?: boolean;
 }
 
 export interface PhysicalFile {

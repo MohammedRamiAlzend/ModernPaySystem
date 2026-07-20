@@ -80,6 +80,7 @@ public class FolderDto
 
     public bool CanManagePermissions { get; set; }
     public bool CanEdit { get; set; }
+    public bool HasDirectPermission { get; set; }
 }
 
 public class CreateFolderDto

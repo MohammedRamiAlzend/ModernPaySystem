@@ -32,14 +32,22 @@ public class FolderService(
             if (accessibleIds.Count == 0)
                 return new List<FolderDto>();
 
+            var directAccessSet = new HashSet<Guid>(accessibleIds);
+
+            var ancestorIdsResult = await resourceAuth.GetAncestorFolderIdsAsync(accessibleIds);
+            if (ancestorIdsResult.IsError)
+                return ancestorIdsResult.Errors;
+            var ancestorIds = ancestorIdsResult.Value!;
+            ancestorIds.ExceptWith(directAccessSet);
+
+            var allVisibleIds = accessibleIds.Concat(ancestorIds).Distinct().ToList();
+
             var result = await unitOfWork.Folders.GetAllAsync(
-                filter: f => accessibleIds.ToArray().Contains(f.Id));
+                filter: f => allVisibleIds.Contains(f.Id));
 
             if (result.IsError)
                 return result.Errors;
 
-            // Return a flat list of all folders directly to avoid missing subfolders
-            // and eliminate reliance on EF Core lazy loading or relationship fix-up for SubFolders.
             var userIdStr = userId.ToString();
             var folders = result.Value!.ToList();
 
@@ -73,7 +81,7 @@ public class FolderService(
                 Level = x.Level,
                 ParentId = x.ParentId,
                 IconId = x.IconId,
-                FolderDtos = [], // Frontend handles flat structure
+                FolderDtos = [],
                 DepartmentId = x.DepartmentId,
                 DepartmentName = x.DepartmentId.HasValue && deptNames.TryGetValue(x.DepartmentId.Value, out var dn) ? dn : null,
                 CreatedByUserId = x.CreatedByUserId,
@@ -82,7 +90,8 @@ public class FolderService(
                 UpdatedAt = x.UpdatedAt,
                 CanManagePermissions = x.CreatedByUserId == userIdStr
                     || (x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value)),
-                CanEdit = x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value)
+                CanEdit = x.DepartmentId.HasValue && leaderDepartments.Contains(x.DepartmentId.Value),
+                HasDirectPermission = directAccessSet.Contains(x.Id)
             }).ToList();
         }
         catch (Exception ex)

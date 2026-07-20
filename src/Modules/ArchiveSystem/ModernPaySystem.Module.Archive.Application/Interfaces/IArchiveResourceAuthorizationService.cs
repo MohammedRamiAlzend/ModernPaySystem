@@ -10,5 +10,6 @@ public interface IArchiveResourceAuthorizationService
     Task<Result<bool>> CanAccessPhysicalFileAsync(Guid userId, Guid fileId, AccessLevel minimumLevel = AccessLevel.View);
     Task<Result<AccessLevel>> GetFolderAccessLevelAsync(Guid userId, Guid folderId);
     Task<Result<List<Guid>>> GetAccessibleFolderIdsAsync(Guid userId, AccessLevel minimumLevel = AccessLevel.View);
+    Task<Result<HashSet<Guid>>> GetAncestorFolderIdsAsync(List<Guid> folderIds);
     Task<Result<bool>> HasDepartmentFolderPermissionAsync(Guid departmentId, Guid folderId, AccessLevel minimumLevel = AccessLevel.View);
 }

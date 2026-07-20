@@ -286,6 +286,40 @@ public class ArchiveResourceAuthorizationService(
         }
     }
 
+    public async Task<Result<HashSet<Guid>>> GetAncestorFolderIdsAsync(List<Guid> folderIds)
+    {
+        if (folderIds.Count == 0)
+            return new HashSet<Guid>();
+
+        try
+        {
+            var ancestors = new HashSet<Guid>();
+
+            var allFolderParents = await dbContext.Folders
+                .Select(f => new { f.Id, f.ParentId })
+                .ToDictionaryAsync(f => f.Id, f => f.ParentId);
+
+            foreach (var folderId in folderIds)
+            {
+                var currentId = folderId;
+                while (allFolderParents.TryGetValue(currentId, out var parentId)
+                       && parentId.HasValue && parentId.Value != Guid.Empty)
+                {
+                    if (!ancestors.Add(parentId.Value))
+                        break;
+                    currentId = parentId.Value;
+                }
+            }
+
+            return ancestors;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching ancestor folder IDs");
+            return ArchiveErrors.InternalServerError;
+        }
+    }
+
     public async Task<Result<bool>> HasDepartmentFolderPermissionAsync(Guid departmentId, Guid folderId, AccessLevel minimumLevel = AccessLevel.View)
     {
         try
